@@ -1,0 +1,51 @@
+@use "../../../styles/helpers" as *;
+
+.primary_button {
+    display: flex;
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    background-color: var(--submit-button-primary-color);
+    font-size: 14px;
+    color: var(--submit-button-secondary-color);
+
+    .loader {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .2s;
+    }
+
+    @include hover {
+        background-color: var(--submit-button-primary-hover-color);
+    }
+
+    &.primary_button_loading {
+        color: transparent;
+        background-color: var(--submit-button-loading-background-color);
+        cursor: not-allowed;
+
+        .loader {
+            opacity: 1;
+            color: var(--submit-button-primary-color);
+        }
+
+        @include hover {
+            background-color: var(--submit-button-loading-background-color);
+        }
+    }
+
+    &.primary_button_disabled {
+        cursor: not-allowed;
+        background-color: var(--submit-button-disabled-background-color);
+        color: var(--submit-button-disabled-color);
+
+        @include hover {
+            background-color: var(--submit-button-disabled-background-color);
+            color: var(--submit-button-disabled-color);
+        }
+    }
+}

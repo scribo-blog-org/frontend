@@ -1,0 +1,102 @@
+@use "../../styles/categoryColors.scss" as *;
+@use "../../styles/helpers.scss" as *;
+
+.category_content {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 999px;
+
+    .category_svg_icon {
+        display: flex;
+        width: 14px;
+        height: 14px;
+
+        @include screen() {
+            width: 12px;
+            height: 12px;
+        }
+    }
+
+    @include category-colors {
+        &.chip_button_active {
+            color: var(--category-color);
+            border-color: transparent;
+            background: rgb(from var(--category-color) r g b / .1);
+
+            @include hover() {
+                background: rgb(from var(--category-color) r g b / .3);
+            }
+
+            p {
+                color: var(--category-color);
+            }
+        }
+    }
+
+    &.category_content_quiet {
+        border-radius: 0;
+
+        .category_dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--category-color, var(--light-text-color));
+            flex-shrink: 0;
+            opacity: 0.4;
+            transition: opacity 0.15s ease, background 0.3s ease;
+        }
+
+        @include category-colors {
+            @include hover() {
+                color: var(--category-color);
+
+                .category_dot {
+                    opacity: 1;
+                }
+
+                p {
+                    color: var(--category-color);
+                }
+            }
+
+            &.chip_button_active {
+                color: var(--text-color);
+                background: transparent;
+                border-color: transparent;
+
+                .category_dot {
+                    opacity: 1;
+                }
+
+                p {
+                    color: var(--text-color);
+                }
+
+                @include hover() {
+                    background: transparent;
+                    color: var(--category-color);
+
+                    p {
+                        color: var(--category-color);
+                    }
+                }
+            }
+        }
+
+        &.category_content_tag {
+            color: var(--text-color);
+            font-weight: 400;
+            box-shadow: none;
+
+            .category_dot {
+                opacity: 1;
+            }
+
+            p {
+                color: inherit;
+                transition: color 0.15s ease;
+            }
+        }
+    }
+}

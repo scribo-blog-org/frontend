@@ -1,0 +1,78 @@
+@use "../../../styles/helpers" as *;
+
+.switcher_bar {
+    position: relative;
+    display: flex;
+    padding: 4px;
+
+    border: 1px solid var(--switcher-bar-border-color);
+    border-radius: 999px;
+
+    overflow: hidden;
+}
+
+.switcher_bar_indicator {
+    position: absolute;
+
+    top: 4px;
+    left: 0;
+
+    height: calc(100% - 8px);
+
+    border-radius: 999px;
+
+    background: var(--switcher-bar-active-item-background-color);
+
+    transition:
+        transform .3s cubic-bezier(.2, .8, .2, 1),
+        width .3s cubic-bezier(.2, .8, .2, 1),
+        opacity .2s ease,
+        background-color .3s ease,
+        background .3s ease;
+
+    z-index: 0;
+    pointer-events: none;
+    will-change: transform, width;
+}
+
+.switcher_bar_item {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+
+    border-radius: 999px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+
+    padding: 6px 22px;
+
+    background: transparent;
+    -webkit-tap-highlight-color: transparent;
+
+    color: var(--switcher-bar-item-color);
+
+    transition:
+        transform .3s cubic-bezier(.2,.8,.2,1),
+        width .3s cubic-bezier(.2,.8,.2,1),
+        background-color .3s ease,
+        color .3s ease,
+        background .3s ease;
+
+    svg {
+        height: 16px;
+        width: 16px;
+    }
+
+    @include hover {
+        color: var(--switcher-bar-active-item-color);
+    }    
+}
+
+
+.switcher_bar_item_active {
+    color: var(--switcher-bar-active-item-color);
+}

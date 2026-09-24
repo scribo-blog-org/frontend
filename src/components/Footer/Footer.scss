@@ -1,0 +1,128 @@
+@use "../../styles/helpers" as *;
+
+footer {
+    margin-top: auto;
+    z-index: 2;
+    bottom: 0;
+    width: 100%; 
+    background-color: var(--footer-background);
+    position: relative;
+    border-top: 1px solid var(--line-color);
+
+    .footer_top_content{
+      padding: 36px 0;
+
+      @include screen() {
+        padding: 24px 0;
+      }
+
+      div {
+        display: flex;
+        
+        @include screen() {
+          justify-content: center;
+        }
+      }
+
+      .footer_links{
+        a {
+          p {
+            font-size: 14px;
+            color: var(--footer-content-color);
+            
+            @include screen() {
+              font-size: 14px;
+            }
+          }
+
+          p:hover{
+            text-decoration: underline;
+            color: var(--footer-content-hover-color);
+          }
+        }
+      }
+
+      .footer_links:not(:last-child){
+        margin-bottom: 12px;
+
+        @include screen() {
+          margin-bottom: 12px;
+        }
+      }
+    }
+
+    .footer_bottom_content {
+        display: flex;
+        justify-content: space-between; 
+        align-items: center;
+        padding: 36px 0;
+        border-top: 1px solid var(--footer-line-color);
+
+        @include screen() {
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 30px;
+
+          padding: 24px 0;
+        }
+
+        p {
+          font-size: 22px;
+          color: var(--footer-content-color);
+
+          @include screen() {
+            font-size: 14px;
+          }
+        }
+        
+        .footer_main_logo {
+          svg{
+            color: var(--footer-content-color);
+            height: 30px;
+
+            @include screen() {
+              height: auto;
+              height: 20px;
+            }
+          }
+        }
+        
+        .footer_socials {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          
+          @include screen(){
+            gap: 28px;
+          }
+
+          &_item {
+            display: flex;
+            height: 20px;
+            width: 20px;
+
+            svg{
+              color: var(--footer-content-color);
+              width: 100%;
+              height: 100%;  
+              
+              @include screen() {
+                width: 22px;
+                height: 22px;
+              }
+            }
+
+            svg:hover{
+              color: var(--footer-content-hover-color)
+            }
+          }
+        }
+
+        .footer_copyright{
+          p{
+            font-size: 16px;
+          }
+        }
+    }
+}
+

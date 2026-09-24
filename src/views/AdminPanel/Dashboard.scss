@@ -1,0 +1,506 @@
+@use "../../styles/helpers" as *;
+
+.analytics {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    width: 100%;
+    min-width: 0;
+
+    .loader {
+        margin: 32px auto;
+    }
+
+    &_period_panel {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+        padding-bottom: var(--space-5);
+        border-bottom: 1px solid var(--line-color);
+    }
+
+    &_period_controls {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    &_period_label {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-color);
+        flex-shrink: 0;
+    }
+
+    &_period_ranges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    &_period_bounds {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin: 0;
+        padding: 8px 12px;
+        border: 1px solid var(--input-outline-color);
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.4;
+        color: var(--text-color);
+        max-width: 100%;
+    }
+
+    &_period_bounds_label {
+        flex-shrink: 0;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--light-text-color);
+    }
+
+    &_scope {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-5);
+        min-width: 0;
+
+        &_head {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        &_head > .kicker {
+            margin: 0;
+        }
+
+        &_hint {
+            margin: 0;
+            font-size: 13px;
+            color: var(--light-text-color);
+        }
+
+        &_body {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+            min-width: 0;
+        }
+
+        &_overall {
+            padding-top: var(--space-2);
+            border-top: 1px solid var(--line-color);
+        }
+    }
+
+    &_group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        min-width: 0;
+
+        &_head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        > .kicker,
+        &_head > .kicker {
+            margin: 0;
+        }
+
+        &_hint {
+            font-size: 12px;
+            color: var(--light-text-color);
+        }
+    }
+
+    &_traffic {
+        display: grid;
+        grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+        gap: var(--space-4);
+        align-items: stretch;
+
+        @include screen() {
+            grid-template-columns: 1fr;
+        }
+
+        &_stats {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+    }
+
+    &_stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: var(--space-3);
+
+        @include screen() {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    &_stat {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 16px 20px;
+        background: var(--section-background-color);
+        border: 0;
+        border-radius: var(--radius);
+        min-width: 0;
+        height: 100%;
+
+        &_label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        &_value {
+            font-size: var(--text-2xl);
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+        }
+
+        &_hint {
+            font-size: 12px;
+            color: var(--light-text-color);
+        }
+
+        &_delta {
+            font-size: 12px;
+
+            &_up {
+                color: var(--success-color);
+            }
+
+            &_down {
+                color: var(--light-text-color);
+            }
+
+            &_flat {
+                color: var(--light-text-color);
+            }
+        }
+    }
+
+    &_grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-5);
+
+        @include screen() {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    &_block {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-width: 0;
+        padding: 24px 28px;
+        background: var(--section-background-color);
+        border: 0;
+        border-radius: var(--radius);
+
+        @include screen() {
+            padding: 16px 20px;
+        }
+
+        h2,
+        h3 {
+            margin: 0;
+        }
+
+        &_title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        &_chart {
+            min-height: 280px;
+        }
+    }
+
+    &_activity {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-5);
+
+        @include screen() {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        &_group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+
+        &_metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        &_metric {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--line-color);
+
+            &:last-child {
+                padding-bottom: 0;
+                border-bottom: 0;
+            }
+
+            &_label {
+                font-size: 13px;
+                color: var(--light-text-color);
+            }
+
+            &_value {
+                font-size: 18px;
+                font-weight: 600;
+                letter-spacing: -0.02em;
+            }
+        }
+    }
+
+    &_audience {
+        gap: 16px;
+
+        &_bar {
+            width: 100%;
+            height: 12px;
+            border-radius: 999px;
+            background: var(--line-color);
+        }
+
+        &_bar_auth {
+            height: 100%;
+            min-width: 0;
+            border-radius: 999px;
+            background: var(--text-color);
+        }
+
+        &_legend {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--space-4);
+
+            @include screen() {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        &_item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 8px 10px;
+            align-items: center;
+            font-size: 13px;
+            color: var(--text-color);
+        }
+
+        &_swatch {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+
+            &_auth {
+                background: var(--text-color);
+            }
+
+            &_anon {
+                background: var(--line-color);
+            }
+        }
+
+        &_count {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-color);
+        }
+    }
+
+    &_legend {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+
+        &_item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--light-text-color);
+        }
+
+        &_swatch {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+    }
+
+    &_chart_wrap {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    &_chart {
+        width: 100%;
+        height: auto;
+        display: block;
+
+        polyline,
+        path,
+        line,
+        circle,
+        text {
+            transition:
+                fill 0.3s ease,
+                stroke 0.3s ease,
+                opacity 0.3s ease,
+                color 0.3s ease;
+        }
+
+        &_grid {
+            stroke: var(--line-color);
+            stroke-width: 1;
+            opacity: 0.7;
+        }
+
+        &_area {
+            opacity: 0.08;
+        }
+
+        &_line {
+            stroke-width: 2;
+            stroke-linejoin: round;
+            stroke-linecap: round;
+        }
+
+        &_dot {
+            stroke: var(--section-background-color);
+            stroke-width: 2;
+        }
+
+        &_guide {
+            stroke: var(--line-color);
+            stroke-width: 1;
+            stroke-dasharray: 3 3;
+        }
+
+        &_ytick,
+        &_tick {
+            fill: var(--light-text-color);
+            font-size: 10px;
+        }
+
+        &_tooltip {
+            position: absolute;
+            z-index: 2;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: var(--section-background-color);
+            box-shadow: 0 0 0 1px var(--line-color);
+            font-size: 12px;
+            color: var(--text-color);
+            pointer-events: none;
+            white-space: nowrap;
+            transition:
+                background-color 0.3s ease,
+                color 0.3s ease,
+                box-shadow 0.3s ease;
+
+            p + p {
+                color: var(--light-text-color);
+                margin-top: 2px;
+            }
+        }
+    }
+
+    &_bars {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        &_row {
+            display: grid;
+            grid-template-columns: 168px minmax(0, 1fr) 88px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        &_wide &_row {
+            grid-template-columns: 180px minmax(0, 1fr) 96px;
+        }
+
+        &_label,
+        &_value {
+            font-size: 12px;
+            min-width: 0;
+        }
+
+        &_label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        &_value {
+            text-align: right;
+            color: var(--light-text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        &_track {
+            height: 8px;
+            border-radius: 999px;
+            background: var(--section-item-hover-background-color);
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+
+        &_fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--text-color);
+            transition:
+                background-color 0.3s ease,
+                width 0.3s ease;
+        }
+    }
+
+    &_empty {
+        font-size: 13px;
+        color: var(--light-text-color);
+        padding: 12px 0;
+    }
+}

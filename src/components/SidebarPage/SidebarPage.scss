@@ -1,0 +1,109 @@
+@use "../../styles/helpers" as *;
+
+.sidebar_page {
+    display: flex;
+    align-items: stretch;
+    gap: 32px;
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+
+    &_navigation {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0;
+        flex: 0 0 240px;
+        width: 240px;
+        min-width: 240px;
+        box-sizing: border-box;
+        
+        @include screen() {
+            display: none;
+        }
+
+        &_list {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            gap: var(--space-1);
+
+            &_item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: var(--section-light-color);
+                padding: 8px 12px;
+                border-radius: var(--radius-sm);
+                width: 100%;
+                
+                @include hover {
+                    background: var(--section-item-hover-background-color);
+                    color: var(--section-light-hover-color);
+
+                    p {
+                        color: var(--section-light-hover-color);
+                    }
+                }
+                
+                svg {
+                    width: 16px;
+                    height: 16px;
+                }
+                
+                p {
+                    font-size: 14px;
+                    color: var(--section-light-color);
+                    white-space: nowrap;
+                }
+
+                &_active {
+                    background: var(--section-item-hover-background-color);
+                    color: var(--section-light-hover-color);
+
+                    p {
+                        color: var(--section-light-hover-color);
+                    }
+                }
+            }
+        }
+    }
+
+    
+    &_content {
+        flex: 1;
+        min-width: 0;
+        width: auto;
+        padding: 0;
+
+        &_item {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+            height: 100%;
+            overflow: visible;
+            min-width: 0;
+
+            &_menu {
+                display: none;
+                width: 100%;
+                position: relative;
+                z-index: 3;
+
+                @include screen() {
+                    display: block;
+                }
+            }
+
+            > h1 {
+                font-size: var(--text-2xl);
+                font-weight: 600;
+                letter-spacing: -0.04em;
+                text-transform: none;
+                color: var(--text-color);
+                line-height: 1.15;
+            }
+        }
+    }
+}

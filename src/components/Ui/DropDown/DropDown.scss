@@ -1,0 +1,126 @@
+@use "../../../styles/helpers" as *;
+@use "../../../styles/overlaySurface.scss" as *;
+
+.dropdown {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    &_select {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 36px;
+        padding: 8px 12px;
+        border: 1px solid var(--input-outline-color);
+        border-radius: 8px;
+        background: transparent;
+        color: var(--input-text-color);
+
+        p {
+            flex: 1;
+            min-width: 0;
+            text-align: start;
+            font-size: var(--text-md);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        &_placeholder {
+            color: var(--input-placeholder-color);
+            font-weight: 400;
+        }
+
+        &:focus {
+            border-color: var(--input-outline-active-color);
+        }
+    }
+
+    &_chevron {
+        flex-shrink: 0;
+        width: 12px;
+        height: 12px;
+        color: var(--light-text-color);
+        transition: transform .2s ease;
+    }
+
+    &_open .dropdown_chevron {
+        transform: rotate(180deg);
+    }
+
+    &_error .dropdown_select {
+        border-color: red;
+    }
+
+    &_icon {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
+        color: inherit;
+
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+
+    &_list.float_section {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 8px);
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 8px;
+        border: 1px solid var(--line-color);
+        max-height: 320px;
+        overflow-y: auto;
+        box-shadow:
+            0 10px 28px rgba(0, 0, 0, 0.1),
+            0 2px 8px rgba(0, 0, 0, 0.04);
+        @include overlay-surface-enter("dropdown_list_visible", top center, -8px, 0px);
+    }
+
+    &_item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 6px;
+        color: var(--input-text-color);
+
+        p {
+            flex: 1;
+            min-width: 0;
+            text-align: start;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        &:not(.dropdown_item_selected) {
+            @include hover {
+                background-color: var(--section-item-hover-background-color);
+            }
+        }
+
+        &_selected {
+            background-color: var(--section-item-hover-background-color);
+        }
+    }
+
+    &_check {
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        color: var(--text-color);
+    }
+}

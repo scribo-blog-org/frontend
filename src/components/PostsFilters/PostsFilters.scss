@@ -1,0 +1,14 @@
+.posts_filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 16px;
+    min-height: 30px;
+
+    .post_filter_separator {
+        padding: 0;
+        border-right: 1px solid var(--line-color);
+        width: 0;
+        background-color: transparent;
+    }
+}

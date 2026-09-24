@@ -1,0 +1,59 @@
+@use "../../../styles/helpers" as *;
+
+.action_button {
+    position: relative;
+    padding: 10px 16px;
+    font-size: 14px;
+    border-radius: 8px;
+    color: var(--submit-button-primary-color);
+    border: 1px solid var(--line-color);
+    background-color: var(--secondary-button-background-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    @include screen() {
+        font-size: 12px;
+        padding: 10px 20px;
+    }
+
+    @include hover {
+        background: var(--secondary-button-hover-background-color);
+    }
+
+    .loader {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .2s;
+    
+    }
+    &_loading {
+        color: transparent;
+        cursor: not-allowed;
+
+        svg {
+            display: none;
+        }
+
+        .loader {
+            opacity: 1;
+            color: var(--submit-button-primary-color);
+        }
+
+        @include hover {
+            background: var(--secondary-button-background-color);
+        }
+    }
+
+    &.action_button_disabled {
+        cursor: not-allowed;
+        color: var(--secondary-button-disabled-color);
+        background-color: var(--secondary-button-disabled-background-color);
+        border-color: var(--secondary-button-disabled-border-color);
+
+        @include hover {
+            background-color: var(--secondary-button-disabled-background-color);
+        }
+    }
+}

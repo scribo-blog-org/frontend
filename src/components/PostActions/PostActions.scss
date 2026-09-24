@@ -1,0 +1,88 @@
+@use '../../styles/helpers.scss' as *;
+
+.post_actions {        
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    width: 100%;
+
+    @include screen() {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    &_left_side {
+        display: flex;
+        gap: 8px;
+        min-height: 24px;
+        min-width: 160px;
+
+        @include screen() {
+            width: 100%;
+            align-items: center;
+            order: 2;
+        }
+    }
+
+    &_right_side {
+        display: flex;
+        gap: 0 16px;
+        align-items: center;
+        margin-left: auto;
+        min-height: 24px;
+        min-width: 70px;
+
+        @include screen() {
+            margin-left: 0;
+            align-self: flex-start;
+            order: 1;
+        }
+    }
+
+    &_button {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        gap: 4px;
+        padding: 6px;
+        border-radius: 6px;
+        
+        color: var(--light-text-color);
+
+        p {
+            align-items: center;
+            line-height: 1;
+            font-size: 14px;
+            color: var(--light-text-color);
+        }
+
+        svg {
+            height: 16px;
+            width: 16px;
+        }
+
+        @include hover {
+            color: var(--text-color);
+            background: transparent;
+
+            p {
+                color: var(--text-color);
+            }
+        }
+    }
+
+    &_views {
+        cursor: default;
+
+        @include hover {
+            color: var(--light-text-color);
+            background: transparent;
+
+            p {
+                color: var(--light-text-color);
+            }
+        }
+    }
+}

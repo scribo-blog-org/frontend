@@ -1,0 +1,76 @@
+import { API_URL } from "../config";
+import { apiFetch } from "./http";
+
+const deleteComment = async (commentId) => {
+    try {
+        const res = await apiFetch(`${API_URL}/api/comments/${commentId}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        const result = await res.json();
+
+        return result;
+    } catch (err) {
+        console.log(err);
+        return {
+            status: "error",
+            message: err,
+            data: null
+        };
+    }
+};
+
+const editComment = async (commentId, commentText) => {
+     try {
+        const res = await apiFetch(`${API_URL}/api/comments/${commentId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ commentText: commentText })
+        });
+        const result = await res.json();
+
+        return result;
+    } catch (err) {
+        console.log(err);
+        return {
+            status: "error",
+            message: err,
+            data: null
+        };
+    }
+}
+
+const likeComment = async (commentId, method="POST") => {
+    try {
+        const res = await apiFetch(`${API_URL}/api/comments/${commentId}/like`, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+        const result = await res.json();
+
+        return {
+            statusCode: res.status,
+            ...result
+        };
+    } catch (err) {
+        console.log(err);
+        return {
+            status: false,
+            statusCode: 0,
+            message: err,
+            data: null
+        };
+    }
+}
+
+export {
+    deleteComment,
+    editComment,
+    likeComment
+};

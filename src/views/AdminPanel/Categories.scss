@@ -1,0 +1,341 @@
+@use "../../styles/helpers" as *;
+@use "../../styles/categoryColors.scss" as *;
+
+.admin_panel {
+    &_content{
+        &_categories_page_back {
+            width: fit-content;
+            padding: 6px 16px;
+            font-size: 12px;
+            gap: 6px;
+
+            svg {
+                height: 18px;
+                width: 18px;
+
+                color: var(--action-button-secondary-color);
+            }
+        }
+
+        &_edit_categories_page {
+            display: flex;
+            flex-direction: column;
+            gap: 50px;
+            height: 100%;
+
+            .search_select_input {
+                border-color: var(--line-color);
+                color: var(--text-color);
+
+                .input_field {
+                    color: inherit;
+                }
+            }
+
+            .search_select {
+                .search_select_item_selected {
+                    background: var(--section-item-hover-background-color);
+                }
+
+                @include category-colors {
+                    .search_select_input {
+                        background: rgb(from var(--category-color) r g b / .1);;
+                        border-color: var(--category-color);
+
+                        .input_field {
+                            color: var(--category-color);
+                        }
+                    }
+
+                    .search_select_icon{
+                        color: var(--category-color);
+                    }
+                }
+            }
+
+            .search_select_item {
+                @include category-colors {
+
+                    p {
+                        color: var(--category-color);
+                    }
+
+                    .search_select_icon {
+                        color: var(--category-color);
+                    }
+
+                    @include hover {
+                        background-color: rgb(from var(--category-color) r g b / .1);
+                    }
+
+                    &.search_select_item_selected {
+                        background-color: rgb(from var(--category-color) r g b / .1);
+                    }
+                }
+            }
+    
+            &_settings {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                flex: 1;
+                height: 100%;
+                
+    
+                &_color {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+    
+                    &_content{
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        cursor: pointer;
+                        padding: 8px;
+                        border: 1px solid var(--line-color);
+                        border-radius: 8px;
+    
+                        @include hover {
+                            background-color: var(--chip-button-hover-background-color);
+                        }
+
+                        &_rect {
+                            display: flex;
+                            align-items: center;
+                            color: var(--text-color);
+
+                            
+                            svg {
+                                height: 18px;
+                                width: 18px;
+                            }
+
+                            @include category-colors {
+                                svg {
+                                    color: var(--category-color);
+                                }
+                            }
+                        }
+
+                    }
+                }
+    
+                &_icon {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    
+                    &_content {
+                        display: grid;
+                        gap: 20px;
+                        flex-wrap: wrap;
+                        grid-template-columns: repeat(8, 1fr);
+                        width: 100%;
+                        
+                        @include screen() {
+                            grid-template-columns: repeat(4, 1fr);
+                            gap: 10px;
+                        }
+
+                        &_item {
+                            display: flex;
+                            
+                            .category_content{
+                                width: 100%;
+                                align-items: center;
+                                justify-content: center;
+                                border-radius: 8px;
+                                color: var(--section-light-color);
+                                padding: 20px 6px;
+                                
+                                @include screen() {
+                                    padding: 8px 12px;
+                                }
+
+                                .category_svg_icon {
+                                    height: 100%;
+                                    width: 100%;
+                                    max-height: 22px;
+                                    max-width: 22px;
+                                }
+    
+                                p {
+                                    display: none;
+                                }
+                            }
+    
+                            &_active{
+                                .category_content{
+                                    color: var(--section-light-hover-color);
+                                    border-color: var(--section-light-hover-color);
+                                }
+                            }
+                        }
+                    }
+                }
+    
+                .primary_button {
+                    margin-top: auto;
+                }
+            }
+        }
+
+        &_categories_page{
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 10px;
+
+            &_create {
+                width: fit-content;
+                padding: 8px 14px;
+            }
+
+            .admin_panel_content_categories_page_category {
+                display: flex;
+                align-items: center;
+                width: 100%;
+                padding: 12px 18px;
+                border-radius: 8px;
+
+                @include screen() {
+                    padding: 8px;
+                }
+
+                @include hover {
+                    background: var(--section-item-hover-background-color);
+                }
+
+                &_data{
+                    display: flex;
+                    gap: 8px;
+                    align-items: center;
+                    width: 50%;
+    
+                    &_icon {
+                        padding: 12px;
+                        cursor: auto;
+                        height: 44px;
+                        width: 44px;
+    
+                        @include screen() {
+                            height: 32px;
+                            width: 32px;
+                            padding: 6px;
+
+                        }
+
+                        svg {
+                            height: 100%;
+                            width: 100%;
+                        }
+    
+                        p {
+                            display: none;
+                        }
+                    }
+    
+                    &_content {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 4px;
+    
+                        &_name{
+                            font-size: 16px;
+                            text-wrap-mode: nowrap;
+
+                            @include screen() {
+                                font-size: 14px;
+                            }
+                        }
+    
+                        &_color {
+                            display: flex;
+                            align-items: center;
+                            gap: 6px;
+    
+                            p {
+                                font-size: 12px;
+                                color: var(--section-light-color);
+                            }
+    
+                            &_circle {
+                                width: 12px;
+                                height: 12px;
+                                border-radius: 50%;
+                                background-color: var(--chip-active-button-background-color);
+
+                                @include category-colors {
+                                    background: var(--category-color);
+                                }
+
+                                @include screen() {
+                                    width: 8px;
+                                    height: 8px;
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+                &_posts_count{
+                    color: var(--section-light-color);
+                    width: 100px;
+                    min-width: 100px;
+
+                    @include screen() {
+                        font-size: 14px;
+                    }
+                }
+
+                &_actions{
+                    padding: 12px;
+                    margin-left: auto;
+
+                    svg {
+                        height: 16px;
+                        width: 16px;
+
+                        color: var(--section-light-color);
+
+                        @include hover {
+                            color: var(--section-light-hover-color);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+.modal_window_body_content {
+    .admin_panel_content_categories_page_modal_window {
+        display: flex;
+        flex-direction: column;
+
+        .category_content {
+            width: fit-content;
+            align-self: center;
+        }
+
+        &_bottom {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            margin-left: auto;
+        }
+    }
+}
+
+.popup_menu {
+    .popup_menu_item {
+        @include category-colors {
+            svg, p {
+                color: var(--category-color);
+            }
+
+        }
+    }
+}

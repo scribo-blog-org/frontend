@@ -1,0 +1,35 @@
+@use "../../../styles/helpers" as *;
+
+.cancel_button {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 8px;
+    color: var(--cancel-button-primary-color);
+
+    @include hover {
+        background: var(--cancel-button-hover-background-color);
+    }
+}
+
+.cancel_button_icon {
+    width: 18px;
+    height: 18px;
+}
+
+.cancel_button_active {
+    color: var(--cancel-button-secondary-color);
+    background: var(--cancel-button-hover-background-color);
+}
+
+.cancel_button_disabled,
+.cancel_button_loading {
+    cursor: not-allowed;
+    opacity: 0.55;
+
+    @include hover {
+        background: transparent;
+    }
+}

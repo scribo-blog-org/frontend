@@ -1,0 +1,20 @@
+@use "../../styles/helpers" as *;
+
+.default-container {
+    width: 100%;
+    min-width: 0;
+    max-width: 992px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    margin-left: auto;
+    margin-right: auto;
+    --container-padding: 60px;
+    padding-left: var(--container-padding);
+    padding-right: var(--container-padding);
+
+    
+    @include screen() {
+        --container-padding: 16px;
+    }
+}

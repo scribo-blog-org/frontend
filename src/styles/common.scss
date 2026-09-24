@@ -1,0 +1,253 @@
+@use "./variables.scss";
+@use "./theme";
+@use "./helpers.scss" as *;
+
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    
+}
+
+html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    scrollbar-color: var(--gray-4f) transparent;
+}
+
+#root, #app-root {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    max-height: 100dvh;
+    overflow: hidden;
+}
+
+body {
+    background-color: var(--gray-f1);
+    color: var(--text-color);
+    font-size: var(--text-md);
+    line-height: 1.5;
+    transition: background-color 0.3s ease;
+}
+
+body.dark-theme {
+    background-color: var(--gray-16);
+}
+
+body.no-scroll {
+    scrollbar-gutter: stable;
+    overflow-y: hidden;
+}
+
+p, h1, h2, h3, h4 ,h5, h6 {
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+} 
+
+h1 {
+    font-size: var(--text-2xl);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+}
+
+h2 {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+}
+
+.kicker,
+h1.kicker,
+h2.kicker {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-transform: none;
+    color: var(--text-color);
+    line-height: 1.3;
+}
+
+h3 {
+    font-size: var(--text-md);
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+p {
+    font-size: var(--text-md);
+    line-height: 1.5;
+}
+
+small {
+    font-size: var(--text-xs);
+    color: var(--light-text-color);
+    line-height: 1.4;
+}
+
+p::selection, h1::selection, h2::selection, h3::selection, h4::selection, h5::selection, h6::selection, span::selection {
+    color: var(--text-selection-color);
+    background-color: var(--text-selection-background-color);
+}
+
+.app-transition {
+    @include use-transition-surface();
+}
+
+.app-transition.app-transition-color {
+    @include use-transition();
+}
+
+.app-transition-color {
+    @include use-transition-text();
+}
+
+span, p, h1, h2, h3, h4, h5, h6, a, li::marker {
+    @include use-transition-text();
+}
+
+// Цвет темы — один раз на корне ссылки/кнопки, не на span/svg внутри (иначе «длинный» переход).
+:where(a, button).app-transition-color :where(span, p, svg),
+.app-transition.app-transition-color :where(span, p, svg) {
+    transition: none;
+}
+
+.app-transition .app-transition {
+    @include use-transition-surface();
+}
+
+.app-transition .app-transition.app-transition-color {
+    @include use-transition();
+}
+
+.app-transition .app-transition :where(span, p, h1, h2, h3, h4, h5, h6) {
+    @include use-transition-text();
+}
+
+.section {
+    background: var(--section-background-color);
+    border-radius: var(--radius);
+    border: 0;
+    padding: var(--space-5) 28px;
+
+    @include screen() {
+        padding: var(--space-4) 20px;
+    }
+}
+
+.float_section {
+    background: var(--float-section-background-color);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--float-section-line-color);
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.hashtag {
+    color: var(--hashtag-color);
+    cursor: pointer;
+}
+
+.mention,
+a.mention {
+    color: var(--mention-color);
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+button {
+    outline: none;
+    border: none;
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    color: inherit;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.blurred {
+    -webkit-backdrop-filter: blur(30px);
+    backdrop-filter: blur(30px);
+}
+
+.App {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    max-height: 100dvh;
+    overflow: hidden;
+    color: var(--text-color);
+}
+
+img, svg {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+}
+
+svg {
+    will-change: transform;
+}
+
+.category_color_1 {
+    --category-color: var(--category-color-1);
+}
+
+.category_color_2 {
+    --category-color: var(--category-color-2);
+}
+
+.category_color_3 {
+    --category-color: var(--category-color-3);
+}
+
+.category_color_4 {
+    --category-color: var(--category-color-4);
+}
+
+textarea:focus-visible{
+    outline: none;
+}
+
+.App:not(.App_dark) .header_go_home img {
+    filter: invert(1);
+    -webkit-filter: invert(1);
+    -moz-filter: invert(1);
+    -o-filter: invert(1);
+}
+
+.not_allowed {
+    cursor: not-allowed;
+    user-select: none;
+    
+    *{
+        cursor: not-allowed;
+        user-select: none;
+    }
+}
+
+.verified-icon {
+    color: var(--verified-icon-color);
+}

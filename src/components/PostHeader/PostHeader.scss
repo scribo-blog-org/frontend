@@ -1,0 +1,120 @@
+@use '../../styles/helpers.scss' as *;
+
+.post_header{
+    display: flex;
+    align-items: center;
+    z-index: 1;
+    justify-content: space-between;
+    white-space: nowrap;
+    min-height: 36px;
+    
+        &_left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        flex-wrap: wrap;
+        
+.user_badge {
+    min-height: 24px;
+    width: max-content;
+
+    &:empty {
+        width: 170px;
+    }
+}
+
+        &_date {
+            display: flex;
+            align-items: center;
+            color: var(--light-text-color);
+            font-size: var(--text-xs);
+            cursor: context-menu;
+            min-height: 24px;
+            min-width: 90px;
+
+            @include screen() {
+                font-size: 12px;
+            }
+        }
+    }
+
+    &_category {
+        min-height: 24px;
+        display: flex;
+        align-items: center;
+
+        &.chip_button_quiet {
+            padding: 0;
+            font-size: var(--text-xs);
+        }
+    }
+
+    &_right {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        color: var(--light-text-color);
+
+        @include hover {
+            color: var(--text-color);
+            background: var(--section-item-hover-background-color);
+        }
+        
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+
+}
+
+.modal_window_body_content {
+    .modal_delete_post_content {
+        display: flex;
+        gap: 24px;
+        flex-direction: column;
+        justify-content: space-between;
+        
+        &_post{
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+
+            &_title {
+                font-size: 18px;
+            }
+
+            &_header{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .post_header_right {
+                    display: none;
+                }
+            }
+
+            &_image{
+                width: 100%;
+                max-height: 500px;
+                border-radius: 6px;
+                object-fit: cover;
+                background-size: cover;
+                background-position: center;
+            }
+        }
+            &_bottom {
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+        }
+
+    button {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+}
