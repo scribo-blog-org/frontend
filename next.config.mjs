@@ -25,6 +25,9 @@ const svgrLoader = {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
+    logging: {
+        incomingRequests: false,
+    },
     experimental: {
         staleTimes: {
             dynamic: 0,
