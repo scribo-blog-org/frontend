@@ -1,3 +1,4 @@
+import { getAccessToken, subscribeAccessToken } from "../api/http";
 import { socketClient } from "./socket.client";
 import { socketEvents } from "./socket.events";
 
@@ -5,80 +6,16 @@ class SocketService {
     constructor() {
         this.isConnected = false;
         this.currentUser = null;
-        this.connectionId = null;
-        this.presenceUnsubscribe = null;
-        this.beforeUnloadHandler = null;
+        this.tokenUnsubscribe = null;
     }
 
     _userRoom(userId) {
         return socketEvents.userRoom(userId);
     }
 
-    _createConnectionId() {
-        if (typeof crypto !== "undefined" && crypto.randomUUID) {
-            return crypto.randomUUID();
-        }
-
-        return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    }
-
-    _bindPresence() {
-        this._unbindPresence();
-
-        const userId = this.currentUser._id;
-        const roomName = this._userRoom(userId);
-        let presenceRegistered = false;
-
-        const notifyConnect = async () => {
-            if (presenceRegistered) {
-                return;
-            }
-            presenceRegistered = true;
-            await socketClient.upsertPresence(userId, this.connectionId);
-        };
-
-        const notifyDisconnect = async () => {
-            if (!presenceRegistered) {
-                return;
-            }
-            presenceRegistered = false;
-            await socketClient.removePresence(userId, this.connectionId);
-        };
-
-        this.presenceUnsubscribe = socketClient.onChannelStatus(
-            roomName,
-            (status) => {
-                if (status === "SUBSCRIBED") {
-                    void notifyConnect();
-                    return;
-                }
-
-                if (status === "CLOSED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-                    void notifyDisconnect();
-                }
-            },
-        );
-
-        this.beforeUnloadHandler = () => {
-            socketClient.removePresenceKeepalive(userId, this.connectionId);
-        };
-        window.addEventListener("pagehide", this.beforeUnloadHandler);
-    }
-
-    _unbindPresence() {
-        if (this.presenceUnsubscribe) {
-            this.presenceUnsubscribe();
-            this.presenceUnsubscribe = null;
-        }
-
-        if (this.beforeUnloadHandler) {
-            window.removeEventListener("pagehide", this.beforeUnloadHandler);
-            this.beforeUnloadHandler = null;
-        }
-    }
-
-    async init(user, socketToken) {
-        if (!user?._id || !socketToken) {
+    async init(user, accessToken) {
+        const token = accessToken || getAccessToken();
+        if (!user?._id || !token) {
             console.warn(
                 "[SocketService] Недостатньо даних для підключення"
             );
@@ -89,6 +26,7 @@ class SocketService {
             this.isConnected &&
             this.currentUser?._id === user._id
         ) {
+            await socketClient.setAuth(token);
             return;
         }
 
@@ -97,10 +35,12 @@ class SocketService {
         }
 
         this.currentUser = user;
-        this.connectionId = this._createConnectionId();
-
-        await socketClient.setAuth(socketToken);
-        this._bindPresence();
+        await socketClient.setAuth(token);
+        this.tokenUnsubscribe = subscribeAccessToken((nextToken) => {
+            if (nextToken) {
+                void socketClient.setAuth(nextToken);
+            }
+        });
 
         await socketEvents.subscribeUserNotifications(
             user._id,
@@ -127,18 +67,15 @@ class SocketService {
     }
 
     async disconnect() {
-        const userId = this.currentUser?._id;
-
-        if (userId && this.connectionId) {
-            await socketClient.removePresence(userId, this.connectionId);
+        if (this.tokenUnsubscribe) {
+            this.tokenUnsubscribe();
+            this.tokenUnsubscribe = null;
         }
 
-        this._unbindPresence();
         await socketClient.disconnect();
 
         this.isConnected = false;
         this.currentUser = null;
-        this.connectionId = null;
     }
 
     on(eventName, callback) {

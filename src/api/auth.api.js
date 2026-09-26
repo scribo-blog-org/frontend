@@ -1,5 +1,5 @@
 import { API_URL } from "../config";
-import { apiFetch, setAccessToken, setSocketToken } from "./http";
+import { apiFetch, setAccessToken } from "./http";
 
 const verificationGoogle = async (token) => {
     try {
@@ -26,7 +26,6 @@ const verificationGoogle = async (token) => {
 const applyAuthResult = (result) => {
     if (result?.status && result?.data?.accessToken) {
         setAccessToken(result.data.accessToken);
-        setSocketToken(result.data.socketToken);
     }
     return result;
 };

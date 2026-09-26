@@ -34,8 +34,7 @@ Open `http://localhost:3000`. Point `NEXT_PUBLIC_APP_API_URL` at **Scribo_nest**
 | `NEXT_PUBLIC_APP_API_URL` | yes | API origin without a trailing slash |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | for Google login | OAuth web client id |
 | `NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL` | SEO / share | Host only, e.g. `scribo-blog.vercel.app` |
-| `NEXT_PUBLIC_SUPABASE_URL` | messages / presence | |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | messages / presence | |
+| `NEXT_PUBLIC_SOCKET_URL` | messages / presence | WebSocket URL, `ws://localhost:3002` locally |
 
 ## Routes
 

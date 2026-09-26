@@ -1,7 +1,6 @@
 import { API_URL } from "../config";
 
 let accessToken = null;
-let socketToken = null;
 let refreshPromise = null;
 let authGeneration = 0;
 let backendAvailable = true;
@@ -55,18 +54,10 @@ export function getAccessToken() {
     return accessToken;
 }
 
-export function getSocketToken() {
-    return socketToken;
-}
-
 export function setAccessToken(token) {
     accessToken = token || null;
     authGeneration += 1;
     listeners.forEach((listener) => listener(accessToken));
-}
-
-export function setSocketToken(token) {
-    socketToken = token || null;
 }
 
 export function subscribeAccessToken(listener) {
@@ -112,12 +103,10 @@ export async function refreshAccessToken() {
 
             if (!response.ok || !result?.data?.accessToken) {
                 setAccessToken(null);
-                setSocketToken(null);
                 return null;
             }
 
             setAccessToken(result.data.accessToken);
-            setSocketToken(result.data.socketToken);
             return result.data.accessToken;
         } catch {
             if (generation !== authGeneration) {

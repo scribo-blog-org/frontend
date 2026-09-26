@@ -8,7 +8,6 @@ import { getProfile } from "../api/profile.api";
 import { trackVisit } from "../api/analytics.api";
 import {
     getAccessToken,
-    getSocketToken,
     probeBackend,
     refreshAccessToken,
     subscribeAccessToken,
@@ -71,7 +70,7 @@ const SessionBootstrap = ({ children }) => {
                 setProfile(result.data);
                 profileRef.current = result.data;
                 await waitWithTimeout(
-                    socketService.init(result.data, getSocketToken()),
+                    socketService.init(result.data, getAccessToken()),
                     SOCKET_WAIT_MS
                 );
             } else if (result.unauthorized) {

@@ -6,7 +6,7 @@ import Clock from "../../assets/svg/clock.svg";
 import RelativeTime from "../RelativeTime/index.jsx";
 import Tooltip from "../Ui/Tooltip/index";
 import { format_date_time } from "../../utils/format.js";
-import { subscribeUserActivity } from "../../sockets/presence.supabase.js";
+import { subscribeUserActivity } from "../../sockets/presence.js";
 
 import "./UserActivityStatus.scss";
 

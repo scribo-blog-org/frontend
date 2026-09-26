@@ -25,7 +25,7 @@ import UserActivityStatus from "../../components/UserActivityStatus";
 import {
     loadOnlineStatusForUsers,
     subscribePresenceChanges,
-} from "../../sockets/presence.supabase";
+} from "../../sockets/presence";
 import MessageStatus from "../../components/MessageStatus";
 import ActionButton from "../../components/Ui/ActionButton";
 import DangerButton from "../../components/Ui/DangerButton";
