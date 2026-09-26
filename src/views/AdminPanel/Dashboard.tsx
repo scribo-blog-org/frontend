@@ -467,31 +467,12 @@ const DashboardPage = () => {
             })),
         [data],
     );
-    const topPaths = useMemo(
-        () =>
-            (data?.top_paths || []).map((item: any) => ({
-                key: item.path,
-                path: item.path,
-                count: item.visits || 0,
-            })),
-        [data],
-    );
     const topQueries = useMemo(
         () =>
             (data?.top_queries || []).map((item: any) => ({
                 key: item.query,
                 query: item.query,
                 count: item.count || 0,
-            })),
-        [data],
-    );
-    const topCities = useMemo(
-        () =>
-            (data?.top_cities || []).map((item: any) => ({
-                key: `${item.city}|${item.country || ""}`,
-                label: item.country ? `${item.city}, ${item.country}` : item.city,
-                count: item.unique_visitors || 0,
-                valueLabel: `${item.percent ?? 0}%`,
             })),
         [data],
     );
@@ -542,19 +523,13 @@ const DashboardPage = () => {
                         hint={`Метрики ниже считаются только за ${activeRange?.label?.toLowerCase() || "период"}`}
                         className="analytics_scope_period"
                     >
-                        <AnalyticsGroup title="Трафик" hint="Посещения и уникальные посетители по IP">
+                        <AnalyticsGroup title="Трафик" hint="По дням, а за последние сутки по часам">
                             <div className="analytics_traffic">
                                 <div className="analytics_traffic_stats">
                                     <StatCard
                                         label="Посещения"
                                         value={totals.visits}
                                         previous={totals.visits_prev}
-                                    />
-                                    <StatCard
-                                        label="Уникальные посетители"
-                                        value={totals.unique_visitors}
-                                        previous={totals.unique_visitors_prev}
-                                        hint="по IP"
                                     />
                                 </div>
                                 <section className="analytics_block analytics_block_chart app-transition">
@@ -582,40 +557,15 @@ const DashboardPage = () => {
                             <AudienceRatio audience={data?.audience} />
                         </AnalyticsGroup>
 
-                        <AnalyticsGroup
-                            title="Города"
-                            hint="Доля уникальных посетителей по IP"
-                        >
+                        <AnalyticsGroup title="Поиск" hint="Топ-5 запросов">
                             <section className="analytics_block app-transition">
                                 <RankedBars
-                                    items={topCities}
+                                    items={topQueries}
                                     wideLabel
-                                    empty="Нет городов за период"
+                                    empty="Пока нет поисковых запросов"
                                 />
                             </section>
                         </AnalyticsGroup>
-
-                        <div className="analytics_grid">
-                            <AnalyticsGroup title="Популярные страницы" hint="Топ-5 по просмотрам">
-                                <section className="analytics_block app-transition">
-                                    <RankedBars
-                                        items={topPaths}
-                                        wideLabel
-                                        empty="Нет просмотров страниц за период"
-                                    />
-                                </section>
-                            </AnalyticsGroup>
-
-                            <AnalyticsGroup title="Поиск" hint="Топ-5 запросов">
-                                <section className="analytics_block app-transition">
-                                    <RankedBars
-                                        items={topQueries}
-                                        wideLabel
-                                        empty="Пока нет поисковых запросов"
-                                    />
-                                </section>
-                            </AnalyticsGroup>
-                        </div>
                     </AnalyticsScope>
 
                     <AnalyticsScope
