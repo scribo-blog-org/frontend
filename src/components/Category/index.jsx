@@ -89,4 +89,6 @@ const Category = memo(({ category, isActive, onClick, className, quiet = false, 
     );
 });
 
+Category.displayName = "Category";
+
 export default Category;

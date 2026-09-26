@@ -14,4 +14,6 @@ const ChipButton = memo(({ isActive = false, onClick, children, className = "", 
     </button>
 ));
 
+ChipButton.displayName = "ChipButton";
+
 export default ChipButton;

@@ -146,4 +146,6 @@ const PostHeader = memo(({ post, onDeletePost, className, isLoading=false, showC
     );
 });
 
+PostHeader.displayName = "PostHeader";
+
 export default PostHeader;

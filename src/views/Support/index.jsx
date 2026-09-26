@@ -9,6 +9,7 @@ import { FIELD_LIMITS } from "../../constants/fieldLimits";
 import { SUPPORT_KINDS } from "./constants";
 
 import Field from "../../components/Ui/Field/index";
+import InputField from "../../components/Ui/InputField";
 import RichInputField from "../../components/RichInputField";
 import DropDown from "../../components/Ui/DropDown";
 import PrimaryButton from "../../components/Ui/PrimaryButton";
