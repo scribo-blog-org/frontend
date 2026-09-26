@@ -32,7 +32,7 @@ export function markBackendAvailable() {
 
 export async function probeBackend() {
     try {
-        const response = await fetch(`${API_URL}/health`, {
+        const response = await fetch(`${API_URL()}/health`, {
             method: "GET",
             credentials: "include",
         });
@@ -86,7 +86,7 @@ export async function refreshAccessToken() {
 
     refreshPromise = (async () => {
         try {
-            const response = await fetch(`${API_URL}/api/auth/refresh`, {
+            const response = await fetch(`${API_URL()}/api/auth/refresh`, {
                 method: "POST",
                 credentials: "include",
             });

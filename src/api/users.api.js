@@ -15,7 +15,7 @@ const getUsers = async (query = []) => {
     });
 
     try {
-        const response = await apiFetch(`${API_URL}/api/users/?${params.toString()}`);
+        const response = await apiFetch(`${API_URL()}/api/users/?${params.toString()}`);
         const result = await response.json();
 
         return result;
@@ -31,7 +31,7 @@ const getUsers = async (query = []) => {
 
 const updateRole = async (user_id, new_role) => {
     try {
-        const response = await apiFetch(`${API_URL}/api/users/${user_id}/role`, {
+        const response = await apiFetch(`${API_URL()}/api/users/${user_id}/role`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userRole: new_role })
@@ -48,13 +48,13 @@ const updateRole = async (user_id, new_role) => {
 }
 
 const read_notifications = async () => {
-    const result = await apiFetch(`${API_URL}/api/profile/notifications`, { method: "PATCH" })
+    const result = await apiFetch(`${API_URL()}/api/profile/notifications`, { method: "PATCH" })
     return await result.json();
 }
 
 const follow = async ({method="POST", user_id}) => {
     try {
-        const response = await apiFetch(`${API_URL}/api/users/${user_id}/follow`, { method: method })
+        const response = await apiFetch(`${API_URL()}/api/users/${user_id}/follow`, { method: method })
 
         const status = response.status;
         const result = await response.json();

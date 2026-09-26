@@ -1,3 +1,4 @@
+import { publicEnv } from "../config/publicEnv";
 import { getSiteOrigin } from "../seo/site";
 import { stripLegacyMentionTokens } from "../content/mentions";
 
@@ -15,7 +16,7 @@ export function getAllowedOrigins() {
         origins.add(window.location.origin);
     }
 
-    const host = process.env.NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL;
+    const host = publicEnv("NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL");
     if (host) {
         const normalized = host.replace(/^https?:\/\//, "").replace(/\/$/, "");
         origins.add(`https://${normalized}`);

@@ -1,9 +1,10 @@
+import { API_URL } from "../config";
 import { apiFetch } from "./http";
 
 const getApiDocs = async () => {
     try {
         const response = await apiFetch(
-            `${process.env.NEXT_PUBLIC_APP_API_URL}/api/docs`
+            `${API_URL()}/api/docs`
         );
 
         if (!response.ok) {

@@ -4,6 +4,8 @@ import { createContext, Suspense, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
+import { publicEnv } from "../config/publicEnv";
+
 import DefaultContainer from "../layouts/DefaultContainer";
 import FullContainer from "../layouts/FullContainer";
 import AppLayout from "../layouts/AppLayout";
@@ -156,7 +158,7 @@ export default function AppProviders({ children }) {
                 setAccessToken,
             }}
         >
-            <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+            <GoogleOAuthProvider clientId={publicEnv("NEXT_PUBLIC_GOOGLE_CLIENT_ID")}>
                 <Suspense fallback={null}>
                     <ScrollToTop />
                     <RouteSeo />

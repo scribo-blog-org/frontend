@@ -12,7 +12,7 @@ const getProfile = async () => {
     }
 
     try {
-        const response = await apiFetch(`${API_URL}/api/profile`, {
+        const response = await apiFetch(`${API_URL()}/api/profile`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
         });
@@ -51,7 +51,7 @@ const editProfile = async (data) => {
         };
     }
 
-    const response = await apiFetch(`${API_URL}/api/profile/`, { method: "PATCH", body: data });
+    const response = await apiFetch(`${API_URL()}/api/profile/`, { method: "PATCH", body: data });
     
     const code = response.status;
     const result = await response.json();
@@ -71,7 +71,7 @@ const changePassword = async ({ currentPassword, newPassword, newPasswordConfirm
         };
     }
 
-    const response = await apiFetch(`${API_URL}/api/profile/password`, {
+    const response = await apiFetch(`${API_URL()}/api/profile/password`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

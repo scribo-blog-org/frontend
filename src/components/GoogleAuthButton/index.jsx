@@ -8,8 +8,22 @@ import GoogleIcon from "../../assets/svg/google-icon.svg"
 import "./GoogleAuthButton.scss";
 
 import ActionButton from '../Ui/ActionButton/index';
+import { publicEnv } from "../../config/publicEnv";
 
-const GoogleAuthButton = ({
+const GoogleAuthButton = (props) => {
+    if (!publicEnv("NEXT_PUBLIC_GOOGLE_CLIENT_ID")) {
+        return (
+            <ActionButton disabled className="google_auth_button">
+                <GoogleIcon />
+                {props.children || "Продолжить с Google"}
+            </ActionButton>
+        );
+    }
+
+    return <GoogleAuthButtonReady {...props} />;
+};
+
+const GoogleAuthButtonReady = ({
     setGoogleToken,
     isLoading = false,
     disabled = false,

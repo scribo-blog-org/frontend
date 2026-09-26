@@ -3,7 +3,7 @@ import { apiFetch } from "./http";
 
 const deleteComment = async (commentId) => {
     try {
-        const res = await apiFetch(`${API_URL}/api/comments/${commentId}`, {
+        const res = await apiFetch(`${API_URL()}/api/comments/${commentId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json"
@@ -24,7 +24,7 @@ const deleteComment = async (commentId) => {
 
 const editComment = async (commentId, commentText) => {
      try {
-        const res = await apiFetch(`${API_URL}/api/comments/${commentId}`, {
+        const res = await apiFetch(`${API_URL()}/api/comments/${commentId}`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json"
@@ -46,7 +46,7 @@ const editComment = async (commentId, commentText) => {
 
 const likeComment = async (commentId, method="POST") => {
     try {
-        const res = await apiFetch(`${API_URL}/api/comments/${commentId}/like`, {
+        const res = await apiFetch(`${API_URL()}/api/comments/${commentId}/like`, {
             method: method,
             headers: {
                 "Content-Type": "application/json"

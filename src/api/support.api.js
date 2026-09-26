@@ -1,6 +1,7 @@
+import { API_URL } from "../config"
 import { apiFetch } from "./http"
 
-const API = `${process.env.NEXT_PUBLIC_APP_API_URL}/api/support`
+const API = () => `${API_URL()}/api/support`
 
 const withQuery = (query = {}) => {
     const params = new URLSearchParams()
@@ -20,7 +21,7 @@ const jsonHeaders = {
 }
 
 const createSupportRequest = async (body) => {
-    const response = await apiFetch(API, {
+    const response = await apiFetch(API(), {
         method: "POST",
         headers: jsonHeaders,
         body: JSON.stringify(body)
@@ -30,7 +31,7 @@ const createSupportRequest = async (body) => {
 }
 
 const getMySupportRequests = async (query = {}) => {
-    const response = await apiFetch(`${API}/mine${withQuery(query)}`, {
+    const response = await apiFetch(`${API()}/mine${withQuery(query)}`, {
         method: "GET",
         headers: jsonHeaders
     })
@@ -39,7 +40,7 @@ const getMySupportRequests = async (query = {}) => {
 }
 
 const getSupportRequests = async (query = {}) => {
-    const response = await apiFetch(`${API}${withQuery(query)}`, {
+    const response = await apiFetch(`${API()}${withQuery(query)}`, {
         method: "GET",
         headers: jsonHeaders
     })
@@ -48,7 +49,7 @@ const getSupportRequests = async (query = {}) => {
 }
 
 const getSupportRequest = async (id) => {
-    const response = await apiFetch(`${API}/${id}`, {
+    const response = await apiFetch(`${API()}/${id}`, {
         method: "GET",
         headers: jsonHeaders
     })
@@ -57,7 +58,7 @@ const getSupportRequest = async (id) => {
 }
 
 const getPublicSupportRequest = async (key) => {
-    const response = await apiFetch(`${API}/public/${key}`, {
+    const response = await apiFetch(`${API()}/public/${key}`, {
         method: "GET",
         headers: jsonHeaders
     })
@@ -66,7 +67,7 @@ const getPublicSupportRequest = async (key) => {
 }
 
 const replySupportRequest = async (id, text) => {
-    const response = await apiFetch(`${API}/${id}/replies`, {
+    const response = await apiFetch(`${API()}/${id}/replies`, {
         method: "POST",
         headers: jsonHeaders,
         body: JSON.stringify({ replyText: text })
@@ -76,7 +77,7 @@ const replySupportRequest = async (id, text) => {
 }
 
 const replyPublicSupportRequest = async (key, text) => {
-    const response = await apiFetch(`${API}/public/${key}/replies`, {
+    const response = await apiFetch(`${API()}/public/${key}/replies`, {
         method: "POST",
         headers: jsonHeaders,
         body: JSON.stringify({ replyText: text })
@@ -86,7 +87,7 @@ const replyPublicSupportRequest = async (key, text) => {
 }
 
 const updateSupportRequestStatus = async (id, status) => {
-    const response = await apiFetch(`${API}/${id}/status`, {
+    const response = await apiFetch(`${API()}/${id}/status`, {
         method: "PATCH",
         headers: jsonHeaders,
         body: JSON.stringify({ supportStatus: status })

@@ -12,7 +12,7 @@ const searchSite = async (q) => {
 
     try {
         const response = await apiFetch(
-            `${API_URL}/api/search?q=${encodeURIComponent(query)}`,
+            `${API_URL()}/api/search?q=${encodeURIComponent(query)}`,
         );
         return await response.json();
     } catch (err) {
@@ -32,7 +32,7 @@ const searchHashtags = async (q) => {
 
     try {
         const response = await apiFetch(
-            `${API_URL}/api/search/hashtags?q=${encodeURIComponent(query)}`,
+            `${API_URL()}/api/search/hashtags?q=${encodeURIComponent(query)}`,
         );
         const result = await response.json();
         return Array.isArray(result?.data) ? result.data : [];

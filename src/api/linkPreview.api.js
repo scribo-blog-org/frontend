@@ -4,7 +4,7 @@ import { apiFetch } from "./http";
 export async function fetchLinkPreview(url) {
     try {
         const response = await apiFetch(
-            `${API_URL}/api/link-preview?url=${encodeURIComponent(url)}`,
+            `${API_URL()}/api/link-preview?url=${encodeURIComponent(url)}`,
         );
         return await response.json();
     } catch (error) {

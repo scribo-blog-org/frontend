@@ -3,7 +3,7 @@ import { apiFetch } from "./http"
 
 const trackVisit = async (path) => {
     try {
-        await apiFetch(`${API_URL}/api/analytics/visit`, {
+        await apiFetch(`${API_URL()}/api/analytics/visit`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -19,7 +19,7 @@ const trackVisit = async (path) => {
 
 const getDashboard = async (range = 14) => {
     const params = new URLSearchParams({ days: String(range) })
-    const response = await apiFetch(`${API_URL}/api/analytics/dashboard?${params.toString()}`, {
+    const response = await apiFetch(`${API_URL()}/api/analytics/dashboard?${params.toString()}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" }
     })

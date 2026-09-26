@@ -1,3 +1,5 @@
+import { publicEnv } from "../config/publicEnv";
+
 export const SITE_NAME = "Scribo";
 
 export const SITE_DESCRIPTION =
@@ -6,7 +8,7 @@ export const SITE_DESCRIPTION =
 export const DEFAULT_OG_IMAGE = "/logo-512.png";
 
 export function getSiteOrigin() {
-    const host = process.env.NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL;
+    const host = publicEnv("NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL");
 
     if (!host) {
         return "https://scribo-blog.vercel.app";

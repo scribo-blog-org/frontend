@@ -29,7 +29,7 @@ export function buildQuery(query) {
 }
 
 export async function serverGet(path, { revalidate = 30 } = {}) {
-    if (!API_URL) {
+    if (!API_URL()) {
         return {
             status: false,
             data: null,
@@ -38,7 +38,7 @@ export async function serverGet(path, { revalidate = 30 } = {}) {
     }
 
     try {
-        const response = await fetch(`${API_URL}${path}`, {
+        const response = await fetch(`${API_URL()}${path}`, {
             headers: { Accept: "application/json" },
             next: { revalidate },
         });

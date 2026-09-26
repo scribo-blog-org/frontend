@@ -3,4 +3,6 @@ node_modules
 out
 .git
 *.log
-.env.production.local
+.env
+.env.*
+!.env.example

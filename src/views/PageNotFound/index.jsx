@@ -1,5 +1,6 @@
 'use client';
 
+import { API_URL } from "../../config";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import PrimaryButton from "../../components/Ui/PrimaryButton";
@@ -25,7 +26,7 @@ const PageNotFound = () => {
                     4<span className="page_not_found_zero" />4
                 </p>
                 <p className="page_not_found_draft">
-                    {`${process.env.NEXT_PUBLIC_APP_API_URL}${location.pathname}`}
+                    {`${API_URL()}${location.pathname}`}
                     <span className="page_not_found_caret" />
                 </p>
             </div>

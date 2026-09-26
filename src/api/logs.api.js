@@ -1,3 +1,4 @@
+import { API_URL } from "../config"
 import { apiFetch } from "./http"
 
 const getAllLogs = async (query = {}) => {
@@ -10,7 +11,7 @@ const getAllLogs = async (query = {}) => {
     })
 
     const search = params.toString()
-    const response = await apiFetch(`${process.env.NEXT_PUBLIC_APP_API_URL}/api/logs${search ? `?${search}` : ""}`, {
+    const response = await apiFetch(`${API_URL()}/api/logs${search ? `?${search}` : ""}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json"

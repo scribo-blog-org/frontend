@@ -1,4 +1,8 @@
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "ws://localhost:3002";
+import { publicEnv } from "../config/publicEnv";
+
+function socketUrl() {
+    return publicEnv("NEXT_PUBLIC_SOCKET_URL") || "ws://localhost:3002";
+}
 const AUTH_TIMEOUT_MS = 10000;
 
 class SocketClient {
@@ -179,7 +183,7 @@ class SocketClient {
 
         this.openPromise = new Promise((resolve, reject) => {
             let settled = false;
-            const socket = new WebSocket(SOCKET_URL);
+            const socket = new WebSocket(socketUrl());
             this.socket = socket;
             const timer = setTimeout(() => {
                 if (settled) {
