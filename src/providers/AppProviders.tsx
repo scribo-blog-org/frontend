@@ -1,0 +1,189 @@
+'use client';
+
+import { createContext, Suspense, useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { usePathname } from "next/navigation";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
+import AppLayout from "../layouts/AppLayout";
+import AppShell from "../layouts/AppShell";
+import PageLayout from "../layouts/PageLayout";
+
+import ModalWindow from "../components/Ui/ModalWindow";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import Toast from "../components/Ui/Toast";
+import MobileNavigationBar from "../components/MobileNavigationBar";
+import ScrollToTop from "../components/ScrollToTop";
+
+import { publicEnv } from "../config/publicEnv";
+import { ACCENT_COLOR, CATEGORY_COLORS } from "../styles/constants";
+import { getAccessToken, setAccessToken, subscribeAccessToken } from "../api/http";
+import SessionBootstrap from "../session/SessionBootstrap";
+
+export type AppContextValue = {
+    profile: any;
+    setProfile: Dispatch<SetStateAction<any>>;
+    isDarkTheme: boolean;
+    setIsDarkTheme: Dispatch<SetStateAction<boolean>>;
+    profileLoading: boolean;
+    setProfileLoading: Dispatch<SetStateAction<boolean>>;
+    toast: any;
+    showToast: Dispatch<SetStateAction<any>>;
+    modalWindow: any;
+    showModalWindow: Dispatch<SetStateAction<any>>;
+    requestCloseModal: () => void;
+    accessToken: string | null;
+    setAccessToken: (token: string | null) => void;
+};
+
+export const AppContext = createContext<AppContextValue>(null as unknown as AppContextValue);
+
+function AppModals({ modalWindow, showModalWindow, modalCloseRequest }: {
+    modalWindow: unknown;
+    showModalWindow: Dispatch<SetStateAction<unknown>>;
+    modalCloseRequest: number;
+}) {
+    const pathname = usePathname();
+
+    return (
+        <ModalWindow
+            modalWindow={modalWindow}
+            showModalWindow={showModalWindow}
+            modalCloseRequest={modalCloseRequest}
+            dismissKey={pathname}
+        />
+    );
+}
+
+function AppFooter() {
+    const pathname = usePathname() || "";
+
+    if (pathname.startsWith("/messages")) {
+        return null;
+    }
+
+    return <Footer />;
+}
+
+function AppChrome({ children, modalWindow, showModalWindow, modalCloseRequest, toast, showToast }: {
+    children: React.ReactNode;
+    modalWindow: unknown;
+    showModalWindow: Dispatch<SetStateAction<unknown>>;
+    modalCloseRequest: number;
+    toast: unknown;
+    showToast: Dispatch<SetStateAction<unknown>>;
+}) {
+    return (
+        <div className="App" id="app-root">
+            <AppLayout>
+                <AppModals
+                    modalWindow={modalWindow}
+                    showModalWindow={showModalWindow}
+                    modalCloseRequest={modalCloseRequest}
+                />
+                <SessionBootstrap>
+                    <AppShell>
+                        <Header />
+                        <div className="app-shell_content">
+                            <PageLayout>
+                                {children}
+                            </PageLayout>
+                            <AppFooter />
+                        </div>
+                        <MobileNavigationBar />
+                        <Toast toast={toast} showToast={showToast} />
+                    </AppShell>
+                </SessionBootstrap>
+            </AppLayout>
+        </div>
+    );
+}
+
+export default function AppProviders({ children }: { children: React.ReactNode }) {
+    const [profile, setProfile] = useState<any>(null);
+    const [profileLoading, setProfileLoading] = useState<any>(true);
+    const [isDarkTheme, setIsDarkTheme] = useState<any>(true);
+    const [toast, showToast] = useState<any>(false);
+    const [modalWindow, showModalWindow] = useState<any>(false);
+    const [modalCloseRequest, setModalCloseRequest] = useState<any>(0);
+    const [accessToken, setAccessTokenState] = useState<any>(getAccessToken());
+    const requestCloseModal = () => setModalCloseRequest((count: any) => count + 1);
+
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem("theme");
+
+            if (stored !== null) {
+                setIsDarkTheme(JSON.parse(stored));
+            }
+        } catch {
+            // keep default dark theme
+        }
+    }, []);
+
+    useEffect(() => {
+        return subscribeAccessToken(setAccessTokenState);
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem("theme", JSON.stringify(isDarkTheme));
+        document.body.classList.toggle("dark-theme", isDarkTheme);
+        document.documentElement.classList.toggle("dark-theme", isDarkTheme);
+
+        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+
+        metaThemeColor?.setAttribute(
+            "content",
+            isDarkTheme ? "#1e1e1e" : "#ffffff",
+        );
+    }, [isDarkTheme]);
+
+    useEffect(() => {
+        Object.values(CATEGORY_COLORS).forEach((color: any) => {
+            document.body.style.setProperty(
+                color.variable,
+                isDarkTheme ? color.dark : color.light,
+            );
+        });
+
+        document.body.style.setProperty(
+            ACCENT_COLOR.variable,
+            isDarkTheme ? ACCENT_COLOR.dark : ACCENT_COLOR.light,
+        );
+    }, [isDarkTheme]);
+
+    return (
+        <AppContext.Provider
+            value={{
+                profile,
+                setProfile,
+                isDarkTheme,
+                setIsDarkTheme,
+                profileLoading,
+                setProfileLoading,
+                toast,
+                showToast,
+                modalWindow,
+                showModalWindow,
+                requestCloseModal,
+                accessToken,
+                setAccessToken,
+            }}
+        >
+            <GoogleOAuthProvider clientId={publicEnv("NEXT_PUBLIC_GOOGLE_CLIENT_ID")}>
+                <Suspense fallback={null}>
+                    <ScrollToTop />
+                    <AppChrome
+                        modalWindow={modalWindow}
+                        showModalWindow={showModalWindow}
+                        modalCloseRequest={modalCloseRequest}
+                        toast={toast}
+                        showToast={showToast}
+                    >
+                        {children}
+                    </AppChrome>
+                </Suspense>
+            </GoogleOAuthProvider>
+        </AppContext.Provider>
+    );
+}

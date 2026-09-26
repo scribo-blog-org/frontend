@@ -1,0 +1,151 @@
+'use client';
+
+import { useContext, memo, useState } from "react";
+import { useNavigate } from '@/navigation';
+
+import { AppContext } from "@/providers/AppProviders";
+
+import "./PostHeader.scss";
+
+import { deletePost } from "../../api/posts.api";
+
+import ThreeDotsIcon from "../../assets/svg/three-dots.svg";
+import EditIcon from "../../assets/svg/edit.svg";
+import DeleteIcon from "../../assets/svg/delete.svg";
+
+import { format_back, format_date_time } from "../../utils/format";
+
+import UserBadge from "../UserBadge";
+import Popup from "../Ui/Popup";
+import ActionButton from "../Ui/ActionButton";
+import DangerButton from "../Ui/DangerButton";
+import Tooltip from "../Ui/Tooltip/index";
+import Category from "../Category";
+
+import Sceleton from "../Ui/Sceleton/Sceleton";
+
+const DeletePostActions = ({ post, requestCloseModal, onDeletePost, showToast }: any) => {
+    const [isDeleting, setIsDeleting] = useState<any>(false);
+
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        try {
+            const result = await deletePost(post._id);
+            if (result.status) {
+                onDeletePost(post._id);
+            } else {
+                showToast({
+                    type: "error",
+                    message: result.message
+                });
+            }
+            requestCloseModal();
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    return (
+        <div className="modal_delete_post_content_bottom">
+            <ActionButton
+                disabled={isDeleting}
+                onClick={requestCloseModal}
+                className="modal_delete_post_content_button"
+            >
+                Отмена
+            </ActionButton>
+            <DangerButton
+                onClick={handleDelete}
+                className="modal_delete_post_content_button"
+                isActive={true}
+                isLoading={isDeleting}
+            >
+                Удалить
+            </DangerButton>
+        </div>
+    );
+};
+
+const getDeleteModalContent = (post: any, requestCloseModal: any, onDeletePost: any, showToast: any) => (
+    <div className="modal_delete_post_content">
+        <div className="modal_delete_post_content_post">
+            <div className="modal_delete_post_content_post_header">
+                <PostHeader post={post} />
+                <Category tag category={post.category} />
+            </div>
+            <h2 className="modal_delete_post_content_post_title">{post.title}</h2>
+            {post.featured_image && (
+                <img className="modal_delete_post_content_post_image" src={post.featured_image} alt="post_image" />
+            )}
+        </div>
+        <DeletePostActions
+            post={post}
+            requestCloseModal={requestCloseModal}
+            onDeletePost={onDeletePost}
+            showToast={showToast}
+        />
+    </div>
+);
+
+const PostHeader = memo(({ post, onDeletePost, className, isLoading=false, showCategory=false }: any) => {
+    const { profile, showModalWindow, requestCloseModal, showToast } = useContext(AppContext);
+    const navigate = useNavigate();
+    
+    const handleDeletePost = async () => {
+        showModalWindow({
+            title: `Вы уверены что хотите удалить пост?`,
+            content: getDeleteModalContent(post, requestCloseModal, onDeletePost, showToast),
+            showCloseButton: false,
+            closeFunc: () => {}
+        });
+    };
+
+    const popupBody = [
+        [
+            { title: "Редактировать", icon: <EditIcon />, onClick: () => navigate(`/posts/${post._id}/edit`) },
+        ],
+        [
+            { title: "Удалить", icon: <DeleteIcon />, type: "danger", onClick: () => handleDeletePost() },
+        ],
+    ];
+
+    return (
+        <div className={`post_header ${className ?? ""}`}>
+            <div className="post_header_left">
+                <Sceleton isLoading={isLoading} rounded={true} className="user_badge">
+                    <UserBadge data={post.author}/>
+                </Sceleton>
+                <Sceleton isLoading={isLoading} rounded={true} className="post_header_left_date">
+                    <Tooltip text={format_date_time(post.created_date)} position="bottom">
+                        <p className="post_header_left_date">{format_back(post.created_date)}</p>
+                    </Tooltip>
+                </Sceleton>
+                {showCategory ? (
+                    isLoading ? (
+                        <Sceleton isLoading rounded={true} className="post_header_category" />
+                    ) : post.category ? (
+                        <Category tag className="post_header_category" category={post.category} />
+                    ) : null
+                ) : null}
+            </div>
+            {
+                !isLoading &&
+                    (
+                        (profile?.permissions.includes("delete_any_post") && profile?.permissions.includes("edit_any_post")) || (profile?._id === post?.author?._id)
+                    )
+                ?
+                    <Popup body={popupBody}>
+                        <div className="post_header_right app-transition">
+                            <ThreeDotsIcon className="article_topic_three_dots"/>
+                        </div>
+                    </Popup>
+                :
+                    <></>
+        }
+        </div>
+    );
+});
+
+PostHeader.displayName = "PostHeader";
+
+export default PostHeader;

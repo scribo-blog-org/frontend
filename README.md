@@ -36,6 +36,8 @@ Open `http://localhost:3000`. Point `NEXT_PUBLIC_APP_API_URL` at **Scribo_nest**
 | `NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL` | SEO / share | Host only, e.g. `scribo-blog.vercel.app` |
 | `NEXT_PUBLIC_SOCKET_URL` | messages / presence | WebSocket URL, `ws://localhost:3002` locally |
 
+`next dev` reads `frontend/.env`. The production container reads the same names from the process environment (`env/frontend.env` in infra) at startup. They are not build args.
+
 ## Routes
 
 | Path | Render |
