@@ -268,10 +268,7 @@
     }
 
     &_posts {
-        .posts > .posts_item:first-child,
-        .pagination_content > .posts_item:first-child {
-            padding-top: var(--space-5);
-        }
+        padding-top: var(--space-5);
     }
 
     .profile_tab_list > div {

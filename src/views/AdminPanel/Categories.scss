@@ -190,6 +190,12 @@
             &_create {
                 width: fit-content;
                 padding: 8px 14px;
+
+                svg {
+                    width: 14px;
+                    height: 14px;
+                    flex: none;
+                }
             }
 
             .admin_panel_content_categories_page_category {

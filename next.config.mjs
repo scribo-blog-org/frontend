@@ -4,6 +4,25 @@ import { fileURLToPath } from "node:url";
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const routerShim = path.join(rootDir, "src/compat/react-router-dom.jsx");
 
+const svgrLoader = {
+    loader: "@svgr/webpack",
+    options: {
+        dimensions: false,
+        svgoConfig: {
+            plugins: [
+                {
+                    name: "preset-default",
+                    params: {
+                        overrides: {
+                            removeViewBox: false,
+                        },
+                    },
+                },
+            ],
+        },
+    },
+};
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
@@ -16,7 +35,7 @@ const nextConfig = {
         },
         rules: {
             "*.svg": {
-                loaders: ["@svgr/webpack"],
+                loaders: [svgrLoader],
                 as: "*.js",
             },
         },
@@ -36,7 +55,7 @@ const nextConfig = {
         config.module.rules.push({
             test: /\.svg$/i,
             issuer: /\.[jt]sx?$/,
-            use: ["@svgr/webpack"],
+            use: [svgrLoader],
         });
 
         return config;

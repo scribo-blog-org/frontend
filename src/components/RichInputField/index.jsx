@@ -36,6 +36,7 @@ const RichInputField = ({
     length = 2000,
     className = "",
     multilineRows = 3,
+    isMultiline = true,
     error,
     blocked,
     disabled,
@@ -80,7 +81,7 @@ const RichInputField = ({
                 placeholder={placeholder}
                 length={length}
                 className={className}
-                isMultiline
+                isMultiline={isMultiline}
                 multilineRows={multilineRows}
                 error={error}
                 blocked={blocked}

@@ -208,6 +208,8 @@ img, svg {
 }
 
 svg {
+    min-width: 0;
+    min-height: 0;
     will-change: transform;
 }
 

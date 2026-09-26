@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import "./UserBadge.scss";
 
 import DefaultProfileAvatar from "../../assets/images/default-profile-avatar.png"
+import { imageSrc } from "../../utils/image";
 
 import Verified from "../../assets/svg/verified.svg";
 import Tooltip from "../Ui/Tooltip/index";
@@ -15,7 +16,7 @@ const UserBadge = ( { data, className, asLink = true, avatarOnly = false } ) => 
     const content = (
         <>
             <div className="user_badge_avatar">
-                <img src = {data?.avatar ?? DefaultProfileAvatar} alt={"user_badge_avatar"}/>
+                <img src={imageSrc(data?.avatar, DefaultProfileAvatar)} alt={"user_badge_avatar"}/>
             </div>
             {
                 avatarOnly ?

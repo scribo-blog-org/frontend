@@ -115,14 +115,24 @@ const subscribePresenceChanges = (onUserChange) => {
         presenceChangesSubscription = { channel, listeners };
     }
 
-    presenceChangesSubscription.listeners.add(onUserChange);
+    const subscription = presenceChangesSubscription;
+    subscription.listeners.add(onUserChange);
 
     return async () => {
-        presenceChangesSubscription.listeners.delete(onUserChange);
+        subscription.listeners.delete(onUserChange);
 
-        if (presenceChangesSubscription.listeners.size === 0) {
-            await supabase.removeChannel(presenceChangesSubscription.channel);
+        if (subscription.listeners.size > 0) {
+            return;
+        }
+
+        if (presenceChangesSubscription === subscription) {
             presenceChangesSubscription = null;
+        }
+
+        try {
+            await supabase.removeChannel(subscription.channel);
+        } catch {
+            // The channel is already gone when the page unmounts twice.
         }
     };
 };

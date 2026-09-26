@@ -11,6 +11,7 @@ import { format_back } from "../../utils/format";
 import { CATEGORY_COLORS } from "../../styles/constants";
 
 import DefaultProfileAvatar from "../../assets/images/default-profile-avatar.png";
+import { imageSrc } from "../../utils/image";
 import Verified from "../../assets/svg/verified.svg";
 import ChevronRightIcon from "../../assets/svg/chevron-right.svg";
 import CrossIcon from "../../assets/svg/cross-icon.svg";
@@ -146,7 +147,7 @@ const SearchPage = ({ initialQuery = "", initialResults = null }) => {
                                         >
                                             <img
                                                 className="search_page_person_avatar"
-                                                src={user.avatar || DefaultProfileAvatar}
+                                                src={imageSrc(user.avatar, DefaultProfileAvatar)}
                                                 alt=""
                                             />
                                             <span className="search_page_person_copy">

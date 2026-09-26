@@ -26,6 +26,7 @@ import Sceleton from "../../components/Ui/Sceleton/Sceleton.jsx";
 import Posts from "../../components/Posts/index.jsx"
 import UserBadge from "../../components/UserBadge/index.jsx"
 import DefaultProfileAvatar from "../../assets/images/default-profile-avatar.png"
+import { imageSrc } from "../../utils/image";
 import FollowButton from "../../components/FollowButton";
 import ActionButton from "../../components/Ui/ActionButton";
 import SwitchBar from "../../components/Ui/SwitchBar";
@@ -289,7 +290,7 @@ const Profile = ({ initialUser = null }) => {
                     >
                         <div className="profile_info_avatar">
                             <img
-                                src={user?.avatar ?? DefaultProfileAvatar}
+                                src={imageSrc(user?.avatar, DefaultProfileAvatar)}
                                 alt="img"
                             />
                         </div>
