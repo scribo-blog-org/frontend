@@ -1,7 +1,7 @@
 'use client';
 
 import { useGoogleLogin } from '@react-oauth/google';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 
 import GoogleIcon from "../../assets/svg/google-icon.svg"
 
@@ -10,7 +10,16 @@ import "./GoogleAuthButton.scss";
 import ActionButton from '../Ui/ActionButton/index';
 import { publicEnv } from "../../config/publicEnv";
 
-const GoogleAuthButton = (props) => {
+type GoogleAuthButtonProps = {
+    setGoogleToken: (token: string) => void;
+    isLoading?: boolean;
+    disabled?: boolean;
+    onClickStart?: () => void;
+    onAuthEnd?: () => void;
+    children?: ReactNode;
+};
+
+const GoogleAuthButton = (props: GoogleAuthButtonProps) => {
     if (!publicEnv("NEXT_PUBLIC_GOOGLE_CLIENT_ID")) {
         return (
             <ActionButton disabled className="google_auth_button">
@@ -30,7 +39,7 @@ const GoogleAuthButtonReady = ({
     onClickStart,
     onAuthEnd,
     children = "Продолжить с Google",
-}: any) => {
+}: GoogleAuthButtonProps) => {
   const [popupLoading, setPopupLoading] = useState<any>(false);
   const loading = isLoading || popupLoading;
 
