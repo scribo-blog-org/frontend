@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import "@fontsource/geist";
@@ -78,6 +79,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     await connection();
     const origin = getSiteOrigin();
+    const hasSession = Boolean((await cookies()).get("refresh_token")?.value);
 
     return (
         <html lang="ru" suppressHydrationWarning>
@@ -111,7 +113,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <script dangerouslySetInnerHTML={{ __html: publicEnvBootScript() }} />
                 <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
                 <Suspense fallback={null}>
-                    <AppProviders>{children}</AppProviders>
+                    <AppProviders hasSession={hasSession}>{children}</AppProviders>
                 </Suspense>
             </body>
         </html>

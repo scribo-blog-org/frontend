@@ -60,6 +60,14 @@ export async function serverGet<T>(path: string): Promise<ApiResult<T | null>> {
     }
 }
 
+export async function fetchPosts(query: Record<string, QueryValue> = {}) {
+    const search = buildQuery(query);
+    return serverGet<{
+        items?: Array<Record<string, unknown>>;
+        pagination?: { pages?: number };
+    }>(`/api/posts${search ? `?${search}` : ""}`);
+}
+
 export async function fetchPostById(id: string, query: Record<string, QueryValue> = {}) {
     const search = buildQuery(query);
     return serverGet<Record<string, unknown>>(`/api/posts/${id}${search ? `?${search}` : ""}`);
