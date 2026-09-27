@@ -5,6 +5,7 @@ const trackVisit = async (path: any) => {
     try {
         await apiFetch(`${apiUrl()}/api/analytics/visit`, {
             method: "POST",
+            reportOutage: false,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 pagePath: path,
