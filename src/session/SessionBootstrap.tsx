@@ -30,10 +30,10 @@ function waitWithTimeout(promise: any, ms: any) {
     ]);
 }
 
-const SessionBootstrap = ({ children }: any) => {
+const SessionBootstrap = ({ children, hasSession = false }: any) => {
     const location = useLocation();
     const { profile, setProfile, setProfileLoading } = useContext(AppContext);
-    const [sessionReady, setSessionReady] = useState<any>(false);
+    const [sessionReady, setSessionReady] = useState<any>(!hasSession);
     const [backendDown, setBackendDown] = useState<any>(false);
     const [isRetrying, setIsRetrying] = useState<any>(false);
     const profileRef = useRef(profile);

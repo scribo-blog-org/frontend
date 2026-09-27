@@ -30,16 +30,18 @@ const Posts = ({
     pagesCount: controlledPagesCount,
     onPageChange,
     showFilters = true,
+    initialPosts = [],
+    initialPagesCount = 0,
 }: any) => {
     const isControlled = typeof onPageChange === "function";
     const { profile } = useContext(AppContext);
 
     const [filters, setFilters] = useState<any[]>([]);
     const [categoryList, setCategoryList] = useState<any[]>([]);
-    const [posts, setPosts] = useState<any[]>([]);
+    const [posts, setPosts] = useState<any[]>(initialPosts);
     const [page, setPage] = useState<any>(1);
-    const [pagesCount, setPagesCount] = useState<any>(0);
-    const [isLoading, setIsLoading] = useState<any>(true);
+    const [pagesCount, setPagesCount] = useState<any>(initialPagesCount);
+    const [isLoading, setIsLoading] = useState<any>(initialPosts.length === 0);
 
     const queryKey = JSON.stringify(query);
 
@@ -168,10 +170,6 @@ const Posts = ({
             if (response?.status === true || items.length) {
                 setPosts(items);
                 setPagesCount(pagination.pages || 0);
-            }
-            else {
-                setPosts([]);
-                setPagesCount(0);
             }
 
             setIsLoading(false);

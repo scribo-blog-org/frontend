@@ -65,8 +65,9 @@ function AppFooter() {
     return <Footer />;
 }
 
-function AppChrome({ children, modalWindow, showModalWindow, modalCloseRequest, toast, showToast }: {
+function AppChrome({ children, hasSession, modalWindow, showModalWindow, modalCloseRequest, toast, showToast }: {
     children: React.ReactNode;
+    hasSession: boolean;
     modalWindow: unknown;
     showModalWindow: Dispatch<SetStateAction<unknown>>;
     modalCloseRequest: number;
@@ -81,7 +82,7 @@ function AppChrome({ children, modalWindow, showModalWindow, modalCloseRequest, 
                     showModalWindow={showModalWindow}
                     modalCloseRequest={modalCloseRequest}
                 />
-                <SessionBootstrap>
+                <SessionBootstrap hasSession={hasSession}>
                     <AppShell>
                         <Header />
                         <div className="app-shell_content">
@@ -99,7 +100,10 @@ function AppChrome({ children, modalWindow, showModalWindow, modalCloseRequest, 
     );
 }
 
-export default function AppProviders({ children }: { children: React.ReactNode }) {
+export default function AppProviders({ children, hasSession = false }: {
+    children: React.ReactNode;
+    hasSession?: boolean;
+}) {
     const [profile, setProfile] = useState<any>(null);
     const [profileLoading, setProfileLoading] = useState<any>(true);
     const [isDarkTheme, setIsDarkTheme] = useState<any>(true);
@@ -174,6 +178,7 @@ export default function AppProviders({ children }: { children: React.ReactNode }
                 <Suspense fallback={null}>
                     <ScrollToTop />
                     <AppChrome
+                        hasSession={hasSession}
                         modalWindow={modalWindow}
                         showModalWindow={showModalWindow}
                         modalCloseRequest={modalCloseRequest}

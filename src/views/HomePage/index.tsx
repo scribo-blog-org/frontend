@@ -6,7 +6,10 @@ import Banner from "../../components/Banner";
 import Posts from "../../components/Posts/index";
 import "./HomePage.scss";
 
-const HomePage = () => {
+const HomePage = ({ initialPosts = [], initialPagesCount = 0 }: {
+    initialPosts?: Array<Record<string, unknown>>;
+    initialPagesCount?: number;
+}) => {
     const [searchParams] = useSearchParams();
 
     const filtersFromUrl = useMemo(() => {
@@ -21,7 +24,11 @@ const HomePage = () => {
     return (
         <>
             <Banner />
-            <Posts postsFilters={filtersFromUrl} />
+            <Posts
+                postsFilters={filtersFromUrl}
+                initialPosts={initialPosts}
+                initialPagesCount={initialPagesCount}
+            />
         </>
     );
 };

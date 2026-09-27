@@ -1,22 +1,40 @@
 'use client';
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "@/navigation";
 
 import { enrichPostHtml } from "../../content/postHtml";
 import { escapeHtml, linkifyHashtagsInHtml } from "../../utils/hashtags";
 
+function plainMarkup(html: unknown, text: unknown) {
+    if (html) {
+        return String(html);
+    }
+
+    if (text == null || text === "") {
+        return "";
+    }
+
+    return escapeHtml(text).replace(/\n/g, "<br>");
+}
+
 const HashtagHtml = ({ html, text, className, as = "div", id }: any) => {
     const navigate = useNavigate();
     const Tag = as;
-    const markup = useMemo(() => {
+    const [markup, setMarkup] = useState(() => plainMarkup(html, text));
+
+    useEffect(() => {
         if (html) {
-            return enrichPostHtml(html);
+            setMarkup(enrichPostHtml(html));
+            return;
         }
+
         if (text == null || text === "") {
-            return "";
+            setMarkup("");
+            return;
         }
-        return linkifyHashtagsInHtml(escapeHtml(text).replace(/\n/g, "<br>"));
+
+        setMarkup(linkifyHashtagsInHtml(escapeHtml(text).replace(/\n/g, "<br>")));
     }, [html, text]);
 
     return (
