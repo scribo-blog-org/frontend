@@ -5,13 +5,14 @@ export const SITE_NAME = "Scribo";
 export const SITE_DESCRIPTION =
     "Scribo — платформа для публикации статей, обсуждений и личных блогов.";
 
-export const DEFAULT_OG_IMAGE = "/logo-512.png";
+export const DEFAULT_OG_IMAGE = "/og.png";
+export const BRAND_LOGO = "/logo-512.png";
 
 export function getSiteOrigin() {
     const host = publicEnv("NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL");
 
     if (!host) {
-        return "https://scribo-blog.vercel.app";
+        return "https://scribo-blog.duckdns.org";
     }
 
     if (host.startsWith("http://") || host.startsWith("https://")) {

@@ -27,6 +27,8 @@ export async function generateMetadata({ params }: ArticleRouteProps) {
     const title = typeof article.title === "string" ? article.title : "Статья";
     const text = typeof article.content_text === "string" ? article.content_text : "";
     const image = typeof article.featured_image === "string" ? article.featured_image : undefined;
+    const author = articleAuthor(article);
+    const publishedTime = isoDate(article.created_date);
 
     return buildMetadata({
         title,
@@ -34,6 +36,9 @@ export async function generateMetadata({ params }: ArticleRouteProps) {
         path: `/posts/${String(article._id)}`,
         image,
         type: "article",
+        publishedTime,
+        modifiedTime: publishedTime,
+        authors: author?.name ? [author.name] : undefined,
     });
 }
 
@@ -46,4 +51,31 @@ export default async function ArticlePage({ params }: ArticleRouteProps) {
     }
 
     return <Article initialArticle={result.data} />;
+}
+
+function isoDate(value: unknown) {
+    if (typeof value !== "string" && typeof value !== "number" && !(value instanceof Date)) {
+        return undefined;
+    }
+
+    const date = new Date(value);
+
+    return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+}
+
+function articleAuthor(article: Record<string, unknown>) {
+    const author = article.author;
+
+    if (!author || typeof author !== "object") {
+        return null;
+    }
+
+    const record = author as Record<string, unknown>;
+    const name = typeof record.nick_name === "string" ? record.nick_name : "";
+
+    if (!name) {
+        return null;
+    }
+
+    return { name };
 }

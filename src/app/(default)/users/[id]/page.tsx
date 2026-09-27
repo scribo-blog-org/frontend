@@ -28,11 +28,12 @@ export async function generateMetadata({ params }: ProfileRouteProps) {
     }
 
     const name = asString(user.nick_name) || asString(user.login) || "Профиль";
+    const nick = asString(user.nick_name) || id;
 
     return buildMetadata({
         title: name,
-        description: asString(user.about) || `Профиль ${name} на Scribo`,
-        path: `/users/${asString(user.nick_name) || id}`,
+        description: asString(user.description) || `Профиль ${name} на Scribo`,
+        path: `/users/${encodeURIComponent(nick)}`,
         image: asString(user.avatar) || undefined,
     });
 }

@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "eslint",
-    "test": "echo 'no tests configured' && exit 0",
-    "generate:sitemap": "node scripts/generate-sitemap.mjs"
+    "test": "echo 'no tests configured' && exit 0"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.20",

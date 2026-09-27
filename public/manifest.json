@@ -1,25 +1,28 @@
 {
   "short_name": "Scribo",
   "name": "Scribo",
+  "description": "Scribo — платформа для публикации статей, обсуждений и личных блогов.",
+  "lang": "ru",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "/favicon.ico",
       "sizes": "48x48",
       "type": "image/x-icon"
     },
     {
-      "src": "logo-192.png",
-      "type": "image/png",
-      "sizes": "192x192"
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
     },
     {
-      "src": "logo-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
-  "start_url": ".",
+  "start_url": "/posts",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#e7e7e7",
-  "background_color": "#333333"
+  "theme_color": "#161616",
+  "background_color": "#161616"
 }
