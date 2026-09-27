@@ -1,6 +1,7 @@
 import { cache } from "react";
 
 import { apiUrl } from "@/config";
+import { decodeRouteParam } from "@/utils/routeParam";
 
 export type ApiResult<T> = {
     status: boolean;
@@ -74,7 +75,8 @@ export async function fetchPostById(id: string, query: Record<string, QueryValue
 }
 
 export async function fetchUserByNick(nick: string) {
-    return serverGet<Array<Record<string, unknown>>>(`/api/users/?nick_name=${encodeURIComponent(nick)}`);
+    const name = decodeRouteParam(nick);
+    return serverGet<Array<Record<string, unknown>>>(`/api/users/?nick_name=${encodeURIComponent(name)}`);
 }
 
 export const loadPublicPost = cache((id: string) =>

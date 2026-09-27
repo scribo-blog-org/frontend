@@ -12,6 +12,7 @@ import { getPosts, unwrapPostsResponse, POSTS_PAGE_LIMIT } from "../../api/posts
 import { format_date_time, format_back } from "../../utils/format";
 
 import { scrollTo } from "../../utils/navigation"
+import { decodeRouteParam } from "../../utils/routeParam";
 
 import Verified from "../../assets/svg/verified.svg";
 import Calendar from "../../assets/svg/calendar-icon.svg";
@@ -36,7 +37,8 @@ import PageSeo from "../../components/Seo/index";
 import UserActivityStatus from "../../components/UserActivityStatus/index";
 
 const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | null }) => {
-    const { id } = useParams();
+    const params = useParams();
+    const id = decodeRouteParam(params.id);
     const navigate = useNavigate();
     const { profile, setProfile, showModalWindow, showToast } = useContext(AppContext);
     const [ isProfileLoading, setIsProfileLoading ] = useState<any>(!initialUser);

@@ -1,5 +1,6 @@
 import { apiUrl } from "../config"
 import { apiFetch } from "./http"
+import { decodeRouteParam } from "../utils/routeParam"
 
 
 const getUsers = async (query: any = []) => {
@@ -9,7 +10,7 @@ const getUsers = async (query: any = []) => {
     query.forEach((item: any) => {
         Object.entries(item).forEach(([key, value]: any) => {
             if (value !== undefined && value !== null) {
-                params.append(key, value);
+                params.append(key, key === "nick_name" ? decodeRouteParam(value) : value);
             }
         });
     });
