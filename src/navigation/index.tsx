@@ -7,9 +7,12 @@ import {
     useRouter,
     useSearchParams as useNextSearchParams,
 } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, type ComponentProps } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 
 const NAV_STATE_KEY = "__scribo_nav_state__";
+
+let navGeneration = 0;
+let navMemory: unknown = null;
 
 type HrefObject = {
     pathname?: string;
@@ -41,10 +44,33 @@ function toHref(to: string | HrefObject) {
 }
 
 function rememberState(state: unknown) {
+    navGeneration += 1;
+    navMemory = state;
+
     try {
         sessionStorage.setItem(NAV_STATE_KEY, JSON.stringify(state));
     } catch {
         // sessionStorage is unavailable during SSR and in restricted iframes
+    }
+}
+
+function clearNavState() {
+    navGeneration += 1;
+    navMemory = null;
+
+    try {
+        sessionStorage.removeItem(NAV_STATE_KEY);
+    } catch {
+        // sessionStorage is unavailable during SSR and in restricted iframes
+    }
+}
+
+function readStoredState() {
+    try {
+        const raw = sessionStorage.getItem(NAV_STATE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
     }
 }
 
@@ -66,7 +92,10 @@ export function Link({
             onClick={() => {
                 if (state !== undefined) {
                     rememberState(state);
+                    return;
                 }
+
+                clearNavState();
             }}
             {...rest}
         >
@@ -89,6 +118,8 @@ export function useNavigate() {
 
         if (options.state !== undefined) {
             rememberState(options.state);
+        } else {
+            clearNavState();
         }
 
         const href = toHref(to);
@@ -107,22 +138,19 @@ export function useLocation() {
     const searchParams = useNextSearchParams();
     const search = searchParams.toString();
     const [state, setState] = useState<any>(null);
+    const seenGeneration = useRef(0);
     const key = `${pathname}?${search}`;
 
-    useEffect(() => {
-        try {
-            const raw = sessionStorage.getItem(NAV_STATE_KEY);
-
-            if (raw) {
-                sessionStorage.removeItem(NAV_STATE_KEY);
-                setState(JSON.parse(raw));
-                return;
-            }
-        } catch {
-            // ignore unreadable session storage
+    useLayoutEffect(() => {
+        if (navGeneration !== seenGeneration.current) {
+            seenGeneration.current = navGeneration;
+            setState(navGeneration === 0 ? readStoredState() : navMemory);
+            return;
         }
 
-        setState(null);
+        if (navGeneration === 0) {
+            setState(readStoredState());
+        }
     }, [key]);
 
     return useMemo(

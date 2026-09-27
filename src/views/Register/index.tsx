@@ -324,7 +324,11 @@ const VerifyGmailCode = ({ email }: any) => {
 };
 
 const Register = () => {
-    const { email, google_token, gmail_code } = useLocation().state || {};
+    const locationState = useLocation().state || {};
+    const [oauthDraft, setOauthDraft] = useState<any>(null);
+    const email = oauthDraft?.email ?? locationState.email;
+    const google_token = oauthDraft?.google_token ?? locationState.google_token;
+    const gmail_code = locationState.gmail_code;
     const navigate = useNavigate();
     
     const [ fields, setFields ] = useState<any>({ email: '' })
@@ -339,27 +343,28 @@ const Register = () => {
             setPendingAuth('google')
             try {
                 const result = await verificationGoogle(googleToken)
-                
-                if(result.statusCode !== 200) {
+
+                if (result?.status !== true) {
                     showToast({ message: "Не удалось войти через Google", type: "error" });
                     setPendingAuth(null)
+                    return
                 }
-                else {
-                    if(result.data.is_registered) {
-                        const loginResult = await loginGoogle(googleToken)
-                        
-                        if(loginResult.statusCode === 200) {
-                            navigate("/")
-                            showToast({ message: "Вход выполнен!", type: "success" });
-                        }
-                        else {
-                            setPendingAuth(null)
-                        }
+
+                if (result.data?.is_registered) {
+                    const loginResult = await loginGoogle(googleToken)
+
+                    if (loginResult?.status === true) {
+                        navigate("/")
+                        showToast({ message: "Вход выполнен!", type: "success" });
                     }
                     else {
-                        navigate("/auth/register", { state: { google_token: googleToken, email: result.data.email } })
+                        setPendingAuth(null)
                     }
+                    return
                 }
+
+                setOauthDraft({ google_token: googleToken, email: result.data?.email })
+                setPendingAuth(null)
             }
             catch {
                 showToast({ message: "Не удалось войти через Google", type: "error" });
