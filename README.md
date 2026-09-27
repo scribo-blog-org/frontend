@@ -80,10 +80,11 @@ npm run build
 npm run start
 npm run lint
 npm run test
-npm run generate:sitemap
 ```
 
 `test` сейчас заглушка: отдельного набора тестов нет, скрипт завершается с кодом 0, чтобы проверка pull request не падала на пустом месте.
+
+`/sitemap.xml` и `/robots.txt` отдаёт сервер Next. Адреса берутся из `NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL`, список статей и профилей — из API в момент запроса.
 
 ## Как устроен код
 

@@ -24,6 +24,15 @@ const svgrLoader = {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    async redirects() {
+        return [
+            {
+                source: "/",
+                destination: "/posts",
+                permanent: true,
+            },
+        ];
+    },
     reactStrictMode: true,
     logging: {
         incomingRequests: false,

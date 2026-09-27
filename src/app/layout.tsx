@@ -5,7 +5,15 @@ import "@fontsource/geist";
 
 import { publicEnvBootScript } from "@/config/publicEnv";
 import AppProviders from "@/providers/AppProviders";
-import { SITE_DESCRIPTION, SITE_NAME, absoluteUrl, getSiteOrigin } from "@/seo/site";
+import { JsonLd } from "@/seo/json-ld";
+import { RouteJsonLd } from "@/seo/route-json-ld";
+import {
+    BRAND_LOGO,
+    SITE_DESCRIPTION,
+    SITE_NAME,
+    absoluteUrl,
+    getSiteOrigin,
+} from "@/seo/site";
 
 import "@/styles/common.scss";
 
@@ -14,6 +22,7 @@ const THEME_BOOT_SCRIPT = `(function(){var isDark=true;try{var stored=localStora
 export async function generateMetadata(): Promise<Metadata> {
     await connection();
     const origin = getSiteOrigin();
+    const ogImage = absoluteUrl("/og.png");
 
     return {
         metadataBase: new URL(origin),
@@ -21,8 +30,11 @@ export async function generateMetadata(): Promise<Metadata> {
         description: SITE_DESCRIPTION,
         applicationName: SITE_NAME,
         icons: {
-            icon: "/favicon.ico",
-            apple: "/logo192.png",
+            icon: [
+                { url: "/favicon.ico", sizes: "48x48" },
+                { url: "/icon.svg", type: "image/svg+xml" },
+            ],
+            apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
         },
         manifest: "/manifest.json",
         robots: {
@@ -42,15 +54,17 @@ export async function generateMetadata(): Promise<Metadata> {
             locale: "ru_RU",
             title: SITE_NAME,
             description: SITE_DESCRIPTION,
-            url: absoluteUrl("/"),
+            url: absoluteUrl("/posts"),
+            images: [{ url: ogImage, width: 1200, height: 630, alt: SITE_NAME }],
         },
         twitter: {
-            card: "summary",
+            card: "summary_large_image",
             title: SITE_NAME,
             description: SITE_DESCRIPTION,
+            images: [ogImage],
         },
         verification: {
-            google: "DTQfYT7mIYFPFnKk3UInD6ltH9cjE3S7aNtQ1oOZdJI",
+            google: "0AOL3OU8f4tNR79qSyuUsyz8GSd0T1kAtNeGo7GKnnY",
         },
     };
 }
@@ -63,10 +77,37 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     await connection();
+    const origin = getSiteOrigin();
 
     return (
         <html lang="ru" suppressHydrationWarning>
             <body suppressHydrationWarning>
+                <JsonLd
+                    data={{
+                        "@context": "https://schema.org",
+                        "@graph": [
+                            {
+                                "@type": "WebSite",
+                                name: SITE_NAME,
+                                url: origin,
+                                description: SITE_DESCRIPTION,
+                                inLanguage: "ru",
+                                potentialAction: {
+                                    "@type": "SearchAction",
+                                    target: `${origin}/search?q={search_term_string}`,
+                                    "query-input": "required name=search_term_string",
+                                },
+                            },
+                            {
+                                "@type": "Organization",
+                                name: SITE_NAME,
+                                url: origin,
+                                logo: absoluteUrl(BRAND_LOGO),
+                            },
+                        ],
+                    }}
+                />
+                <RouteJsonLd />
                 <script dangerouslySetInnerHTML={{ __html: publicEnvBootScript() }} />
                 <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
                 <Suspense fallback={null}>
