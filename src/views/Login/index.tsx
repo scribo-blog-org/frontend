@@ -34,20 +34,20 @@ const Login = () => {
             try {
                 const result = await verificationGoogle(googleToken)
 
-                if(result.status === true) {
-                    if(result.data.is_registered === true) {
-                        await loginGoogle(googleToken)
-                        navigate('/posts');
-                        showToast({ message: 'Вы вошли в аккаунт!', type: 'success' });
-                    }
-                    else {
-                        navigate('/auth/register', { state: { google_token: googleToken, email: result.data.email } });
-                    }
+                if (result?.status === true && result.data?.is_registered === false) {
+                    navigate('/auth/register', { state: { google_token: googleToken, email: result.data.email } });
+                    return
                 }
-                else {
-                    showToast({ message: 'Не удалось войти через Google', type: 'error' });
-                    setPendingAuth(null)
+
+                if (result?.status === true && result.data?.is_registered === true) {
+                    await loginGoogle(googleToken)
+                    navigate('/posts');
+                    showToast({ message: 'Вы вошли в аккаунт!', type: 'success' });
+                    return
                 }
+
+                showToast({ message: 'Не удалось войти через Google', type: 'error' });
+                setPendingAuth(null)
             }
             catch {
                 showToast({ message: 'Не удалось войти через Google', type: 'error' });
