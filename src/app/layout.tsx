@@ -64,7 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
             images: [ogImage],
         },
         verification: {
-            google: "DTQfYT7mIYFPFnKk3UInD6ltH9cjE3S7aNtQ1oOZdJI",
+            google: "0AOL3OU8f4tNR79qSyuUsyz8GSd0T1kAtNeGo7GKnnY",
         },
     };
 }
