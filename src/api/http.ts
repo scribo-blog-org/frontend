@@ -128,7 +128,7 @@ export async function refreshAccessToken() {
 }
 
 export async function apiFetch(url: any, options: any = {}) {
-    const { skipAuth, _retry, headers: initHeaders, ...rest } = options;
+    const { skipAuth, _retry, reportOutage = true, headers: initHeaders, ...rest } = options;
     const headers = new Headers(initHeaders || {});
     const token = getAccessToken();
 
@@ -145,11 +145,13 @@ export async function apiFetch(url: any, options: any = {}) {
             credentials: "include",
         });
     } catch (error: any) {
-        markBackendUnavailable();
+        if (reportOutage) {
+            markBackendUnavailable();
+        }
         throw error;
     }
 
-    if (isServerErrorStatus(response.status)) {
+    if (reportOutage && isServerErrorStatus(response.status)) {
         markBackendUnavailable();
     }
 
