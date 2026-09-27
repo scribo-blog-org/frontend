@@ -6,8 +6,6 @@ import { buildMetadata } from "@/lib/metadata";
 import { fetchPosts } from "@/lib/server-api";
 import { SITE_DESCRIPTION } from "@/seo/site";
 
-const HOME_TITLE = "Scribo: Главная";
-
 export const dynamic = "force-dynamic";
 
 type PostsRouteProps = {
@@ -18,29 +16,13 @@ export async function generateMetadata({ searchParams }: PostsRouteProps): Promi
     const params = await searchParams;
     const filter = Array.isArray(params.filter) ? params.filter[0] : params.filter;
 
-    const metadata = buildMetadata({
+    return buildMetadata({
+        title: filter?.trim() ? undefined : "Главная",
         description: SITE_DESCRIPTION,
         path: "/posts",
         noindex: Boolean(filter?.trim()),
         follow: true,
     });
-
-    if (filter?.trim()) {
-        return metadata;
-    }
-
-    return {
-        ...metadata,
-        title: HOME_TITLE,
-        openGraph: {
-            ...metadata.openGraph,
-            title: HOME_TITLE,
-        },
-        twitter: {
-            ...metadata.twitter,
-            title: HOME_TITLE,
-        },
-    };
 }
 
 export default async function PostsPage({ searchParams }: PostsRouteProps) {

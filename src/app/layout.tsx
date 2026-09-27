@@ -18,7 +18,7 @@ import {
 
 import "@/styles/common.scss";
 
-const THEME_BOOT_SCRIPT = `(function(){var isDark=true;try{var stored=localStorage.getItem("theme");if(stored!==null)isDark=JSON.parse(stored);}catch(e){}var html=document.documentElement;html.style.backgroundColor=isDark?"#161616":"#f1f1f1";html.style.colorScheme=isDark?"dark":"light";html.classList.toggle("dark-theme",isDark);if(document.body){document.body.classList.toggle("dark-theme",isDark);}})();`;
+const THEME_BOOT_SCRIPT = `(function(){var isDark=true;try{var stored=localStorage.getItem("theme");if(stored!==null)isDark=JSON.parse(stored);}catch(e){}var html=document.documentElement;html.style.backgroundColor=isDark?"#161616":"#f1f1f1";var apply=function(){var body=document.body;if(!body)return;body.style.transition="none";body.classList.toggle("dark-theme",isDark);requestAnimationFrame(function(){body.style.transition="";});};if(document.body){apply();return;}new MutationObserver(function(_,obs){if(!document.body)return;apply();obs.disconnect();}).observe(html,{childList:true});})();`;
 
 export async function generateMetadata(): Promise<Metadata> {
     await connection();
@@ -83,6 +83,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
     return (
         <html lang="ru" suppressHydrationWarning>
+            <head>
+                <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+            </head>
             <body suppressHydrationWarning>
                 <JsonLd
                     data={{
@@ -111,7 +114,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 />
                 <RouteJsonLd />
                 <script dangerouslySetInnerHTML={{ __html: publicEnvBootScript() }} />
-                <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
                 <Suspense fallback={null}>
                     <AppProviders hasSession={hasSession}>{children}</AppProviders>
                 </Suspense>

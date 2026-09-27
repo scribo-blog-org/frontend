@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, Suspense, useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { createContext, Suspense, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { usePathname } from "next/navigation";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -112,17 +112,23 @@ export default function AppProviders({ children, hasSession = false }: {
     const [modalCloseRequest, setModalCloseRequest] = useState<any>(0);
     const [accessToken, setAccessTokenState] = useState<any>(getAccessToken());
     const requestCloseModal = () => setModalCloseRequest((count: any) => count + 1);
+    const skipThemePersist = useRef(true);
 
     useEffect(() => {
+        let dark = true;
+
         try {
             const stored = localStorage.getItem("theme");
 
             if (stored !== null) {
-                setIsDarkTheme(JSON.parse(stored));
+                dark = JSON.parse(stored);
             }
         } catch {
             // keep default dark theme
         }
+
+        setIsDarkTheme(dark);
+        document.body.classList.toggle("dark-theme", dark);
     }, []);
 
     useEffect(() => {
@@ -130,9 +136,13 @@ export default function AppProviders({ children, hasSession = false }: {
     }, []);
 
     useEffect(() => {
+        if (skipThemePersist.current) {
+            skipThemePersist.current = false;
+            return;
+        }
+
         localStorage.setItem("theme", JSON.stringify(isDarkTheme));
         document.body.classList.toggle("dark-theme", isDarkTheme);
-        document.documentElement.classList.toggle("dark-theme", isDarkTheme);
 
         const metaThemeColor = document.querySelector('meta[name="theme-color"]');
 
