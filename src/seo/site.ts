@@ -12,7 +12,7 @@ export function getSiteOrigin() {
     const host = publicEnv("NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL");
 
     if (!host) {
-        return "https://scribo-blog.duckdns.org";
+        return "https://scribo.pp.ua";
     }
 
     if (host.startsWith("http://") || host.startsWith("https://")) {
