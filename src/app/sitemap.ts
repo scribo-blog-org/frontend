@@ -3,6 +3,7 @@ import { connection } from 'next/server';
 
 import { apiUrl } from '@/config';
 import { absoluteUrl } from '@/seo/site';
+import { mediaUrl } from '@/utils/image';
 
 export const dynamic = 'force-dynamic';
 
@@ -86,7 +87,7 @@ async function postEntries(): Promise<SitemapEntry[]> {
 
             const image =
                 typeof post.featured_image === 'string'
-                    ? post.featured_image
+                    ? mediaUrl(post.featured_image)
                     : '';
 
             entries.push({

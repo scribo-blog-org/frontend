@@ -9,6 +9,7 @@ import {
     SITE_NAME,
     absoluteUrl,
 } from '@/seo/site';
+import { mediaUrl } from '@/utils/image';
 
 function asString(value: unknown) {
     return typeof value === 'string' ? value : '';
@@ -39,8 +40,8 @@ async function postJsonLd(id: string) {
     const title = asString(article.title) || 'Статья';
     const description =
         plainTextExcerpt(asString(article.content_text)) || title;
-    const image =
-        asString(article.featured_image) || absoluteUrl(DEFAULT_OG_IMAGE);
+    const featured = asString(article.featured_image);
+    const image = featured ? mediaUrl(featured) : absoluteUrl(DEFAULT_OG_IMAGE);
     const published = isoDate(article.created_date);
     const url = absoluteUrl(`/posts/${String(article._id)}`);
     const authorRecord =
@@ -109,7 +110,7 @@ async function profileJsonLd(id: string) {
             name,
             url,
             description,
-            ...(avatar ? { image: avatar } : {}),
+            ...(avatar ? { image: mediaUrl(avatar) } : {}),
         },
     };
 }

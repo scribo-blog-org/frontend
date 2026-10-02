@@ -11,7 +11,7 @@ import { format_back } from '../../utils/format';
 import { CATEGORY_COLORS } from '../../styles/constants';
 
 import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
-import { imageSrc } from '../../utils/image';
+import { imageSrc, mediaUrl } from '../../utils/image';
 import Verified from '../../assets/svg/verified.svg';
 import ChevronRightIcon from '../../assets/svg/chevron-right.svg';
 import CrossIcon from '../../assets/svg/cross-icon.svg';
@@ -253,7 +253,9 @@ const SearchPage = () => {
                                             {post.featured_image ? (
                                                 <img
                                                     className="search_page_post_thumb"
-                                                    src={post.featured_image}
+                                                    src={mediaUrl(
+                                                        post.featured_image,
+                                                    )}
                                                     alt=""
                                                 />
                                             ) : null}
