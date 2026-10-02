@@ -19,7 +19,14 @@ export type LogTone =
 
 /** Что показывать в колонке «объект» строки лога. */
 export type LogObject =
-    'post' | 'category' | 'user' | 'support' | 'backup' | 'system' | null;
+    | 'post'
+    | 'category'
+    | 'user'
+    | 'support'
+    | 'backup'
+    | 'upload'
+    | 'system'
+    | null;
 
 export type LogTypeConfig = {
     /** Название для фильтра по типу. */
@@ -231,6 +238,41 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
         text: () => 'Запустил бекап вручную',
         object: null,
     },
+    backup_done: {
+        title: 'Бекап готов',
+        tone: 'create',
+        icon: ShieldIcon,
+        text: () => 'Бекап создан',
+        object: 'backup',
+    },
+    backup_upload: {
+        title: 'Загрузка бекапа',
+        tone: 'create',
+        icon: ShieldIcon,
+        text: () => 'Загрузил бекап файлом',
+        object: 'backup',
+    },
+    backup_upload_failed: {
+        title: 'Архив отклонён',
+        tone: 'error',
+        icon: WarningIcon,
+        text: () => 'Загрузил архив, но он не прошёл проверку',
+        object: 'upload',
+    },
+    backup_download: {
+        title: 'Скачивание бекапа',
+        tone: 'info',
+        icon: ShieldIcon,
+        text: () => 'Скачал бекап',
+        object: 'backup',
+    },
+    backup_rotated: {
+        title: 'Ротация бекапов',
+        tone: 'delete',
+        icon: ShieldIcon,
+        text: () => 'Удалены старые бекапы',
+        object: 'system',
+    },
     backup_restore: {
         title: 'Запуск отката',
         tone: 'delete',
@@ -255,6 +297,13 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
         tone: 'error',
         icon: WarningIcon,
         text: () => 'Бекап не удался',
+        object: 'system',
+    },
+    db_version_sync: {
+        title: 'Версия базы',
+        tone: 'info',
+        icon: InfoIcon,
+        text: () => 'Версия базы приведена к версии приложения',
         object: 'system',
     },
     server_start: {

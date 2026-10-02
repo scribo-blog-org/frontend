@@ -2,6 +2,18 @@
 
 import { kindLabel, statusLabel } from '../Support/constants';
 
+export const formatSize = (bytes: any) => {
+    if (typeof bytes !== 'number') {
+        return '—';
+    }
+
+    if (bytes < 1024 * 1024) {
+        return `${Math.max(1, Math.round(bytes / 1024))} КБ`;
+    }
+
+    return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
+};
+
 const FIELD_LABELS: Record<string, string> = {
     title: 'Название',
     category: 'Категория',
@@ -106,6 +118,7 @@ const KNOWN_KEYS = new Set([
     'user',
     'user_nick',
     'user_role',
+    'user_avatar',
     'post',
     'post_title',
     'post_author',
@@ -136,8 +149,19 @@ const KNOWN_KEYS = new Set([
     'reply_preview',
     'author_type',
     'file_name',
+    'size_bytes',
+    'removed_files',
+    'original_name',
+    'app_version',
+    'db_version',
+    'source_db',
+    'from_version',
+    'to_version',
+    'from_app_version',
+    'source_backup',
     'backup',
     'safety_backup',
+    'safety_removed',
     'rolled_back',
     'error',
     'trigger',
@@ -257,8 +281,28 @@ export function describeDetails(
     add('ID обращения', data.support_request, true);
 
     add('Файл', data.file_name, true);
+    add('Имя загруженного файла', data.original_name, true);
+    add('Версия приложения в архиве', data.app_version);
+    add('Версия данных в архиве', data.db_version);
+    add('База в архиве', data.source_db);
+    if (log?.type === 'db_version_sync') {
+        add(
+            'Версия данных',
+            `${data.from_version ?? '—'} → ${data.to_version ?? '—'}`,
+        );
+        add(
+            'Версия приложения',
+            `${data.from_app_version ?? '—'} → ${data.app_version ?? '—'}`,
+        );
+    }
+    add('ID бекапа в манифесте', data.source_backup, true);
+    add('Размер файла', data.size_bytes ? formatSize(data.size_bytes) : null);
+    add('Удалено по ротации', data.removed_files);
     add('Откат вернул прежнее состояние', data.rolled_back ? 'да' : null);
     add('Страховочный снимок', data.safety_backup, true);
+    if (data.safety_removed) {
+        add('Снимок после отката', 'удалён');
+    }
     add('Запуск', data.trigger);
 
     add('Версия', data.version);

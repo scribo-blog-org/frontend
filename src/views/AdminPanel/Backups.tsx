@@ -8,6 +8,7 @@ import {
     getBackups,
     restoreBackup,
     runBackup,
+    uploadBackup,
 } from '../../api/backups.api';
 import { format_back, format_date_time } from '../../utils/format';
 
@@ -18,6 +19,8 @@ import PrimaryButton from '../../components/Ui/PrimaryButton';
 import ActionButton from '../../components/Ui/ActionButton';
 import DangerButton from '../../components/Ui/DangerButton/index';
 import InputField from '../../components/Ui/InputField/index';
+
+import { formatSize } from './logFormat';
 
 import './Backups.scss';
 
@@ -30,6 +33,7 @@ const STATUS_LABELS: Record<string, string> = {
 const TRIGGER_LABELS: Record<string, string> = {
     schedule: 'По расписанию',
     manual: 'Вручную',
+    upload: 'Загружен вручную',
 };
 
 const PHASE_LABELS: Record<string, string> = {
@@ -45,18 +49,6 @@ const CONFIRM_WORD = 'ВОССТАНОВИТЬ';
 
 const POLL_MS = 3000;
 const POLL_RESTORE_MS = 2000;
-
-const formatSize = (bytes: any) => {
-    if (typeof bytes !== 'number') {
-        return '—';
-    }
-
-    if (bytes < 1024 * 1024) {
-        return `${Math.max(1, Math.round(bytes / 1024))} КБ`;
-    }
-
-    return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
-};
 
 const formatDuration = (item: any) => {
     if (!item.finished_at) {
@@ -74,12 +66,91 @@ const formatDuration = (item: any) => {
         : `${Math.floor(seconds / 60)} мин ${seconds % 60} с`;
 };
 
+const kindLabel = (item: any) =>
+    item.kind === 'pre_restore'
+        ? 'Перед откатом'
+        : TRIGGER_LABELS[item.trigger] || item.trigger;
+
 const describeContents = (contents: any) =>
     contents
         ? `база ${formatSize(contents.db_bytes)}, файлов ${contents.uploads_files} (${formatSize(contents.uploads_bytes)})`
         : null;
 
-const RestoreDialog = ({ item, onCancel, onStarted, showToast }: any) => {
+const SOURCE_TRIGGER_LABELS: Record<string, string> = {
+    schedule: 'по расписанию',
+    manual: 'вручную',
+    restore: 'страховочный снимок перед откатом',
+};
+
+/** Что за бекап: когда снят, какой версией, из какой базы и что внутри. */
+const BackupDetails = ({ item, info }: any) => {
+    const source = item.source;
+    const contents = item.contents;
+    const current = info?.db_version;
+    const archiveDb = source?.db_name ?? contents?.db_name;
+    const dbVersion = contents?.db_version ?? source?.db_version;
+
+    const rows: [string, any][] = [
+        ['Снят', format_date_time(source?.created_at ?? item.started_at)],
+        [
+            'Как создан',
+            source
+                ? SOURCE_TRIGGER_LABELS[source.trigger] || source.trigger
+                : kindLabel(item),
+        ],
+        [
+            'Версия приложения',
+            contents?.app_version ?? source?.app_version ?? 'неизвестна',
+        ],
+        [
+            'Версия данных',
+            dbVersion
+                ? `${dbVersion}${current ? (dbVersion === current ? ` · совпадает с текущей (${current})` : ` · текущая ${current}`) : ''}`
+                : 'неизвестна',
+        ],
+        [
+            'База',
+            archiveDb && info?.db_name && archiveDb !== info.db_name
+                ? `${archiveDb} → будет установлена в ${info.db_name}`
+                : archiveDb,
+        ],
+        ['Внутри', describeContents(contents)],
+        ['Коллекций', contents?.collections],
+        ['Размер архива', formatSize(item.size_bytes)],
+        ['Файл', source?.original_name ?? item.file_name],
+    ];
+
+    return (
+        <dl className="backup_details">
+            {rows
+                .filter(([, value]) => value !== undefined && value !== null)
+                .map(([label, value]) => (
+                    <div key={label} className="backup_details_row">
+                        <dt>{label}</dt>
+                        <dd>{value}</dd>
+                    </div>
+                ))}
+        </dl>
+    );
+};
+
+const UploadedDialog = ({ item, info, onClose, onRestore }: any) => (
+    <div className="backup_restore_dialog">
+        <p className="backup_restore_dialog_hint">
+            Архив проверен и добавлен в список. Версии совпадают, ничего пока не
+            изменено: восстановить его можно сейчас или позже кнопкой в списке.
+        </p>
+        <BackupDetails item={item} info={info} />
+        <div className="backup_restore_dialog_bottom">
+            <ActionButton onClick={onClose}>Закрыть</ActionButton>
+            <DangerButton onClick={onRestore} isActive={true}>
+                Восстановить…
+            </DangerButton>
+        </div>
+    </div>
+);
+
+const RestoreDialog = ({ item, info, onCancel, onStarted, showToast }: any) => {
     const [word, setWord] = useState<any>('');
     const [isStarting, setIsStarting] = useState<any>(false);
 
@@ -101,18 +172,7 @@ const RestoreDialog = ({ item, onCancel, onStarted, showToast }: any) => {
 
     return (
         <div className="backup_restore_dialog">
-            <div className="backup_restore_dialog_summary">
-                <p>
-                    <b>{format_date_time(item.started_at)}</b>
-                    {item.kind === 'pre_restore'
-                        ? ' · снимок перед откатом'
-                        : ` · ${TRIGGER_LABELS[item.trigger] || item.trigger}`}
-                </p>
-                <p className="backup_restore_dialog_hint">
-                    {formatSize(item.size_bytes)} ·{' '}
-                    {describeContents(item.contents)}
-                </p>
-            </div>
+            <BackupDetails item={item} info={info} />
             <ul className="backup_restore_dialog_warnings">
                 <li>
                     База и загруженные файлы будут заменены полностью.
@@ -122,7 +182,7 @@ const RestoreDialog = ({ item, onCancel, onStarted, showToast }: any) => {
                 <li>
                     Перед заменой автоматически снимается страховочный снимок
                     текущего состояния. Если откат не удастся, система вернётся
-                    к нему сама.
+                    к нему сама. После успешного отката снимок удаляется.
                 </li>
                 <li>
                     На время отката сайт доступен только для чтения, обычно это
@@ -168,6 +228,8 @@ const BackupsPage = () => {
     const [pagesCount, setPagesCount] = useState<any>(0);
     const [starting, setStarting] = useState<any>(false);
     const [downloadingId, setDownloadingId] = useState<any>(null);
+    const [uploading, setUploading] = useState<any>(false);
+    const fileInput = useRef<any>(null);
     const wasRestoring = useRef<any>(false);
 
     const load = useCallback(async () => {
@@ -244,6 +306,49 @@ const BackupsPage = () => {
         await load();
     };
 
+    const upload = async (event: any) => {
+        const file = event.target.files?.[0];
+        // Тот же файл можно выбрать снова после ошибки.
+        event.target.value = '';
+
+        if (!file) {
+            return;
+        }
+
+        if (info?.upload_max_bytes && file.size > info.upload_max_bytes) {
+            showToast({
+                type: 'error',
+                message: `Файл больше ${formatSize(info.upload_max_bytes)}`,
+            });
+            return;
+        }
+
+        setUploading(true);
+        const result = await uploadBackup(file);
+        setUploading(false);
+
+        if (!result.status) {
+            showToast({ type: 'error', message: result.message });
+            return;
+        }
+
+        setPage(1);
+        await load();
+        showModalWindow({
+            title: 'Бекап загружен и проверен',
+            content: (
+                <UploadedDialog
+                    item={result.data}
+                    info={info}
+                    onClose={requestCloseModal}
+                    onRestore={() => askRestore(result.data)}
+                />
+            ),
+            showCloseButton: false,
+            closeFunc: () => {},
+        });
+    };
+
     const download = async (item: any) => {
         setDownloadingId(item._id);
         const result = await downloadBackup(item._id);
@@ -260,6 +365,7 @@ const BackupsPage = () => {
             content: (
                 <RestoreDialog
                     item={item}
+                    info={info}
                     onCancel={requestCloseModal}
                     onStarted={() => {
                         requestCloseModal();
@@ -299,20 +405,43 @@ const BackupsPage = () => {
                                 В архиве база и загрузки. Ручной запуск
                                 добавляет ещё один бекап. Архивы лежат на
                                 сервере вместе с приложением, время от времени
-                                скачивайте свежий.
+                                скачивайте свежий. Свой архив можно загрузить:
+                                он проверяется целиком и появляется в списке, а
+                                устанавливается обычным откатом.
                             </p>
                         </>
                     ) : (
                         <p>Бекапы выключены на этом окружении.</p>
                     )}
                 </div>
-                <PrimaryButton
-                    onClick={start}
-                    isLoading={starting}
-                    disabled={!info?.enabled || busy}
-                >
-                    {running ? 'Идёт бекап…' : 'Запустить бекап'}
-                </PrimaryButton>
+                <div className="admin_panel_content_backups_page_header_actions">
+                    {info?.upload_enabled ? (
+                        <>
+                            <input
+                                ref={fileInput}
+                                type="file"
+                                hidden
+                                onChange={upload}
+                            />
+                            <ActionButton
+                                onClick={() => fileInput.current?.click()}
+                                isLoading={uploading}
+                                disabled={busy}
+                            >
+                                {uploading
+                                    ? 'Загрузка и проверка…'
+                                    : 'Загрузить бекап'}
+                            </ActionButton>
+                        </>
+                    ) : null}
+                    <PrimaryButton
+                        onClick={start}
+                        isLoading={starting}
+                        disabled={!info?.enabled || busy}
+                    >
+                        {running ? 'Идёт бекап…' : 'Запустить бекап'}
+                    </PrimaryButton>
+                </div>
             </div>
 
             {restoring ? (
@@ -390,10 +519,7 @@ const BackupsPage = () => {
                                     </p>
                                 </Tooltip>
                                 <p className="admin_panel_content_backups_page_item_trigger">
-                                    {item.kind === 'pre_restore'
-                                        ? 'Перед откатом'
-                                        : TRIGGER_LABELS[item.trigger] ||
-                                          item.trigger}
+                                    {kindLabel(item)}
                                     {info?.current?.backup_id === item._id ? (
                                         <span className="backup_current">
                                             Текущий
@@ -401,8 +527,10 @@ const BackupsPage = () => {
                                     ) : null}
                                 </p>
                                 <p className="admin_panel_content_backups_page_item_size">
-                                    {formatSize(item.size_bytes)} ·{' '}
-                                    {formatDuration(item)}
+                                    {formatSize(item.size_bytes)}
+                                    {item.source
+                                        ? ` · снят ${format_date_time(item.source.created_at)}`
+                                        : ` · ${formatDuration(item)}`}
                                     {item.contents ? (
                                         <span className="admin_panel_content_backups_page_item_contents">
                                             {describeContents(item.contents)}
@@ -424,7 +552,15 @@ const BackupsPage = () => {
                                             {item.file_removed_reason ===
                                             'replaced'
                                                 ? 'Удалён: заменён новым за этот день'
-                                                : 'Удалён по сроку хранения'}
+                                                : item.file_removed_reason ===
+                                                    'restored'
+                                                  ? 'Удалён: откат прошёл успешно, снимок не нужен'
+                                                  : 'Удалён по сроку хранения'}
+                                        </p>
+                                    ) : null}
+                                    {item.restore_blocked ? (
+                                        <p className="admin_panel_content_backups_page_hint">
+                                            {item.restore_blocked}
                                         </p>
                                     ) : null}
                                     {info?.restore_enabled &&

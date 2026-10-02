@@ -23,6 +23,17 @@
             gap: 4px;
             font-size: 14px;
         }
+
+        &_actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            @include screen() {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
     }
 
     &_hint,
@@ -179,5 +190,33 @@
         display: flex;
         justify-content: flex-end;
         gap: 10px;
+    }
+}
+
+.backup_details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    font-size: 14px;
+
+    &_row {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 12px;
+
+        @include screen() {
+            grid-template-columns: 1fr;
+            gap: 2px;
+        }
+    }
+
+    dt {
+        color: var(--light-text-color);
+    }
+
+    dd {
+        margin: 0;
+        word-break: break-word;
     }
 }
