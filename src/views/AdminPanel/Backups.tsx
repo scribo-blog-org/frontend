@@ -134,11 +134,12 @@ const BackupDetails = ({ item, info }: any) => {
     );
 };
 
-const UploadedDialog = ({ item, info, onClose, onRestore }: any) => (
+const UploadedDialog = ({ item, info, duplicate, onClose, onRestore }: any) => (
     <div className="backup_restore_dialog">
         <p className="backup_restore_dialog_hint">
-            Архив проверен и добавлен в список. Версии совпадают, ничего пока не
-            изменено: восстановить его можно сейчас или позже кнопкой в списке.
+            {duplicate
+                ? 'Этот бекап уже есть в списке, второй раз он не добавлен. Его можно восстановить прямо отсюда или кнопкой в списке.'
+                : 'Архив проверен и добавлен в список. Версии совпадают, ничего пока не изменено: восстановить его можно сейчас или позже кнопкой в списке.'}
         </p>
         <BackupDetails item={item} info={info} />
         <div className="backup_restore_dialog_bottom">
@@ -335,11 +336,14 @@ const BackupsPage = () => {
         setPage(1);
         await load();
         showModalWindow({
-            title: 'Бекап загружен и проверен',
+            title: result.data?.already_listed
+                ? 'Этот бекап уже в списке'
+                : 'Бекап загружен и проверен',
             content: (
                 <UploadedDialog
                     item={result.data}
                     info={info}
+                    duplicate={Boolean(result.data?.already_listed)}
                     onClose={requestCloseModal}
                     onRestore={() => askRestore(result.data)}
                 />
