@@ -54,7 +54,8 @@
             padding-bottom: 70px;
         }
 
-        &:has(.messages_page) {
+        &:has(.messages_page),
+        &:has(.tabs_page) {
             overflow: hidden;
 
             > *:first-child {
