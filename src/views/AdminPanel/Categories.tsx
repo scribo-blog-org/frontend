@@ -80,7 +80,7 @@ const DeleteCategoryActions = ({
             if (result.status) {
                 showToast({
                     type: 'success',
-                    message: 'Категория успешно удалена!',
+                    message: 'Category deleted!',
                 });
                 requestCloseModal();
                 fetchCategories();
@@ -98,14 +98,14 @@ const DeleteCategoryActions = ({
     return (
         <div className="admin_panel_content_categories_page_modal_window_bottom">
             <ActionButton disabled={isDeleting} onClick={closeModal}>
-                Отмена
+                Cancel
             </ActionButton>
             <DangerButton
                 onClick={requestDelete}
                 isActive={true}
                 isLoading={isDeleting}
             >
-                Удалить
+                Delete
             </DangerButton>
         </div>
     );
@@ -217,8 +217,8 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
             setErrors((prev: any) => ({
                 ...prev,
                 categoryName: !name
-                    ? 'Введите название'
-                    : `Название не длиннее ${FIELD_LIMITS.categoryName.max} символов`,
+                    ? 'Enter a name'
+                    : `Name must be at most ${FIELD_LIMITS.categoryName.max} characters`,
             }));
             return;
         }
@@ -250,7 +250,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
 
             showToast({
                 type: 'success',
-                message: 'Категория успешно обновлена!',
+                message: 'Category updated!',
             });
         } else {
             if (result?.errors?.body) {
@@ -265,7 +265,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
 
             showToast({
                 type: 'error',
-                message: 'Ошибка при обновлении категории!',
+                message: 'Could not update the category!',
             });
         }
     };
@@ -279,7 +279,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
     }));
 
     popupColorBody.push({
-        title: 'Без цвета',
+        title: 'No color',
         id: null,
         onClick: () => setFields({ ...fields, categoryColor: null }),
         className: 'category_color_none',
@@ -293,14 +293,14 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
                 className="admin_panel_content_categories_page_back"
                 onClick={() => setActivePage('')}
             >
-                <ArrowLeftIcon className="app-transition" /> Назад
+                <ArrowLeftIcon className="app-transition" /> Back
             </ActionButton>
             {isLoading ? (
                 <Loading size={40} />
             ) : (
                 <div className="admin_panel_content_edit_categories_page">
                     <SearchSelect
-                        input_label={'Категория'}
+                        input_label={'Category'}
                         value={category?._id}
                         onSetValue={(value: any) => {
                             setCategory(
@@ -318,10 +318,10 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
                         <div className="admin_panel_content_edit_categories_page_settings app-transition">
                             <Field
                                 error={errors?.categoryName}
-                                title={'Название'}
+                                title={'Name'}
                             >
                                 <InputField
-                                    placeholder={'Введите название категории'}
+                                    placeholder={'Enter a category name'}
                                     value={fields?.categoryName}
                                     error={errors?.categoryName}
                                     length={FIELD_LIMITS.categoryName.max}
@@ -346,7 +346,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
                                         className={`admin_panel_content_edit_categories_page_settings_color`}
                                     >
                                         <Field
-                                            title={'Цвет'}
+                                            title={'Color'}
                                             error={errors?.categoryColor}
                                         >
                                             <div className="admin_panel_content_edit_categories_page_settings_color_content app-transition">
@@ -372,7 +372,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
                             <div
                                 className={`admin_panel_content_edit_categories_page_settings_icon`}
                             >
-                                <p>Иконка</p>
+                                <p>Icon</p>
                                 <div
                                     className={`admin_panel_content_edit_categories_page_settings_icon_content app-transition`}
                                 >
@@ -418,7 +418,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
                                     doSave();
                                 }}
                             >
-                                Сохранить
+                                Save
                             </PrimaryButton>
                         </div>
                     )}
@@ -453,7 +453,7 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
         })),
         {
             id: null,
-            title: 'Без цвета',
+            title: 'No color',
             className: 'category_color_none',
             icon: <RectRoundedIcon />,
             onClick: () =>
@@ -470,8 +470,8 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
             setErrors((prev: any) => ({
                 ...prev,
                 categoryName: !name
-                    ? 'Введите название'
-                    : `Название не длиннее ${FIELD_LIMITS.categoryName.max} символов`,
+                    ? 'Enter a name'
+                    : `Name must be at most ${FIELD_LIMITS.categoryName.max} characters`,
             }));
             return;
         }
@@ -484,7 +484,7 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
         if (result.status) {
             showToast({
                 type: 'success',
-                message: 'Категория успешно создана!',
+                message: 'Category created!',
             });
 
             setActivePage('');
@@ -500,7 +500,7 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
             }
             showToast({
                 type: 'error',
-                message: 'Ошибка при создании категории!',
+                message: 'Could not create the category!',
             });
         }
     };
@@ -513,14 +513,14 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
                 onClick={() => setActivePage('')}
             >
                 <ArrowLeftIcon className="app-transition" />
-                Назад
+                Back
             </ActionButton>
 
             <div className="admin_panel_content_edit_categories_page">
                 <div className="admin_panel_content_edit_categories_page_settings app-transition">
-                    <Field error={errors?.categoryName} title={'Название'}>
+                    <Field error={errors?.categoryName} title={'Name'}>
                         <InputField
-                            placeholder="Введите название категории"
+                            placeholder="Enter a category name"
                             length={FIELD_LIMITS.categoryName.max}
                             onMouseDown={() =>
                                 setErrors((prev: any) => {
@@ -542,7 +542,7 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
 
                     <Popup body={popupColorBody}>
                         <div className="admin_panel_content_edit_categories_page_settings_color">
-                            <Field error={errors?.categoryColor} title={'Цвет'}>
+                            <Field error={errors?.categoryColor} title={'Color'}>
                                 <div className="admin_panel_content_edit_categories_page_settings_color_content app-transition">
                                     <div
                                         className={`admin_panel_content_edit_categories_page_settings_color_content_rect ${CATEGORY_COLORS[fields.categoryColor]?.className ?? ''}`}
@@ -565,7 +565,7 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
                     </Popup>
 
                     <div className="admin_panel_content_edit_categories_page_settings_icon">
-                        <p>Иконка</p>
+                        <p>Icon</p>
 
                         <div className="admin_panel_content_edit_categories_page_settings_icon_content app-transition">
                             {Object.entries(categoryIcons).map(([id]: any) => {
@@ -600,7 +600,7 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
                     </div>
 
                     <PrimaryButton isLoading={fetching} onClick={doCreate}>
-                        Создать
+                        Create
                     </PrimaryButton>
                 </div>
             </div>
@@ -635,7 +635,7 @@ const HomeCategoryPage = ({ setActivePage, setActiveCategory }: any) => {
         const variable = getComputedStyle(appRoot)
             .getPropertyValue(`--category-color-${color}`)
             .trim();
-        if (variable === '') return 'Без цвета';
+        if (variable === '') return 'No color';
 
         return variable;
     };
@@ -660,7 +660,7 @@ const HomeCategoryPage = ({ setActivePage, setActiveCategory }: any) => {
 
     const doDeleteCategory = async (category: any) => {
         showModalWindow({
-            title: 'Вы уверены что хотите удалить категорию?',
+            title: 'Are you sure you want to delete this category?',
             content: getDeleleteCategoryModalContent(
                 category,
                 requestCloseModal,
@@ -678,7 +678,7 @@ const HomeCategoryPage = ({ setActivePage, setActiveCategory }: any) => {
                     onClick={() => setActivePage('create')}
                 >
                     <PlusIcon className="app-transition" />
-                    Создать категорию
+                    Create category
                 </PrimaryButton>
                 {isLoading ? (
                     <Loading size={40} />
@@ -713,14 +713,14 @@ const HomeCategoryPage = ({ setActivePage, setActiveCategory }: any) => {
                                     </div>
                                 </div>
                                 <p className="admin_panel_content_categories_page_category_posts_count">
-                                    Постов: {category.posts_count}
+                                    Posts: {category.posts_count}
                                 </p>
                                 <div className="admin_panel_content_categories_page_category_actions">
                                     <Popup
                                         body={[
                                             [
                                                 {
-                                                    title: 'Перейти к постам',
+                                                    title: 'Go to posts',
                                                     icon: <Redirect />,
                                                     onClick: () => {
                                                         navigate(
@@ -729,7 +729,7 @@ const HomeCategoryPage = ({ setActivePage, setActiveCategory }: any) => {
                                                     },
                                                 },
                                                 {
-                                                    title: 'Редактировать',
+                                                    title: 'Edit',
                                                     icon: <EditIcon />,
                                                     onClick: () => {
                                                         setActiveCategory(
@@ -741,7 +741,7 @@ const HomeCategoryPage = ({ setActivePage, setActiveCategory }: any) => {
                                             ],
                                             [
                                                 {
-                                                    title: 'Удалить',
+                                                    title: 'Delete',
                                                     icon: <DeleteIcon />,
                                                     type: 'danger',
                                                     onClick: () => {

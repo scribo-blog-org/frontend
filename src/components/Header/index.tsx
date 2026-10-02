@@ -28,7 +28,7 @@ function Header() {
                         onClick={() => setIsDarkTheme(!isDarkTheme)}
                         className="header_item app-transition"
                         aria-label={
-                            isDarkTheme ? 'Светлая тема' : 'Тёмная тема'
+                            isDarkTheme ? 'Light theme' : 'Dark theme'
                         }
                     >
                         {isDarkTheme ? (

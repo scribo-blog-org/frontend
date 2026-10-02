@@ -224,9 +224,9 @@ const Profile = ({
 
         if (!ids.length) {
             showModalWindow({
-                title: 'Подписки',
+                title: 'Following',
                 content: (
-                    <p className="profile_follow_empty">Пока никого нет</p>
+                    <p className="profile_follow_empty">No one yet</p>
                 ),
             });
             return;
@@ -235,7 +235,7 @@ const Profile = ({
         const result = await fetchUsers(ids);
 
         showModalWindow({
-            title: `Подписки`,
+            title: `Following`,
             content: result.map((authorData: any) => (
                 <div
                     key={authorData._id}
@@ -262,9 +262,9 @@ const Profile = ({
 
         if (!ids.length) {
             showModalWindow({
-                title: 'Подписчики',
+                title: 'Followers',
                 content: (
-                    <p className="profile_follow_empty">Пока никого нет</p>
+                    <p className="profile_follow_empty">No one yet</p>
                 ),
             });
             return;
@@ -273,7 +273,7 @@ const Profile = ({
         const result = await fetchUsers(ids);
 
         showModalWindow({
-            title: `Подписчики`,
+            title: `Followers`,
             content: result.map((authorData: any) => (
                 <div
                     key={authorData?._id}
@@ -300,7 +300,7 @@ const Profile = ({
                     title={user.nick_name}
                     description={
                         user.description ||
-                        `Профиль ${user.nick_name} на Scribo.`
+                        `Profile ${user.nick_name} on Scribo.`
                     }
                     path={`/users/${user.nick_name}`}
                     image={user.avatar || undefined}
@@ -336,7 +336,7 @@ const Profile = ({
                                     {user?.nick_name}
                                 </h1>
                                 {user?.is_verified && (
-                                    <Tooltip text="Подтвержденный аккаунт">
+                                    <Tooltip text="Verified account">
                                         <Verified className="profile_info_nick_verified verified-icon" />
                                     </Tooltip>
                                 )}
@@ -389,7 +389,7 @@ const Profile = ({
                                     text={format_date_time(user?.created_date)}
                                 >
                                     <p>
-                                        Регистрация:{' '}
+                                        Signed up:{' '}
                                         {format_back(user?.created_date)}
                                     </p>
                                 </Tooltip>
@@ -412,7 +412,7 @@ const Profile = ({
                                         {posts?.length ?? '0'}
                                     </span>
                                     <span className="profile_info_stat_label">
-                                        постов
+                                        posts
                                     </span>
                                 </button>
                             </Sceleton>
@@ -430,7 +430,7 @@ const Profile = ({
                                         {user?.followers?.length ?? '0'}
                                     </span>
                                     <span className="profile_info_stat_label">
-                                        подписчиков
+                                        followers
                                     </span>
                                 </button>
                             </Sceleton>
@@ -448,7 +448,7 @@ const Profile = ({
                                         {user?.follows?.length ?? '0'}
                                     </span>
                                     <span className="profile_info_stat_label">
-                                        подписок
+                                        following
                                     </span>
                                 </button>
                             </Sceleton>
@@ -465,7 +465,7 @@ const Profile = ({
                                 onClick={open_settings}
                             >
                                 <SettingsIcon className="profile_info_action_icon" />
-                                Настройки
+                                Settings
                             </ActionButton>
                         ) : (
                             <div className="profile_info_actions">
@@ -486,7 +486,7 @@ const Profile = ({
                                         }
                                     >
                                         <CommentIcon className="profile_info_action_icon" />
-                                        Начать общение
+                                        Start a conversation
                                     </ActionButton>
                                 ) : null}
                             </div>
@@ -507,11 +507,11 @@ const Profile = ({
                             items={[
                                 <>
                                     <PostIcon />
-                                    Посты
+                                    Posts
                                 </>,
                                 <>
                                     <BookmarkOutline />
-                                    Избранные
+                                    Saved
                                 </>,
                             ]}
                             activeIndex={activeTab}

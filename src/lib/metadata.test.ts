@@ -19,8 +19,8 @@ describe('buildMetadata', () => {
 
     it('prefixes regular page titles with the brand', () => {
         expect(
-            buildMetadata({ title: 'Поддержка', path: '/support' }).title,
-        ).toBe('Поддержка | Scribo');
+            buildMetadata({ title: 'Support', path: '/support' }).title,
+        ).toBe('Support | Scribo');
     });
 
     it('hides filtered pages from the index without a canonical', () => {

@@ -37,7 +37,7 @@ async function postJsonLd(id: string) {
         return null;
     }
 
-    const title = asString(article.title) || 'Статья';
+    const title = asString(article.title) || 'Article';
     const description =
         plainTextExcerpt(asString(article.content_text)) || title;
     const featured = asString(article.featured_image);
@@ -94,10 +94,10 @@ async function profileJsonLd(id: string) {
         return null;
     }
 
-    const name = asString(user.nick_name) || asString(user.login) || 'Профиль';
+    const name = asString(user.nick_name) || asString(user.login) || 'Profile';
     const nick = asString(user.nick_name) || id;
     const description =
-        asString(user.description) || `Профиль ${name} на Scribo`;
+        asString(user.description) || `Profile ${name} on Scribo`;
     const avatar = asString(user.avatar);
     const url = absoluteUrl(`/users/${encodeURIComponent(nick)}`);
 

@@ -31,13 +31,13 @@ const PageNotFound = () => {
                 </p>
             </div>
             <div className="page_not_found_copy">
-                <h1>Страница не найдена</h1>
+                <h1>Page not found</h1>
                 <p className="page_not_found_lead">
-                    Здесь пока пусто. Возможно черновик навсегда остался в
-                    голове автора.
+                    Nothing here yet. The draft may have stayed in
+                    the author&apos;s head.
                 </p>
                 <PrimaryButton type="button" onClick={() => navigate('/')}>
-                    На главную
+                    Home
                 </PrimaryButton>
             </div>
         </div>

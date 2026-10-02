@@ -4,7 +4,6 @@ function isCompleteHashtag(text: any) {
     return /^#[^\s#]+$/.test(text);
 }
 
-// @ts-expect-error lexical TextNode static inheritance
 export class HashtagNode extends TextNode {
     static getType() {
         return 'hashtag';
@@ -66,7 +65,7 @@ export class HashtagNode extends TextNode {
                 }
                 return {
                     conversion: convertHashtagElement,
-                    priority: 3,
+                    priority: 3 as const,
                 };
             },
             a: (domNode: any) => {
@@ -75,7 +74,7 @@ export class HashtagNode extends TextNode {
                 }
                 return {
                     conversion: convertHashtagElement,
-                    priority: 3,
+                    priority: 3 as const,
                 };
             },
         };

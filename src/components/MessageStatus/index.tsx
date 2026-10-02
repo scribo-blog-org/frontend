@@ -13,7 +13,7 @@ const MessageStatus = ({ status }: any) => {
         return (
             <span
                 className="message_status message_status_sending"
-                aria-label="Отправляется"
+                aria-label="Sending"
             >
                 <ClockIcon />
             </span>
@@ -24,7 +24,7 @@ const MessageStatus = ({ status }: any) => {
         return (
             <span
                 className="message_status message_status_sent"
-                aria-label="Отправлено"
+                aria-label="Sent"
             >
                 ✓
             </span>
@@ -34,7 +34,7 @@ const MessageStatus = ({ status }: any) => {
     return (
         <span
             className="message_status message_status_read"
-            aria-label="Прочитано"
+            aria-label="Read"
         >
             ✓✓
         </span>

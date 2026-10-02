@@ -21,18 +21,18 @@ export async function generateMetadata({ params }: ProfileRouteProps) {
 
     if (!user) {
         return buildMetadata({
-            title: 'Профиль не найден',
+            title: 'Profile not found',
             path: `/users/${id}`,
             noindex: true,
         });
     }
 
-    const name = asString(user.nick_name) || asString(user.login) || 'Профиль';
+    const name = asString(user.nick_name) || asString(user.login) || 'Profile';
     const nick = asString(user.nick_name) || id;
 
     return buildMetadata({
         title: name,
-        description: asString(user.description) || `Профиль ${name} на Scribo`,
+        description: asString(user.description) || `Profile ${name} on Scribo`,
         path: `/users/${encodeURIComponent(nick)}`,
         image: asString(user.avatar) || undefined,
     });

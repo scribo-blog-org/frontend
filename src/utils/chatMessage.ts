@@ -8,8 +8,8 @@ export function messagePreviewText(message: any) {
 
 export function quotePreviewText(preview: any) {
     if (!preview || preview.deleted || preview.deleted_at) {
-        return 'Сообщение удалено';
+        return 'Message deleted';
     }
 
-    return String(preview.text || '').trim() || 'Сообщение';
+    return String(preview.text || '').trim() || 'Message';
 }

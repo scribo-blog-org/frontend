@@ -1,13 +1,13 @@
 export const SUPPORT_KINDS = [
-    { value: 'complaint', name: 'Жалоба' },
-    { value: 'request', name: 'Вопрос' },
-    { value: 'help', name: 'Помощь' },
+    { value: 'complaint', name: 'Complaint' },
+    { value: 'request', name: 'Question' },
+    { value: 'help', name: 'Help' },
 ];
 
 export const SUPPORT_STATUSES = [
-    { value: 'new', name: 'Новый' },
-    { value: 'in_review', name: 'На рассмотрении' },
-    { value: 'reviewed', name: 'Рассмотрено' },
+    { value: 'new', name: 'New' },
+    { value: 'in_review', name: 'In review' },
+    { value: 'reviewed', name: 'Reviewed' },
 ];
 
 export const kindLabel = (kind: any) =>

@@ -6,10 +6,9 @@ import { AppContext } from '@/providers/AppProviders';
 
 import ChevronDownIcon from '../../assets/svg/chevron-down.svg';
 
-import { Arrow, RoleChange } from './LogEntities';
+import { Arrow, RoleChange, StatusChange } from './LogEntities';
 import { describeDetails, type DetailRow } from './logFormat';
 
-// В раскрытой записи время с секундами: по минутам события не различить.
 const formatMoment = (date: any) =>
     new Date(date).toLocaleString('ru-RU', {
         day: '2-digit',
@@ -20,7 +19,6 @@ const formatMoment = (date: any) =>
         second: '2-digit',
     });
 
-/** Карточка со строками «подпись слева, значение справа». */
 const Card = ({ rows, children }: { rows?: DetailRow[]; children?: any }) => (
     <div className="log_card">
         {rows?.map((row, index) => (
@@ -31,6 +29,11 @@ const Card = ({ rows, children }: { rows?: DetailRow[]; children?: any }) => (
                 >
                     {row.change?.kind === 'role' ? (
                         <RoleChange from={row.change.from} to={row.change.to} />
+                    ) : row.change?.kind === 'status' ? (
+                        <StatusChange
+                            from={row.change.from}
+                            to={row.change.to}
+                        />
                     ) : row.change ? (
                         <span className="log_card_change">
                             {row.change.from ? (
@@ -53,7 +56,6 @@ const Card = ({ rows, children }: { rows?: DetailRow[]; children?: any }) => (
     </div>
 );
 
-/** Шаг на временной шкале: узел, заголовок, справа пометка, ниже содержимое. */
 const Step = ({ title, meta, tone = 'default', children }: any) => (
     <section className="log_step">
         <header className="log_step_header">
@@ -65,12 +67,6 @@ const Step = ({ title, meta, tone = 'default', children }: any) => (
     </section>
 );
 
-/**
- * Раскрытая запись. Сверху шапка (метод, путь, код ответа, стрелки к соседним
- * записям, копирование, закрытие), ниже временная шкала: запрос получен,
- * событие, что изменилось, ошибка. Внизу сырые данные для тех, кому нужен
- * точный вид.
- */
 const LogDetails = ({ log, config, names, onPrev, onNext }: any) => {
     const { showToast } = useContext(AppContext);
     const [showRaw, setShowRaw] = useState<any>(false);
@@ -81,9 +77,9 @@ const LogDetails = ({ log, config, names, onPrev, onNext }: any) => {
     const copy = async () => {
         try {
             await navigator.clipboard.writeText(raw);
-            showToast({ type: 'success', message: 'Скопировано' });
+            showToast({ type: 'success', message: 'Copied' });
         } catch {
-            showToast({ type: 'error', message: 'Не удалось скопировать' });
+            showToast({ type: 'error', message: 'Could not copy' });
         }
     };
 
@@ -114,7 +110,7 @@ const LogDetails = ({ log, config, names, onPrev, onNext }: any) => {
                     <button
                         type="button"
                         className="log_icon_button log_icon_button_up"
-                        title="Предыдущая запись"
+                        title="Previous entry"
                         disabled={!onPrev}
                         onClick={onPrev}
                     >
@@ -123,7 +119,7 @@ const LogDetails = ({ log, config, names, onPrev, onNext }: any) => {
                     <button
                         type="button"
                         className="log_icon_button"
-                        title="Следующая запись"
+                        title="Next entry"
                         disabled={!onNext}
                         onClick={onNext}
                     >
@@ -135,27 +131,27 @@ const LogDetails = ({ log, config, names, onPrev, onNext }: any) => {
                         className="log_text_button"
                         onClick={copy}
                     >
-                        Копировать
+                        Copy
                     </button>
                 </span>
             </div>
 
             <div className="log_steps">
                 {details.request.length ? (
-                    <Step title="Запрос получен" meta={details.time}>
+                    <Step title="Request received" meta={details.time}>
                         <Card rows={details.request} />
                     </Step>
                 ) : null}
 
                 <Step
-                    title="Событие"
+                    title="Event"
                     meta={details.request.length ? config.title : details.time}
                 >
                     <Card rows={details.facts} />
                 </Step>
 
                 {details.changes.length ? (
-                    <Step title="Что изменилось">
+                    <Step title="What changed">
                         <Card>
                             {details.changes.map((change: any, index) => (
                                 <div key={index} className="log_card_row">
@@ -180,7 +176,7 @@ const LogDetails = ({ log, config, names, onPrev, onNext }: any) => {
                 ) : null}
 
                 {details.error.length || details.stack ? (
-                    <Step title="Ошибка" tone="error">
+                    <Step title="Error" tone="error">
                         <Card rows={details.error}>
                             {details.stack ? (
                                 <pre className="log_pre log_pre_error">
@@ -198,7 +194,7 @@ const LogDetails = ({ log, config, names, onPrev, onNext }: any) => {
                     className="log_text_button"
                     onClick={() => setShowRaw((value: any) => !value)}
                 >
-                    {showRaw ? 'Скрыть сырые данные' : 'Сырые данные'}
+                    {showRaw ? 'Hide raw data' : 'Raw data'}
                 </button>
             </div>
             {showRaw ? <pre className="log_pre log_pre_raw">{raw}</pre> : null}

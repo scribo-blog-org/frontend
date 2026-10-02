@@ -7,7 +7,7 @@ export const ACCENT_COLOR = {
 export const CATEGORY_COLORS = {
     1: {
         id: 1,
-        name: 'Зеленый',
+        name: 'Green',
         variable: '--category-color-1',
         className: 'category_color_1',
         light: '#007e2b',
@@ -15,7 +15,7 @@ export const CATEGORY_COLORS = {
     },
     2: {
         id: 2,
-        name: 'Желтый',
+        name: 'Yellow',
         variable: '--category-color-2',
         className: 'category_color_2',
         light: '#d99600',
@@ -23,7 +23,7 @@ export const CATEGORY_COLORS = {
     },
     3: {
         id: 3,
-        name: 'Синий',
+        name: 'Blue',
         variable: '--category-color-3',
         className: 'category_color_3',
         light: '#0047c4',
@@ -31,7 +31,7 @@ export const CATEGORY_COLORS = {
     },
     4: {
         id: 4,
-        name: 'Фиолетовый',
+        name: 'Purple',
         variable: '--category-color-4',
         className: 'category_color_4',
         light: '#7a00ff',
@@ -39,7 +39,7 @@ export const CATEGORY_COLORS = {
     },
     5: {
         id: 5,
-        name: 'Красный',
+        name: 'Red',
         variable: '--category-color-5',
         className: 'category_color_5',
         light: '#ff0000',
@@ -47,7 +47,7 @@ export const CATEGORY_COLORS = {
     },
     6: {
         id: 6,
-        name: 'Голубой',
+        name: 'Sky blue',
         variable: '--category-color-6',
         className: 'category_color_6',
         light: '#00b2ff',
@@ -55,7 +55,7 @@ export const CATEGORY_COLORS = {
     },
     7: {
         id: 7,
-        name: 'Бирюзовый',
+        name: 'Teal',
         variable: '--category-color-7',
         className: 'category_color_7',
         light: '#00c0aa',
@@ -63,7 +63,7 @@ export const CATEGORY_COLORS = {
     },
     8: {
         id: 8,
-        name: 'Розовый',
+        name: 'Pink',
         variable: '--category-color-8',
         className: 'category_color_8',
         light: '#ff00c4',
@@ -71,7 +71,7 @@ export const CATEGORY_COLORS = {
     },
     9: {
         id: 9,
-        name: 'Оранжевый',
+        name: 'Orange',
         variable: '--category-color-9',
         className: 'category_color_9',
         light: '#ff6800',
@@ -79,7 +79,7 @@ export const CATEGORY_COLORS = {
     },
     10: {
         id: 10,
-        name: 'Лайм',
+        name: 'Lime',
         variable: '--category-color-10',
         className: 'category_color_10',
         light: '#83ad00',

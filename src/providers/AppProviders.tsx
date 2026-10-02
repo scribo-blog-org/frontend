@@ -76,7 +76,6 @@ function AppModals({
 function AppFooter() {
     const pathname = usePathname() || '';
 
-    // Страницы, которые занимают всю высоту и прокручивают только своё содержимое.
     if (
         pathname.startsWith('/messages') ||
         pathname.startsWith('/admin-panel')

@@ -13,14 +13,14 @@ import Loading from '../../components/Ui/Loading';
 import './Dashboard.scss';
 
 const RANGES = [
-    { value: '24h', label: '24 часа' },
-    { value: 7, label: '7 дней' },
-    { value: 14, label: '14 дней' },
-    { value: 30, label: '30 дней' },
+    { value: '24h', label: '24 hours' },
+    { value: 7, label: '7 days' },
+    { value: 14, label: '14 days' },
+    { value: 30, label: '30 days' },
 ];
 
 const TRAFFIC_KEYS = [
-    { key: 'visits', label: 'Посещения', color: 'var(--text-color)' },
+    { key: 'visits', label: 'Visits', color: 'var(--text-color)' },
 ];
 
 const formatDay = (iso: any) => {
@@ -78,16 +78,16 @@ const deltaLabel = (current: any, previous: any) => {
     }
 
     if (!prev) {
-        return { text: 'Нет данных за прошлый период', tone: 'flat' };
+        return { text: 'No data for the previous period', tone: 'flat' };
     }
 
     const abs = curr - prev;
     if (abs === 0) {
-        return { text: 'без изменений', tone: 'flat' };
+        return { text: 'no changes', tone: 'flat' };
     }
 
     return {
-        text: `${abs > 0 ? '+' : ''}${formatNumber(abs)} к прошлому периоду`,
+        text: `${abs > 0 ? '+' : ''}${formatNumber(abs)} compared with the previous period`,
         tone: abs > 0 ? 'up' : 'down',
     };
 };
@@ -308,7 +308,7 @@ const RankedBars = ({ items, empty, wideLabel }: any) => {
 
     if (!items.length) {
         return (
-            <p className="analytics_empty">{empty || 'Нет данных за период'}</p>
+            <p className="analytics_empty">{empty || 'No data for this period'}</p>
         );
     }
 
@@ -411,57 +411,57 @@ const ActivityMetric = ({ label, value }: any) => (
 const ActivityPanel = ({ activity }: any) => (
     <section className="analytics_block analytics_activity app-transition">
         <div className="analytics_activity_group">
-            <h3 className="analytics_block_title">Посты</h3>
+            <h3 className="analytics_block_title">Posts</h3>
             <div className="analytics_activity_metrics">
                 <ActivityMetric
-                    label="Написано"
+                    label="Written"
                     value={activity?.posts?.created}
                 />
                 <ActivityMetric
-                    label="Изменено"
+                    label="Updated"
                     value={activity?.posts?.updated}
                 />
                 <ActivityMetric
-                    label="Удалено"
+                    label="Deleted"
                     value={activity?.posts?.deleted}
                 />
             </div>
         </div>
         <div className="analytics_activity_group">
-            <h3 className="analytics_block_title">Пользователи</h3>
+            <h3 className="analytics_block_title">Users</h3>
             <div className="analytics_activity_metrics">
                 <ActivityMetric
-                    label="Новые"
+                    label="New"
                     value={activity?.users?.registered}
                 />
                 <ActivityMetric
-                    label="Авторизации"
+                    label="Sign-ins"
                     value={activity?.users?.logins}
                 />
             </div>
         </div>
         <div className="analytics_activity_group">
-            <h3 className="analytics_block_title">Комментарии</h3>
+            <h3 className="analytics_block_title">Comments</h3>
             <div className="analytics_activity_metrics">
                 <ActivityMetric
-                    label="Написано"
+                    label="Written"
                     value={activity?.comments?.created}
                 />
                 <ActivityMetric
-                    label="Изменено"
+                    label="Updated"
                     value={activity?.comments?.updated}
                 />
                 <ActivityMetric
-                    label="Удалено"
+                    label="Deleted"
                     value={activity?.comments?.deleted}
                 />
             </div>
         </div>
         <div className="analytics_activity_group">
-            <h3 className="analytics_block_title">Лайки</h3>
+            <h3 className="analytics_block_title">Likes</h3>
             <div className="analytics_activity_metrics">
                 <ActivityMetric
-                    label="На посты"
+                    label="On posts"
                     value={activity?.likes?.posts}
                 />
             </div>
@@ -488,14 +488,14 @@ const AudienceRatio = ({ audience }: any) => {
             <div className="analytics_audience_legend">
                 <div className="analytics_audience_item">
                     <span className="analytics_audience_swatch analytics_audience_swatch_auth" />
-                    <span>Авторизованные</span>
+                    <span>Signed-in</span>
                     <span className="analytics_audience_count">
                         {formatNumber(authorized)}
                     </span>
                 </div>
                 <div className="analytics_audience_item">
                     <span className="analytics_audience_swatch analytics_audience_swatch_anon" />
-                    <span>Анонимные</span>
+                    <span>Anonymous</span>
                     <span className="analytics_audience_count">
                         {formatNumber(anonymous)}
                     </span>
@@ -526,7 +526,7 @@ const DashboardPage = () => {
                 showToast({
                     type: 'error',
                     message:
-                        result?.message || 'Не удалось загрузить аналитику',
+                        result?.message || 'Could not load analytics',
                 });
                 setData(null);
                 setIsLoading(false);
@@ -584,7 +584,7 @@ const DashboardPage = () => {
         <div className="analytics">
             <div className="analytics_period_panel">
                 <div className="analytics_period_controls">
-                    <p className="analytics_period_label">Период</p>
+                    <p className="analytics_period_label">Period</p>
                     <div className="analytics_period_ranges">
                         {RANGES.map((item: any) => (
                             <ChipButton
@@ -600,7 +600,7 @@ const DashboardPage = () => {
                 </div>
                 <p className="analytics_period_bounds">
                     <span className="analytics_period_bounds_label">
-                        Границы
+                        Range
                     </span>
                     {formatRange(range)}
                 </p>
@@ -611,18 +611,18 @@ const DashboardPage = () => {
             ) : (
                 <>
                     <AnalyticsScope
-                        title="За выбранный период"
-                        hint={`Метрики ниже считаются только за ${activeRange?.label?.toLowerCase() || 'период'}`}
+                        title="For the selected period"
+                        hint={`The metrics below count only ${activeRange?.label?.toLowerCase() || 'period'}`}
                         className="analytics_scope_period"
                     >
                         <AnalyticsGroup
-                            title="Трафик"
-                            hint="По дням, а за последние сутки по часам"
+                            title="Traffic"
+                            hint="By day, and by hour for the last 24 hours"
                         >
                             <div className="analytics_traffic">
                                 <div className="analytics_traffic_stats">
                                     <StatCard
-                                        label="Посещения"
+                                        label="Visits"
                                         value={totals.visits}
                                         previous={totals.visits_prev}
                                     />
@@ -636,7 +636,7 @@ const DashboardPage = () => {
                                         />
                                     ) : (
                                         <p className="analytics_empty">
-                                            Нет посещений за период
+                                            No visits for this period
                                         </p>
                                     )}
                                 </section>
@@ -644,58 +644,58 @@ const DashboardPage = () => {
                         </AnalyticsGroup>
 
                         <AnalyticsGroup
-                            title="Активность"
-                            hint="Посты, пользователи, комментарии и лайки"
+                            title="Activity"
+                            hint="Posts, users, comments, and likes"
                         >
                             <ActivityPanel activity={data?.activity} />
                         </AnalyticsGroup>
 
                         <AnalyticsGroup
-                            title="Аудитория"
-                            hint="Авторизованные и анонимные просмотры страниц"
+                            title="Audience"
+                            hint="Signed-in and anonymous page views"
                         >
                             <AudienceRatio audience={data?.audience} />
                         </AnalyticsGroup>
 
-                        <AnalyticsGroup title="Поиск" hint="Топ-5 запросов">
+                        <AnalyticsGroup title="Search" hint="Top 5 queries">
                             <section className="analytics_block app-transition">
                                 <RankedBars
                                     items={topQueries}
                                     wideLabel
-                                    empty="Пока нет поисковых запросов"
+                                    empty="No search queries yet"
                                 />
                             </section>
                         </AnalyticsGroup>
                     </AnalyticsScope>
 
                     <AnalyticsScope
-                        title="Общая статистика"
-                        hint="Не зависит от выбранного периода"
+                        title="Overview"
+                        hint="Does not depend on the selected period"
                         className="analytics_scope_overall"
                     >
                         <div className="analytics_grid">
                             <AnalyticsGroup
-                                title="Топ постов"
-                                hint="Суммарные просмотры постов"
+                                title="Top posts"
+                                hint="Total post views"
                             >
                                 <section className="analytics_block app-transition">
                                     <RankedBars
                                         items={topPosts}
                                         wideLabel
-                                        empty="Пока нет просмотров постов"
+                                        empty="No post views yet"
                                     />
                                 </section>
                             </AnalyticsGroup>
 
                             <AnalyticsGroup
-                                title="Теги"
-                                hint="По всему контенту на сайте"
+                                title="Tags"
+                                hint="Across all content on the site"
                             >
                                 <section className="analytics_block app-transition">
                                     <RankedBars
                                         items={topHashtags}
                                         wideLabel
-                                        empty="В контенте пока нет тегов"
+                                        empty="This content has no tags yet"
                                     />
                                 </section>
                             </AnalyticsGroup>

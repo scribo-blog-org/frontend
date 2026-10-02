@@ -38,40 +38,39 @@ const AdminPanel = () => {
 
     const pages = [
         {
-            title: 'Дашборд',
+            title: 'Dashboard',
             key: 'dashboard',
             icon: <ChartIcon />,
             content: <DashboardPage />,
         },
         {
-            title: 'Категории',
+            title: 'Categories',
             key: 'categories',
             icon: <TagIcon />,
             content: <CategoriesPage />,
         },
         {
-            title: 'Администраторы',
+            title: 'Administrators',
             key: 'admins',
             icon: <PeoplesIcon />,
             content: <AdminsPage />,
         },
         {
-            title: 'Логи',
+            title: 'Logs',
             key: 'logs',
             icon: <LogIcon />,
             content: <LogsPage />,
         },
         {
-            title: 'Запросы',
+            title: 'Requests',
             key: 'requests',
             icon: <CommentIcon />,
             content: <RequestsPage />,
         },
-        // В дампе вся база, поэтому вкладка только у tech_admin, как и API.
         ...(profile?.role === 'tech_admin'
             ? [
                   {
-                      title: 'Бекапы',
+                      title: 'Backups',
                       key: 'backups',
                       icon: <ShieldIcon />,
                       content: <BackupsPage />,
@@ -82,7 +81,7 @@ const AdminPanel = () => {
 
     return (
         <div className="admin_panel_page">
-            <TabsPage label="Панель администратора" pages={pages} />
+            <TabsPage label="Admin panel" pages={pages} />
         </div>
     );
 };

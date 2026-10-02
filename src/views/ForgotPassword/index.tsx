@@ -55,7 +55,7 @@ const ForgotPassword = () => {
 
     const sendCode = async (fromResend: any = false) => {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-            setErrors({ userEmail: 'Некорректная почта' });
+            setErrors({ userEmail: 'Invalid email' });
             return;
         }
 
@@ -69,7 +69,7 @@ const ForgotPassword = () => {
 
         if (result?.statusCode === 429) {
             showToast({
-                message: 'Слишком много запросов. Подождите немного.',
+                message: 'Too many requests. Please wait a moment.',
                 type: 'error',
             });
             return;
@@ -79,14 +79,14 @@ const ForgotPassword = () => {
             setCode(Array(CODE_LENGTH).fill(''));
             setStep('code');
             showToast({
-                message: 'Если аккаунт существует, мы отправили код на почту',
+                message: 'If the account exists, we sent a code to the email',
                 type: 'success',
             });
             return;
         }
 
         applyBodyErrors(result);
-        showToast({ message: 'Ошибка!', type: 'error' });
+        showToast({ message: 'Error!', type: 'error' });
     };
 
     const confirmCode = async () => {
@@ -107,7 +107,7 @@ const ForgotPassword = () => {
 
         if (result?.statusCode === 429) {
             showToast({
-                message: 'Слишком много попыток. Подождите немного.',
+                message: 'Too many attempts. Please wait a moment.',
                 type: 'error',
             });
             return;
@@ -123,7 +123,7 @@ const ForgotPassword = () => {
         setErrors({
             emailCode: result?.errors?.body?.emailCode?.message || ' ',
         });
-        showToast({ message: 'Неверный код', type: 'error' });
+        showToast({ message: 'Invalid code', type: 'error' });
     };
 
     const submitPassword = async () => {
@@ -132,20 +132,20 @@ const ForgotPassword = () => {
             passwords.newPassword.length < FIELD_LIMITS.password.min ||
             passwords.newPassword.length > FIELD_LIMITS.password.max
         ) {
-            next.newPassword = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`;
+            next.newPassword = `Password must be from ${FIELD_LIMITS.password.min} to ${FIELD_LIMITS.password.max} characters`;
         }
         if (
             passwords.newPasswordConfirm.length < FIELD_LIMITS.password.min ||
             passwords.newPasswordConfirm.length > FIELD_LIMITS.password.max
         ) {
-            next.newPasswordConfirm = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`;
+            next.newPasswordConfirm = `Password must be from ${FIELD_LIMITS.password.min} to ${FIELD_LIMITS.password.max} characters`;
         }
         if (
             !next.newPassword &&
             !next.newPasswordConfirm &&
             passwords.newPassword !== passwords.newPasswordConfirm
         ) {
-            next.newPasswordConfirm = 'Пароли не совпадают';
+            next.newPasswordConfirm = 'Passwords do not match';
         }
         if (Object.keys(next).length) {
             setErrors(next);
@@ -167,7 +167,7 @@ const ForgotPassword = () => {
 
         if (result?.statusCode === 429) {
             showToast({
-                message: 'Слишком много попыток. Подождите немного.',
+                message: 'Too many attempts. Please wait a moment.',
                 type: 'error',
             });
             return;
@@ -177,7 +177,7 @@ const ForgotPassword = () => {
             setAccessToken(null);
             setProfile(null);
             showToast({
-                message: 'Пароль изменён. Войдите с новым паролем.',
+                message: 'Password changed. Log in with the new password.',
                 type: 'success',
             });
             navigate('/auth/login');
@@ -185,7 +185,7 @@ const ForgotPassword = () => {
         }
 
         applyBodyErrors(result);
-        showToast({ message: 'Ошибка!', type: 'error' });
+        showToast({ message: 'Error!', type: 'error' });
     };
 
     return (
@@ -199,10 +199,10 @@ const ForgotPassword = () => {
                     }}
                 >
                     <div className="auth_page_stack">
-                        <h1 className="auth_page_title">Сброс пароля</h1>
+                        <h1 className="auth_page_title">Password reset</h1>
                         <div className="auth_page_group section app-transition">
                             <Field
-                                title="Почта"
+                                title="Email"
                                 error={errors?.userEmail ?? null}
                             >
                                 <InputField
@@ -222,13 +222,13 @@ const ForgotPassword = () => {
                                 type="submit"
                                 isLoading={pendingAction === 'submit'}
                             >
-                                Отправить код
+                                Send code
                             </PrimaryButton>
                         </div>
                     </div>
                     <p className="redirect_object">
-                        Вспомнили пароль?
-                        <Link href="/auth/login">Войти</Link>
+                        Remembered your password?
+                        <Link href="/auth/login">Log in</Link>
                     </p>
                 </form>
             ) : null}
@@ -242,7 +242,7 @@ const ForgotPassword = () => {
                     }}
                 >
                     <div className="auth_page_stack">
-                        <h1 className="auth_page_title">Код из письма</h1>
+                        <h1 className="auth_page_title">Code from the email</h1>
                         <div className="auth_page_group section app-transition">
                             <div className="otp_container">
                                 <div className="otp_container_content">
@@ -260,7 +260,7 @@ const ForgotPassword = () => {
                                 isLoading={pendingAction === 'submit'}
                                 disabled={Boolean(pendingAction)}
                             >
-                                Продолжить
+                                Continue
                             </PrimaryButton>
                             <ActionButton
                                 type="button"
@@ -268,7 +268,7 @@ const ForgotPassword = () => {
                                 isLoading={pendingAction === 'resend'}
                                 disabled={Boolean(pendingAction)}
                             >
-                                Отправить код ещё раз
+                                Send the code again
                             </ActionButton>
                         </div>
                     </div>
@@ -279,7 +279,7 @@ const ForgotPassword = () => {
                             disabled={Boolean(pendingAction)}
                             onClick={() => setStep('email')}
                         >
-                            Изменить почту
+                            Change email
                         </button>
                     </p>
                 </form>
@@ -294,10 +294,10 @@ const ForgotPassword = () => {
                     }}
                 >
                     <div className="auth_page_stack">
-                        <h1 className="auth_page_title">Новый пароль</h1>
+                        <h1 className="auth_page_title">New password</h1>
                         <div className="auth_page_group section app-transition">
                             <Field
-                                title="Новый пароль"
+                                title="New password"
                                 error={errors?.newPassword ?? null}
                             >
                                 <InputField
@@ -311,13 +311,13 @@ const ForgotPassword = () => {
                                         })
                                     }
                                     onFocus={() => handleFocus('newPassword')}
-                                    placeholder="Новый пароль"
+                                    placeholder="New password"
                                     value={passwords.newPassword}
                                     error={errors?.newPassword ?? null}
                                 />
                             </Field>
                             <Field
-                                title="Повторите пароль"
+                                title="Repeat the password"
                                 error={errors?.newPasswordConfirm ?? null}
                             >
                                 <InputField
@@ -333,7 +333,7 @@ const ForgotPassword = () => {
                                     onFocus={() =>
                                         handleFocus('newPasswordConfirm')
                                     }
-                                    placeholder="Повторите пароль"
+                                    placeholder="Repeat the password"
                                     value={passwords.newPasswordConfirm}
                                     error={errors?.newPasswordConfirm ?? null}
                                 />
@@ -342,12 +342,12 @@ const ForgotPassword = () => {
                                 type="submit"
                                 isLoading={pendingAction === 'submit'}
                             >
-                                Сменить пароль
+                                Change password
                             </PrimaryButton>
                         </div>
                     </div>
                     <p className="redirect_object">
-                        <Link href="/auth/login">Вернуться ко входу</Link>
+                        <Link href="/auth/login">Back to sign-in</Link>
                     </p>
                 </form>
             ) : null}

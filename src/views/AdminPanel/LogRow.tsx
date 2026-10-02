@@ -11,6 +11,7 @@ import {
     GuestEntity,
     PostEntity,
     RoleChange,
+    StatusChange,
     SupportEntity,
     SupportStatus,
     SystemEntity,
@@ -54,7 +55,6 @@ const ErrorText = ({ text, title }: any) =>
         </span>
     ) : null;
 
-/** Что стоит в строке после действия: пост, категория, пользователь, файл. */
 const objectOf = (log: any, config: any, ctx: any) => {
     const data = log.data ?? {};
     const { users, posts, categories, setFilter } = ctx;
@@ -113,7 +113,7 @@ const objectOf = (log: any, config: any, ctx: any) => {
                     {log.type === 'server_start'
                         ? `v${data.version ?? '?'} · ${data.env ?? ''}`
                         : log.type === 'db_version_sync'
-                          ? `v${data.app_version ?? '?'} · данные ${data.to_version ?? '?'}`
+                          ? `v${data.app_version ?? '?'} · data ${data.to_version ?? '?'}`
                           : log.type === 'server_error'
                             ? `${data.method ?? ''} ${data.path ?? ''}`
                             : (data.trigger ?? '')}
@@ -131,7 +131,6 @@ const COMMENT_TYPES = [
     'unlike_comment',
 ];
 
-/** Подпись-подсказка для обрезанных деталей: полный текст изменений. */
 const changesTitle = (changes: any) =>
     describeChanges(changes)
         .map((row: any) =>
@@ -141,7 +140,6 @@ const changesTitle = (changes: any) =>
         )
         .join('\n');
 
-/** Колонка деталей: что именно изменилось или что было написано. Нет деталей, нет содержимого. */
 const detailsOf = (log: any) => {
     const data = log.data ?? {};
 
@@ -180,7 +178,16 @@ const detailsOf = (log: any) => {
         case 'reply_support_request':
             return { node: <Quote text={data.reply_preview} /> };
         case 'update_support_status':
-            return { node: <SupportStatus status={data.status} /> };
+            return {
+                node: data.previous_status ? (
+                    <StatusChange
+                        from={data.previous_status}
+                        to={data.status}
+                    />
+                ) : (
+                    <SupportStatus status={data.status} />
+                ),
+            };
         case 'server_error':
             return {
                 node: <ErrorText text={data.error} />,
@@ -195,11 +202,6 @@ const detailsOf = (log: any) => {
     }
 };
 
-/**
- * Одна строка, колонки фиксированной ширины, поэтому они выровнены по всем
- * строкам: цвет действия, кто, что сделал, над чем, детали, когда. Клик по
- * строке раскрывает под ней всё, что о записи известно.
- */
 const LogRow = ({
     log,
     users,
@@ -213,9 +215,6 @@ const LogRow = ({
 }: any) => {
     const itemRef = useRef<any>(null);
 
-    // Раскрывает клик в любом месте строки, кроме самих сущностей: на них
-    // открывается их меню. Клики из меню (оно рисуется в портале, вне строки)
-    // тоже не считаются.
     const handleClick = (event: any) => {
         if (
             !event.currentTarget.contains(event.target) ||
@@ -227,8 +226,6 @@ const LogRow = ({
         onToggle?.();
     };
 
-    // Раскрытая запись, особенно у нижнего края или после перехода стрелкой,
-    // должна оказаться в видимой части списка.
     useEffect(() => {
         if (expanded) {
             itemRef.current?.scrollIntoView({

@@ -1,4 +1,3 @@
-// Форматирование записей журнала без зависимостей от компонентов: так оно проверяется тестами.
 
 import { kindLabel, statusLabel } from '../Support/constants';
 
@@ -8,35 +7,35 @@ export const formatSize = (bytes: any) => {
     }
 
     if (bytes < 1024 * 1024) {
-        return `${Math.max(1, Math.round(bytes / 1024))} КБ`;
+        return `${Math.max(1, Math.round(bytes / 1024))} KB`;
     }
 
-    return `${(bytes / 1024 / 1024).toFixed(1)} МБ`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 };
 
 const FIELD_LABELS: Record<string, string> = {
-    title: 'Название',
-    category: 'Категория',
-    image: 'Фото',
-    content: 'Текст',
-    name: 'Название',
-    icon: 'Иконка',
-    color: 'Цвет',
-    text: 'Текст',
-    nick_name: 'Ник',
-    description: 'Описание',
-    avatar: 'Аватар',
-    is_email_public: 'Почта видна всем',
-    is_saved_posts_public: 'Сохранённые видны всем',
-    is_last_activity_public: 'Активность видна всем',
+    title: 'Name',
+    category: 'Category',
+    image: 'Photo',
+    content: 'Text',
+    name: 'Name',
+    icon: 'Icon',
+    color: 'Color',
+    text: 'Text',
+    nick_name: 'Nick',
+    description: 'Description',
+    avatar: 'Avatar',
+    is_email_public: 'Email is visible to everyone',
+    is_saved_posts_public: 'Saved posts are visible to everyone',
+    is_last_activity_public: 'Activity is visible to everyone',
 };
 
 export const fieldLabel = (field: string) => FIELD_LABELS[field] ?? field;
 
 const WORDS: Record<string, string> = {
-    added: 'добавлено',
-    changed: 'заменено',
-    removed: 'удалено',
+    added: 'added',
+    changed: 'replaced',
+    removed: 'deleted',
 };
 
 const formatValue = (field: string, value: any) => {
@@ -45,7 +44,7 @@ const formatValue = (field: string, value: any) => {
     }
 
     if (typeof value === 'boolean') {
-        return value ? 'да' : 'нет';
+        return value ? 'yes' : 'no';
     }
 
     if ((field === 'icon' || field === 'color') && typeof value === 'number') {
@@ -55,7 +54,6 @@ const formatValue = (field: string, value: any) => {
     return String(value);
 };
 
-/** Строки «поле: было → стало» для колонки изменений. */
 export const describeChanges = (changes: any) =>
     (Array.isArray(changes) ? changes : []).map((change: any) => {
         const label = fieldLabel(change.field);
@@ -64,10 +62,10 @@ export const describeChanges = (changes: any) =>
             const sized =
                 typeof change.from_length === 'number' &&
                 typeof change.to_length === 'number'
-                    ? ` · ${change.from_length} → ${change.to_length} симв.`
+                    ? ` · ${change.from_length} → ${change.to_length} chars`
                     : '';
 
-            return { label, from: null, to: `изменён${sized}` };
+            return { label, from: null, to: `edited${sized}` };
         }
 
         if (
@@ -88,27 +86,23 @@ export type DetailRow = {
     label: string;
     value: string;
     mono?: boolean;
-    /** Если строка это «было → стало», здесь обе части: интерфейс рисует их по-своему. */
-    change?: { kind: 'role' | 'text'; from: string | null; to: string };
+    change?: {
+        kind: 'role' | 'status' | 'text';
+        from: string | null;
+        to: string;
+    };
 };
 
 export type LogDetails = {
-    /** Когда произошло, с секундами. */
     time: string | null;
-    /** Метод и путь запроса, который породил запись. */
     route: { method: string; path: string } | null;
-    /** Факты о самом событии. */
     facts: DetailRow[];
     changes: ReturnType<typeof describeChanges>;
-    /** Остальное о запросе: id, адрес, браузер. */
     request: DetailRow[];
-    /** Код ответа и текст ошибки. */
     error: DetailRow[];
     stack: string | null;
 };
 
-// Ключи, которые разобраны отдельно. Всё остальное, что появится в записи,
-// покажется в конце под своим именем: новое поле не потеряется.
 const KNOWN_KEYS = new Set([
     'request',
     'changes',
@@ -177,13 +171,8 @@ const KNOWN_KEYS = new Set([
 const present = (value: any) =>
     value !== null && value !== undefined && value !== '';
 
-const yesNo = (value: any) => (value ? 'да' : 'нет');
+const yesNo = (value: any) => (value ? 'yes' : 'no');
 
-/**
- * Что показать в раскрытой записи: факты о событии, изменения, запрос, стек.
- * Всё, что есть в записи, в человеческих подписях; сырые данные остаются
- * отдельно, для тех, кому нужен точный вид.
- */
 export type KnownNames = {
     user?: string;
     target?: string;
@@ -194,7 +183,6 @@ export type KnownNames = {
 export function describeDetails(
     log: any,
     formatDate: (date: any) => string = (date) => String(date),
-    // Живые названия для записей, сделанных до появления снимков в логе.
     names: KnownNames = {},
 ): LogDetails {
     const data = log?.data ?? {};
@@ -211,31 +199,31 @@ export function describeDetails(
     };
 
     if (data.system) {
-        add('Источник', 'Система');
+        add('Source', 'System');
     } else if (data.user) {
         add(
-            'Кто',
-            `${data.user_nick ?? names.user ?? 'удалённый пользователь'}${data.user_role ? ` · ${data.user_role}` : ''}`,
+            'Who',
+            `${data.user_nick ?? names.user ?? 'deleted user'}${data.user_role ? ` · ${data.user_role}` : ''}`,
         );
-        add('ID пользователя', data.user, true);
+        add('User ID', data.user, true);
     }
 
-    add('Пост', data.post_title ?? names.post);
-    add('ID поста', data.post, true);
-    add('Категория', data.category_snapshot?.name ?? names.category);
-    add('ID категории', data.category, true);
-    add('Комментарий', data.comment_text);
-    add('ID комментария', data.comment, true);
-    add('Ответ на комментарий', data.parent_comment, true);
+    add('Post', data.post_title ?? names.post);
+    add('Post ID', data.post, true);
+    add('Category', data.category_snapshot?.name ?? names.category);
+    add('Category ID', data.category, true);
+    add('Comment', data.comment_text);
+    add('Comment ID', data.comment, true);
+    add('Reply to a comment', data.parent_comment, true);
 
     const target = data.target_user ?? data.updated_user;
 
-    add('Над пользователем', data.target_nick ?? names.target);
-    add('ID пользователя', target, true);
+    add('On the user', data.target_nick ?? names.target);
+    add('User ID', target, true);
 
     if (present(data.old_role) || present(data.new_role)) {
         add(
-            'Роль',
+            'Role',
             `${data.old_role ?? '—'} → ${data.new_role ?? '—'}`,
             false,
             {
@@ -248,67 +236,67 @@ export function describeDetails(
 
     if (present(data.status) && present(data.previous_status)) {
         add(
-            'Статус',
+            'Status',
             `${statusLabel(data.previous_status)} → ${statusLabel(data.status)}`,
             false,
             {
-                kind: 'text',
-                from: statusLabel(data.previous_status),
-                to: statusLabel(data.status),
+                kind: 'status',
+                from: String(data.previous_status),
+                to: String(data.status),
             },
         );
     } else if (log?.type === 'update_support_status') {
-        add('Статус', statusLabel(data.status));
+        add('Status', statusLabel(data.status));
     } else if (log?.type === 'backup_restore_result') {
-        add('Итог', data.status === 'success' ? 'успешно' : 'не удалось');
+        add('Result', data.status === 'success' ? 'success' : 'failed');
     }
 
-    add('Удалено комментариев', data.comments_removed);
-    add('Удалено комментариев (вместе с ответами)', data.removed);
-    add('Лайков было', data.likes_count);
-    add('Просмотров было', data.views_count);
-    add('Длина текста', data.content_length);
+    add('Comments deleted', data.comments_removed);
+    add('Comments deleted (including replies)', data.removed);
+    add('Likes before', data.likes_count);
+    add('Views before', data.views_count);
+    add('Text length', data.content_length);
 
     if (typeof data.has_image === 'boolean') {
-        add('С картинкой', yesNo(data.has_image));
+        add('With an image', yesNo(data.has_image));
     }
 
-    add('Тип обращения', data.kind ? kindLabel(data.kind) : null);
-    add('Почта гостя', data.email);
-    add('Сообщение', data.message_preview);
-    add('Ответ', data.reply_preview);
-    add('Отвечал', data.author_type);
-    add('ID обращения', data.support_request, true);
+    add('Request type', data.kind ? kindLabel(data.kind) : null);
+    add('Guest email', data.email);
+    add('Message', data.message_preview);
+    add('Reply', data.reply_preview);
+    add('Replied', data.author_type);
+    add('Request ID', data.support_request, true);
 
-    add('Файл', data.file_name, true);
-    add('Имя загруженного файла', data.original_name, true);
-    add('Версия приложения в архиве', data.app_version);
-    add('Версия данных в архиве', data.db_version);
-    add('База в архиве', data.source_db);
+    add('File', data.file_name, true);
+    add('Uploaded file name', data.original_name, true);
+    add('App version in the archive', data.app_version);
+    add('Data version in the archive', data.db_version);
+    add('Database in the archive', data.source_db);
     if (log?.type === 'db_version_sync') {
         add(
-            'Версия данных',
+            'Data version',
             `${data.from_version ?? '—'} → ${data.to_version ?? '—'}`,
         );
         add(
-            'Версия приложения',
+            'App version',
             `${data.from_app_version ?? '—'} → ${data.app_version ?? '—'}`,
         );
     }
-    add('ID бекапа в манифесте', data.source_backup, true);
-    add('Размер файла', data.size_bytes ? formatSize(data.size_bytes) : null);
-    add('Удалено по ротации', data.removed_files);
-    add('Откат вернул прежнее состояние', data.rolled_back ? 'да' : null);
-    add('Страховочный снимок', data.safety_backup, true);
+    add('Backup ID in the manifest', data.source_backup, true);
+    add('File size', data.size_bytes ? formatSize(data.size_bytes) : null);
+    add('Deleted by rotation', data.removed_files);
+    add('Restore rolled back to the previous state', data.rolled_back ? 'yes' : null);
+    add('Safety snapshot', data.safety_backup, true);
     if (data.safety_removed) {
-        add('Снимок после отката', 'удалён');
+        add('Snapshot after restore', 'deleted');
     }
-    add('Запуск', data.trigger);
+    add('Run', data.trigger);
 
-    add('Версия', data.version);
+    add('Version', data.version);
     add('Node', data.node);
-    add('Окружение', data.env);
-    add('Порт', data.port);
+    add('Environment', data.env);
+    add('Port', data.port);
 
     Object.entries(data).forEach(([key, value]) => {
         if (
@@ -320,7 +308,7 @@ export function describeDetails(
         }
     });
 
-    add('ID записи', log?._id, true);
+    add('Record ID', log?._id, true);
 
     const request: DetailRow[] = [];
     const meta = data.request ?? {};
@@ -332,15 +320,15 @@ export function describeDetails(
             : null;
 
     [
-        ['ID запроса', meta.id],
+        ['Request ID', meta.id],
         ['IP', meta.ip],
-        ['Браузер', meta.user_agent],
+        ['Browser', meta.user_agent],
     ].forEach(([label, value]) => {
         if (present(value)) {
             request.push({
                 label: label as string,
                 value: String(value),
-                mono: label !== 'Браузер',
+                mono: label !== 'Browser',
             });
         }
     });
@@ -348,11 +336,11 @@ export function describeDetails(
     const error: DetailRow[] = [];
 
     if (log?.type === 'server_error' && present(data.status)) {
-        error.push({ label: 'Код ответа', value: String(data.status) });
+        error.push({ label: 'Response code', value: String(data.status) });
     }
 
     if (present(data.error)) {
-        error.push({ label: 'Ошибка', value: String(data.error), mono: true });
+        error.push({ label: 'Error', value: String(data.error), mono: true });
     }
 
     return {

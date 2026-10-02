@@ -31,7 +31,7 @@ const UserBadge = ({
                     <p className="user_badge_info_name">{data.nick_name}</p>
                     {data?.is_verified ? (
                         <Tooltip
-                            text="Подтвержденный пользователь"
+                            text="Verified user"
                             position="bottom"
                         >
                             <Verified

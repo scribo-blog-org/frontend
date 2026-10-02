@@ -7,92 +7,92 @@ import { statusLabel } from '../../views/Support/constants';
 const NotificationMessage = ({ item }: any) => {
     switch (item.type) {
         case 'follow':
-            return 'Подписался(-ась) на ваши обновления';
+            return 'Followed your updates';
         case 'unfollow':
-            return 'Отписался(-ась) от вас';
+            return 'Unfollowed you';
         case 'like_post':
             return (
                 <>
-                    Поставил лайк на ваш{' '}
+                    Liked your{' '}
                     <Link
                         className="notification_link app-transition"
                         href={`/posts/${item.post}`}
                     >
-                        пост
+                        post
                     </Link>
                 </>
             );
         case 'comment_post':
             return (
                 <>
-                    Прокомментировал(-а) ваш{' '}
+                    Commented on your{' '}
                     <Link
                         className="notification_link app-transition"
                         href={`/posts/${item.post}`}
                     >
-                        пост
+                        post
                     </Link>
                 </>
             );
         case 'reply_comment':
             return (
                 <>
-                    Ответил(-а) на{' '}
+                    Replied to{' '}
                     <Link
                         className="notification_link app-transition"
                         href={`/posts/${item.post}`}
                         state={{ comment: item.comment, time: Date.now() }}
                     >
-                        ваш комментарий
+                        your comment
                     </Link>
                 </>
             );
         case 'mention_post':
             return (
                 <>
-                    Упомянул(-а) вас в{' '}
+                    Mentioned you in a{' '}
                     <Link
                         className="notification_link app-transition"
                         href={`/posts/${item.post}`}
                     >
-                        посте
+                        post
                     </Link>
                 </>
             );
         case 'mention_comment':
             return (
                 <>
-                    Упомянул(-а) вас в{' '}
+                    Mentioned you in a{' '}
                     <Link
                         className="notification_link app-transition"
                         href={`/posts/${item.post}`}
                         state={{ comment: item.comment, time: Date.now() }}
                     >
-                        комментарии
+                        comment
                     </Link>
                 </>
             );
         case 'support_reply':
             return (
                 <>
-                    Новый ответ по вашему{' '}
+                    A new reply to your{' '}
                     <Link
                         className="notification_link app-transition"
                         href={`/support/${item.support_request}`}
                     >
-                        запросу
+                        request
                     </Link>
                 </>
             );
         case 'support_status':
             return (
                 <>
-                    Статус вашего{' '}
+                    Status of your{' '}
                     <Link
                         className="notification_link app-transition"
                         href={`/support/${item.support_request}`}
                     >
-                        запроса
+                        request
                     </Link>
                     : {statusLabel(item.support_status)}
                 </>

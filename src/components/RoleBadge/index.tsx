@@ -13,44 +13,44 @@ const RoleBadge = ({ user }: any) => {
     switch (user?.role) {
         case 'author':
             return (
-                <Tooltip text={'Автор'}>
+                <Tooltip text={'Author'}>
                     <div className="role_badge role_author app-transition">
                         <>
                             <AuthorIcon />
-                            <p>Автор</p>
+                            <p>Author</p>
                         </>
                     </div>
                 </Tooltip>
             );
         case 'moderator':
             return (
-                <Tooltip text={'Модератор'}>
+                <Tooltip text={'Moderator'}>
                     <div className="role_badge role_moderator app-transition">
                         <>
                             <ModeratorIcon />
-                            <p>Модератор</p>
+                            <p>Moderator</p>
                         </>
                     </div>
                 </Tooltip>
             );
         case 'admin':
             return (
-                <Tooltip text={'Администратор'}>
+                <Tooltip text={'Administrator'}>
                     <div className="role_badge role_admin app-transition">
                         <>
                             <AdminIcon />
-                            <p>Администратор</p>
+                            <p>Administrator</p>
                         </>
                     </div>
                 </Tooltip>
             );
         case 'tech_admin':
             return (
-                <Tooltip text={'Технический администратор'}>
+                <Tooltip text={'Technical administrator'}>
                     <div className="role_badge role_tech_admin app-transition">
                         <>
                             <TechAdminIcon />
-                            <p>Технический администратор</p>
+                            <p>Technical administrator</p>
                         </>
                     </div>
                 </Tooltip>

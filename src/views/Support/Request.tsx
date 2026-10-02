@@ -75,12 +75,12 @@ const SupportRequestPage = () => {
 
     const handleReply = async () => {
         if (!reply.trim()) {
-            setError('Напишите сообщение');
+            setError('Write a message');
             return;
         }
         if (reply.length > FIELD_LIMITS.supportReply.max) {
             setError(
-                `Сообщение не длиннее ${FIELD_LIMITS.supportReply.max} символов`,
+                `Message must be at most ${FIELD_LIMITS.supportReply.max} characters`,
             );
             return;
         }
@@ -92,7 +92,7 @@ const SupportRequestPage = () => {
             if (!result.status) {
                 showToast({
                     type: 'error',
-                    message: result.message || 'Не удалось отправить сообщение',
+                    message: result.message || 'Could not send the message',
                 });
                 if (result?.errors?.body?.replyText?.message) {
                     setError(result.errors.body.replyText.message);
@@ -105,12 +105,12 @@ const SupportRequestPage = () => {
             setError(null);
             showToast({
                 type: 'success',
-                message: isStaff ? 'Ответ отправлен' : 'Сообщение добавлено',
+                message: isStaff ? 'Reply sent' : 'Message added',
             });
         } catch {
             showToast({
                 type: 'error',
-                message: 'Не удалось отправить сообщение',
+                message: 'Could not send the message',
             });
         } finally {
             setSending(false);
@@ -129,15 +129,15 @@ const SupportRequestPage = () => {
             if (!result.status) {
                 showToast({
                     type: 'error',
-                    message: result.message || 'Не удалось изменить статус',
+                    message: result.message || 'Could not update the status',
                 });
                 return;
             }
 
             setItem(result.data);
-            showToast({ type: 'success', message: 'Статус обновлён' });
+            showToast({ type: 'success', message: 'Status updated' });
         } catch {
-            showToast({ type: 'error', message: 'Не удалось изменить статус' });
+            showToast({ type: 'error', message: 'Could not update the status' });
         } finally {
             setStatusSaving(false);
         }
@@ -172,7 +172,7 @@ const SupportRequestPage = () => {
                         }
                     >
                         <ArrowLeftIcon />
-                        {isStaff ? 'К обращениям' : 'Поддержка'}
+                        {isStaff ? 'To requests' : 'Support'}
                     </ActionButton>
                     <div className="support_request_detail_tags">
                         {showStatus ? (
@@ -197,7 +197,7 @@ const SupportRequestPage = () => {
                     <RichText text={item.message} />
                 </div>
                 {isStaff ? (
-                    <Field title="Статус">
+                    <Field title="Status">
                         <DropDown
                             options={SUPPORT_STATUSES}
                             value={item.status}
@@ -208,7 +208,7 @@ const SupportRequestPage = () => {
             </div>
 
             <div className="support_request_detail_card app-transition">
-                <h1 className="kicker">Переписка</h1>
+                <h1 className="kicker">Conversation</h1>
                 {item.replies?.length ? (
                     <div className="support_request_detail_replies">
                         {item.replies.map((entry: any) => (
@@ -222,7 +222,7 @@ const SupportRequestPage = () => {
                                         <UserBadge data={entry.admin} />
                                     ) : (
                                         <p className="support_request_detail_reply_author">
-                                            Автор обращения
+                                            Request author
                                         </p>
                                     )}
                                     <p>
@@ -238,7 +238,7 @@ const SupportRequestPage = () => {
                     </div>
                 ) : (
                     <p className="support_request_detail_empty">
-                        Ответов пока нет
+                        No replies yet
                     </p>
                 )}
                 {canReply ? (
@@ -250,7 +250,7 @@ const SupportRequestPage = () => {
                         }}
                     >
                         <Field
-                            title={isStaff ? 'Ответ' : 'Сообщение'}
+                            title={isStaff ? 'Reply' : 'Message'}
                             error={error}
                         >
                             <RichInputField
@@ -261,8 +261,8 @@ const SupportRequestPage = () => {
                                 value={reply}
                                 placeholder={
                                     isStaff
-                                        ? 'Текст ответа'
-                                        : 'Дополните обращение'
+                                        ? 'Reply text'
+                                        : 'Add to the request'
                                 }
                                 onChange={(event: any) =>
                                     setReply(event.target.value)
@@ -276,14 +276,14 @@ const SupportRequestPage = () => {
                             isLoading={sending}
                             disabled={statusSaving}
                         >
-                            Отправить
+                            Send
                         </PrimaryButton>
                     </form>
                 ) : (
                     <p className="support_request_detail_empty">
                         {item.closed
-                            ? 'Обращение рассмотрено, новые ответы закрыты.'
-                            : 'Ответить могут только администраторы. Чтобы писать в переписку, отправьте запрос из аккаунта.'}
+                            ? 'The request is reviewed and new replies are closed.'
+                            : 'Only administrators can reply. To write in the thread, send a request from your account.'}
                     </p>
                 )}
             </div>

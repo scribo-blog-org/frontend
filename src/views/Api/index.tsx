@@ -98,7 +98,7 @@ function Api() {
     if (loadError) {
         return (
             <p className="api-docs_status">
-                Не удалось загрузить описание API.
+                Could not load the API description.
             </p>
         );
     }
@@ -111,7 +111,7 @@ function Api() {
         <div className="api-docs">
             {outdated ? (
                 <p className="api-docs_outdated">
-                    Спека {apiDocument.info.version} не совпадает с бэкендом{' '}
+                    Spec {apiDocument.info.version} does not match the backend{' '}
                     {apiDocument.info['x-backend-version']}
                 </p>
             ) : null}

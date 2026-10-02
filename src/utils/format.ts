@@ -20,18 +20,18 @@ function format_time(date: any) {
 }
 
 const MESSAGE_DATE_MONTHS = [
-    'января',
-    'февраля',
-    'марта',
-    'апреля',
-    'мая',
-    'июня',
-    'июля',
-    'августа',
-    'сентября',
-    'октября',
-    'ноября',
-    'декабря',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
 ];
 
 function startOfDay(date: any) {
@@ -48,11 +48,11 @@ function format_message_date_label(date: any) {
     );
 
     if (diffDays === 0) {
-        return 'Сегодня';
+        return 'Today';
     }
 
     if (diffDays === 1) {
-        return 'Вчера';
+        return 'Yesterday';
     }
 
     const day = target.getDate();
@@ -60,10 +60,10 @@ function format_message_date_label(date: any) {
     const year = target.getFullYear();
 
     if (year === today.getFullYear()) {
-        return `${day} ${month}`;
+        return `${month} ${day}`;
     }
 
-    return `${day} ${month} ${year}`;
+    return `${month} ${day}, ${year}`;
 }
 
 function is_same_calendar_day(left: any, right: any) {
@@ -84,56 +84,53 @@ const format_back = (date_time: any) => {
     const past = new Date(date_time);
     const diffInMs = now.getTime() - past.getTime();
 
-    if (diffInMs < 0) return 'только что';
+    if (diffInMs < 0) return 'just now';
 
     const diffInSeconds = Math.floor(diffInMs / 1000);
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     const diffInHours = Math.floor(diffInMinutes / 60);
     const diffInDays = Math.floor(diffInHours / 24);
 
-    const pluralize = (number: any, titles: any) => {
-        const cases = [2, 0, 1, 1, 1, 2];
-        return titles[
-            number % 100 > 4 && number % 100 < 20
-                ? 2
-                : cases[number % 10 < 5 ? number % 10 : 5]
-        ];
-    };
+    const ago = (number: number, one: string, many: string) =>
+        `${number} ${number === 1 ? one : many} ago`;
 
     if (diffInSeconds < 60) {
-        if (diffInSeconds <= 0) return 'только что';
-        return `${diffInSeconds} ${pluralize(diffInSeconds, ['секунду', 'секунды', 'секунд'])} назад`;
+        if (diffInSeconds <= 0) return 'just now';
+        return ago(diffInSeconds, 'second', 'seconds');
     }
 
     if (diffInMinutes < 60) {
-        return `${diffInMinutes} ${pluralize(diffInMinutes, ['минуту', 'минуты', 'минут'])} назад`;
+        return ago(diffInMinutes, 'minute', 'minutes');
     }
 
     if (diffInHours < 24) {
-        return `${diffInHours} ${pluralize(diffInHours, ['час', 'часа', 'часов'])} назад`;
+        return ago(diffInHours, 'hour', 'hours');
     }
 
     if (diffInDays < 30) {
-        return `${diffInDays} ${pluralize(diffInDays, ['день', 'дня', 'дней'])} назад`;
+        return ago(diffInDays, 'day', 'days');
     }
 
     const diffInMonths = Math.floor(diffInDays / 30);
     if (diffInMonths < 12) {
-        return `${diffInMonths} ${pluralize(diffInMonths, ['месяц', 'месяца', 'месяцев'])} назад`;
+        return ago(diffInMonths, 'month', 'months');
     }
 
     const diffInYears = Math.floor(diffInDays / 365);
-    return `${diffInYears} ${pluralize(diffInYears, ['год', 'года', 'лет'])} назад`;
+    return ago(diffInYears, 'year', 'years');
 };
 
 function getCategoryColorType(categoryName: any) {
     switch (categoryName?.toLowerCase()) {
+        case 'news':
         case 'новости':
             return 1;
+        case 'politics':
         case 'политика':
             return 2;
         case 'dev':
             return 3;
+        case 'other':
         case 'другое':
             return 4;
         default:

@@ -2,7 +2,7 @@ import ForgotPassword from '@/views/ForgotPassword';
 import { privatePageMetadata } from '@/lib/metadata';
 
 export const metadata = privatePageMetadata(
-    'Сброс пароля',
+    'Password reset',
     '/auth/forgot-password',
 );
 

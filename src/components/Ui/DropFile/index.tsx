@@ -154,7 +154,7 @@ const DropFile = ({
                                     ? value.name
                                     : typeof value === 'string'
                                       ? value.split('/').pop()
-                                      : 'Выбранный файл'}
+                                      : 'Selected file'}
                             </p>
                             <button
                                 className="remove_image_button"
@@ -179,13 +179,13 @@ const DropFile = ({
                                 <>
                                     <UploadFileIcon className="drop_file_info_upload_icon app-transition" />
                                     <p className="drop_file_info_main_text">
-                                        Выберите файл или перетащите его сюда
+                                        Choose a file or drop it here
                                     </p>
                                     <p className="drop_file_info_help_text">
                                         {fileTypes}
                                     </p>
                                     <div className="drop_file_info_select app-transition">
-                                        Выбрать
+                                        Choose
                                     </div>
                                 </>
                             )}

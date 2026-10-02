@@ -37,24 +37,24 @@ const Support = () => {
         const next: any = {};
 
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.userEmail.trim())) {
-            next.userEmail = 'Укажите корректную почту';
+            next.userEmail = 'Enter a valid email';
         }
 
         if (!fields.supportKind) {
-            next.supportKind = 'Выберите тему';
+            next.supportKind = 'Choose a subject';
         }
 
         if (!fields.supportMessage.trim()) {
-            next.supportMessage = 'Напишите сообщение';
+            next.supportMessage = 'Write a message';
         } else if (
             fields.supportMessage.trim().length <
             FIELD_LIMITS.supportMessage.min
         ) {
-            next.supportMessage = `Сообщение не короче ${FIELD_LIMITS.supportMessage.min} символов`;
+            next.supportMessage = `Message must be at least ${FIELD_LIMITS.supportMessage.min} characters`;
         } else if (
             fields.supportMessage.length > FIELD_LIMITS.supportMessage.max
         ) {
-            next.supportMessage = `Сообщение не длиннее ${FIELD_LIMITS.supportMessage.max} символов`;
+            next.supportMessage = `Message must be at most ${FIELD_LIMITS.supportMessage.max} characters`;
         }
 
         setErrors(next);
@@ -77,7 +77,7 @@ const Support = () => {
             if (result.status === true && result.data?.access_key) {
                 showToast({
                     message:
-                        'Сообщение отправлено. Мы напишем на указанную почту.',
+                        'Message sent. We will write to the email you provided.',
                     type: 'success',
                 });
                 navigate(`/support/${result.data.access_key}`);
@@ -85,7 +85,7 @@ const Support = () => {
             }
 
             showToast({
-                message: result.message || 'Не удалось отправить сообщение',
+                message: result.message || 'Could not send the message',
                 type: 'error',
             });
 
@@ -100,7 +100,7 @@ const Support = () => {
             }
         } catch {
             showToast({
-                message: 'Не удалось отправить сообщение',
+                message: 'Could not send the message',
                 type: 'error',
             });
         } finally {
@@ -115,10 +115,10 @@ const Support = () => {
     return (
         <div className="support_page">
             <div className="support_page_intro">
-                <h1>Поддержка</h1>
+                <h1>Support</h1>
                 <p>
-                    Оставьте почту и сообщение. Ответ придёт письмом. Ответить с
-                    этой страницы нельзя.
+                    Leave an email and a message. The reply will come by email. You cannot reply from
+                    this page.
                 </p>
             </div>
             <form
@@ -128,7 +128,7 @@ const Support = () => {
                     handleSubmit();
                 }}
             >
-                <Field title="Почта" error={errors?.userEmail ?? null}>
+                <Field title="Email" error={errors?.userEmail ?? null}>
                     <InputField
                         type="email"
                         value={fields.userEmail}
@@ -144,11 +144,11 @@ const Support = () => {
                         length={FIELD_LIMITS.email.max}
                     />
                 </Field>
-                <Field title="Тема" error={errors?.supportKind ?? null}>
+                <Field title="Subject" error={errors?.supportKind ?? null}>
                     <DropDown
                         options={SUPPORT_KINDS}
                         value={fields.supportKind}
-                        placeholder="Выберите тему"
+                        placeholder="Choose a subject"
                         error={Boolean(errors?.supportKind)}
                         onChange={(value: any) => {
                             handleFocus('supportKind');
@@ -156,14 +156,14 @@ const Support = () => {
                         }}
                     />
                 </Field>
-                <Field title="Сообщение" error={errors?.supportMessage ?? null}>
+                <Field title="Message" error={errors?.supportMessage ?? null}>
                     <RichInputField
                         preset="social"
                         isMultiline={true}
                         multilineRows={8}
                         length={FIELD_LIMITS.supportMessage.max}
                         value={fields.supportMessage}
-                        placeholder="Опишите ситуацию"
+                        placeholder="Describe the situation"
                         onChange={(event: any) =>
                             setFields({
                                 ...fields,
@@ -175,11 +175,11 @@ const Support = () => {
                     />
                 </Field>
                 <PrimaryButton type="submit" isLoading={isLoading}>
-                    Отправить
+                    Send
                 </PrimaryButton>
                 <p className="support_page_note">
-                    Если <Link href="/auth/login">войти в аккаунт</Link>, ответы
-                    придут на сайте, и вы сможете писать в переписку сами.
+                    If you <Link href="/auth/login">log in</Link>, replies
+                    will arrive on the site, and you will be able to write in the thread yourself.
                 </p>
             </form>
         </div>
