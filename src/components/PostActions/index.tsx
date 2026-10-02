@@ -130,8 +130,7 @@ const PostActions = ({
                         ),
                     }));
                     showToast({
-                        message:
-                            'Не удалось поставить лайк, попробуйте ещё раз',
+                        message: 'Could not like this. Please try again',
                         type: 'error',
                     });
                 }
@@ -147,7 +146,7 @@ const PostActions = ({
     const doLike = () => {
         if (!profile) {
             showToast({
-                message: 'Чтобы поставить лайк, войдите в аккаунт!',
+                message: 'Log in to like this!',
                 type: 'warning',
             });
             return;
@@ -203,9 +202,7 @@ const PostActions = ({
                             : withoutId(prev.saved_posts, article._id),
                     }));
                     showToast({
-                        message: wantSaved
-                            ? 'Сохранено!'
-                            : 'Убрано из сохранённых!',
+                        message: wantSaved ? 'Saved!' : 'Removed from saved!',
                         type: 'success',
                     });
                 } else if (result.statusCode === 409) {
@@ -219,13 +216,13 @@ const PostActions = ({
                     setIsSaved(!wantSaved);
                     if (result.statusCode === 401) {
                         showToast({
-                            message: 'Чтобы сохранить пост, войдите в аккаунт!',
+                            message: 'Log in to save this post!',
                             type: 'warning',
                         });
                     } else {
                         showToast({
                             message:
-                                'Не удалось сохранить пост, попробуйте ещё раз',
+                                'Could not save the post. Please try again',
                             type: 'error',
                         });
                     }
@@ -245,7 +242,7 @@ const PostActions = ({
         }
 
         showModalWindow({
-            title: 'Поделиться',
+            title: 'Share',
             size: 'small',
             content: (
                 <SharePostModal
@@ -261,7 +258,7 @@ const PostActions = ({
     const doSave = () => {
         if (!profile) {
             showToast({
-                message: 'Чтобы сохранить пост, войдите в аккаунт!',
+                message: 'Log in to save this post!',
                 type: 'warning',
             });
             return;
@@ -293,8 +290,8 @@ const PostActions = ({
                     <Tooltip
                         text={
                             hasId(article.likes, profile?._id)
-                                ? 'Убрать лайк'
-                                : 'Поставить лайк'
+                                ? 'Unlike'
+                                : 'Like'
                         }
                         clickable={true}
                     >
@@ -316,7 +313,7 @@ const PostActions = ({
                         </button>
                     </Tooltip>
                     <Tooltip
-                        text={'Перейти к комментариям'}
+                        text={'Go to comments'}
                         className="post_actions_comment"
                         clickable={true}
                     >
@@ -329,7 +326,7 @@ const PostActions = ({
                         </Link>
                     </Tooltip>
                     <Tooltip
-                        text={isSaved ? 'Убрать из сохранённых' : 'Сохранить'}
+                        text={isSaved ? 'Remove from saved' : 'Save'}
                         clickable={true}
                     >
                         <button
@@ -340,13 +337,13 @@ const PostActions = ({
                             {isSaved ? <BookMarkFilled /> : <BookMarkBorder />}
                         </button>
                     </Tooltip>
-                    <Tooltip text="Просмотры">
+                    <Tooltip text="Views">
                         <span className="post_actions_button post_actions_views">
                             <EyeIcon />
                             <p>{viewsCount}</p>
                         </span>
                     </Tooltip>
-                    <Tooltip text="Поделиться" clickable={true}>
+                    <Tooltip text="Share" clickable={true}>
                         <button
                             type="button"
                             className="post_actions_button app-transition"

@@ -16,8 +16,8 @@ export async function generateMetadata({
     const query = Array.isArray(params.q) ? params.q[0] : params.q;
 
     return buildMetadata({
-        title: 'Поиск',
-        description: 'Поиск статей и авторов на Scribo.',
+        title: 'Search',
+        description: 'Search articles and authors on Scribo.',
         path: '/search',
         noindex: Boolean(query?.trim()),
         follow: true,

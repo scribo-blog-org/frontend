@@ -11,7 +11,7 @@ import { format_back } from '../../utils/format';
 import { CATEGORY_COLORS } from '../../styles/constants';
 
 import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
-import { imageSrc } from '../../utils/image';
+import { imageSrc, mediaUrl } from '../../utils/image';
 import Verified from '../../assets/svg/verified.svg';
 import ChevronRightIcon from '../../assets/svg/chevron-right.svg';
 import CrossIcon from '../../assets/svg/cross-icon.svg';
@@ -92,23 +92,23 @@ const SearchPage = () => {
 
     return (
         <div className="search_page">
-            <h1>Поиск</h1>
+            <h1>Search</h1>
             <div className="search_page_field">
                 <InputField
                     ref={inputRef}
                     type="search"
                     className={value ? 'search_page_input' : ''}
                     value={value}
-                    placeholder="Посты, люди, категории"
+                    placeholder="Posts, people, categories"
                     length={80}
                     onChange={(event: any) => setValue(event.target.value)}
-                    aria-label="Поиск"
+                    aria-label="Search"
                 />
                 {value ? (
                     <button
                         type="button"
                         className="search_page_clear app-transition"
-                        aria-label="Очистить"
+                        aria-label="Clear"
                         onClick={() => {
                             setValue('');
                             setSearchParams({}, { replace: true });
@@ -121,17 +121,18 @@ const SearchPage = () => {
             </div>
             {!hasQuery ? (
                 <p className="search_page_hint">
-                    Минимум две буквы — найдутся посты, люди и категории.
+                    At least two letters — then posts, people, and categories
+                    will show up.
                 </p>
             ) : isLoading ? (
-                <p className="search_page_hint">Ищем…</p>
+                <p className="search_page_hint">Searching…</p>
             ) : total === 0 ? (
-                <p className="search_page_hint">Ничего не нашлось.</p>
+                <p className="search_page_hint">Nothing found.</p>
             ) : (
                 <div className="search_page_groups">
                     {people.length ? (
                         <section className="search_page_group">
-                            <GroupHead title="Люди" count={people.length} />
+                            <GroupHead title="People" count={people.length} />
                             <ul className="search_page_people">
                                 {people.map((user: any) => (
                                     <li key={user._id}>
@@ -160,7 +161,7 @@ const SearchPage = () => {
                                                     </span>
                                                 ) : (
                                                     <span className="search_page_person_bio">
-                                                        Профиль на сайте
+                                                        Profile on the site
                                                     </span>
                                                 )}
                                             </span>
@@ -178,7 +179,7 @@ const SearchPage = () => {
                     {categories.length ? (
                         <section className="search_page_group">
                             <GroupHead
-                                title="Категории"
+                                title="Categories"
                                 count={categories.length}
                             />
                             <ul className="search_page_cats">
@@ -198,7 +199,7 @@ const SearchPage = () => {
                                                 {category.name}
                                             </span>
                                             <span className="search_page_cat_hint">
-                                                В ленте
+                                                In the feed
                                             </span>
                                             <ChevronRightIcon
                                                 className="search_page_chevron"
@@ -213,7 +214,7 @@ const SearchPage = () => {
 
                     {posts.length ? (
                         <section className="search_page_group">
-                            <GroupHead title="Посты" count={posts.length} />
+                            <GroupHead title="Posts" count={posts.length} />
                             <ul className="search_page_posts">
                                 {posts.map((post: any) => (
                                     <li
@@ -253,7 +254,9 @@ const SearchPage = () => {
                                             {post.featured_image ? (
                                                 <img
                                                     className="search_page_post_thumb"
-                                                    src={post.featured_image}
+                                                    src={mediaUrl(
+                                                        post.featured_image,
+                                                    )}
                                                     alt=""
                                                 />
                                             ) : null}

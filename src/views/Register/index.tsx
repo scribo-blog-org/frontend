@@ -80,35 +80,35 @@ const RegisterForm = ({
         if (fields.userNickName.length < FIELD_LIMITS.nick.min) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userNickName: `Имя должно быть не короче ${FIELD_LIMITS.nick.min} символов`,
+                userNickName: `Name must be at least ${FIELD_LIMITS.nick.min} characters`,
             }));
             is_error = true;
         }
         if (fields.userNickName.length > FIELD_LIMITS.nick.max) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userNickName: `Имя не длиннее ${FIELD_LIMITS.nick.max} символов`,
+                userNickName: `Name must be at most ${FIELD_LIMITS.nick.max} characters`,
             }));
             is_error = true;
         }
         if (fields.userPassword.length < FIELD_LIMITS.password.min) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userPassword: `Пароль не короче ${FIELD_LIMITS.password.min} символов`,
+                userPassword: `Password must be at least ${FIELD_LIMITS.password.min} characters`,
             }));
             is_error = true;
         }
         if (fields.userPassword.length > FIELD_LIMITS.password.max) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userPassword: `Пароль не длиннее ${FIELD_LIMITS.password.max} символов`,
+                userPassword: `Password must be at most ${FIELD_LIMITS.password.max} characters`,
             }));
             is_error = true;
         }
         if (fields.userDescription.length > FIELD_LIMITS.description.max) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userDescription: `Описание не длиннее ${FIELD_LIMITS.description.max} символов`,
+                userDescription: `Description must be at most ${FIELD_LIMITS.description.max} characters`,
             }));
             is_error = true;
         }
@@ -141,7 +141,7 @@ const RegisterForm = ({
 
         if (result.status === true) {
             navigate('/auth/login');
-            showToast({ message: 'Зарегистрировано!', type: 'success' });
+            showToast({ message: 'Signed up!', type: 'success' });
         } else {
             if (result?.errors?.body) {
                 setErrors(
@@ -152,7 +152,7 @@ const RegisterForm = ({
                     ),
                 );
             }
-            showToast({ message: 'Ошибка!', type: 'error' });
+            showToast({ message: 'Error!', type: 'error' });
             setIsLoading(false);
             return result;
         }
@@ -175,7 +175,7 @@ const RegisterForm = ({
                 }}
             >
                 <div className="auth_page_stack">
-                    <h1 className="auth_page_title">Регистрация</h1>
+                    <h1 className="auth_page_title">Sign up</h1>
                     <div className="auth_page_group section app-transition">
                         <div className="top_side">
                             <DropFile
@@ -187,14 +187,14 @@ const RegisterForm = ({
                                     <AvatarIcon className="drop_file_info_avatar_icon app-transition" />
                                 }
                                 dropFileType="image/*"
-                                fileTypes="SVG, PNG, JPEG, JPG и другие"
+                                fileTypes="SVG, PNG, JPEG, JPG, and others"
                                 errors={errors?.userAvatar}
                                 addNewErrors={add_errors_to_image}
                                 clearErrors={clear_errors_from_image}
                                 onRemove={handleClick}
                             />
                         </div>
-                        <Field title="Почта">
+                        <Field title="Email">
                             <InputField
                                 className={`email`}
                                 type="text"
@@ -207,7 +207,7 @@ const RegisterForm = ({
                             />
                         </Field>
                         <Field
-                            title="Имя пользователя"
+                            title="Username"
                             error={errors?.userNickName ?? null}
                         >
                             <InputField
@@ -227,7 +227,7 @@ const RegisterForm = ({
                             />
                         </Field>
                         <Field
-                            title="Описание"
+                            title="Description"
                             error={errors?.userDescription ?? null}
                         >
                             <InputField
@@ -250,10 +250,10 @@ const RegisterForm = ({
                     </div>
                 </div>
                 <div className="auth_page_stack">
-                    <h1 className="auth_page_title">Пароль</h1>
+                    <h1 className="auth_page_title">Password</h1>
                     <div className="auth_page_group section app-transition">
                         <Field
-                            title="Пароль"
+                            title="Password"
                             error={errors?.userPassword ?? null}
                         >
                             <InputField
@@ -273,13 +273,13 @@ const RegisterForm = ({
                             />
                         </Field>
                         <PrimaryButton type="submit" isLoading={isLoading}>
-                            Зарегистрироваться
+                            Sign up
                         </PrimaryButton>
                     </div>
                 </div>
                 <p className="redirect_object">
-                    Уже есть аккаунт?
-                    <Link href={'/auth/login'}>Войти</Link>
+                    Already have an account?
+                    <Link href={'/auth/login'}>Log in</Link>
                 </p>
             </form>
         </div>
@@ -343,7 +343,7 @@ const VerifyGmailCode = ({ email }: any) => {
                 }}
             >
                 <div className="auth_page_stack">
-                    <h1 className="auth_page_title">Регистрация</h1>
+                    <h1 className="auth_page_title">Sign up</h1>
                     <div className="auth_page_group section app-transition">
                         <div className="otp_container">
                             <div className="otp_container_content">
@@ -357,7 +357,7 @@ const VerifyGmailCode = ({ email }: any) => {
                             </div>
                         </div>
                         <PrimaryButton type="submit" isLoading={isLoading}>
-                            Продолжить
+                            Continue
                         </PrimaryButton>
                     </div>
                 </div>
@@ -389,7 +389,7 @@ const Register = () => {
 
                 if (result?.status !== true) {
                     showToast({
-                        message: 'Не удалось войти через Google',
+                        message: 'Could not sign in with Google',
                         type: 'error',
                     });
                     setPendingAuth(null);
@@ -402,7 +402,7 @@ const Register = () => {
                     if (loginResult?.status === true) {
                         navigate('/');
                         showToast({
-                            message: 'Вход выполнен!',
+                            message: 'Signed in!',
                             type: 'success',
                         });
                     } else {
@@ -418,7 +418,7 @@ const Register = () => {
                 setPendingAuth(null);
             } catch {
                 showToast({
-                    message: 'Не удалось войти через Google',
+                    message: 'Could not sign in with Google',
                     type: 'error',
                 });
                 setPendingAuth(null);
@@ -500,9 +500,9 @@ const Register = () => {
                 }}
             >
                 <div className="auth_page_stack">
-                    <h1 className="auth_page_title">Регистрация</h1>
+                    <h1 className="auth_page_title">Sign up</h1>
                     <div className="auth_page_group section app-transition">
-                        <Field title="Почта" error={errors?.userEmail ?? null}>
+                        <Field title="Email" error={errors?.userEmail ?? null}>
                             <InputField
                                 className={`email`}
                                 type="text"
@@ -525,11 +525,11 @@ const Register = () => {
                             disabled={Boolean(pendingAuth)}
                             type="submit"
                         >
-                            Продолжить
+                            Continue
                         </PrimaryButton>
                     </div>
                 </div>
-                <p className="auth_page_or">или</p>
+                <p className="auth_page_or">or</p>
                 <GoogleAuthButton
                     setGoogleToken={setGoogleToken}
                     isLoading={pendingAuth === 'google'}
@@ -538,8 +538,8 @@ const Register = () => {
                     onAuthEnd={() => setPendingAuth(null)}
                 />
                 <p className="redirect_object">
-                    Уже есть аккаунт?
-                    <Link href={'/auth/login'}>Войти</Link>
+                    Already have an account?
+                    <Link href={'/auth/login'}>Log in</Link>
                 </p>
             </form>
         </div>

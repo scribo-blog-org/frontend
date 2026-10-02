@@ -20,21 +20,21 @@ export function getAccountMenuBody({
     return [
         [
             {
-                title: 'В профиль',
+                title: 'To profile',
                 icon: <DefaultProfileIcon />,
                 onClick: () => {
                     navigate(`/users/${profile.nick_name}`);
                 },
             },
             {
-                title: 'Настройки',
+                title: 'Settings',
                 icon: <SettingsIcon />,
                 onClick: () => {
                     navigate(`/settings`);
                 },
             },
             {
-                title: 'Поддержка',
+                title: 'Support',
                 icon: <CommentIcon />,
                 onClick: () => {
                     navigate('/support/mine');
@@ -45,8 +45,8 @@ export function getAccountMenuBody({
             ? [
                   {
                       title: location.pathname.startsWith('/admin-panel')
-                          ? 'Домой'
-                          : 'В админ панель',
+                          ? 'Home'
+                          : 'To the admin panel',
                       icon: <RedirectIcon />,
                       onClick: () =>
                           navigate(
@@ -59,7 +59,7 @@ export function getAccountMenuBody({
             : [],
         [
             {
-                title: 'Выйти с акаунта',
+                title: 'Log out',
                 icon: <LogoutIcon />,
                 type: 'danger',
                 onClick: () => {
@@ -67,7 +67,7 @@ export function getAccountMenuBody({
                     logout().then(() => {
                         showToast({
                             type: 'success',
-                            message: 'Вы вышли из аккаунта!',
+                            message: 'You have logged out!',
                         });
                         navigate('/');
                     });

@@ -5,6 +5,7 @@ import { Link } from '@/navigation';
 import UserBadge from '../UserBadge';
 import Category from '../Category';
 import { plainTextExcerpt } from '../../seo/excerpt';
+import { mediaUrl } from '../../utils/image';
 
 import PostEntityChip from './PostEntityChip';
 
@@ -47,7 +48,7 @@ const PostMessageCard = ({ post, className = '', onMediaLoad }: any) => {
                 {post.featured_image ? (
                     <div className="post_message_card_media">
                         <img
-                            src={post.featured_image}
+                            src={mediaUrl(post.featured_image)}
                             alt=""
                             loading="lazy"
                             onLoad={onMediaLoad}

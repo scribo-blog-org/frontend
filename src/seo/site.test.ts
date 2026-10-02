@@ -18,14 +18,14 @@ describe('site', () => {
     });
 
     it('adds the brand to page titles', () => {
-        expect(pageTitle('Поиск')).toBe('Поиск | Scribo');
+        expect(pageTitle('Search')).toBe('Search | Scribo');
         expect(pageTitle('')).toBe('Scribo');
     });
 
     it('keeps the description within the snippet limit', () => {
         expect(SITE_DESCRIPTION.length).toBeLessThanOrEqual(160);
         expect(SITE_DESCRIPTION).toContain('Scribo');
-        expect(SITE_DESCRIPTION).toContain('Скрибо');
+        expect(SITE_DESCRIPTION).toContain('Scribo');
     });
 
     it('keeps the home title short and branded', () => {
@@ -35,10 +35,10 @@ describe('site', () => {
 
     it('lists the brand spellings as keywords and alternate names', () => {
         expect(SITE_KEYWORDS).toEqual(
-            expect.arrayContaining(['Scribo', 'scribo-blog', 'Скрибо']),
+            expect.arrayContaining(['Scribo', 'scribo-blog', 'Scribo']),
         );
         expect(SITE_ALTERNATE_NAMES).toEqual(
-            expect.arrayContaining(['scribo-blog', 'Скрибо']),
+            expect.arrayContaining(['scribo-blog', 'Scribo']),
         );
     });
 });

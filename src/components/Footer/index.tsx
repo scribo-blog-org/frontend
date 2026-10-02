@@ -23,12 +23,12 @@ function Footer() {
                 <div className="footer_top_content">
                     <div className="footer_links">
                         <Link href={'/'}>
-                            <p>Домой</p>
+                            <p>Home</p>
                         </Link>
                     </div>
                     <div className="footer_links">
                         <LinkToProfile href={'/profile'}>
-                            <p>Профиль</p>
+                            <p>Profile</p>
                         </LinkToProfile>
                     </div>
                     <div className="footer_links">
@@ -44,11 +44,11 @@ function Footer() {
                     <div className="footer_links">
                         {profile ? (
                             <Link href={'/support/mine'}>
-                                <p>Поддержка</p>
+                                <p>Support</p>
                             </Link>
                         ) : (
                             <Link href={'/support'}>
-                                <p>Поддержка</p>
+                                <p>Support</p>
                             </Link>
                         )}
                     </div>
@@ -61,7 +61,7 @@ function Footer() {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <GhIcon className="app-transition" />
+                            <GhIcon className="app-transition app-transition-color" />
                         </a>
                         <a
                             className="footer_socials_item"
@@ -69,7 +69,7 @@ function Footer() {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <InstagramIcon className="app-transition" />
+                            <InstagramIcon className="app-transition app-transition-color" />
                         </a>
                         <a
                             className="footer_socials_item"
@@ -77,7 +77,7 @@ function Footer() {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <TelegramIcon className="app-transition" />
+                            <TelegramIcon className="app-transition app-transition-color" />
                         </a>
                         <a
                             className="footer_socials_item"
@@ -85,7 +85,7 @@ function Footer() {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <TWitterIcon className="app-transition" />
+                            <TWitterIcon className="app-transition app-transition-color" />
                         </a>
                     </div>
                     <div className="footer_column footer_main_logo">

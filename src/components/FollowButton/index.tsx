@@ -22,14 +22,14 @@ const FollowButton = ({ setNewData, authorId, className }: any) => {
             if (result.status === true) {
                 await setNewData(result.data);
                 showToast({
-                    message: `Вы подписались на ${result.data.followed.nick_name}!`,
+                    message: `You followed ${result.data.followed.nick_name}!`,
                     type: 'success',
                 });
             } else {
                 if (result.statusCode === 401) {
                     showToast({
                         type: 'warning',
-                        message: 'Чтобы подписаться нужно войти в аккаунт!',
+                        message: 'Log in to follow!',
                     });
                 }
             }
@@ -49,14 +49,14 @@ const FollowButton = ({ setNewData, authorId, className }: any) => {
             if (result.status === true) {
                 await setNewData(result.data);
                 showToast({
-                    message: `Вы отписались от ${result.data.followed.nick_name}!`,
+                    message: `You unfollowed ${result.data.followed.nick_name}!`,
                     type: 'success',
                 });
             } else {
                 if (result.statusCode === 401) {
                     showToast({
                         type: 'warning',
-                        message: 'Чтобы отписаться нужно войти в аккаунт!',
+                        message: 'Log in to unfollow!',
                     });
                 }
             }
@@ -71,7 +71,7 @@ const FollowButton = ({ setNewData, authorId, className }: any) => {
             onClick={() => unfollowUser()}
             className={`follow_button app-transition ${className ?? ''} ${sameId(profile?._id, authorId) ? 'non_visible' : ''}`}
         >
-            Отписаться
+            Unfollow
         </ActionButton>
     ) : (
         <ActionButton
@@ -79,7 +79,7 @@ const FollowButton = ({ setNewData, authorId, className }: any) => {
             onClick={() => followUser()}
             className={`follow_button app-transition ${className ?? ''} ${sameId(profile?._id, authorId) ? 'non_visible' : ''}`}
         >
-            Подписаться
+            Follow
         </ActionButton>
     );
 };

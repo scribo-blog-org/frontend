@@ -12,7 +12,7 @@ export function getMessageActions({
     const items: any[] = [
         {
             id: 'reply',
-            title: 'Ответить',
+            title: 'Reply',
             icon: handlers.icons.reply,
             onClick: () => handlers.onReply(message),
             disabled: isChatLoading,
@@ -23,14 +23,14 @@ export function getMessageActions({
         items.push(
             {
                 id: 'edit',
-                title: 'Изменить',
+                title: 'Edit',
                 icon: handlers.icons.edit,
                 onClick: () => handlers.onEdit(message),
                 disabled: isChatLoading || Boolean(editingMessage),
             },
             {
                 id: 'delete',
-                title: 'Удалить',
+                title: 'Delete',
                 icon: handlers.icons.delete,
                 type: 'danger',
                 onClick: () => handlers.onDelete(message._id),

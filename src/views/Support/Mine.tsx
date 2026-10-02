@@ -79,20 +79,20 @@ const SupportMine = () => {
         const next: any = {};
 
         if (!fields.supportKind) {
-            next.supportKind = 'Выберите тему';
+            next.supportKind = 'Choose a subject';
         }
 
         if (!fields.supportMessage.trim()) {
-            next.supportMessage = 'Напишите сообщение';
+            next.supportMessage = 'Write a message';
         } else if (
             fields.supportMessage.trim().length <
             FIELD_LIMITS.supportMessage.min
         ) {
-            next.supportMessage = `Сообщение не короче ${FIELD_LIMITS.supportMessage.min} символов`;
+            next.supportMessage = `Message must be at least ${FIELD_LIMITS.supportMessage.min} characters`;
         } else if (
             fields.supportMessage.length > FIELD_LIMITS.supportMessage.max
         ) {
-            next.supportMessage = `Сообщение не длиннее ${FIELD_LIMITS.supportMessage.max} символов`;
+            next.supportMessage = `Message must be at most ${FIELD_LIMITS.supportMessage.max} characters`;
         }
 
         setErrors(next);
@@ -112,13 +112,13 @@ const SupportMine = () => {
             });
 
             if (result.status === true && result.data?.access_key) {
-                showToast({ message: 'Сообщение отправлено', type: 'success' });
+                showToast({ message: 'Message sent', type: 'success' });
                 navigate(`/support/${result.data.access_key}`);
                 return;
             }
 
             showToast({
-                message: result.message || 'Не удалось отправить сообщение',
+                message: result.message || 'Could not send the message',
                 type: 'error',
             });
 
@@ -133,7 +133,7 @@ const SupportMine = () => {
             }
         } catch {
             showToast({
-                message: 'Не удалось отправить сообщение',
+                message: 'Could not send the message',
                 type: 'error',
             });
         } finally {
@@ -152,10 +152,10 @@ const SupportMine = () => {
     return (
         <div className="support_page support_page_mine">
             <div className="support_page_intro">
-                <h1>Поддержка</h1>
+                <h1>Support</h1>
                 <p>
-                    Обращения с аккаунта. Ответы и статусы приходят в
-                    уведомления на сайте.
+                    Requests from your account. Replies and statuses arrive in
+                    notifications on the site.
                 </p>
             </div>
             <form
@@ -165,11 +165,11 @@ const SupportMine = () => {
                     handleSubmit();
                 }}
             >
-                <Field title="Тема" error={errors?.supportKind ?? null}>
+                <Field title="Subject" error={errors?.supportKind ?? null}>
                     <DropDown
                         options={SUPPORT_KINDS}
                         value={fields.supportKind}
-                        placeholder="Выберите тему"
+                        placeholder="Choose a subject"
                         error={Boolean(errors?.supportKind)}
                         onChange={(value: any) => {
                             handleFocus('supportKind');
@@ -177,14 +177,14 @@ const SupportMine = () => {
                         }}
                     />
                 </Field>
-                <Field title="Сообщение" error={errors?.supportMessage ?? null}>
+                <Field title="Message" error={errors?.supportMessage ?? null}>
                     <RichInputField
                         preset="social"
                         isMultiline={true}
                         multilineRows={6}
                         length={FIELD_LIMITS.supportMessage.max}
                         value={fields.supportMessage}
-                        placeholder="Опишите ситуацию"
+                        placeholder="Describe the situation"
                         onChange={(event: any) =>
                             setFields({
                                 ...fields,
@@ -196,12 +196,12 @@ const SupportMine = () => {
                     />
                 </Field>
                 <PrimaryButton type="submit" isLoading={isLoading}>
-                    Отправить
+                    Send
                 </PrimaryButton>
             </form>
 
             <div className="support_page_list">
-                <h1 className="kicker">История</h1>
+                <h1 className="kicker">History</h1>
                 {listLoading ? (
                     <Loading size={40} />
                 ) : (
@@ -250,7 +250,7 @@ const SupportMine = () => {
                                 ))
                             ) : (
                                 <p className="admin_panel_content_requests_page_empty">
-                                    Обращений пока нет
+                                    No requests yet
                                 </p>
                             )
                         }

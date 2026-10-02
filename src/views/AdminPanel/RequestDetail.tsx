@@ -36,7 +36,7 @@ const RequestDetailPage = () => {
             if (!result.status || !result.data?.access_key) {
                 showToast({
                     type: 'error',
-                    message: result.message || 'Запрос не найден',
+                    message: result.message || 'Request not found',
                 });
                 navigate('/admin-panel?tab=requests', { replace: true });
                 return;

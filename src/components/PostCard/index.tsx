@@ -10,6 +10,7 @@ import PostActions from '../PostActions';
 import PostHashtags from '../PostHashtags';
 
 import Sceleton from '../Ui/Sceleton/Sceleton';
+import { mediaUrl } from '../../utils/image';
 
 const PostCard = ({ isLoading = false, post, setPosts }: any) => {
     const updatePost = useCallback(
@@ -49,7 +50,7 @@ const PostCard = ({ isLoading = false, post, setPosts }: any) => {
             </Sceleton>
             {post.featured_image ? (
                 <div className="posts_item_img">
-                    <img src={post.featured_image} alt="" />
+                    <img src={mediaUrl(post.featured_image)} alt="" />
                 </div>
             ) : null}
         </>

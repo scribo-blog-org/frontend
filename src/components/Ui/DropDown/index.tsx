@@ -13,7 +13,7 @@ const DropDown = ({
     options = [],
     value,
     onChange,
-    placeholder = 'Выбрать',
+    placeholder = 'Choose',
     error = false,
     className = '',
 }: any) => {

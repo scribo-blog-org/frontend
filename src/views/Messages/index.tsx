@@ -64,8 +64,8 @@ const getQuoteContent = (preview: any) => {
 
     return {
         deleted,
-        author: preview?.sender?.nick_name || 'Пользователь',
-        text: deleted ? 'Сообщение удалено' : quotePreviewText(preview),
+        author: preview?.sender?.nick_name || 'User',
+        text: deleted ? 'Message deleted' : quotePreviewText(preview),
     };
 };
 
@@ -206,7 +206,7 @@ const DeleteChatModalActions = ({
             if (!result?.status) {
                 showToast?.({
                     type: 'error',
-                    message: result?.message || 'Не удалось удалить чат',
+                    message: result?.message || 'Could not delete the chat',
                 });
                 return;
             }
@@ -215,7 +215,7 @@ const DeleteChatModalActions = ({
             onDeleted(conversationId);
             showToast?.({
                 type: 'success',
-                message: 'Чат удалён',
+                message: 'Chat deleted',
             });
             requestCloseModal();
         } finally {
@@ -231,7 +231,7 @@ const DeleteChatModalActions = ({
                 onClick={requestCloseModal}
                 className="modal_delete_post_content_button"
             >
-                Отмена
+                Cancel
             </ActionButton>
             <DangerButton
                 type="button"
@@ -241,7 +241,7 @@ const DeleteChatModalActions = ({
                 onClick={handleDelete}
                 className="modal_delete_post_content_button"
             >
-                Удалить
+                Delete
             </DangerButton>
         </div>
     );
@@ -258,8 +258,8 @@ const getDeleteChatModalContent = ({
 }: any) => (
     <div className="messages_delete_modal">
         <p className="messages_delete_modal_text">
-            Диалог с {participant?.nick_name || 'пользователем'} и все сообщения
-            будут удалены безвозвратно. Это действие нельзя отменить.
+            Conversation with {participant?.nick_name || 'user'} and all
+            messages will be deleted permanently. This cannot be undone.
         </p>
         <DeleteChatModalActions
             conversationId={conversationId}
@@ -385,7 +385,7 @@ const MessagesPage = () => {
             } else if (!silent) {
                 showToast?.({
                     type: 'error',
-                    message: result?.message || 'Не удалось загрузить диалоги',
+                    message: result?.message || 'Could not load conversations',
                 });
             }
 
@@ -473,7 +473,8 @@ const MessagesPage = () => {
             if (!conversationResult?.status) {
                 showToast?.({
                     type: 'error',
-                    message: conversationResult?.message || 'Диалог не найден',
+                    message:
+                        conversationResult?.message || 'Conversation not found',
                 });
                 navigate('/messages');
                 setIsChatLoading(false);
@@ -676,7 +677,7 @@ const MessagesPage = () => {
             if (!result?.status) {
                 showToast?.({
                     type: 'error',
-                    message: result?.message || 'Не удалось изменить сообщение',
+                    message: result?.message || 'Could not edit the message',
                 });
                 return;
             }
@@ -745,7 +746,7 @@ const MessagesPage = () => {
             );
             showToast?.({
                 type: 'error',
-                message: result?.message || 'Не удалось отправить сообщение',
+                message: result?.message || 'Could not send the message',
             });
             return;
         }
@@ -804,7 +805,7 @@ const MessagesPage = () => {
         if (!result?.status) {
             showToast?.({
                 type: 'error',
-                message: result?.message || 'Не удалось удалить сообщение',
+                message: result?.message || 'Could not delete the message',
             });
             return;
         }
@@ -893,7 +894,7 @@ const MessagesPage = () => {
         }
 
         showModalWindow({
-            title: 'Удалить чат?',
+            title: 'Delete chat?',
             size: 'small',
             showCloseButton: false,
             closeFunc: () => {},
@@ -921,11 +922,11 @@ const MessagesPage = () => {
     if (!profile) {
         return (
             <div className="messages_page">
-                <h1 className="messages_title">Сообщения</h1>
+                <h1 className="messages_title">Messages</h1>
                 <div className="messages_empty_state">
-                    <p>Войдите, чтобы открыть сообщения.</p>
+                    <p>Log in to open messages.</p>
                     <ActionButton onClick={() => navigate('/auth/login')}>
-                        Войти
+                        Log in
                     </ActionButton>
                 </div>
             </div>
@@ -974,7 +975,7 @@ const MessagesPage = () => {
                                         <div className="messages_conversation_copy">
                                             <p className="messages_conversation_preview">
                                                 {item.last_message_text ||
-                                                    'Нет сообщений'}
+                                                    'No messages'}
                                             </p>
                                             <div className="messages_conversation_row">
                                                 {item.last_message_at ? (
@@ -997,8 +998,8 @@ const MessagesPage = () => {
                         </ul>
                     ) : (
                         <p className="messages_empty_hint">
-                            Пока нет диалогов. Начните общение из профиля
-                            пользователя.
+                            No conversations yet. Start one from a the user
+                            profile.
                         </p>
                     )}
                 </aside>
@@ -1013,10 +1014,10 @@ const MessagesPage = () => {
                                 <NewMessageIllustration className="app-transition-color" />
                             </div>
                             <div className="messages_blank_copy">
-                                <h1>Диалог ещё пустой</h1>
+                                <h1>This conversation is still empty</h1>
                                 <p className="messages_blank_lead">
-                                    Выберите чат слева. Или откройте профиль и
-                                    нажмите «Начать общение».
+                                    Choose a chat on the left. Or open a profile
+                                    and click “Start a conversation”.
                                 </p>
                             </div>
                         </div>
@@ -1028,7 +1029,7 @@ const MessagesPage = () => {
                                     onClick={() => navigate('/messages')}
                                 >
                                     <ArrowLeftIcon className="app-transition" />
-                                    Назад
+                                    Back
                                 </ActionButton>
                                 <div className="messages_chat_head_row">
                                     {participant ? (
@@ -1047,7 +1048,7 @@ const MessagesPage = () => {
                                         </div>
                                     ) : (
                                         <h1 className="messages_title">
-                                            Сообщения
+                                            Messages
                                         </h1>
                                     )}
                                     <ActionButton
@@ -1055,7 +1056,7 @@ const MessagesPage = () => {
                                         disabled={isChatLoading}
                                         onClick={openDeleteChatModal}
                                     >
-                                        Удалить чат
+                                        Delete chat
                                     </ActionButton>
                                 </div>
                             </header>
@@ -1241,7 +1242,7 @@ const MessagesPage = () => {
                                                                                 </span>
                                                                                 {message.edited_at ? (
                                                                                     <span className="messages_edited">
-                                                                                        изменено
+                                                                                        updated
                                                                                     </span>
                                                                                 ) : null}
                                                                                 {isOwn ? (
@@ -1281,13 +1282,13 @@ const MessagesPage = () => {
                                 {editingMessage ? (
                                     <div className="messages_composer_edit app-transition">
                                         <span className="messages_composer_edit_label">
-                                            Редактирование
+                                            Editing
                                         </span>
                                         <button
                                             type="button"
                                             className="messages_composer_reply_close app-transition"
                                             onClick={handleCancelEdit}
-                                            aria-label="Отменить редактирование"
+                                            aria-label="Cancel editing"
                                             disabled={isChatLoading}
                                         >
                                             <CrossIcon />
@@ -1325,7 +1326,7 @@ const MessagesPage = () => {
                                                       onClick={() =>
                                                           setReplyTo(null)
                                                       }
-                                                      aria-label="Отменить ответ"
+                                                      aria-label="Cancel reply"
                                                       disabled={isChatLoading}
                                                   >
                                                       <CrossIcon />
@@ -1347,7 +1348,7 @@ const MessagesPage = () => {
                                             setDraft(event.target.value)
                                         }
                                         onKeyDown={handleComposerKeyDown}
-                                        placeholder="Сообщение"
+                                        placeholder="Message"
                                         blocked={isChatLoading}
                                     />
                                     <PrimaryButton
@@ -1357,9 +1358,7 @@ const MessagesPage = () => {
                                         }
                                         isLoading={isSending}
                                     >
-                                        {editingMessage
-                                            ? 'Сохранить'
-                                            : 'Отправить'}
+                                        {editingMessage ? 'Save' : 'Send'}
                                     </PrimaryButton>
                                 </div>
                             </form>
@@ -1389,7 +1388,7 @@ export const startConversationWithUser = async (
     if (!result?.status) {
         showToast?.({
             type: 'error',
-            message: result?.message || 'Не удалось создать диалог',
+            message: result?.message || 'Could not create the conversation',
         });
         return;
     }

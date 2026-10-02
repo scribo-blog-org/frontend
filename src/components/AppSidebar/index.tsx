@@ -72,7 +72,7 @@ function AppSidebar() {
     };
 
     return (
-        <aside className="app-sidebar" aria-label="Навигация">
+        <aside className="app-sidebar" aria-label="Navigation">
             <Link
                 href="/"
                 className="app-sidebar_logo app-transition-color"
@@ -92,7 +92,7 @@ function AppSidebar() {
                     }
                 >
                     <HomeIcon className="app-sidebar_item_icon" />
-                    <span>Главная</span>
+                    <span>Home</span>
                 </Link>
 
                 <Link
@@ -107,7 +107,7 @@ function AppSidebar() {
                     }
                 >
                     <SearchIcon className="app-sidebar_item_icon" />
-                    <span>Поиск</span>
+                    <span>Search</span>
                 </Link>
 
                 {profile ? (
@@ -124,7 +124,7 @@ function AppSidebar() {
                             }
                         >
                             <ProfileIcon className="app-sidebar_item_icon" />
-                            <span>Профиль</span>
+                            <span>Profile</span>
                         </Link>
 
                         <Link
@@ -146,7 +146,7 @@ function AppSidebar() {
                                 </span>
                             ) : null}
                             <CommentIcon className="app-sidebar_item_icon" />
-                            <span>Сообщения</span>
+                            <span>Messages</span>
                         </Link>
 
                         <Link
@@ -167,7 +167,7 @@ function AppSidebar() {
                                 />
                             ) : null}
                             <NotificationIcon className="app-sidebar_item_icon" />
-                            <span>Уведомления</span>
+                            <span>Notifications</span>
                         </Link>
 
                         <Link
@@ -182,7 +182,7 @@ function AppSidebar() {
                             }
                         >
                             <InfoIcon className="app-sidebar_item_icon" />
-                            <span>Поддержка</span>
+                            <span>Support</span>
                         </Link>
                     </>
                 ) : null}
@@ -193,7 +193,7 @@ function AppSidebar() {
                         onClick={() => navigate('/create-post')}
                     >
                         <PlusIcon />
-                        Создать пост
+                        Create post
                     </PrimaryButton>
                 ) : null}
             </nav>
@@ -214,7 +214,9 @@ function AppSidebar() {
                         }
                     >
                         <RedirectIcon className="app-sidebar_item_icon" />
-                        <span>{onAdminPanel ? 'Домой' : 'В админ панель'}</span>
+                        <span>
+                            {onAdminPanel ? 'Home' : 'To the admin panel'}
+                        </span>
                     </button>
                 ) : null}
 
@@ -231,14 +233,14 @@ function AppSidebar() {
                         }
                     >
                         <SettingsIcon className="app-sidebar_item_icon" />
-                        <span>Настройки</span>
+                        <span>Settings</span>
                     </Link>
                 ) : (
                     <PrimaryButton
                         className="app-sidebar_login"
                         onClick={() => navigate('/auth/login')}
                     >
-                        Войти
+                        Log in
                     </PrimaryButton>
                 )}
             </div>

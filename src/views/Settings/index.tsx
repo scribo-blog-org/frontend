@@ -166,21 +166,21 @@ const Settings = () => {
         if (fields.userNickName.length < FIELD_LIMITS.nick.min) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userNickName: `Имя должно быть не короче ${FIELD_LIMITS.nick.min} символов`,
+                userNickName: `Name must be at least ${FIELD_LIMITS.nick.min} characters`,
             }));
             is_error = true;
         }
         if (fields.userNickName.length > FIELD_LIMITS.nick.max) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userNickName: `Имя не длиннее ${FIELD_LIMITS.nick.max} символов`,
+                userNickName: `Name must be at most ${FIELD_LIMITS.nick.max} characters`,
             }));
             is_error = true;
         }
         if (fields.userDescription.length > FIELD_LIMITS.description.max) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userDescription: `Описание не длиннее ${FIELD_LIMITS.description.max} символов`,
+                userDescription: `Description must be at most ${FIELD_LIMITS.description.max} characters`,
             }));
             is_error = true;
         }
@@ -195,14 +195,14 @@ const Settings = () => {
             passwordFields.currentPassword.length < FIELD_LIMITS.password.min ||
             passwordFields.currentPassword.length > FIELD_LIMITS.password.max
         ) {
-            next.currentPassword = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`;
+            next.currentPassword = `Password must be from ${FIELD_LIMITS.password.min} to ${FIELD_LIMITS.password.max} characters`;
             is_error = true;
         }
         if (
             passwordFields.newPassword.length < FIELD_LIMITS.password.min ||
             passwordFields.newPassword.length > FIELD_LIMITS.password.max
         ) {
-            next.newPassword = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`;
+            next.newPassword = `Password must be from ${FIELD_LIMITS.password.min} to ${FIELD_LIMITS.password.max} characters`;
             is_error = true;
         }
         if (
@@ -210,21 +210,22 @@ const Settings = () => {
                 FIELD_LIMITS.password.min ||
             passwordFields.newPasswordConfirm.length > FIELD_LIMITS.password.max
         ) {
-            next.newPasswordConfirm = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`;
+            next.newPasswordConfirm = `Password must be from ${FIELD_LIMITS.password.min} to ${FIELD_LIMITS.password.max} characters`;
             is_error = true;
         }
         if (
             !is_error &&
             passwordFields.newPassword !== passwordFields.newPasswordConfirm
         ) {
-            next.newPasswordConfirm = 'Пароли не совпадают';
+            next.newPasswordConfirm = 'Passwords do not match';
             is_error = true;
         }
         if (
             !is_error &&
             passwordFields.currentPassword === passwordFields.newPassword
         ) {
-            next.newPassword = 'Новый пароль должен отличаться от текущего';
+            next.newPassword =
+                'The new password must be different from the current one';
             is_error = true;
         }
 
@@ -266,7 +267,7 @@ const Settings = () => {
                     return next;
                 });
                 setChangingPassword(false);
-                showToast({ message: 'Пароль изменён', type: 'success' });
+                showToast({ message: 'Password changed', type: 'success' });
             } else {
                 if (result?.errors?.body) {
                     const formattedErrors = Object.fromEntries(
@@ -277,12 +278,12 @@ const Settings = () => {
 
                     setErrors((prev: any) => ({ ...prev, ...formattedErrors }));
                 }
-                showToast({ message: 'Ошибка!', type: 'error' });
+                showToast({ message: 'Error!', type: 'error' });
             }
         } catch (error: any) {
             console.log(error);
             setPasswordLoading(false);
-            showToast({ message: 'Ошибка!', type: 'error' });
+            showToast({ message: 'Error!', type: 'error' });
         }
     };
 
@@ -334,7 +335,7 @@ const Settings = () => {
                         ? `/users/${result.data.nick_name}`
                         : `/users/${profile.nick_name}`,
                 );
-                showToast({ message: 'Успешно сохранено!', type: 'success' });
+                showToast({ message: 'Saved!', type: 'success' });
             } else {
                 if (result?.errors?.body) {
                     setErrors(
@@ -345,7 +346,7 @@ const Settings = () => {
                         ),
                     );
                 }
-                showToast({ message: 'Ошибка!', type: 'error' });
+                showToast({ message: 'Error!', type: 'error' });
                 return result;
             }
         } catch (error: any) {
@@ -367,7 +368,7 @@ const Settings = () => {
         try {
             await logoutRequest();
             setProfile(null);
-            showToast({ message: 'Вы вышли из аккаунта!', type: 'success' });
+            showToast({ message: 'You have logged out!', type: 'success' });
             navigate('/');
         } finally {
             setLogoutLoading(false);
@@ -381,7 +382,7 @@ const Settings = () => {
 
             if (!result?.status) {
                 showToast({
-                    message: 'Не удалось завершить сеанс',
+                    message: 'Could not end the session',
                     type: 'error',
                 });
                 return;
@@ -390,7 +391,7 @@ const Settings = () => {
             if (result.data?.wasCurrent) {
                 setProfile(null);
                 showToast({
-                    message: 'Текущий сеанс завершён',
+                    message: 'Current session ended',
                     type: 'success',
                 });
                 navigate('/');
@@ -400,7 +401,7 @@ const Settings = () => {
             setSessions((prev: any) =>
                 prev.filter((item: any) => item._id !== session._id),
             );
-            showToast({ message: 'Сеанс удалён', type: 'success' });
+            showToast({ message: 'Session ended', type: 'success' });
         } finally {
             setEndingSessionId(null);
         }
@@ -448,10 +449,10 @@ const Settings = () => {
     return (
         <div className="settings">
             <SidebarPage
-                pageTitle="Настройки"
+                pageTitle="Settings"
                 pages={[
                     {
-                        title: 'Профиль',
+                        title: 'Profile',
                         key: 'profile',
                         aliases: ['privacy'],
                         icon: <ProfileIcon />,
@@ -465,7 +466,7 @@ const Settings = () => {
                             >
                                 <div className="settings_stack">
                                     <div className="settings_group">
-                                        <p className="kicker">Аккаунт</p>
+                                        <p className="kicker">Account</p>
                                         <div className="settings_avatar">
                                             <DropFile
                                                 value={fields.userAvatar}
@@ -480,7 +481,7 @@ const Settings = () => {
                                                 }
                                                 dropFileType={'image/*'}
                                                 fileTypes={
-                                                    'SVG, PNG, JPEG, JPG и другие'
+                                                    'SVG, PNG, JPEG, JPG, and others'
                                                 }
                                                 errors={errors?.userAvatar}
                                                 addNewErrors={
@@ -494,7 +495,7 @@ const Settings = () => {
                                             />
                                         </div>
                                         {profile?.email ? (
-                                            <Field title="Почта">
+                                            <Field title="Email">
                                                 <InputField
                                                     type="email"
                                                     value={profile.email}
@@ -507,7 +508,7 @@ const Settings = () => {
                                         ) : null}
                                         <Field
                                             error={errors?.userNickName ?? null}
-                                            title={'Имя пользователя'}
+                                            title={'Username'}
                                         >
                                             <InputField
                                                 className={`user_name`}
@@ -534,7 +535,7 @@ const Settings = () => {
                                             error={
                                                 errors?.userDescription ?? null
                                             }
-                                            title={'Описание'}
+                                            title={'Description'}
                                         >
                                             <InputField
                                                 className={`description`}
@@ -566,17 +567,15 @@ const Settings = () => {
                                         </Field>
                                     </div>
                                     <div className="settings_group">
-                                        <p className="kicker">
-                                            Конфиденциальность
-                                        </p>
+                                        <p className="kicker">Privacy</p>
                                         <div className="settings_switch">
                                             <div className="settings_switch_copy">
                                                 <p className="settings_switch_title">
-                                                    Показывать email
+                                                    Show email
                                                 </p>
                                                 <p className="settings_switch_hint">
-                                                    Адрес будет виден на
-                                                    странице профиля
+                                                    The address will be visible
+                                                    on the profile page
                                                 </p>
                                             </div>
                                             <Toggle
@@ -587,11 +586,11 @@ const Settings = () => {
                                         <div className="settings_switch">
                                             <div className="settings_switch_copy">
                                                 <p className="settings_switch_title">
-                                                    Открытые сохранённые
+                                                    Public saved posts
                                                 </p>
                                                 <p className="settings_switch_hint">
-                                                    Закладки увидят посетители
-                                                    профиля
+                                                    Visitors of the profile will
+                                                    see saved posts
                                                 </p>
                                             </div>
                                             <Toggle
@@ -606,12 +605,11 @@ const Settings = () => {
                                         <div className="settings_switch">
                                             <div className="settings_switch_copy">
                                                 <p className="settings_switch_title">
-                                                    Показывать последнюю
-                                                    активность
+                                                    Show last activity
                                                 </p>
                                                 <p className="settings_switch_hint">
-                                                    Дата и время будут видны на
-                                                    странице профиля
+                                                    The date and time will be
+                                                    visible on the profile page
                                                 </p>
                                             </div>
                                             <Toggle
@@ -629,7 +627,7 @@ const Settings = () => {
                                             type="submit"
                                             isLoading={isLoading}
                                         >
-                                            Сохранить
+                                            Save
                                         </PrimaryButton>
                                     </div>
                                 </div>
@@ -637,7 +635,7 @@ const Settings = () => {
                         ),
                     },
                     {
-                        title: 'Безопасность',
+                        title: 'Security',
                         key: 'security',
                         aliases: ['sessions', 'password'],
                         icon: <ShieldIcon />,
@@ -645,7 +643,7 @@ const Settings = () => {
                             <div className="settings_panel">
                                 <div className="settings_stack">
                                     <div className="settings_group">
-                                        <p className="kicker">Пароль</p>
+                                        <p className="kicker">Password</p>
                                         {changingPassword ? (
                                             <form
                                                 className="settings_password"
@@ -659,7 +657,7 @@ const Settings = () => {
                                                         errors?.currentPassword ??
                                                         null
                                                     }
-                                                    title={'Текущий пароль'}
+                                                    title={'Current password'}
                                                 >
                                                     <InputField
                                                         type="password"
@@ -681,7 +679,7 @@ const Settings = () => {
                                                                 'currentPassword',
                                                             )
                                                         }
-                                                        placeholder="Текущий пароль"
+                                                        placeholder="Current password"
                                                         value={
                                                             passwordFields.currentPassword
                                                         }
@@ -696,7 +694,7 @@ const Settings = () => {
                                                         errors?.newPassword ??
                                                         null
                                                     }
-                                                    title={'Новый пароль'}
+                                                    title={'New password'}
                                                 >
                                                     <InputField
                                                         type="password"
@@ -718,7 +716,7 @@ const Settings = () => {
                                                                 'newPassword',
                                                             )
                                                         }
-                                                        placeholder="Новый пароль"
+                                                        placeholder="New password"
                                                         value={
                                                             passwordFields.newPassword
                                                         }
@@ -734,7 +732,7 @@ const Settings = () => {
                                                         null
                                                     }
                                                     title={
-                                                        'Повторите новый пароль'
+                                                        'Repeat the new password'
                                                     }
                                                 >
                                                     <InputField
@@ -757,7 +755,7 @@ const Settings = () => {
                                                                 'newPasswordConfirm',
                                                             )
                                                         }
-                                                        placeholder="Повторите новый пароль"
+                                                        placeholder="Repeat the new password"
                                                         value={
                                                             passwordFields.newPasswordConfirm
                                                         }
@@ -774,7 +772,7 @@ const Settings = () => {
                                                             passwordLoading
                                                         }
                                                     >
-                                                        Изменить пароль
+                                                        Change password
                                                     </PrimaryButton>
                                                     <ActionButton
                                                         type="button"
@@ -785,7 +783,7 @@ const Settings = () => {
                                                             closePasswordForm
                                                         }
                                                     >
-                                                        Отмена
+                                                        Cancel
                                                     </ActionButton>
                                                 </div>
                                             </form>
@@ -802,21 +800,21 @@ const Settings = () => {
                                                     type="button"
                                                     onClick={openPasswordForm}
                                                 >
-                                                    Сменить пароль
+                                                    Change password
                                                 </ActionButton>
                                             </div>
                                         )}
                                     </div>
                                     <div className="settings_group">
-                                        <p className="kicker">Сеансы</p>
+                                        <p className="kicker">Sessions</p>
                                         <div className="settings_sessions">
                                             {sessionsLoading ? (
                                                 <p className="settings_sessions_empty">
-                                                    Загрузка…
+                                                    Loading…
                                                 </p>
                                             ) : sessions.length === 0 ? (
                                                 <p className="settings_sessions_empty">
-                                                    Нет активных сеансов
+                                                    No active sessions
                                                 </p>
                                             ) : (
                                                 sessions.map((session: any) => (
@@ -833,8 +831,8 @@ const Settings = () => {
                                                                 </p>
                                                                 {session.isCurrent ? (
                                                                     <span className="settings_sessions_badge app-transition">
-                                                                        Этот
-                                                                        сеанс
+                                                                        This
+                                                                        session
                                                                     </span>
                                                                 ) : null}
                                                             </div>
@@ -880,7 +878,7 @@ const Settings = () => {
                                                                 )
                                                             }
                                                         >
-                                                            Завершить
+                                                            End
                                                         </DangerButton>
                                                     </div>
                                                 ))
@@ -895,7 +893,7 @@ const Settings = () => {
                                             disabled={Boolean(endingSessionId)}
                                             onClick={handleLogout}
                                         >
-                                            Выйти с аккаунта
+                                            Log out
                                         </DangerButton>
                                     </div>
                                 </div>

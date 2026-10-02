@@ -1,8 +1,5 @@
 @use '../../styles/helpers' as *;
 
-// Весь список записей меняет цвет вместе с темой так же плавно, как остальные
-// элементы страницы: линии, разделители, узел и линия шкалы, карточки, значки.
-// Вешается на контейнер и всех потомков, поэтому новые элементы подхватят сами.
 .logs_page .pagination_content,
 .logs_page .pagination_content *,
 .logs_page .pagination_content *::before,
@@ -10,8 +7,6 @@
     @include use-theme-fade();
 }
 
-// Страница журнала не прокручивается: тулбар и пагинация стоят на месте,
-// а прокручивается только список между ними.
 .logs_page {
     display: flex;
     flex-direction: column;
@@ -102,7 +97,6 @@
     color: var(--light-text-color);
 }
 
-// Разделитель дней липнет к верху списка, пока идут записи этого дня.
 .logs_day {
     position: sticky;
     top: 0;
@@ -118,7 +112,6 @@
 
 .log_row {
     --tone: var(--light-text-color);
-    // Колонки одной ширины во всех строках: поэтому события выровнены друг под другом.
     --col-actor: 170px;
     --col-verb: 200px;
     --col-object: 260px;
@@ -136,7 +129,7 @@
     align-items: center;
     column-gap: var(--space-3);
     min-height: 38px;
-    padding: 6px 14px;
+    padding: 10px 14px;
     cursor: pointer;
 
     @include hover {
@@ -161,8 +154,6 @@
         --col-object: 170px;
     }
 
-    // На телефоне одной строки не хватает: колонки перестают быть колонками,
-    // всё идёт потоком и переносится.
     @include screen() {
         display: flex;
         flex-wrap: wrap;
@@ -223,7 +214,6 @@
         white-space: nowrap;
     }
 
-    // Само событие приглушено: на нём не должно держаться внимание, оно одинаково для многих строк.
     &_verb {
         font-size: 14px;
         color: var(--light-text-color);
@@ -245,8 +235,6 @@
         }
     }
 
-    // Обёртка подсказки (tooltip_wrapper) сама стоит в сетке строки, поэтому
-    // стили времени вешаются на неё.
     .log_row_time {
         justify-content: flex-end;
         font-size: 12px;
@@ -278,21 +266,17 @@
     }
 }
 
-// Одна плашка для всех сущностей: пользователь, пост, категория, комментарий,
-// обращение. Менять её вид нужно здесь, и он поменяется везде сразу.
 .log_chip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     min-width: 0;
     max-width: 100%;
-    padding: 3px 8px;
+    padding: 6px 8px;
     border-radius: 6px;
     font-size: 13px;
     line-height: 1.2;
     color: var(--text-color);
-    // Полупрозрачная подложка, а не цвет наведения строки: иначе в строке под
-    // курсором плашка сливалась бы с фоном.
     background: rgb(from var(--text-color) r g b / 0.07);
 
     &_avatar {
@@ -389,8 +373,6 @@
     }
 }
 
-// Подсказки в поиске: тип и название. Только текст, без кнопок: пункт списка
-// сам кнопка, а кнопка в кнопке недопустима.
 .logs_option {
     &_type {
         margin-left: auto;
@@ -416,8 +398,6 @@
     }
 }
 
-// Раскрытая запись по образцу логов Vercel: шапка, временная шкала с шагами,
-// в каждом шаге карточка со строками «подпись слева, значение справа».
 .log_details {
     display: flex;
     flex-direction: column;
@@ -541,7 +521,6 @@
     }
 }
 
-// Временная шкала: вертикальная линия слева, на ней узлы шагов.
 .log_steps {
     display: flex;
     flex-direction: column;
@@ -552,7 +531,6 @@
     position: relative;
     padding-left: 26px;
 
-    // Линия к следующему шагу.
     &:not(:last-child)::before {
         content: '';
         position: absolute;
@@ -690,9 +668,6 @@
     }
 }
 
-// Отклик на наведение: плашка сущности светлеет, значок становится ярче. Так
-// видно, что на неё можно нажать (откроется меню). У «Системы» и «Гостя»
-// меню нет, и отклика нет.
 .log_entity:not(.log_entity_muted):hover .log_chip {
     background: rgb(from var(--text-color) r g b / 0.16);
 }
@@ -701,7 +676,6 @@
     color: var(--text-color);
 }
 
-// Стрелка «было → стало»: иконка, повёрнутая вправо.
 .log_arrow {
     width: 14px;
     height: 14px;
@@ -710,7 +684,6 @@
     color: var(--light-text-color);
 }
 
-// Смена роли: бейджи ролей с сайта, между ними стрелка.
 .log_role_change {
     display: inline-flex;
     align-items: center;

@@ -2,7 +2,7 @@ import PageNotFound from '@/views/PageNotFound';
 import { buildMetadata } from '@/lib/metadata';
 
 export const metadata = buildMetadata({
-    title: 'Страница не найдена',
+    title: 'Page not found',
     path: '/404',
     noindex: true,
 });

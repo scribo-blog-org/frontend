@@ -18,7 +18,7 @@ const PostEntityChip = ({ title, deleted = false, className = '' }: any) => (
                 <span className="post_entity_chip_title">{title}</span>
                 {deleted ? (
                     <span className="post_entity_chip_deleted_label">
-                        удалён
+                        deleted
                     </span>
                 ) : null}
             </>

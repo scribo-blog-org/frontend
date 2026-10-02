@@ -175,7 +175,7 @@ const MessageContent = ({
     if (deleted) {
         return (
             <div className={`${className} messages_text_deleted`.trim()}>
-                <RichText text="Сообщение удалено" />
+                <RichText text="Message deleted" />
             </div>
         );
     }

@@ -3,7 +3,7 @@ import { buildMetadata } from '@/lib/metadata';
 
 export const metadata = buildMetadata({
     title: 'API',
-    description: 'Документация API Scribo.',
+    description: 'Scribo API documentation.',
     path: '/api',
     noindex: true,
 });

@@ -41,7 +41,7 @@ const PAGE_SIZE = 18;
 const ENTITY_FILTERS = ['user', 'post', 'category', 'support_request'];
 
 const TYPE_OPTIONS = [
-    { value: 'all', name: 'Все события' },
+    { value: 'all', name: 'All events' },
     ...Object.entries(LOG_TYPES).map(([value, config]: any) => ({
         value,
         name: config.title,
@@ -49,9 +49,9 @@ const TYPE_OPTIONS = [
 ];
 
 const ENTITY_LABELS: any = {
-    user: 'Пользователь',
-    post: 'Пост',
-    category: 'Категория',
+    user: 'User',
+    post: 'Post',
+    category: 'Category',
 };
 const SEARCH_DELAY_MS = 250;
 const SEARCH_PAGE_SIZE = 20;
@@ -70,7 +70,6 @@ const LogsPage = () => {
     const [filter, setFilter] = useState<any>({ type: null, id: null });
     const [typeFilter, setTypeFilter] = useState<any>('all');
     const rootRef = useRef<any>(null);
-    // Раскрытые записи. Сбрасываются, когда список меняется, чтобы не раскрыть чужое.
     const [expanded, setExpanded] = useState<any>(() => new Set());
     const toggle = (id: any) =>
         setExpanded((prev: any) => {
@@ -85,8 +84,6 @@ const LogsPage = () => {
             return next;
         });
 
-    // Поиск по сущностям идёт запросом на сервер, а не по тем записям, что
-    // сейчас на странице: ищется среди всего журнала, список подгружается.
     const [searchText, setSearchText] = useState<any>('');
     const [searchActive, setSearchActive] = useState<any>(false);
     const [entities, setEntities] = useState<any[]>([]);
@@ -106,7 +103,6 @@ const LogsPage = () => {
                 limit: SEARCH_PAGE_SIZE,
             });
 
-            // Ответ на устаревший запрос (ввод успел измениться) не нужен.
             if (request !== entitiesRequest.current) {
                 return;
             }
@@ -128,8 +124,6 @@ const LogsPage = () => {
         [showToast],
     );
 
-    // Запрос уходит через 250 мс после последнего ввода. Первое открытие, без
-    // текста, ждать не нужно.
     useEffect(() => {
         if (!searchActive) {
             return;
@@ -257,7 +251,6 @@ const LogsPage = () => {
         fetchUsers();
     }, [logs]);
 
-    // Новая страница открывается сверху, а не на том месте, где остановились.
     useEffect(() => {
         rootRef.current
             ?.querySelector('.pagination_content')
@@ -280,7 +273,7 @@ const LogsPage = () => {
                     <DropDown
                         options={TYPE_OPTIONS}
                         value={typeFilter}
-                        placeholder="Тип события"
+                        placeholder="Event type"
                         onChange={(value: any) => {
                             setTypeFilter(value);
                             setPage(1);
@@ -343,7 +336,7 @@ const LogsPage = () => {
                                 applyFilter({ type: null, id: null })
                             }
                         >
-                            Сбросить
+                            Reset
                         </CancelButton>
                     </div>
                 ) : (
@@ -364,8 +357,8 @@ const LogsPage = () => {
                                     </>
                                 ),
                             }))}
-                            placeholder="Найти пользователя, пост, категорию"
-                            emptyLabel="Ничего не нашлось в журнале"
+                            placeholder="Find a user, post, or category"
+                            emptyLabel="Nothing in the log"
                             loading={entitiesLoading}
                             hasMore={entitiesPage < entitiesPages}
                             onFocus={() => setSearchActive(true)}
@@ -448,7 +441,7 @@ const LogsPage = () => {
                             </Fragment>
                         ))
                     ) : (
-                        <p className="logs_empty">Событий нет</p>
+                        <p className="logs_empty">No events</p>
                     )
                 }
             </Pagination>

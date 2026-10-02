@@ -8,6 +8,7 @@ import {
     absoluteUrl,
     pageTitle,
 } from '@/seo/site';
+import { mediaUrl } from '@/utils/image';
 
 type MetadataInput = {
     title?: string;
@@ -38,7 +39,7 @@ export function buildMetadata({
 }: MetadataInput = {}): Metadata {
     const canonical = absoluteUrl(path);
     const fullTitle = absoluteTitle || pageTitle(title);
-    const ogImage = image || absoluteUrl(DEFAULT_OG_IMAGE);
+    const ogImage = image ? mediaUrl(image) : absoluteUrl(DEFAULT_OG_IMAGE);
     const usingBrandImage = !image;
 
     return {

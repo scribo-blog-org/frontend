@@ -10,9 +10,9 @@ import './Banner.scss';
 
 const Banner = () => (
     <aside className="banner">
-        <p className="banner_kicker">Личный проект</p>
+        <p className="banner_kicker">Personal project</p>
         <p className="banner_lead">
-            Пишу, когда есть что сказать — без редакции.
+            I write when I have something to say, without an editor.
         </p>
         <div className="banner_links">
             <a
@@ -38,15 +38,15 @@ const Banner = () => (
             <Link
                 className="banner_link"
                 href="/users/Maks"
-                aria-label="Профиль на этом сайте"
+                aria-label="Profile on this site"
             >
                 <ProfileIcon
                     className="banner_link_icon app-transition-color"
                     aria-hidden="true"
                 />
                 <span className="banner_link_copy">
-                    <span className="banner_link_label">Мой профиль</span>
-                    <span className="banner_link_hint">на scribo</span>
+                    <span className="banner_link_label">My profile</span>
+                    <span className="banner_link_hint">on Scribo</span>
                 </span>
                 <ChevronRightIcon
                     className="banner_link_chevron"
