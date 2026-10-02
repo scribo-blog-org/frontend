@@ -19,6 +19,22 @@
         color 0.3s ease;
 }
 
+// Та же плавная смена цвета при переключении темы, что у остальных элементов
+// (use-transition), плюс значки (fill и stroke) и поворот шеврона. Для блоков
+// целиком: вешается на контейнер и его потомков, поэтому ничего не остаётся
+// «моргать» рывком, пока вокруг всё меняется плавно.
+@mixin use-theme-fade() {
+    transition:
+        background-color 0.3s ease,
+        background 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease,
+        color 0.3s ease,
+        fill 0.3s ease,
+        stroke 0.3s ease,
+        transform 0.15s ease;
+}
+
 @mixin screen($size: 'sm') {
     @media screen and (max-width: 768px) {
         @content;

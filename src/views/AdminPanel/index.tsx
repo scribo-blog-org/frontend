@@ -14,7 +14,7 @@ import { useContext, useEffect } from 'react';
 
 import { AppContext } from '@/providers/AppProviders';
 
-import SidebarPage from '../../components/SidebarPage/index';
+import TabsPage from '../../components/TabsPage/index';
 
 import CategoriesPage from './Categories';
 import LogsPage from './Logs';
@@ -82,7 +82,7 @@ const AdminPanel = () => {
 
     return (
         <div className="admin_panel_page">
-            <SidebarPage pageTitle={'Панель администратора'} pages={pages} />
+            <TabsPage label="Панель администратора" pages={pages} />
         </div>
     );
 };

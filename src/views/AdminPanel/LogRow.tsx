@@ -1,0 +1,321 @@
+'use client';
+
+import Tooltip from '../../components/Ui/Tooltip';
+import ChevronDownIcon from '../../assets/svg/chevron-down.svg';
+import { format_back, format_date_time } from '../../utils/format';
+
+import {
+    Arrow,
+    CategoryEntity,
+    CommentEntity,
+    GuestEntity,
+    PostEntity,
+    RoleChange,
+    SupportEntity,
+    SupportStatus,
+    SystemEntity,
+    TextEntity,
+    UserEntity,
+} from './LogEntities';
+import { useEffect, useRef } from 'react';
+
+import LogDetails from './LogDetails';
+import { describeChanges } from './logFormat';
+import { typeOf } from './logTypes';
+
+const Changes = ({ changes }: any) => (
+    <>
+        {describeChanges(changes).map((row: any, index: any) => (
+            <span key={index} className="log_change">
+                <span className="log_change_label">{row.label}</span>
+                {row.from !== null ? (
+                    <>
+                        <span className="log_change_from">{row.from}</span>
+                        <Arrow />
+                    </>
+                ) : null}
+                <span className="log_change_to">{row.to}</span>
+            </span>
+        ))}
+    </>
+);
+
+const Quote = ({ text }: any) =>
+    text ? (
+        <span className="log_quote" title={text}>
+            «{text}»
+        </span>
+    ) : null;
+
+const ErrorText = ({ text, title }: any) =>
+    text ? (
+        <span className="log_quote log_quote_error" title={title ?? text}>
+            {text}
+        </span>
+    ) : null;
+
+/** Что стоит в строке после действия: пост, категория, пользователь, файл. */
+const objectOf = (log: any, config: any, ctx: any) => {
+    const data = log.data ?? {};
+    const { users, posts, categories, setFilter } = ctx;
+
+    switch (config.object) {
+        case 'post':
+            return data.post ? (
+                <PostEntity
+                    id={data.post}
+                    data={posts.find((p: any) => p._id === data.post)}
+                    snapshotTitle={data.post_title}
+                    setFilter={setFilter}
+                />
+            ) : null;
+        case 'category':
+            return data.category ? (
+                <CategoryEntity
+                    id={data.category}
+                    data={categories.find((c: any) => c._id === data.category)}
+                    snapshot={data.category_snapshot}
+                    setFilter={setFilter}
+                />
+            ) : null;
+        case 'user': {
+            const id = data.target_user ?? data.updated_user;
+
+            return id ? (
+                <UserEntity
+                    id={id}
+                    data={users.find((u: any) => u._id === String(id))}
+                    fallbackNick={data.target_nick}
+                    setFilter={setFilter}
+                />
+            ) : null;
+        }
+        case 'support':
+            return (
+                <SupportEntity
+                    id={data.support_request}
+                    accessKey={data.access_key}
+                    kind={data.kind}
+                    setFilter={setFilter}
+                />
+            );
+        case 'backup':
+            return data.file_name ? (
+                <TextEntity>{data.file_name}</TextEntity>
+            ) : null;
+        case 'system':
+            return (
+                <TextEntity>
+                    {log.type === 'server_start'
+                        ? `v${data.version ?? '?'} · ${data.env ?? ''}`
+                        : log.type === 'server_error'
+                          ? `${data.method ?? ''} ${data.path ?? ''}`
+                          : (data.trigger ?? '')}
+                </TextEntity>
+            );
+        default:
+            return null;
+    }
+};
+
+const COMMENT_TYPES = [
+    'comment_post',
+    'reply_comment',
+    'like_comment',
+    'unlike_comment',
+];
+
+/** Подпись-подсказка для обрезанных деталей: полный текст изменений. */
+const changesTitle = (changes: any) =>
+    describeChanges(changes)
+        .map((row: any) =>
+            row.from !== null
+                ? `${row.label}: ${row.from} → ${row.to}`
+                : `${row.label}: ${row.to}`,
+        )
+        .join('\n');
+
+/** Колонка деталей: что именно изменилось или что было написано. Нет деталей, нет содержимого. */
+const detailsOf = (log: any) => {
+    const data = log.data ?? {};
+
+    if (Array.isArray(data.changes) && data.changes.length) {
+        return {
+            node: <Changes changes={data.changes} />,
+            title: changesTitle(data.changes),
+        };
+    }
+
+    if (COMMENT_TYPES.includes(log.type) && data.comment_text) {
+        return {
+            node: (
+                <CommentEntity
+                    postId={data.post}
+                    commentId={data.comment}
+                    text={data.comment_text}
+                />
+            ),
+        };
+    }
+
+    switch (log.type) {
+        case 'delete_comment':
+            return data.comment_text
+                ? {
+                      node: <CommentEntity text={data.comment_text} deleted />,
+                  }
+                : {};
+        case 'update_role':
+            return {
+                node: <RoleChange from={data.old_role} to={data.new_role} />,
+            };
+        case 'create_support_request':
+            return { node: <Quote text={data.message_preview} /> };
+        case 'reply_support_request':
+            return { node: <Quote text={data.reply_preview} /> };
+        case 'update_support_status':
+            return { node: <SupportStatus status={data.status} /> };
+        case 'server_error':
+            return {
+                node: <ErrorText text={data.error} />,
+                title: data.stack || data.error,
+            };
+        case 'backup_failed':
+        case 'backup_restore_result':
+            return { node: <ErrorText text={data.error} /> };
+        default:
+            return {};
+    }
+};
+
+/**
+ * Одна строка, колонки фиксированной ширины, поэтому они выровнены по всем
+ * строкам: цвет действия, кто, что сделал, над чем, детали, когда. Клик по
+ * строке раскрывает под ней всё, что о записи известно.
+ */
+const LogRow = ({
+    log,
+    users,
+    posts,
+    categories,
+    setFilter,
+    expanded = false,
+    onToggle,
+    onPrev,
+    onNext,
+}: any) => {
+    const itemRef = useRef<any>(null);
+
+    // Раскрывает клик в любом месте строки, кроме самих сущностей: на них
+    // открывается их меню. Клики из меню (оно рисуется в портале, вне строки)
+    // тоже не считаются.
+    const handleClick = (event: any) => {
+        if (
+            !event.currentTarget.contains(event.target) ||
+            event.target.closest('.log_entity:not(.log_entity_muted)')
+        ) {
+            return;
+        }
+
+        onToggle?.();
+    };
+
+    // Раскрытая запись, особенно у нижнего края или после перехода стрелкой,
+    // должна оказаться в видимой части списка.
+    useEffect(() => {
+        if (expanded) {
+            itemRef.current?.scrollIntoView({
+                block: 'nearest',
+                behavior: 'smooth',
+            });
+        }
+    }, [expanded]);
+
+    const config = typeOf(log);
+    const Icon = config.icon;
+    const data = log.data ?? {};
+    const details = detailsOf(log);
+
+    const actor = data.system ? (
+        <SystemEntity />
+    ) : data.user ? (
+        <UserEntity
+            id={data.user}
+            data={users.find((user: any) => user._id === String(data.user))}
+            fallbackNick={data.user_nick}
+            setFilter={setFilter}
+        />
+    ) : (
+        <GuestEntity email={data.email} />
+    );
+
+    return (
+        <div
+            ref={itemRef}
+            className={`log_item${expanded ? ' log_item_expanded' : ''}`}
+        >
+            <div
+                className={`log_row log_row_tone_${config.tone}`}
+                role="button"
+                tabIndex={0}
+                aria-expanded={expanded}
+                onClick={handleClick}
+                onKeyDown={(event: any) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onToggle?.();
+                    }
+                }}
+            >
+                <span className="log_row_icon" title={config.title}>
+                    <Icon />
+                </span>
+                <div className="log_row_actor">{actor}</div>
+                <span className="log_row_verb">{config.text(log)}</span>
+                <div className="log_row_object">
+                    {objectOf(log, config, {
+                        users,
+                        posts,
+                        categories,
+                        setFilter,
+                    })}
+                </div>
+                <div className="log_row_details" title={details.title}>
+                    {details.node}
+                </div>
+                <Tooltip
+                    text={format_date_time(log.date_time)}
+                    className="log_row_time"
+                >
+                    <span>{format_back(log.date_time)}</span>
+                </Tooltip>
+                <ChevronDownIcon className="log_row_chevron" />
+            </div>
+            {expanded ? (
+                <LogDetails
+                    log={log}
+                    config={config}
+                    names={{
+                        user: users.find(
+                            (u: any) => u._id === String(data.user),
+                        )?.nick_name,
+                        target: users.find(
+                            (u: any) =>
+                                u._id ===
+                                String(data.target_user ?? data.updated_user),
+                        )?.nick_name,
+                        post: posts.find((p: any) => p._id === data.post)
+                            ?.title,
+                        category: categories.find(
+                            (c: any) => c._id === data.category,
+                        )?.name,
+                    }}
+                    onPrev={onPrev}
+                    onNext={onNext}
+                />
+            ) : null}
+        </div>
+    );
+};
+
+export default LogRow;
