@@ -23,6 +23,7 @@ import Tooltip from '../Ui/Tooltip/index';
 import Category from '../Category';
 
 import Sceleton from '../Ui/Sceleton/Sceleton';
+import { mediaUrl } from '../../utils/image';
 
 const DeletePostActions = ({
     post,
@@ -89,7 +90,7 @@ const getDeleteModalContent = (
             {post.featured_image && (
                 <img
                     className="modal_delete_post_content_post_image"
-                    src={post.featured_image}
+                    src={mediaUrl(post.featured_image)}
                     alt="post_image"
                 />
             )}

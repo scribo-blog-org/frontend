@@ -17,6 +17,7 @@ import PostHeader from '../../components/PostHeader';
 import { getPostById } from '../../api/posts.api';
 import PageSeo from '../../components/Seo/index';
 import { plainTextExcerpt } from '../../seo/excerpt';
+import { mediaUrl } from '../../utils/image';
 
 const Article = ({
     initialArticle = null,
@@ -121,7 +122,7 @@ const Article = ({
                     {article.featured_image ? (
                         <div className="article_featured_image">
                             <img
-                                src={article.featured_image}
+                                src={mediaUrl(article.featured_image)}
                                 alt={'featured'}
                             />
                         </div>

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 
 import './DropFile.scss';
 
+import { mediaUrl } from '../../../utils/image';
 import DeleteIcon from '../../../assets/svg/delete.svg';
 import WarningIcon from '../../../assets/svg/warning-icon.svg';
 import UploadFileIcon from '../../../assets/svg/upload-file-icon.svg';
@@ -49,7 +50,7 @@ const DropFile = ({
         }
 
         if (previewUrl && !isPreviewHidden) {
-            setPreview(previewUrl);
+            setPreview(mediaUrl(previewUrl));
             return;
         }
 
