@@ -28,8 +28,16 @@ const SearchSelect = ({
     onFocus,
     placeholder = 'Выбрать',
     emptyLabel = 'Ничего не найдено',
+    // Внешний поиск. Если передан onInput, список не фильтруется внутри: его
+    // присылают снаружи (запросом), а компонент только сообщает, что ввели,
+    // показывает загрузку и просит следующую порцию, когда список докрутили до конца.
+    onInput,
+    loading = false,
+    hasMore = false,
+    onLoadMore,
 }: any) => {
     const setValue = onChange ?? onSetValue;
+    const external = typeof onInput === 'function';
 
     const [isOpen, setIsOpen] = useState<any>(false);
     const [inputValue, setInputValue] = useState<any>('');
@@ -48,12 +56,12 @@ const SearchSelect = ({
     const filteredOptions = useMemo(() => {
         const search = inputValue.trim().toLowerCase();
 
-        if (!search) return options;
+        if (external || !search) return options;
 
         return options.filter((option: any) =>
             optionLabel(option).toLowerCase().includes(search),
         );
-    }, [options, inputValue]);
+    }, [options, inputValue, external]);
 
     const resetValue = useCallback(() => {
         const search = inputValue.trim().toLowerCase();
@@ -68,6 +76,7 @@ const SearchSelect = ({
                 setValue?.('');
             }
             setInputValue('');
+            if (external && search) onInput('');
         } else if (exactOption.value !== value) {
             setValue?.(exactOption.value);
             setInputValue(optionLabel(exactOption));
@@ -77,7 +86,7 @@ const SearchSelect = ({
 
         setIsSearching(false);
         setHighlightedIndex(-1);
-    }, [inputValue, options, setValue, value]);
+    }, [inputValue, options, setValue, value, external, onInput]);
 
     const closeSelect = useCallback(() => {
         setIsOpen(false);
@@ -85,10 +94,15 @@ const SearchSelect = ({
         resetValue();
     }, [resetValue]);
 
+    // При внешнем поиске список меняется на каждый ввод, и подставлять из него
+    // подпись нельзя: она стёрла бы то, что человек печатает.
+    const optionsDep = external ? null : options;
+
     useEffect(() => {
         const option = options.find((o: any) => o.value === value);
         setInputValue(optionLabel(option));
-    }, [value, options]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [value, optionsDep]);
 
     useEffect(() => {
         const handleClickOutside = (e: any) => {
@@ -111,7 +125,9 @@ const SearchSelect = ({
         }
 
         setHighlightedIndex(filteredOptions.length ? 0 : -1);
-    }, [isOpen, filteredOptions]);
+        // Подгруженная порция не должна сбрасывать выделение и прокручивать список наверх.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, external ? inputValue : filteredOptions]);
 
     useEffect(() => {
         if (highlightedIndex < 0) return;
@@ -124,6 +140,7 @@ const SearchSelect = ({
     const handleChange = (e: any) => {
         setInputValue(e.target.value);
         setIsSearching(true);
+        onInput?.(e.target.value);
 
         if (!isOpen) setIsOpen(true);
     };
@@ -244,6 +261,18 @@ const SearchSelect = ({
             {isOpen && (
                 <div
                     className={`search_select_list blurred float_section${listVisible ? ' search_select_list_visible' : ''}`}
+                    onScroll={(e: any) => {
+                        const el = e.currentTarget;
+
+                        if (
+                            hasMore &&
+                            !loading &&
+                            el.scrollTop + el.clientHeight >=
+                                el.scrollHeight - 24
+                        ) {
+                            onLoadMore?.();
+                        }
+                    }}
                 >
                     {filteredOptions.length ? (
                         filteredOptions.map((option: any, index: any) => (
@@ -275,11 +304,16 @@ const SearchSelect = ({
                                 )}
                             </button>
                         ))
-                    ) : (
+                    ) : loading ? null : (
                         <div className="search_select_empty">
                             <p>{emptyLabel}</p>
                         </div>
                     )}
+                    {loading ? (
+                        <div className="search_select_empty">
+                            <p>Загрузка…</p>
+                        </div>
+                    ) : null}
                 </div>
             )}
         </div>

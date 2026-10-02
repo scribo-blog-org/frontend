@@ -9,12 +9,19 @@ const PostEntityChip = ({ title, deleted = false, className = '' }: any) => (
         className={`post_entity_chip${deleted ? ' post_entity_chip_deleted' : ''} ${className}`.trim()}
     >
         <PostIcon aria-hidden="true" />
-        {deleted ? (
+        {deleted && !title ? (
             <span className="post_entity_chip_deleted_label">
                 No longer exists
             </span>
         ) : (
-            <span className="post_entity_chip_title">{title}</span>
+            <>
+                <span className="post_entity_chip_title">{title}</span>
+                {deleted ? (
+                    <span className="post_entity_chip_deleted_label">
+                        удалён
+                    </span>
+                ) : null}
+            </>
         )}
     </div>
 );
