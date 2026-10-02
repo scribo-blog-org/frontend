@@ -43,7 +43,9 @@ function startOfDay(date: any) {
 function format_message_date_label(date: any) {
     const target = startOfDay(date);
     const today = startOfDay(new Date());
-    const diffDays = Math.round((today.getTime() - target.getTime()) / (24 * 60 * 60 * 1000));
+    const diffDays = Math.round(
+        (today.getTime() - target.getTime()) / (24 * 60 * 60 * 1000),
+    );
 
     if (diffDays === 0) {
         return 'Сегодня';
@@ -76,13 +78,13 @@ function is_same_calendar_day(left: any, right: any) {
 }
 
 const format_back = (date_time: any) => {
-    if (!date_time) return "";
+    if (!date_time) return '';
 
     const now = new Date();
     const past = new Date(date_time);
     const diffInMs = now.getTime() - past.getTime();
 
-    if (diffInMs < 0) return "только что";
+    if (diffInMs < 0) return 'только что';
 
     const diffInSeconds = Math.floor(diffInMs / 1000);
     const diffInMinutes = Math.floor(diffInSeconds / 60);
@@ -92,50 +94,50 @@ const format_back = (date_time: any) => {
     const pluralize = (number: any, titles: any) => {
         const cases = [2, 0, 1, 1, 1, 2];
         return titles[
-            (number % 100 > 4 && number % 100 < 20) 
-                ? 2 
-                : cases[(number % 10 < 5) ? number % 10 : 5]
+            number % 100 > 4 && number % 100 < 20
+                ? 2
+                : cases[number % 10 < 5 ? number % 10 : 5]
         ];
     };
 
     if (diffInSeconds < 60) {
-        if (diffInSeconds <= 0) return "только что";
-        return `${diffInSeconds} ${pluralize(diffInSeconds, ["секунду", "секунды", "секунд"])} назад`;
+        if (diffInSeconds <= 0) return 'только что';
+        return `${diffInSeconds} ${pluralize(diffInSeconds, ['секунду', 'секунды', 'секунд'])} назад`;
     }
 
     if (diffInMinutes < 60) {
-        return `${diffInMinutes} ${pluralize(diffInMinutes, ["минуту", "минуты", "минут"])} назад`;
+        return `${diffInMinutes} ${pluralize(diffInMinutes, ['минуту', 'минуты', 'минут'])} назад`;
     }
 
     if (diffInHours < 24) {
-        return `${diffInHours} ${pluralize(diffInHours, ["час", "часа", "часов"])} назад`;
+        return `${diffInHours} ${pluralize(diffInHours, ['час', 'часа', 'часов'])} назад`;
     }
 
     if (diffInDays < 30) {
-        return `${diffInDays} ${pluralize(diffInDays, ["день", "дня", "дней"])} назад`;
+        return `${diffInDays} ${pluralize(diffInDays, ['день', 'дня', 'дней'])} назад`;
     }
 
     const diffInMonths = Math.floor(diffInDays / 30);
     if (diffInMonths < 12) {
-        return `${diffInMonths} ${pluralize(diffInMonths, ["месяц", "месяца", "месяцев"])} назад`;
+        return `${diffInMonths} ${pluralize(diffInMonths, ['месяц', 'месяца', 'месяцев'])} назад`;
     }
 
     const diffInYears = Math.floor(diffInDays / 365);
-    return `${diffInYears} ${pluralize(diffInYears, ["год", "года", "лет"])} назад`;
+    return `${diffInYears} ${pluralize(diffInYears, ['год', 'года', 'лет'])} назад`;
 };
 
 function getCategoryColorType(categoryName: any) {
     switch (categoryName?.toLowerCase()) {
-        case "новости":
-            return 1
-        case "политика":
-            return 2
-        case "dev":
-            return 3
-        case "другое":
-            return 4
+        case 'новости':
+            return 1;
+        case 'политика':
+            return 2;
+        case 'dev':
+            return 3;
+        case 'другое':
+            return 4;
         default:
-            return 0
+            return 0;
     }
 }
 export {
@@ -144,5 +146,5 @@ export {
     format_message_date_label,
     is_same_calendar_day,
     format_back,
-    getCategoryColorType
-}
+    getCategoryColorType,
+};

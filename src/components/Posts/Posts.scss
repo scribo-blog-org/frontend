@@ -1,4 +1,4 @@
-@use "../../styles/helpers" as *;
+@use '../../styles/helpers' as *;
 
 .posts {
     display: flex;
@@ -20,10 +20,10 @@
         padding-top: 0;
     }
 
-    .posts_loader{
+    .posts_loader {
         margin-top: 50px;
         width: 100%;
         display: flex;
         justify-content: center;
-    };
+    }
 }

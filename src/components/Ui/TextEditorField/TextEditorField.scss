@@ -1,4 +1,4 @@
-@use "../../../styles/helpers" as *;
+@use '../../../styles/helpers' as *;
 
 .text_editor {
     &_body {
@@ -43,7 +43,9 @@
                     }
 
                     @include hover {
-                        background: var(--text-editor-toolbar-item-hover-background);
+                        background: var(
+                            --text-editor-toolbar-item-hover-background
+                        );
                     }
                 }
 

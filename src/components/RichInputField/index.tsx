@@ -1,15 +1,15 @@
 'use client';
 
-import { FloatingPortal } from "@floating-ui/react";
+import { FloatingPortal } from '@floating-ui/react';
 
-import InputField from "../Ui/InputField";
-import { useRichInputField } from "../../hooks/useRichInputField";
+import InputField from '../Ui/InputField';
+import { useRichInputField } from '../../hooks/useRichInputField';
 
-import "../Ui/InputField/InputField.scss";
-import "../Ui/Flyout/Flyout.scss";
-import "./RichInputField.scss";
+import '../Ui/InputField/InputField.scss';
+import '../Ui/Flyout/Flyout.scss';
+import './RichInputField.scss';
 
-const PORTAL_ROOT = "app-layout";
+const PORTAL_ROOT = 'app-layout';
 
 const assignTextareaRef = (node: any, textareaRef: any, inputRef: any) => {
     textareaRef.current = node;
@@ -18,7 +18,7 @@ const assignTextareaRef = (node: any, textareaRef: any, inputRef: any) => {
         return;
     }
 
-    if (typeof inputRef === "function") {
+    if (typeof inputRef === 'function') {
         inputRef(node);
         return;
     }
@@ -29,12 +29,12 @@ const assignTextareaRef = (node: any, textareaRef: any, inputRef: any) => {
 const RichInputField = ({
     value,
     onChange,
-    preset = "social",
+    preset = 'social',
     features,
     onMouseDown,
     placeholder,
     length = 2000,
-    className = "",
+    className = '',
     multilineRows = 3,
     isMultiline = true,
     error,
@@ -94,14 +94,16 @@ const RichInputField = ({
     }
 
     const portalRoot =
-        typeof document === "undefined" ? null : document.getElementById(PORTAL_ROOT);
+        typeof document === 'undefined'
+            ? null
+            : document.getElementById(PORTAL_ROOT);
 
     const isBlocked = blocked || disabled;
 
     return (
         <div
             className={`rich_input_field input_field_wrapper${
-                isBlocked ? " input_field_wrapper_blocked" : ""
+                isBlocked ? ' input_field_wrapper_blocked' : ''
             }`}
             ref={(node: any) => {
                 anchorRef.current = node;
@@ -113,14 +115,16 @@ const RichInputField = ({
                 className={`rich_input_field_mirror input_field ${className}`.trim()}
                 aria-hidden="true"
                 dangerouslySetInnerHTML={{
-                    __html: mirrorHtml + (text?.endsWith("\n") ? "<br>" : ""),
+                    __html: mirrorHtml + (text?.endsWith('\n') ? '<br>' : ''),
                 }}
             />
             <textarea
-                ref={(node: any) => assignTextareaRef(node, textareaRef, inputRef)}
+                ref={(node: any) =>
+                    assignTextareaRef(node, textareaRef, inputRef)
+                }
                 className={`input_field rich_input_field_input app-transition ${className}${
-                    error ? " incorrect_field" : ""
-                }${isBlocked ? " input_field_blocked" : ""}`}
+                    error ? ' incorrect_field' : ''
+                }${isBlocked ? ' input_field_blocked' : ''}`}
                 value={text}
                 rows={multilineRows}
                 wrap="soft"
@@ -161,15 +165,23 @@ const RichInputField = ({
                     >
                         {items.map((item: any, index: any) => (
                             <button
-                                key={suggestKind === "mention" ? item._id : item}
+                                key={
+                                    suggestKind === 'mention' ? item._id : item
+                                }
                                 type="button"
                                 className={`flyout_item app-transition ${
-                                    index === activeIndex ? "flyout_item_active" : ""
+                                    index === activeIndex
+                                        ? 'flyout_item_active'
+                                        : ''
                                 }`}
-                                onMouseDown={(event: any) => event.preventDefault()}
+                                onMouseDown={(event: any) =>
+                                    event.preventDefault()
+                                }
                                 onClick={() => applySelection(item)}
                             >
-                                {suggestKind === "mention" ? `@${item.nick_name}` : item}
+                                {suggestKind === 'mention'
+                                    ? `@${item.nick_name}`
+                                    : item}
                             </button>
                         ))}
                     </div>

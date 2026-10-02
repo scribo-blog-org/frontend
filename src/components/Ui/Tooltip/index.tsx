@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 import {
     FloatingPortal,
     autoUpdate,
@@ -13,14 +13,14 @@ import {
     useRole,
     useTransitionStyles,
     safePolygon,
-} from "@floating-ui/react";
+} from '@floating-ui/react';
 
-import "./Tooltip.scss";
+import './Tooltip.scss';
 
-const PORTAL_ROOT = "app-layout";
+const PORTAL_ROOT = 'app-layout';
 
 const getSlideTransform = (side: any) =>
-    side === "bottom" ? "translateY(-4px)" : "translateY(4px)";
+    side === 'bottom' ? 'translateY(-4px)' : 'translateY(4px)';
 
 const Tooltip = ({ text, children, className, clickable = false }: any) => {
     const [open, setOpen] = useState<any>(false);
@@ -28,44 +28,50 @@ const Tooltip = ({ text, children, className, clickable = false }: any) => {
     const { refs, floatingStyles, context } = useFloating({
         open,
         onOpenChange: setOpen,
-        placement: "top",
-        strategy: "fixed",
+        placement: 'top',
+        strategy: 'fixed',
         middleware: [offset(8), flip(), shift({ padding: 8 })],
         whileElementsMounted: autoUpdate,
     });
 
-    const { isMounted, styles: transitionStyles } = useTransitionStyles(context, {
-        duration: 200,
-        initial: ({ side }: any) => ({
-            opacity: 0,
-            transform: getSlideTransform(side),
-        }),
-        open: {
-            opacity: 1,
-            transform: "translateY(0)",
+    const { isMounted, styles: transitionStyles } = useTransitionStyles(
+        context,
+        {
+            duration: 200,
+            initial: ({ side }: any) => ({
+                opacity: 0,
+                transform: getSlideTransform(side),
+            }),
+            open: {
+                opacity: 1,
+                transform: 'translateY(0)',
+            },
+            close: ({ side }: any) => ({
+                opacity: 0,
+                transform: getSlideTransform(side),
+            }),
         },
-        close: ({ side }: any) => ({
-            opacity: 0,
-            transform: getSlideTransform(side),
-        }),
-    });
+    );
 
     const hover = useHover(context, {
         handleClose: safePolygon({ buffer: 4 }),
         delay: { open: 80, close: 0 },
     });
-    const role = useRole(context, { role: "tooltip" });
-    const { getReferenceProps, getFloatingProps } = useInteractions([hover, role]);
+    const role = useRole(context, { role: 'tooltip' });
+    const { getReferenceProps, getFloatingProps } = useInteractions([
+        hover,
+        role,
+    ]);
 
     const portalRoot =
-        typeof document === "undefined"
+        typeof document === 'undefined'
             ? null
             : document.getElementById(PORTAL_ROOT);
 
     return (
         <>
             <span
-                className={`tooltip_wrapper ${className || ""} ${clickable ? "clickable" : ""}`}
+                className={`tooltip_wrapper ${className || ''} ${clickable ? 'clickable' : ''}`}
                 ref={refs.setReference}
                 {...getReferenceProps()}
             >

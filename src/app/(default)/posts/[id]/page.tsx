@@ -1,11 +1,11 @@
-import { notFound } from "next/navigation";
+import { notFound } from 'next/navigation';
 
-import Article from "@/views/Article";
-import { buildMetadata } from "@/lib/metadata";
-import { loadPublicPost } from "@/lib/server-api";
-import { plainTextExcerpt } from "@/seo/excerpt";
+import Article from '@/views/Article';
+import { buildMetadata } from '@/lib/metadata';
+import { loadPublicPost } from '@/lib/server-api';
+import { plainTextExcerpt } from '@/seo/excerpt';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 type ArticleRouteProps = {
     params: Promise<{ id: string }>;
@@ -18,15 +18,19 @@ export async function generateMetadata({ params }: ArticleRouteProps) {
 
     if (!article?._id) {
         return buildMetadata({
-            title: "Статья не найдена",
+            title: 'Статья не найдена',
             path: `/posts/${id}`,
             noindex: true,
         });
     }
 
-    const title = typeof article.title === "string" ? article.title : "Статья";
-    const text = typeof article.content_text === "string" ? article.content_text : "";
-    const image = typeof article.featured_image === "string" ? article.featured_image : undefined;
+    const title = typeof article.title === 'string' ? article.title : 'Статья';
+    const text =
+        typeof article.content_text === 'string' ? article.content_text : '';
+    const image =
+        typeof article.featured_image === 'string'
+            ? article.featured_image
+            : undefined;
     const author = articleAuthor(article);
     const publishedTime = isoDate(article.created_date);
 
@@ -35,7 +39,7 @@ export async function generateMetadata({ params }: ArticleRouteProps) {
         description: plainTextExcerpt(text) || title,
         path: `/posts/${String(article._id)}`,
         image,
-        type: "article",
+        type: 'article',
         publishedTime,
         modifiedTime: publishedTime,
         authors: author?.name ? [author.name] : undefined,
@@ -54,7 +58,11 @@ export default async function ArticlePage({ params }: ArticleRouteProps) {
 }
 
 function isoDate(value: unknown) {
-    if (typeof value !== "string" && typeof value !== "number" && !(value instanceof Date)) {
+    if (
+        typeof value !== 'string' &&
+        typeof value !== 'number' &&
+        !(value instanceof Date)
+    ) {
         return undefined;
     }
 
@@ -66,12 +74,12 @@ function isoDate(value: unknown) {
 function articleAuthor(article: Record<string, unknown>) {
     const author = article.author;
 
-    if (!author || typeof author !== "object") {
+    if (!author || typeof author !== 'object') {
         return null;
     }
 
     const record = author as Record<string, unknown>;
-    const name = typeof record.nick_name === "string" ? record.nick_name : "";
+    const name = typeof record.nick_name === 'string' ? record.nick_name : '';
 
     if (!name) {
         return null;

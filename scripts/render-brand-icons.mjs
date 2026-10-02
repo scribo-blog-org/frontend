@@ -1,21 +1,21 @@
-import { readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { Resvg } from "@resvg/resvg-js";
-import pngToIco from "png-to-ico";
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Resvg } from '@resvg/resvg-js';
+import pngToIco from 'png-to-ico';
 
 const rootDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const publicDir = path.join(rootDir, "public");
-const assetsDir = path.join(rootDir, "src", "assets", "svg");
+const publicDir = path.join(rootDir, 'public');
+const assetsDir = path.join(rootDir, 'src', 'assets', 'svg');
 
-const BG = "#161616";
-const INK = "#ffffff";
+const BG = '#161616';
+const INK = '#ffffff';
 
 function innerSvg(source) {
     return source
-        .replace(/<\?xml[^>]*>/, "")
-        .replace(/<svg[^>]*>/, "")
-        .replace(/<\/svg>\s*$/, "")
+        .replace(/<\?xml[^>]*>/, '')
+        .replace(/<svg[^>]*>/, '')
+        .replace(/<\/svg>\s*$/, '')
         .replace(/currentColor/g, INK)
         .replace(/fill="currentColor"/g, `fill="${INK}"`);
 }
@@ -43,23 +43,38 @@ function socialCard(wordmarkInner) {
 
 function png(svg, width, background) {
     return new Resvg(svg, {
-        fitTo: { mode: "width", value: width },
+        fitTo: { mode: 'width', value: width },
         ...(background ? { background } : {}),
-    }).render().asPng();
+    })
+        .render()
+        .asPng();
 }
 
-const mark = innerSvg(await readFile(path.join(assetsDir, "mini-logo-icon.svg"), "utf8"));
-const wordmark = innerSvg(await readFile(path.join(assetsDir, "full-logo-icon.svg"), "utf8"));
+const mark = innerSvg(
+    await readFile(path.join(assetsDir, 'mini-logo-icon.svg'), 'utf8'),
+);
+const wordmark = innerSvg(
+    await readFile(path.join(assetsDir, 'full-logo-icon.svg'), 'utf8'),
+);
 const iconSvg = squareIcon(mark);
 const ogSvg = socialCard(wordmark);
 
-await writeFile(path.join(publicDir, "icon.svg"), iconSvg);
-await writeFile(path.join(publicDir, "logo-512.png"), png(iconSvg, 512));
-await writeFile(path.join(publicDir, "logo-192.png"), png(iconSvg, 192));
-await writeFile(path.join(publicDir, "apple-touch-icon.png"), png(iconSvg, 180, BG));
-await writeFile(path.join(publicDir, "og.png"), png(ogSvg, 1200, BG));
+await writeFile(path.join(publicDir, 'icon.svg'), iconSvg);
+await writeFile(path.join(publicDir, 'logo-512.png'), png(iconSvg, 512));
+await writeFile(path.join(publicDir, 'logo-192.png'), png(iconSvg, 192));
+await writeFile(
+    path.join(publicDir, 'apple-touch-icon.png'),
+    png(iconSvg, 180, BG),
+);
+await writeFile(path.join(publicDir, 'og.png'), png(ogSvg, 1200, BG));
 
-const ico = await pngToIco([png(iconSvg, 16), png(iconSvg, 32), png(iconSvg, 48)]);
-await writeFile(path.join(publicDir, "favicon.ico"), ico);
+const ico = await pngToIco([
+    png(iconSvg, 16),
+    png(iconSvg, 32),
+    png(iconSvg, 48),
+]);
+await writeFile(path.join(publicDir, 'favicon.ico'), ico);
 
-console.log("[brand] wrote icon.svg, favicon.ico, logo-192.png, logo-512.png, apple-touch-icon.png, og.png");
+console.log(
+    '[brand] wrote icon.svg, favicon.ico, logo-192.png, logo-512.png, apple-touch-icon.png, og.png',
+);

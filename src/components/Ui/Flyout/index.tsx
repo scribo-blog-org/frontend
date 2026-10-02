@@ -1,6 +1,6 @@
 'use client';
 
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState } from 'react';
 import {
     autoUpdate,
     flip,
@@ -13,18 +13,18 @@ import {
     useInteractions,
     useRole,
     safePolygon,
-} from "@floating-ui/react";
+} from '@floating-ui/react';
 
-import "./Flyout.scss";
+import './Flyout.scss';
 
-const PORTAL_ROOT = "app-layout";
+const PORTAL_ROOT = 'app-layout';
 
 const Flyout = ({
     children,
     content,
     open: openProp,
     onOpenChange,
-    placement = "top-start",
+    placement = 'top-start',
     virtualAnchor,
     className,
 }: any) => {
@@ -42,7 +42,7 @@ const Flyout = ({
         open,
         onOpenChange: setOpen,
         placement,
-        strategy: "fixed",
+        strategy: 'fixed',
         middleware: [offset(8), flip(), shift({ padding: 8 })],
         whileElementsMounted: autoUpdate,
     });
@@ -66,22 +66,27 @@ const Flyout = ({
         enabled: Boolean(virtualAnchor) || isControlled,
         outsidePress: !virtualAnchor,
     });
-    const role = useRole(context, { role: "tooltip" });
-    const { getReferenceProps, getFloatingProps } = useInteractions([hover, dismiss, role]);
+    const role = useRole(context, { role: 'tooltip' });
+    const { getReferenceProps, getFloatingProps } = useInteractions([
+        hover,
+        dismiss,
+        role,
+    ]);
 
     if (!content) {
         return children || null;
     }
 
-    const portalRoot = typeof document === "undefined"
-        ? null
-        : document.getElementById(PORTAL_ROOT);
+    const portalRoot =
+        typeof document === 'undefined'
+            ? null
+            : document.getElementById(PORTAL_ROOT);
 
     return (
         <>
             {children ? (
                 <span
-                    className={`flyout_trigger ${className || ""}`}
+                    className={`flyout_trigger ${className || ''}`}
                     ref={virtualAnchor ? undefined : refs.setReference}
                     {...(virtualAnchor ? {} : getReferenceProps())}
                 >

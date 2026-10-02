@@ -1,8 +1,8 @@
-import { apiUrl } from "../config";
-import { apiFetch } from "./http";
+import { apiUrl } from '../config';
+import { apiFetch } from './http';
 
 const searchSite = async (q: any) => {
-    const query = String(q || "").trim();
+    const query = String(q || '').trim();
     if (query.length < 2) {
         return {
             status: true,
@@ -18,14 +18,14 @@ const searchSite = async (q: any) => {
     } catch (err: any) {
         return {
             status: false,
-            message: err?.message || "Search failed",
+            message: err?.message || 'Search failed',
             data: null,
         };
     }
 };
 
 const searchHashtags = async (q: any) => {
-    const query = String(q || "").trim();
+    const query = String(q || '').trim();
     if (query.length < 2) {
         return [];
     }
@@ -42,7 +42,9 @@ const searchHashtags = async (q: any) => {
 };
 
 const searchUsers = async (q: any) => {
-    const query = String(q || "").trim().replace(/^@/, "");
+    const query = String(q || '')
+        .trim()
+        .replace(/^@/, '');
     if (query.length < 1) {
         return [];
     }

@@ -1,5 +1,5 @@
-import { apiUrl } from "../config";
-import { apiFetch } from "./http";
+import { apiUrl } from '../config';
+import { apiFetch } from './http';
 
 const parse = async (response: any) => {
     try {
@@ -21,22 +21,27 @@ const getConversations = async () => {
 
 const createConversation = async (userId: any) => {
     const response = await apiFetch(`${apiUrl()}/api/chat/conversations`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),
     });
     return parse(response);
 };
 
 const deleteConversation = async (conversationId: any) => {
-    const response = await apiFetch(`${apiUrl()}/api/chat/conversations/${conversationId}`, {
-        method: "DELETE",
-    });
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/${conversationId}`,
+        {
+            method: 'DELETE',
+        },
+    );
     return parse(response);
 };
 
 const getConversation = async (conversationId: any) => {
-    const response = await apiFetch(`${apiUrl()}/api/chat/conversations/${conversationId}`);
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/${conversationId}`,
+    );
     return parse(response);
 };
 
@@ -44,16 +49,16 @@ const getMessages = async (conversationId: any, params: any = {}) => {
     const search = new URLSearchParams();
 
     if (params.before) {
-        search.set("before", params.before);
+        search.set('before', params.before);
     }
 
     if (params.limit) {
-        search.set("limit", String(params.limit));
+        search.set('limit', String(params.limit));
     }
 
     const query = search.toString();
     const response = await apiFetch(
-        `${apiUrl()}/api/chat/conversations/${conversationId}/messages${query ? `?${query}` : ""}`,
+        `${apiUrl()}/api/chat/conversations/${conversationId}/messages${query ? `?${query}` : ''}`,
     );
     return parse(response);
 };
@@ -62,8 +67,8 @@ const sendMessage = async (conversationId: any, payload: any) => {
     const response = await apiFetch(
         `${apiUrl()}/api/chat/conversations/${conversationId}/messages`,
         {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 text: payload.text,
                 replyTo: payload.replyTo || undefined,
@@ -76,24 +81,30 @@ const sendMessage = async (conversationId: any, payload: any) => {
 const markConversationRead = async (conversationId: any) => {
     const response = await apiFetch(
         `${apiUrl()}/api/chat/conversations/${conversationId}/read`,
-        { method: "POST" },
+        { method: 'POST' },
     );
     return parse(response);
 };
 
 const deleteMessage = async (messageId: any) => {
-    const response = await apiFetch(`${apiUrl()}/api/chat/messages/${messageId}`, {
-        method: "DELETE",
-    });
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/messages/${messageId}`,
+        {
+            method: 'DELETE',
+        },
+    );
     return parse(response);
 };
 
 const editMessage = async (messageId: any, payload: any) => {
-    const response = await apiFetch(`${apiUrl()}/api/chat/messages/${messageId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: payload.text }),
-    });
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/messages/${messageId}`,
+        {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: payload.text }),
+        },
+    );
     return parse(response);
 };
 

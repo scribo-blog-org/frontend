@@ -20,7 +20,7 @@
       "type": "image/png"
     }
   ],
-  "start_url": "/posts",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "theme_color": "#161616",

@@ -1,24 +1,24 @@
 'use client';
 
-import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "@/navigation";
+import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from '@/navigation';
 
-import { AppContext } from "@/providers/AppProviders";
-import { getConversations, sendMessage } from "../../api/chat.api";
-import ActionButton from "../Ui/ActionButton";
-import PrimaryButton from "../Ui/PrimaryButton";
-import Loading from "../Ui/Loading";
-import UserBadge from "../UserBadge";
-import { absoluteUrl } from "../../seo/site";
+import { AppContext } from '@/providers/AppProviders';
+import { getConversations, sendMessage } from '../../api/chat.api';
+import ActionButton from '../Ui/ActionButton';
+import PrimaryButton from '../Ui/PrimaryButton';
+import Loading from '../Ui/Loading';
+import UserBadge from '../UserBadge';
+import { absoluteUrl } from '../../seo/site';
 import {
     canUseNativeShare,
     copyText,
     sharePostNative,
-} from "../../utils/share";
+} from '../../utils/share';
 
-import RedirectIcon from "../../assets/svg/redirect.svg";
+import RedirectIcon from '../../assets/svg/redirect.svg';
 
-import "./SharePostModal.scss";
+import './SharePostModal.scss';
 
 const SharePostModal = ({
     postId,
@@ -36,7 +36,7 @@ const SharePostModal = ({
     const nativeShareAvailable = canUseNativeShare();
 
     useEffect(() => {
-        const field = document.getElementById("share_post_modal_link");
+        const field = document.getElementById('share_post_modal_link');
         if (!field) {
             return;
         }
@@ -72,11 +72,14 @@ const SharePostModal = ({
         try {
             await copyText(shareUrl);
             setCopied(true);
-            showToast?.({ message: "Ссылка скопирована", type: "success" });
+            showToast?.({ message: 'Ссылка скопирована', type: 'success' });
             window.setTimeout(() => setCopied(false), 2000);
         } catch (error: any) {
             console.error(error);
-            showToast?.({ message: "Не удалось скопировать ссылку", type: "error" });
+            showToast?.({
+                message: 'Не удалось скопировать ссылку',
+                type: 'error',
+            });
         }
     };
 
@@ -84,12 +87,15 @@ const SharePostModal = ({
         try {
             await sharePostNative({ title: postTitle, url: shareUrl });
         } catch (error: any) {
-            if (error?.name === "AbortError") {
+            if (error?.name === 'AbortError') {
                 return;
             }
 
             console.error(error);
-            showToast?.({ message: "Не удалось открыть меню «Поделиться»", type: "error" });
+            showToast?.({
+                message: 'Не удалось открыть меню «Поделиться»',
+                type: 'error',
+            });
         }
     };
 
@@ -108,13 +114,13 @@ const SharePostModal = ({
 
         if (!result?.status) {
             showToast?.({
-                type: "error",
-                message: result?.message || "Не удалось отправить пост",
+                type: 'error',
+                message: result?.message || 'Не удалось отправить пост',
             });
             return;
         }
 
-        showToast?.({ type: "success", message: "Пост отправлен в чат" });
+        showToast?.({ type: 'success', message: 'Пост отправлен в чат' });
         requestCloseModal?.();
         navigate(`/messages/${conversationId}`);
     };
@@ -122,7 +128,10 @@ const SharePostModal = ({
     return (
         <div className="share_post_modal">
             <div className="share_post_modal_group">
-                <label className="share_post_modal_label" htmlFor="share_post_modal_link">
+                <label
+                    className="share_post_modal_label"
+                    htmlFor="share_post_modal_link"
+                >
                     Ссылка на пост
                 </label>
                 <div className="share_post_modal_link_row">
@@ -136,7 +145,7 @@ const SharePostModal = ({
                         onClick={(event: any) => event.target.select()}
                     />
                     <PrimaryButton type="button" onClick={handleCopy}>
-                        {copied ? "Скопировано" : "Копировать"}
+                        {copied ? 'Скопировано' : 'Копировать'}
                     </PrimaryButton>
                 </div>
             </div>
@@ -153,7 +162,7 @@ const SharePostModal = ({
                             className="share_post_modal_login"
                             onClick={() => {
                                 requestCloseModal?.();
-                                navigate("/auth/login");
+                                navigate('/auth/login');
                             }}
                         >
                             <RedirectIcon />
@@ -174,16 +183,22 @@ const SharePostModal = ({
                                 disabled={Boolean(sendingId)}
                                 onClick={() => handleShareToChat(item._id)}
                             >
-                                <UserBadge data={item.participant} asLink={false} />
+                                <UserBadge
+                                    data={item.participant}
+                                    asLink={false}
+                                />
                                 {sendingId === item._id ? (
-                                    <span className="share_post_modal_chat_status">Отправка…</span>
+                                    <span className="share_post_modal_chat_status">
+                                        Отправка…
+                                    </span>
                                 ) : null}
                             </button>
                         ))}
                     </div>
                 ) : (
                     <p className="share_post_modal_hint">
-                        Пока нет чатов. Напишите пользователю из профиля — диалог появится здесь.
+                        Пока нет чатов. Напишите пользователю из профиля —
+                        диалог появится здесь.
                     </p>
                 )}
             </div>

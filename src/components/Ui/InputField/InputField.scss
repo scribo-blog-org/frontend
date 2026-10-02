@@ -1,4 +1,4 @@
-@use "../../../styles/helpers" as *;
+@use '../../../styles/helpers' as *;
 
 .input_field_wrapper {
     position: relative;
@@ -17,7 +17,10 @@
     border-radius: 8px;
     color: var(--input-text-color);
     outline: none;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+        Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
     resize: none;
 
     @include screen() {
@@ -51,10 +54,10 @@
         }
     }
 
-    &[type="search"]::-webkit-search-decoration,
-    &[type="search"]::-webkit-search-cancel-button,
-    &[type="search"]::-webkit-search-results-button,
-    &[type="search"]::-webkit-search-results-decoration {
+    &[type='search']::-webkit-search-decoration,
+    &[type='search']::-webkit-search-cancel-button,
+    &[type='search']::-webkit-search-results-button,
+    &[type='search']::-webkit-search-results-decoration {
         -webkit-appearance: none;
         appearance: none;
     }
@@ -62,7 +65,7 @@
     &::placeholder {
         font-size: var(--text-md);
         color: var(--input-placeholder-color);
-        transition: .3s;
+        transition: 0.3s;
     }
 }
 
@@ -74,8 +77,7 @@
     border: 1px solid red !important;
 }
 
-
-.input_confirmed_icon{
+.input_confirmed_icon {
     color: #057905;
     height: 16px;
     pointer-events: none;

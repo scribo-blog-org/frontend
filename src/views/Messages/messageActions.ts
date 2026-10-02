@@ -11,8 +11,8 @@ export function getMessageActions({
 
     const items: any[] = [
         {
-            id: "reply",
-            title: "Ответить",
+            id: 'reply',
+            title: 'Ответить',
             icon: handlers.icons.reply,
             onClick: () => handlers.onReply(message),
             disabled: isChatLoading,
@@ -22,17 +22,17 @@ export function getMessageActions({
     if (isOwn) {
         items.push(
             {
-                id: "edit",
-                title: "Изменить",
+                id: 'edit',
+                title: 'Изменить',
                 icon: handlers.icons.edit,
                 onClick: () => handlers.onEdit(message),
                 disabled: isChatLoading || Boolean(editingMessage),
             },
             {
-                id: "delete",
-                title: "Удалить",
+                id: 'delete',
+                title: 'Удалить',
                 icon: handlers.icons.delete,
-                type: "danger",
+                type: 'danger',
                 onClick: () => handlers.onDelete(message._id),
                 disabled: isChatLoading || Boolean(editingMessage),
             },

@@ -1,6 +1,6 @@
 'use client';
 
-import "./AppLayout.scss";
+import './AppLayout.scss';
 
 const AppLayout = ({ children }: any) => (
     <div className="app-layout" id="app-layout">

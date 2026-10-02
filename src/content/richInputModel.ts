@@ -1,23 +1,25 @@
-import { formatMentionToken } from "./mentions";
-import { escapeComposerHtml, splitComposerParts } from "./composerParts";
-import { splitHashtags } from "../utils/hashtags";
+import { formatMentionToken } from './mentions';
+import { escapeComposerHtml, splitComposerParts } from './composerParts';
+import { splitHashtags } from '../utils/hashtags';
 
 export function segmentsToDisplay(segments: any) {
     return (segments || [])
         .map((segment: any) =>
-            segment.type === "mention" ? `@${segment.nick}` : segment.value || "",
+            segment.type === 'mention'
+                ? `@${segment.nick}`
+                : segment.value || '',
         )
-        .join("");
+        .join('');
 }
 
 export function segmentsToStorage(segments: any) {
     return (segments || [])
         .map((segment: any) =>
-            segment.type === "mention"
+            segment.type === 'mention'
                 ? formatMentionToken(segment.userId)
-                : segment.value || "",
+                : segment.value || '',
         )
-        .join("");
+        .join('');
 }
 
 export function mentionRegistryFromSegments(segments: any) {
@@ -25,7 +27,7 @@ export function mentionRegistryFromSegments(segments: any) {
     const registry: any[] = [];
 
     for (const segment of segments || []) {
-        if (segment.type !== "mention") {
+        if (segment.type !== 'mention') {
             continue;
         }
 
@@ -61,21 +63,21 @@ export function mergeMentionRegistries(...lists: any) {
 
 export function storageToSegments(storage: any, userMap: any = {}) {
     return splitComposerParts(storage).map((part: any) => {
-        if (part.type === "mention") {
+        if (part.type === 'mention') {
             const user = userMap[part.userId];
             return {
-                type: "mention",
+                type: 'mention',
                 userId: part.userId,
-                nick: user?.nick_name || "user",
+                nick: user?.nick_name || 'user',
             };
         }
 
-        return { type: "text", value: part.value };
+        return { type: 'text', value: part.value };
     });
 }
 
 function findRegistryMention(text: any, index: any, registry: any) {
-    if (text[index] !== "@") {
+    if (text[index] !== '@') {
         return null;
     }
 
@@ -85,10 +87,7 @@ function findRegistryMention(text: any, index: any, registry: any) {
 
     for (const item of candidates) {
         const end = index + item.nick.length + 1;
-        if (
-            end === text.length ||
-            /[\s#.,!?;:()|[\]{}|\n]/.test(text[end])
-        ) {
+        if (end === text.length || /[\s#.,!?;:()|[\]{}|\n]/.test(text[end])) {
             return item;
         }
     }
@@ -96,21 +95,20 @@ function findRegistryMention(text: any, index: any, registry: any) {
     return null;
 }
 
-/** Parse visible display text back into segments using known mention bindings. */
 export function parseDisplayToSegments(display: any, registry: any) {
-    const src = String(display || "");
+    const src = String(display || '');
     const segments: any[] = [];
     let index = 0;
 
     if (!src) {
-        return [{ type: "text", value: "" }];
+        return [{ type: 'text', value: '' }];
     }
 
     while (index < src.length) {
         const mention = findRegistryMention(src, index, registry);
         if (mention) {
             segments.push({
-                type: "mention",
+                type: 'mention',
                 userId: mention.userId,
                 nick: mention.nick,
             });
@@ -123,25 +121,29 @@ export function parseDisplayToSegments(display: any, registry: any) {
             next += 1;
         }
 
-        segments.push({ type: "text", value: src.slice(index, next) });
+        segments.push({ type: 'text', value: src.slice(index, next) });
         index = next;
     }
 
-    return segments.length ? segments : [{ type: "text", value: "" }];
+    return segments.length ? segments : [{ type: 'text', value: '' }];
 }
 
 export function applyMentionInDisplay(text: any, offset: any, user: any) {
-    const src = String(text || "");
+    const src = String(text || '');
     const caret = Math.max(0, Math.min(offset ?? src.length, src.length));
     const before = src.slice(0, caret);
-    const at = before.lastIndexOf("@");
+    const at = before.lastIndexOf('@');
 
     if (at < 0 || !user?._id || !user?.nick_name) {
         return null;
     }
 
     const token = src.slice(at, caret);
-    if (!/^@[a-zA-Z0-9_]*$/.test(token) || token.length < 2 || /\s/.test(token)) {
+    if (
+        !/^@[a-zA-Z0-9_]*$/.test(token) ||
+        token.length < 2 ||
+        /\s/.test(token)
+    ) {
         return null;
     }
 
@@ -155,10 +157,9 @@ export function applyMentionInDisplay(text: any, offset: any, user: any) {
     };
 }
 
-/** Colorize visible display text — same string length as the textarea value. */
 function highlightTextSegment(text: any, hashtags: any) {
     if (!text) {
-        return "";
+        return '';
     }
 
     if (!hashtags) {
@@ -167,31 +168,35 @@ function highlightTextSegment(text: any, hashtags: any) {
 
     return splitHashtags(text)
         .map((part: any) =>
-            part.type === "tag"
+            part.type === 'tag'
                 ? `<span class="hashtag">${escapeComposerHtml(part.value)}</span>`
                 : escapeComposerHtml(part.value),
         )
-        .join("");
+        .join('');
 }
 
-export function highlightDisplayHtml(display: any, registry: any = [], features: any = {}) {
+export function highlightDisplayHtml(
+    display: any,
+    registry: any = [],
+    features: any = {},
+) {
     const { hashtags = true, mentions = true } = features;
-    const src = String(display || "");
+    const src = String(display || '');
 
     if (!src) {
-        return "";
+        return '';
     }
 
     const segments = parseDisplayToSegments(src, registry);
 
     return segments
         .map((segment: any) => {
-            if (segment.type === "mention" && mentions) {
+            if (segment.type === 'mention' && mentions) {
                 return `<span class="mention">${escapeComposerHtml(`@${segment.nick}`)}</span>`;
             }
 
             return highlightTextSegment(segment.value, hashtags);
         })
-        .join("")
-        .replace(/\n/g, "<br>");
+        .join('')
+        .replace(/\n/g, '<br>');
 }

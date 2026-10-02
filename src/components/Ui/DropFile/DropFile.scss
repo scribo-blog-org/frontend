@@ -20,23 +20,23 @@
         background-color: var(--submit-button-secondary-color);
         border: 1px solid var(--line-color);
         border-radius: 8px;
-        
+
         .remove_image_button {
             cursor: pointer;
 
-            svg{
+            svg {
                 color: var(--red-f5);
                 height: 20px;
             }
         }
     }
 
-    img{
+    img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
-    
+
     .add_image {
         width: 100%;
         height: 100%;
@@ -54,7 +54,7 @@
         flex: 1;
         opacity: 0;
         width: 100%;
-        height: 100%;     
+        height: 100%;
         cursor: pointer;
     }
 
@@ -66,7 +66,7 @@
         &_upload_icon {
             color: var(--drop-file-border-color);
         }
-        
+
         &_main_text {
             margin-top: 10px;
             color: var(--text-color);
@@ -88,11 +88,12 @@
     }
 }
 
-.drop_file:focus-visible{
+.drop_file:focus-visible {
     outline: none;
 }
 
-.drop_file_dragged, .drop_file:hover{
+.drop_file_dragged,
+.drop_file:hover {
     border: 1px dashed var(--drop-file-hover-border-color);
     border-width: 2px;
     background: var(--drop-file-hover-background-color);
@@ -114,7 +115,7 @@
     visibility: hidden;
     opacity: 0;
     height: 0;
-    transition: .3s ease;
+    transition: 0.3s ease;
     transform: translateY(10px);
 }
 
@@ -126,11 +127,11 @@
     flex-direction: column;
     align-items: center;
     margin-bottom: 20px;
-    
+
     .drop_file_error_message {
         display: flex;
     }
-    
+
     .drop_file_error_message_logo {
         height: 16px;
         width: 160x;

@@ -1,4 +1,4 @@
-@use "../../styles/helpers" as *;
+@use '../../styles/helpers' as *;
 
 .default-container {
     width: 100%;
@@ -13,7 +13,6 @@
     padding-left: var(--container-padding);
     padding-right: var(--container-padding);
 
-    
     @include screen() {
         --container-padding: 16px;
     }

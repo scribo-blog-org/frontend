@@ -1,27 +1,27 @@
 export const HASHTAG_PATTERN = /#[^\s#]+/g;
 
-const SKIP_TAGS = new Set(["A", "SCRIPT", "STYLE", "TEXTAREA", "CODE"]);
+const SKIP_TAGS = new Set(['A', 'SCRIPT', 'STYLE', 'TEXTAREA', 'CODE']);
 
 function stripMarkup(html: any) {
-    return String(html || "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&[a-zA-Z0-9#]+;/g, " ")
-        .replace(/\s+/g, " ")
+    return String(html || '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&[a-zA-Z0-9#]+;/g, ' ')
+        .replace(/\s+/g, ' ')
         .trim();
 }
 
 export function hashtagSearchPath(tag: any) {
-    const value = String(tag || "").trim();
+    const value = String(tag || '').trim();
     if (!value) {
-        return "/search";
+        return '/search';
     }
-    const query = value.startsWith("#") ? value : `#${value}`;
+    const query = value.startsWith('#') ? value : `#${value}`;
     return `/search?q=${encodeURIComponent(query)}`;
 }
 
 export function extractHashtags(text: any) {
     HASHTAG_PATTERN.lastIndex = 0;
-    const matches = String(text || "").match(HASHTAG_PATTERN) || [];
+    const matches = String(text || '').match(HASHTAG_PATTERN) || [];
     const seen = new Set();
     const tags: any[] = [];
     for (const tag of matches) {
@@ -39,25 +39,30 @@ export function extractHashtagsFromPost(post: any) {
     if (!post) {
         return [];
     }
-    return extractHashtags(`${post.title || ""} ${stripMarkup(post.content_text || "")}`);
+    return extractHashtags(
+        `${post.title || ''} ${stripMarkup(post.content_text || '')}`,
+    );
 }
 
 export function splitHashtags(text: any) {
-    const src = String(text || "");
+    const src = String(text || '');
     const parts: any[] = [];
     HASHTAG_PATTERN.lastIndex = 0;
     let lastIndex = 0;
     let match = HASHTAG_PATTERN.exec(src);
     while (match) {
         if (match.index > lastIndex) {
-            parts.push({ type: "text", value: src.slice(lastIndex, match.index) });
+            parts.push({
+                type: 'text',
+                value: src.slice(lastIndex, match.index),
+            });
         }
-        parts.push({ type: "tag", value: match[0] });
+        parts.push({ type: 'tag', value: match[0] });
         lastIndex = match.index + match[0].length;
         match = HASHTAG_PATTERN.exec(src);
     }
     if (lastIndex < src.length) {
-        parts.push({ type: "text", value: src.slice(lastIndex) });
+        parts.push({ type: 'text', value: src.slice(lastIndex) });
     }
     return parts;
 }
@@ -65,22 +70,22 @@ export function splitHashtags(text: any) {
 export function highlightHashtagsHtml(text: any) {
     return splitHashtags(text)
         .map((part: any) =>
-            part.type === "tag"
+            part.type === 'tag'
                 ? `<span class="hashtag">${escapeHtml(part.value)}</span>`
                 : escapeHtml(part.value),
         )
-        .join("")
-        .replace(/\n/g, "<br>");
+        .join('')
+        .replace(/\n/g, '<br>');
 }
 
 export function getActiveHashtag(text: any, offset: any) {
-    const before = String(text || "").slice(0, offset);
-    const at = before.lastIndexOf("#");
+    const before = String(text || '').slice(0, offset);
+    const at = before.lastIndexOf('#');
     if (at < 0) {
         return null;
     }
     const token = before.slice(at);
-    if (!token.startsWith("#") || /\s/.test(token) || token.length < 2) {
+    if (!token.startsWith('#') || /\s/.test(token) || token.length < 2) {
         return null;
     }
     return { token, at, offset };
@@ -96,35 +101,39 @@ export function applyHashtagAtCursor(text: any, offset: any, tag: any) {
 }
 
 export function textareaCaretAnchor(textarea: any) {
-    if (!textarea || typeof window === "undefined") {
+    if (!textarea || typeof window === 'undefined') {
         return null;
     }
     const position = textarea.selectionStart ?? 0;
-    const clone = document.createElement("div");
+    const clone = document.createElement('div');
     const style = window.getComputedStyle(textarea);
     for (const prop of style) {
         clone.style.setProperty(prop, style.getPropertyValue(prop));
     }
-    clone.style.position = "fixed";
-    clone.style.left = "-9999px";
-    clone.style.top = "0";
-    clone.style.visibility = "hidden";
-    clone.style.pointerEvents = "none";
-    clone.style.height = "auto";
+    clone.style.position = 'fixed';
+    clone.style.left = '-9999px';
+    clone.style.top = '0';
+    clone.style.visibility = 'hidden';
+    clone.style.pointerEvents = 'none';
+    clone.style.height = 'auto';
     clone.style.width = `${textarea.clientWidth}px`;
-    clone.style.whiteSpace = "pre-wrap";
-    clone.style.overflow = "hidden";
+    clone.style.whiteSpace = 'pre-wrap';
+    clone.style.overflow = 'hidden';
     clone.textContent = textarea.value.slice(0, position);
-    const marker = document.createElement("span");
-    marker.textContent = "|";
+    const marker = document.createElement('span');
+    marker.textContent = '|';
     clone.appendChild(marker);
     document.body.appendChild(clone);
     const markerRect = marker.getBoundingClientRect();
     const cloneRect = clone.getBoundingClientRect();
     document.body.removeChild(clone);
     const fieldRect = textarea.getBoundingClientRect();
-    const top = fieldRect.top + (markerRect.top - cloneRect.top) - textarea.scrollTop;
-    const left = fieldRect.left + (markerRect.left - cloneRect.left) - textarea.scrollLeft;
+    const top =
+        fieldRect.top + (markerRect.top - cloneRect.top) - textarea.scrollTop;
+    const left =
+        fieldRect.left +
+        (markerRect.left - cloneRect.left) -
+        textarea.scrollLeft;
     const height = markerRect.height || 16;
     return {
         getBoundingClientRect: () => ({
@@ -143,28 +152,28 @@ export function textareaCaretAnchor(textarea: any) {
 }
 
 export function escapeHtml(value: any) {
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 }
 
 export function linkifyHashtagsInHtml(html: any) {
     if (!html) {
-        return "";
+        return '';
     }
 
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
+    const doc = parser.parseFromString(html, 'text/html');
 
-    doc.querySelectorAll("span.hashtag").forEach((node: any) => {
-        const tag = node.textContent || "";
-        if (!tag.startsWith("#")) {
+    doc.querySelectorAll('span.hashtag').forEach((node: any) => {
+        const tag = node.textContent || '';
+        if (!tag.startsWith('#')) {
             return;
         }
-        const link = doc.createElement("a");
-        link.className = "hashtag";
+        const link = doc.createElement('a');
+        link.className = 'hashtag';
         link.href = hashtagSearchPath(tag);
         link.textContent = tag;
         node.replaceWith(link);
@@ -178,11 +187,11 @@ export function linkifyHashtagsInHtml(html: any) {
 
     for (const node of nodes) {
         const parent = node.parentElement;
-        if (!parent || SKIP_TAGS.has(parent.tagName) || parent.closest("a")) {
+        if (!parent || SKIP_TAGS.has(parent.tagName) || parent.closest('a')) {
             continue;
         }
 
-        const text = node.nodeValue || "";
+        const text = node.nodeValue || '';
         HASHTAG_PATTERN.lastIndex = 0;
         if (!HASHTAG_PATTERN.test(text)) {
             continue;
@@ -194,10 +203,12 @@ export function linkifyHashtagsInHtml(html: any) {
         let match = HASHTAG_PATTERN.exec(text);
         while (match) {
             if (match.index > lastIndex) {
-                fragment.appendChild(doc.createTextNode(text.slice(lastIndex, match.index)));
+                fragment.appendChild(
+                    doc.createTextNode(text.slice(lastIndex, match.index)),
+                );
             }
-            const link = doc.createElement("a");
-            link.className = "hashtag";
+            const link = doc.createElement('a');
+            link.className = 'hashtag';
             link.href = hashtagSearchPath(match[0]);
             link.textContent = match[0];
             fragment.appendChild(link);

@@ -1,32 +1,35 @@
 'use client';
 
-import { useContext, useEffect, useState } from "react";
-import { Navigate, useNavigate } from "@/navigation";
+import { useContext, useEffect, useState } from 'react';
+import { Navigate, useNavigate } from '@/navigation';
 
-import { AppContext } from "@/providers/AppProviders";
-import { createSupportRequest, getMySupportRequests } from "../../api/support.api";
-import { FIELD_LIMITS } from "../../constants/fieldLimits";
-import { SUPPORT_KINDS, kindLabel, statusLabel } from "./constants";
-import { format_back, format_date_time } from "../../utils/format";
+import { AppContext } from '@/providers/AppProviders';
+import {
+    createSupportRequest,
+    getMySupportRequests,
+} from '../../api/support.api';
+import { FIELD_LIMITS } from '../../constants/fieldLimits';
+import { SUPPORT_KINDS, kindLabel, statusLabel } from './constants';
+import { format_back, format_date_time } from '../../utils/format';
 
-import Field from "../../components/Ui/Field/index";
-import RichInputField from "../../components/RichInputField";
-import PrimaryButton from "../../components/Ui/PrimaryButton";
-import Pagination from "../../components/Ui/Pagination";
-import Loading from "../../components/Ui/Loading";
-import Tooltip from "../../components/Ui/Tooltip";
-import DropDown from "../../components/Ui/DropDown";
+import Field from '../../components/Ui/Field/index';
+import RichInputField from '../../components/RichInputField';
+import PrimaryButton from '../../components/Ui/PrimaryButton';
+import Pagination from '../../components/Ui/Pagination';
+import Loading from '../../components/Ui/Loading';
+import Tooltip from '../../components/Ui/Tooltip';
+import DropDown from '../../components/Ui/DropDown';
 
-import "./Support.scss";
-import "../AdminPanel/Requests.scss";
+import './Support.scss';
+import '../AdminPanel/Requests.scss';
 
 const SupportMine = () => {
     const navigate = useNavigate();
     const { showToast, profile, profileLoading } = useContext(AppContext);
     const [isLoading, setIsLoading] = useState<any>(false);
     const [fields, setFields] = useState<any>({
-        supportKind: "request",
-        supportMessage: ""
+        supportKind: 'request',
+        supportMessage: '',
     });
     const [errors, setErrors] = useState<any>({});
     const [items, setItems] = useState<any[]>([]);
@@ -45,7 +48,7 @@ const SupportMine = () => {
             }
 
             if (!result.status) {
-                showToast({ type: "error", message: result.message });
+                showToast({ type: 'error', message: result.message });
                 setItems([]);
                 setPagesCount(0);
                 setListLoading(false);
@@ -76,14 +79,19 @@ const SupportMine = () => {
         const next: any = {};
 
         if (!fields.supportKind) {
-            next.supportKind = "Выберите тему";
+            next.supportKind = 'Выберите тему';
         }
 
         if (!fields.supportMessage.trim()) {
-            next.supportMessage = "Напишите сообщение";
-        } else if (fields.supportMessage.trim().length < FIELD_LIMITS.supportMessage.min) {
+            next.supportMessage = 'Напишите сообщение';
+        } else if (
+            fields.supportMessage.trim().length <
+            FIELD_LIMITS.supportMessage.min
+        ) {
             next.supportMessage = `Сообщение не короче ${FIELD_LIMITS.supportMessage.min} символов`;
-        } else if (fields.supportMessage.length > FIELD_LIMITS.supportMessage.max) {
+        } else if (
+            fields.supportMessage.length > FIELD_LIMITS.supportMessage.max
+        ) {
             next.supportMessage = `Сообщение не длиннее ${FIELD_LIMITS.supportMessage.max} символов`;
         }
 
@@ -100,29 +108,35 @@ const SupportMine = () => {
         try {
             const result = await createSupportRequest({
                 supportKind: fields.supportKind,
-                supportMessage: fields.supportMessage.trim()
+                supportMessage: fields.supportMessage.trim(),
             });
 
             if (result.status === true && result.data?.access_key) {
-                showToast({ message: "Сообщение отправлено", type: "success" });
+                showToast({ message: 'Сообщение отправлено', type: 'success' });
                 navigate(`/support/${result.data.access_key}`);
                 return;
             }
 
-            showToast({ message: result.message || "Не удалось отправить сообщение", type: "error" });
+            showToast({
+                message: result.message || 'Не удалось отправить сообщение',
+                type: 'error',
+            });
 
             if (result?.errors?.body) {
                 setErrors(
                     Object.fromEntries(
-                        Object.entries(result.errors.body).map(([field, obj]: any) => [field, obj.message])
-                    )
+                        Object.entries(result.errors.body).map(
+                            ([field, obj]: any) => [field, obj.message],
+                        ),
+                    ),
                 );
             }
-        }
-        catch {
-            showToast({ message: "Не удалось отправить сообщение", type: "error" });
-        }
-        finally {
+        } catch {
+            showToast({
+                message: 'Не удалось отправить сообщение',
+                type: 'error',
+            });
+        } finally {
             setIsLoading(false);
         }
     };
@@ -139,7 +153,10 @@ const SupportMine = () => {
         <div className="support_page support_page_mine">
             <div className="support_page_intro">
                 <h1>Поддержка</h1>
-                <p>Обращения с аккаунта. Ответы и статусы приходят в уведомления на сайте.</p>
+                <p>
+                    Обращения с аккаунта. Ответы и статусы приходят в
+                    уведомления на сайте.
+                </p>
             </div>
             <form
                 className="form_input app-transition"
@@ -155,7 +172,7 @@ const SupportMine = () => {
                         placeholder="Выберите тему"
                         error={Boolean(errors?.supportKind)}
                         onChange={(value: any) => {
-                            handleFocus("supportKind");
+                            handleFocus('supportKind');
                             setFields({ ...fields, supportKind: value });
                         }}
                     />
@@ -168,8 +185,13 @@ const SupportMine = () => {
                         length={FIELD_LIMITS.supportMessage.max}
                         value={fields.supportMessage}
                         placeholder="Опишите ситуацию"
-                        onChange={(event: any) => setFields({ ...fields, supportMessage: event.target.value })}
-                        onFocus={() => handleFocus("supportMessage")}
+                        onChange={(event: any) =>
+                            setFields({
+                                ...fields,
+                                supportMessage: event.target.value,
+                            })
+                        }
+                        onFocus={() => handleFocus('supportMessage')}
                         error={errors?.supportMessage ?? null}
                     />
                 </Field>
@@ -189,32 +211,49 @@ const SupportMine = () => {
                         pagesCount={pagesCount}
                         onPageChange={(index: any) => setPage(index + 1)}
                     >
-                        {(visibleContent: any) => (
-                            visibleContent.length ?
+                        {(visibleContent: any) =>
+                            visibleContent.length ? (
                                 visibleContent.map((item: any) => (
                                     <button
                                         type="button"
                                         key={item._id}
                                         className="admin_panel_content_requests_page_item app-transition"
-                                        onClick={() => navigate(`/support/${item.access_key}`)}
+                                        onClick={() =>
+                                            navigate(
+                                                `/support/${item.access_key}`,
+                                            )
+                                        }
                                     >
                                         <div className="admin_panel_content_requests_page_item_meta">
-                                            <span className={`support_status support_status_${item.status}`}>
+                                            <span
+                                                className={`support_status support_status_${item.status}`}
+                                            >
                                                 {statusLabel(item.status)}
                                             </span>
-                                            <span className="support_kind">{kindLabel(item.kind)}</span>
+                                            <span className="support_kind">
+                                                {kindLabel(item.kind)}
+                                            </span>
                                         </div>
-                                        <p className="admin_panel_content_requests_page_item_preview">{item.message_preview}</p>
-                                        <Tooltip text={format_date_time(item.created_date)}>
+                                        <p className="admin_panel_content_requests_page_item_preview">
+                                            {item.message_preview}
+                                        </p>
+                                        <Tooltip
+                                            text={format_date_time(
+                                                item.created_date,
+                                            )}
+                                        >
                                             <p className="admin_panel_content_requests_page_item_time">
                                                 {format_back(item.created_date)}
                                             </p>
                                         </Tooltip>
                                     </button>
                                 ))
-                            :
-                                <p className="admin_panel_content_requests_page_empty">Обращений пока нет</p>
-                        )}
+                            ) : (
+                                <p className="admin_panel_content_requests_page_empty">
+                                    Обращений пока нет
+                                </p>
+                            )
+                        }
                     </Pagination>
                 )}
             </div>

@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from 'react';
 
-import { getUsersByIds } from "../api/users.api";
-import { extractMentionUserIds } from "../content/mentions";
+import { getUsersByIds } from '../api/users.api';
+import { extractMentionUserIds } from '../content/mentions';
 
 export function useMentionUserMap(userIds: any) {
-    const idsKey = Array.isArray(userIds) ? userIds.join(",") : "";
+    const idsKey = Array.isArray(userIds) ? userIds.join(',') : '';
     const ids = useMemo(
         () => [...new Set((userIds || []).map(String).filter(Boolean))],
         [idsKey, userIds],
@@ -46,9 +46,9 @@ export function useMentionUsers(text: any, extraUsers: any) {
     const extraIds = useMemo(
         () =>
             (extraUsers || [])
-                .map((user: any) => String(user?._id || ""))
+                .map((user: any) => String(user?._id || ''))
                 .filter(Boolean)
-                .join(","),
+                .join(','),
         [extraUsers],
     );
     const [userMap, setUserMap] = useState<any>({});

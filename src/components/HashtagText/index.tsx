@@ -1,3 +1,3 @@
 'use client';
 
-export { default } from "../RichText";
+export { default } from '../RichText';

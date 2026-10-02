@@ -1,6 +1,6 @@
-@use "../../../styles/helpers" as *;
+@use '../../../styles/helpers' as *;
 
-.pagination{
+.pagination {
     display: flex;
     flex-direction: column;
 
@@ -14,7 +14,7 @@
         align-items: center;
         justify-content: center;
         gap: 4px;
-    
+
         button {
             display: flex;
             align-items: center;
@@ -23,33 +23,33 @@
             gap: 4px;
             height: 40px;
             width: 40px;
-    
+
             p {
                 user-select: none;
             }
-    
+
             @include hover {
                 background-color: var(--section-item-hover-background-color);
             }
-    
+
             svg {
                 color: var(--text-color);
                 width: 16px;
                 height: 16px;
             }
         }
-        
+
         .pagination_navigation_button {
             width: auto;
             padding: 12px;
             border-radius: 8px;
-            
+
             p {
                 line-height: 2;
                 user-select: none;
             }
         }
-    
+
         .pagination_active {
             background: var(--section-item-hover-background-color);
         }

@@ -1,4 +1,4 @@
-@use "../../styles/helpers" as *;
+@use '../../styles/helpers' as *;
 
 .admin_panel_content_amdins_page {
     display: flex;
@@ -25,7 +25,7 @@
             min-width: 0;
         }
 
-        &_role{
+        &_role {
         }
 
         &_actions {
@@ -49,5 +49,4 @@
             }
         }
     }
-
 }

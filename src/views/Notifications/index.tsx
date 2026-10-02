@@ -1,20 +1,17 @@
 'use client';
 
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { AppContext } from "@/providers/AppProviders";
-import {
-    getUsers,
-    read_notifications,
-} from "../../api/users.api";
-import { socketService } from "../../sockets/socket.service";
-import { format_back, format_date_time } from "../../utils/format";
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AppContext } from '@/providers/AppProviders';
+import { getUsers, read_notifications } from '../../api/users.api';
+import { socketService } from '../../sockets/socket.service';
+import { format_back, format_date_time } from '../../utils/format';
 
-import UserBadge from "../../components/UserBadge/index";
-import NotificationMessage from "../../components/NotificationMessage/index";
-import Tooltip from "../../components/Ui/Tooltip/index";
-import Loading from "../../components/Ui/Loading";
+import UserBadge from '../../components/UserBadge/index';
+import NotificationMessage from '../../components/NotificationMessage/index';
+import Tooltip from '../../components/Ui/Tooltip/index';
+import Loading from '../../components/Ui/Loading';
 
-import "./Notifications.scss";
+import './Notifications.scss';
 
 const Notifications = () => {
     const { profile, setProfile } = useContext(AppContext);
@@ -25,7 +22,6 @@ const Notifications = () => {
 
     const initialized = useRef(false);
 
-    // Initial local snapshot.
     useEffect(() => {
         if (!profile || initialized.current) {
             return;
@@ -37,15 +33,19 @@ const Notifications = () => {
     }, [profile]);
 
     const actorKey = useMemo(
-        () => items.map((item: any) => item.user).filter(Boolean).join(","),
-        [items]
+        () =>
+            items
+                .map((item: any) => item.user)
+                .filter(Boolean)
+                .join(','),
+        [items],
     );
 
     useEffect(() => {
         let cancelled = false;
 
         const loadActors = async () => {
-            const userIds = [...new Set(actorKey.split(",").filter(Boolean))];
+            const userIds = [...new Set(actorKey.split(',').filter(Boolean))];
 
             if (userIds.length === 0) {
                 setUserMap({});
@@ -55,9 +55,7 @@ const Notifications = () => {
 
             setUsersLoading(true);
 
-            const users = await getUsers(
-                userIds.map((_id: any) => ({ _id }))
-            );
+            const users = await getUsers(userIds.map((_id: any) => ({ _id })));
 
             if (cancelled) {
                 return;
@@ -67,7 +65,7 @@ const Notifications = () => {
                 users?.data?.reduce((acc: any, user: any) => {
                     acc[user._id] = user;
                     return acc;
-                }, {}) || {}
+                }, {}) || {},
             );
 
             setUsersLoading(false);
@@ -80,9 +78,6 @@ const Notifications = () => {
         };
     }, [actorKey]);
 
-    // Mark all notifications as read.
-    // IMPORTANT:
-    // profile is updated, but local `items` is NOT changed.
     useEffect(() => {
         if (!profile?._id) {
             return;
@@ -115,7 +110,7 @@ const Notifications = () => {
             return;
         }
         const unsubscribe = socketService.on(
-            "notification",
+            'notification',
             async (notifications: any) => {
                 setItems([...notifications].reverse());
 
@@ -135,7 +130,7 @@ const Notifications = () => {
                         notifications: result.data.notifications,
                     };
                 });
-            }
+            },
         );
         return unsubscribe;
     }, [profile?._id]);
@@ -144,7 +139,10 @@ const Notifications = () => {
         <div className="notifications_page">
             <div className="notifications_page_intro">
                 <h1>Уведомления</h1>
-                <p>Лайки, комментарии, упоминания, подписки и ответы по запросам.</p>
+                <p>
+                    Лайки, комментарии, упоминания, подписки и ответы по
+                    запросам.
+                </p>
             </div>
 
             <div className="notifications_page_list app-transition">
@@ -153,7 +151,7 @@ const Notifications = () => {
                 ) : items.length ? (
                     items.map((item: any) => {
                         const actor = userMap[item.user] || {
-                            nick_name: "Пользователь",
+                            nick_name: 'Пользователь',
                         };
 
                         const isUnread = item.is_read === false;
@@ -166,8 +164,8 @@ const Notifications = () => {
                                 <article
                                     className={`notifications_page_item app-transition ${
                                         isUnread
-                                            ? "notifications_page_item_unread"
-                                            : ""
+                                            ? 'notifications_page_item_unread'
+                                            : ''
                                     }`}
                                 >
                                     {isUnread && (

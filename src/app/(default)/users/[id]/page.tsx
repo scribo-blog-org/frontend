@@ -1,17 +1,17 @@
-import { notFound } from "next/navigation";
+import { notFound } from 'next/navigation';
 
-import Profile from "@/views/Profile";
-import { buildMetadata } from "@/lib/metadata";
-import { loadPublicProfile } from "@/lib/server-api";
+import Profile from '@/views/Profile';
+import { buildMetadata } from '@/lib/metadata';
+import { loadPublicProfile } from '@/lib/server-api';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 type ProfileRouteProps = {
     params: Promise<{ id: string }>;
 };
 
 function asString(value: unknown) {
-    return typeof value === "string" ? value : "";
+    return typeof value === 'string' ? value : '';
 }
 
 export async function generateMetadata({ params }: ProfileRouteProps) {
@@ -21,13 +21,13 @@ export async function generateMetadata({ params }: ProfileRouteProps) {
 
     if (!user) {
         return buildMetadata({
-            title: "Профиль не найден",
+            title: 'Профиль не найден',
             path: `/users/${id}`,
             noindex: true,
         });
     }
 
-    const name = asString(user.nick_name) || asString(user.login) || "Профиль";
+    const name = asString(user.nick_name) || asString(user.login) || 'Профиль';
     const nick = asString(user.nick_name) || id;
 
     return buildMetadata({

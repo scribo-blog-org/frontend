@@ -3,22 +3,22 @@ const isPathActive = (pathname: any, path: any) => {
         return false;
     }
 
-    if (path === "/posts") {
-        return pathname === "/posts" || pathname === "/posts/";
+    if (path === '/') {
+        return pathname === '/';
     }
 
     return pathname === path || pathname.startsWith(`${path}/`);
 };
 
 const scrollToTop = () => {
-    const opts = { top: 0, left: 0, behavior: "auto" as const };
+    const opts = { top: 0, left: 0, behavior: 'auto' as const };
 
-    document.querySelector(".app-shell_content")?.scrollTo(opts);
+    document.querySelector('.app-shell_content')?.scrollTo(opts);
 };
 
-const scrollTo = (object: any, block: any = "center") => {
+const scrollTo = (object: any, block: any = 'center') => {
     document.getElementById(object)?.scrollIntoView({
-        behavior: "smooth",
+        behavior: 'smooth',
         block,
     });
 };
@@ -41,4 +41,10 @@ const navigateOrScrollTop = (navigate: any, pathname: any, path: any) => {
     navigate(path);
 };
 
-export { scrollTo, scrollToTop, isPathActive, handleSameRouteClick, navigateOrScrollTop };
+export {
+    scrollTo,
+    scrollToTop,
+    isPathActive,
+    handleSameRouteClick,
+    navigateOrScrollTop,
+};

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from "react";
-import "./Pagination.scss";
+import { useEffect, useState } from 'react';
+import './Pagination.scss';
 
-import ChevronLeft from "../../../assets/svg/chevron-left.svg";
-import ChevronRight from "../../../assets/svg/chevron-right.svg";
+import ChevronLeft from '../../../assets/svg/chevron-left.svg';
+import ChevronRight from '../../../assets/svg/chevron-right.svg';
 
 const getPaginationRange = (currentPage: any, pagesCount: any) => {
     const range = 3;
@@ -18,18 +18,10 @@ const getPaginationRange = (currentPage: any, pagesCount: any) => {
     }
 
     if (currentPage === pagesCount - 1) {
-        return [
-            pagesCount - 3,
-            pagesCount - 2,
-            pagesCount - 1
-        ];
+        return [pagesCount - 3, pagesCount - 2, pagesCount - 1];
     }
 
-    return [
-        currentPage - 1,
-        currentPage,
-        currentPage + 1
-    ];
+    return [currentPage - 1, currentPage, currentPage + 1];
 };
 
 const Pagination = ({
@@ -39,10 +31,12 @@ const Pagination = ({
     pagesCount: pagesCountProp,
     onPageChange,
     children,
-    prevLabel = "Назад",
-    nextLabel = "Вперед",
+    prevLabel = 'Назад',
+    nextLabel = 'Вперед',
 }: any) => {
-    const isServer = typeof pagesCountProp === "number" && typeof onPageChange === "function";
+    const isServer =
+        typeof pagesCountProp === 'number' &&
+        typeof onPageChange === 'function';
     const [currentPage, setCurrentPage] = useState<any>(0);
 
     const pagesCount = isServer
@@ -76,16 +70,11 @@ const Pagination = ({
 
     const visibleContent = isServer
         ? content
-        : content.slice(
-            activePage * limit,
-            activePage * limit + limit
-        );
+        : content.slice(activePage * limit, activePage * limit + limit);
 
     return (
         <div className="pagination">
-            <div className="pagination_content">
-                {children(visibleContent)}
-            </div>
+            <div className="pagination_content">{children(visibleContent)}</div>
 
             {pagesCount > 1 && (
                 <div className="pagination_panel">
@@ -98,29 +87,27 @@ const Pagination = ({
                         >
                             <ChevronLeft className="app-transition" />
 
-                            <p>
-                                {prevLabel}
-                            </p>
+                            <p>{prevLabel}</p>
                         </button>
                     )}
 
-                    {getPaginationRange(activePage, pagesCount).map((index: any) => (
-                        <button
-                            type="button"
-                            key={index}
-                            onMouseDown={(e: any) => e.stopPropagation()}
-                            onClick={() => goTo(index)}
-                            className={`app-transition ${
-                                activePage === index
-                                    ? "pagination_active"
-                                    : ""
-                            }`}
-                        >
-                            <p>
-                                {index + 1}
-                            </p>
-                        </button>
-                    ))}
+                    {getPaginationRange(activePage, pagesCount).map(
+                        (index: any) => (
+                            <button
+                                type="button"
+                                key={index}
+                                onMouseDown={(e: any) => e.stopPropagation()}
+                                onClick={() => goTo(index)}
+                                className={`app-transition ${
+                                    activePage === index
+                                        ? 'pagination_active'
+                                        : ''
+                                }`}
+                            >
+                                <p>{index + 1}</p>
+                            </button>
+                        ),
+                    )}
 
                     {activePage < pagesCount - 1 && (
                         <button
@@ -129,9 +116,7 @@ const Pagination = ({
                             onMouseDown={(e: any) => e.stopPropagation()}
                             onClick={() => goTo(activePage + 1)}
                         >
-                            <p>
-                                {nextLabel}
-                            </p>
+                            <p>{nextLabel}</p>
 
                             <ChevronRight className="app-transition" />
                         </button>

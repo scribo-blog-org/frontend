@@ -1,18 +1,18 @@
 'use client';
 
-import LoadingIllustration from "../assets/svg/illustrations/scribo-loading.svg";
-import AppStatusScreen from "./AppStatusScreen";
+import LoadingIllustration from '../assets/svg/illustrations/scribo-loading.svg';
+import AppStatusScreen from './AppStatusScreen';
 
 const AppBootScreen = () => (
     <AppStatusScreen
-        illustration={(
+        illustration={
             <>
                 <LoadingIllustration />
                 <span className="app-boot-spinner" aria-hidden="true">
                     <span className="app-boot-spinner_ring" />
                 </span>
             </>
-        )}
+        }
         title="Загружаем..."
         busy
         label="Загрузка приложения"

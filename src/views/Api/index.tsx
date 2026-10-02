@@ -1,20 +1,20 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import SwaggerUIBundle from "swagger-ui-dist/swagger-ui-es-bundle";
-import "swagger-ui-dist/swagger-ui.css";
-import "./Api.scss";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import SwaggerUIBundle from 'swagger-ui-dist/swagger-ui-es-bundle';
+import 'swagger-ui-dist/swagger-ui.css';
+import './Api.scss';
 
-import { getApiDocs } from "../../api/backend.api";
-import { getAccessToken } from "../../api/http";
+import { getApiDocs } from '../../api/backend.api';
+import { getAccessToken } from '../../api/http';
 
 const isApiOutdated = (docsVersion: any, backendVersion: any) => {
     if (!docsVersion || !backendVersion) {
         return false;
     }
 
-    const [docsMajor, docsMinor] = docsVersion.split(".");
-    const [backendMajor, backendMinor] = backendVersion.split(".");
+    const [docsMajor, docsMinor] = docsVersion.split('.');
+    const [backendMajor, backendMinor] = backendVersion.split('.');
 
     return docsMajor !== backendMajor || docsMinor !== backendMinor;
 };
@@ -26,7 +26,7 @@ function interceptSwaggerRequest(request: any) {
         request.headers.Authorization = `Bearer ${token}`;
     }
 
-    request.credentials = "include";
+    request.credentials = 'include';
     return request;
 }
 
@@ -71,7 +71,7 @@ function Api() {
         SwaggerUIBundle({
             spec: apiDocument,
             domNode: node,
-            docExpansion: "list",
+            docExpansion: 'list',
             defaultModelsExpandDepth: 1,
             deepLinking: true,
             filter: true,
@@ -90,7 +90,7 @@ function Api() {
         () =>
             isApiOutdated(
                 apiDocument?.info?.version,
-                apiDocument?.info?.["x-backend-version"],
+                apiDocument?.info?.['x-backend-version'],
             ),
         [apiDocument],
     );
@@ -111,8 +111,8 @@ function Api() {
         <div className="api-docs">
             {outdated ? (
                 <p className="api-docs_outdated">
-                    Спека {apiDocument.info.version} не совпадает с бэкендом{" "}
-                    {apiDocument.info["x-backend-version"]}
+                    Спека {apiDocument.info.version} не совпадает с бэкендом{' '}
+                    {apiDocument.info['x-backend-version']}
                 </p>
             ) : null}
             <div ref={swaggerRoot} />

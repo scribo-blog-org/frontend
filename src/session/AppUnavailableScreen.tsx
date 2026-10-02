@@ -1,9 +1,9 @@
 'use client';
 
-import PrimaryButton from "../components/Ui/PrimaryButton";
-import ErrorIllustration from "../assets/svg/illustrations/scribo-server-error.svg";
-import RetryIcon from "../assets/svg/illustrations/retry.svg";
-import AppStatusScreen from "./AppStatusScreen";
+import PrimaryButton from '../components/Ui/PrimaryButton';
+import ErrorIllustration from '../assets/svg/illustrations/scribo-server-error.svg';
+import RetryIcon from '../assets/svg/illustrations/retry.svg';
+import AppStatusScreen from './AppStatusScreen';
 
 const AppUnavailableScreen = ({ onRetry, isRetrying = false }: any) => (
     <AppStatusScreen
@@ -12,7 +12,7 @@ const AppUnavailableScreen = ({ onRetry, isRetrying = false }: any) => (
         role="alert"
         live="assertive"
         label="Сервер недоступен"
-        actions={(
+        actions={
             <PrimaryButton
                 type="button"
                 onClick={onRetry}
@@ -21,7 +21,7 @@ const AppUnavailableScreen = ({ onRetry, isRetrying = false }: any) => (
                 <RetryIcon width={16} height={16} />
                 Попробовать снова
             </PrimaryButton>
-        )}
+        }
     >
         <p className="app-status_lead">
             Похоже, что-то пошло не так на сервере.

@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback } from 'react';
 
-import CrossIcon from "../../../assets/svg/cross-icon.svg";
+import CrossIcon from '../../../assets/svg/cross-icon.svg';
 
-import "./ModalWindow.scss";
+import './ModalWindow.scss';
 
 const ModalWindow = ({
     modalWindow,
@@ -26,7 +26,7 @@ const ModalWindow = ({
         const closeFunc = modalWindow?.closeFunc;
 
         closeTimeoutRef.current = setTimeout(() => {
-            document.body.classList.remove("no-scroll");
+            document.body.classList.remove('no-scroll');
 
             if (closeFunc) {
                 try {
@@ -47,7 +47,7 @@ const ModalWindow = ({
             closeTimeoutRef.current = null;
         }
 
-        document.body.classList.add("no-scroll");
+        document.body.classList.add('no-scroll');
         setIsVisible(true);
     }, []);
 
@@ -88,7 +88,7 @@ const ModalWindow = ({
     }, []);
 
     return (
-        <div className={`modal_window ${isVisible ? "visible" : ""}`}>
+        <div className={`modal_window ${isVisible ? 'visible' : ''}`}>
             <button
                 type="button"
                 onClick={closeModalWindow}
@@ -97,16 +97,16 @@ const ModalWindow = ({
 
             <div
                 className={`modal_window_body blurred ${
-                    modalWindow?.size === "small"
-                        ? "modal_window_body_small"
-                        : modalWindow?.size === "large"
-                            ? "modal_window_body_large"
-                            : ""
+                    modalWindow?.size === 'small'
+                        ? 'modal_window_body_small'
+                        : modalWindow?.size === 'large'
+                          ? 'modal_window_body_large'
+                          : ''
                 }`}
             >
                 <div className="modal_window_body_title">
                     <p className="modal_window_body_title_text">
-                        {modalWindow?.title ?? ""}
+                        {modalWindow?.title ?? ''}
                     </p>
 
                     {modalWindow?.showCloseButton === false ? null : (

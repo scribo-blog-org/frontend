@@ -1,7 +1,7 @@
-import EditPost from "@/views/EditPost";
-import { privatePageMetadata } from "@/lib/metadata";
+import EditPost from '@/views/EditPost';
+import { privatePageMetadata } from '@/lib/metadata';
 
-export const metadata = privatePageMetadata("Редактирование", "/posts");
+export const metadata = privatePageMetadata('Редактирование', '/');
 
 export default function EditPostPage() {
     return <EditPost />;

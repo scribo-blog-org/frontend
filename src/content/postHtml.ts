@@ -1,19 +1,19 @@
-import { MENTION_STORAGE_PATTERN } from "./mentions";
-import { MENTION_IN_TEXT, profilePathFromNick } from "./plainRichText";
-import { linkifyHashtagsInHtml } from "../utils/hashtags";
+import { MENTION_STORAGE_PATTERN } from './mentions';
+import { MENTION_IN_TEXT, profilePathFromNick } from './plainRichText';
+import { linkifyHashtagsInHtml } from '../utils/hashtags';
 
-const SKIP_TAGS = new Set(["A", "SCRIPT", "STYLE", "TEXTAREA", "CODE"]);
+const SKIP_TAGS = new Set(['A', 'SCRIPT', 'STYLE', 'TEXTAREA', 'CODE']);
 
 function stripLegacyMentionMarkup(html: any) {
     if (!html) {
-        return "";
+        return '';
     }
 
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
+    const doc = parser.parseFromString(html, 'text/html');
 
-    doc.querySelectorAll("[data-user-id]").forEach((node: any) => {
-        node.replaceWith(doc.createTextNode(node.textContent || ""));
+    doc.querySelectorAll('[data-user-id]').forEach((node: any) => {
+        node.replaceWith(doc.createTextNode(node.textContent || ''));
     });
 
     const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
@@ -23,7 +23,10 @@ function stripLegacyMentionMarkup(html: any) {
     }
 
     for (const node of textNodes) {
-        const stripped = String(node.nodeValue || "").replace(MENTION_STORAGE_PATTERN, "");
+        const stripped = String(node.nodeValue || '').replace(
+            MENTION_STORAGE_PATTERN,
+            '',
+        );
         if (stripped !== node.nodeValue) {
             node.nodeValue = stripped;
         }
@@ -34,16 +37,16 @@ function stripLegacyMentionMarkup(html: any) {
 
 function linkifyPlainMentionsInHtml(html: any) {
     if (!html) {
-        return "";
+        return '';
     }
 
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
+    const doc = parser.parseFromString(html, 'text/html');
 
-    doc.querySelectorAll("span.mention").forEach((node: any) => {
-        const nick = (node.textContent || "").replace(/^@/, "");
-        const link = doc.createElement("a");
-        link.className = "mention";
+    doc.querySelectorAll('span.mention').forEach((node: any) => {
+        const nick = (node.textContent || '').replace(/^@/, '');
+        const link = doc.createElement('a');
+        link.className = 'mention';
         link.href = profilePathFromNick(nick);
         link.textContent = node.textContent || `@${nick}`;
         node.replaceWith(link);
@@ -57,11 +60,11 @@ function linkifyPlainMentionsInHtml(html: any) {
 
     for (const node of nodes) {
         const parent = node.parentElement;
-        if (!parent || SKIP_TAGS.has(parent.tagName) || parent.closest("a")) {
+        if (!parent || SKIP_TAGS.has(parent.tagName) || parent.closest('a')) {
             continue;
         }
 
-        const text = node.nodeValue || "";
+        const text = node.nodeValue || '';
         MENTION_IN_TEXT.lastIndex = 0;
         if (!MENTION_IN_TEXT.test(text)) {
             continue;
@@ -74,12 +77,14 @@ function linkifyPlainMentionsInHtml(html: any) {
 
         while (match) {
             if (match.index > lastIndex) {
-                fragment.appendChild(doc.createTextNode(text.slice(lastIndex, match.index)));
+                fragment.appendChild(
+                    doc.createTextNode(text.slice(lastIndex, match.index)),
+                );
             }
 
             const nick = match[0].slice(1);
-            const link = doc.createElement("a");
-            link.className = "mention";
+            const link = doc.createElement('a');
+            link.className = 'mention';
             link.href = profilePathFromNick(nick);
             link.textContent = match[0];
             fragment.appendChild(link);
@@ -99,25 +104,24 @@ function linkifyPlainMentionsInHtml(html: any) {
 
 export function enrichPostHtml(html: any) {
     if (!html) {
-        return "";
+        return '';
     }
 
     const cleaned = stripLegacyMentionMarkup(html);
     return linkifyHashtagsInHtml(linkifyPlainMentionsInHtml(cleaned));
 }
 
-/** @deprecated Legacy id-based mentions; kept for old saved HTML. */
 export function extractMentionUserIdsFromHtml(html: any) {
     if (!html) {
         return [];
     }
 
     const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
+    const doc = parser.parseFromString(html, 'text/html');
     const ids: any[] = [];
 
-    doc.querySelectorAll("[data-user-id]").forEach((node: any) => {
-        const id = node.getAttribute("data-user-id");
+    doc.querySelectorAll('[data-user-id]').forEach((node: any) => {
+        const id = node.getAttribute('data-user-id');
         if (id) {
             ids.push(id);
         }
