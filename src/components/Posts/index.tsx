@@ -1,23 +1,29 @@
 'use client';
 
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from 'react';
 
-import { AppContext } from "@/providers/AppProviders";
-import { getPosts, unwrapPostsResponse, POSTS_PAGE_LIMIT } from "../../api/posts.api";
-import { getCategories } from "../../api/categories.api";
+import { AppContext } from '@/providers/AppProviders';
+import {
+    getPosts,
+    unwrapPostsResponse,
+    POSTS_PAGE_LIMIT,
+} from '../../api/posts.api';
+import { getCategories } from '../../api/categories.api';
 
-import "./Posts.scss";
+import './Posts.scss';
 
-import PostsFilters from "../../components/PostsFilters";
-import NoPosts from "../NoPosts";
-import PostCard from "../PostCard";
-import Pagination from "../Ui/Pagination/index";
+import PostsFilters from '../../components/PostsFilters';
+import NoPosts from '../NoPosts';
+import PostCard from '../PostCard';
+import Pagination from '../Ui/Pagination/index';
 
 const PAGE_LIMIT = POSTS_PAGE_LIMIT;
 const EMPTY_QUERY: any = {};
 
 const followIds = (profile: any) =>
-    (profile?.follows || []).map((item: any) => String(item._id || item).toLowerCase());
+    (profile?.follows || []).map((item: any) =>
+        String(item._id || item).toLowerCase(),
+    );
 
 const Posts = ({
     query = EMPTY_QUERY,
@@ -33,7 +39,7 @@ const Posts = ({
     initialPosts = [],
     initialPagesCount = 0,
 }: any) => {
-    const isControlled = typeof onPageChange === "function";
+    const isControlled = typeof onPageChange === 'function';
     const { profile } = useContext(AppContext);
 
     const [filters, setFilters] = useState<any[]>([]);
@@ -73,27 +79,25 @@ const Posts = ({
             ...category,
             isActive: isPostsFiltersEmpty
                 ? true
-                : (
-                    postsFilters.includes("все") ||
-                    postsFilters.includes(String(category._id).toLowerCase()) ||
-                    postsFilters.includes(category._id)
-                ),
+                : postsFilters.includes('все') ||
+                  postsFilters.includes(String(category._id).toLowerCase()) ||
+                  postsFilters.includes(category._id),
         }));
 
         if (profile?._id) {
             uniqueFilters.unshift({
-                _id: "subscription",
-                name: "По подписке",
-                isActive: postsFilters.includes("по подписке"),
+                _id: 'subscription',
+                name: 'По подписке',
+                isActive: postsFilters.includes('по подписке'),
                 color: null,
                 iconObject: null,
             });
         }
 
         uniqueFilters.unshift({
-            _id: "all",
-            name: "Все",
-            isActive: isPostsFiltersEmpty || postsFilters.includes("все"),
+            _id: 'all',
+            name: 'Все',
+            isActive: isPostsFiltersEmpty || postsFilters.includes('все'),
             color: null,
             iconObject: null,
         });
@@ -104,14 +108,19 @@ const Posts = ({
 
     const requestQuery = useMemo(() => {
         const extraQuery = JSON.parse(queryKey);
-        const allActive = filters.find((f: any) => f._id === "all")?.isActive;
-        const subscriptionFilterActive = filters.find((f: any) => f._id === "subscription")?.isActive;
+        const allActive = filters.find((f: any) => f._id === 'all')?.isActive;
+        const subscriptionFilterActive = filters.find(
+            (f: any) => f._id === 'subscription',
+        )?.isActive;
         const categoryIds = filters
-            .filter((f: any) => !["all", "subscription"].includes(f._id) && f.isActive)
+            .filter(
+                (f: any) =>
+                    !['all', 'subscription'].includes(f._id) && f.isActive,
+            )
             .map((f: any) => f._id);
 
         const next = {
-            expand: "author,category",
+            expand: 'author,category',
             page,
             limit: PAGE_LIMIT,
             ...extraQuery,
@@ -121,20 +130,23 @@ const Posts = ({
             const follows = followIds({ follows: profile?.follows });
 
             if (extraQuery.author) {
-                const authors = (Array.isArray(extraQuery.author) ? extraQuery.author : [extraQuery.author])
-                    .map((id: any) => String(id).toLowerCase());
-                const intersect = authors.filter((id: any) => follows.includes(id));
+                const authors = (
+                    Array.isArray(extraQuery.author)
+                        ? extraQuery.author
+                        : [extraQuery.author]
+                ).map((id: any) => String(id).toLowerCase());
+                const intersect = authors.filter((id: any) =>
+                    follows.includes(id),
+                );
 
                 if (!intersect.length) {
                     return { empty: true };
                 }
 
                 next.author = intersect;
-            }
-            else if (!follows.length) {
+            } else if (!follows.length) {
                 return { empty: true };
-            }
-            else {
+            } else {
                 next.author = follows;
             }
         }
@@ -183,10 +195,10 @@ const Posts = ({
         setPage(1);
     };
 
-    const list = isControlled ? (controlledPosts || []) : posts;
+    const list = isControlled ? controlledPosts || [] : posts;
     const loading = isControlled ? Boolean(controlledLoading) : isLoading;
-    const activePage = isControlled ? (controlledPage || 1) : page;
-    const pages = isControlled ? (controlledPagesCount || 0) : pagesCount;
+    const activePage = isControlled ? controlledPage || 1 : page;
+    const pages = isControlled ? controlledPagesCount || 0 : pagesCount;
     const updatePosts = isControlled ? controlledSetPosts : setPosts;
 
     return (
@@ -203,7 +215,7 @@ const Posts = ({
                 [0, 1, 2, 3, 4].map((index: any) => (
                     <PostCard
                         key={index}
-                        post={{ title: "Загрузка..." }}
+                        post={{ title: 'Загрузка...' }}
                         isLoading={true}
                     />
                 ))
@@ -223,7 +235,7 @@ const Posts = ({
                         setPage(index + 1);
                     }}
                 >
-                    {(visibleContent: any) => (
+                    {(visibleContent: any) =>
                         visibleContent.map((post: any) => (
                             <PostCard
                                 isLoading={false}
@@ -232,7 +244,7 @@ const Posts = ({
                                 setPosts={updatePosts}
                             />
                         ))
-                    )}
+                    }
                 </Pagination>
             )}
         </div>

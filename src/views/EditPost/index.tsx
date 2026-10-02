@@ -1,61 +1,59 @@
 'use client';
 
 import { useNavigate } from '@/navigation';
-import { useParams } from "@/navigation"
+import { useParams } from '@/navigation';
 import { useContext, useEffect, useState, useMemo } from 'react';
 import { AppContext } from '@/providers/AppProviders';
 
 import DropFile from '../../components/Ui/DropFile/index';
-import InputFiled from "../../components/Ui/InputField";
-import TextEditorField from "../../components/Ui/TextEditorField";
-import PrimaryButton from "../../components/Ui/PrimaryButton";
-import DangerButton from "../../components/Ui/DangerButton";
-import Field from "../../components/Ui/Field";
+import InputFiled from '../../components/Ui/InputField';
+import TextEditorField from '../../components/Ui/TextEditorField';
+import PrimaryButton from '../../components/Ui/PrimaryButton';
+import DangerButton from '../../components/Ui/DangerButton';
+import Field from '../../components/Ui/Field';
 
-import { CATEGORY_COLORS } from "../../styles/constants";
+import { CATEGORY_COLORS } from '../../styles/constants';
 
 import { getPostById, editPost } from '../../api/posts.api';
 import { getCategories } from '../../api/categories.api';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 
-import "./EditPost.scss"
+import './EditPost.scss';
 
 import SearchSelect from '../../components/Ui/SearchSelect/index';
 
 const EditPost = () => {
-    const navigate = useNavigate()
-    const { profile, profileLoading, showToast } = useContext(AppContext)
-    const [ createResult, setCreateResult ] = useState<any>({})
-    const [errors, setErrors] = useState<any>({ });
-    const [featuredImage, setFeaturedImage] = useState<any>(null)
-    const [allCategories, setAllCategories] = useState<any[]>([])
+    const navigate = useNavigate();
+    const { profile, profileLoading, showToast } = useContext(AppContext);
+    const [createResult, setCreateResult] = useState<any>({});
+    const [errors, setErrors] = useState<any>({});
+    const [featuredImage, setFeaturedImage] = useState<any>(null);
+    const [allCategories, setAllCategories] = useState<any[]>([]);
 
-    const { id } = useParams()
-    
-    const [ isLoading, setIsLoading ] = useState<any>(false);
+    const { id } = useParams();
 
-    const [ fields, setFields ] = useState<any>(
-        {
-            postTitle: '',
-            postContent: '',
-            featuredImage: null,
-            categoryId: ''
-        }
-    )
+    const [isLoading, setIsLoading] = useState<any>(false);
+
+    const [fields, setFields] = useState<any>({
+        postTitle: '',
+        postContent: '',
+        featuredImage: null,
+        categoryId: '',
+    });
 
     const titlePlaceholder = useMemo(() => {
         const titleExamples = [
-            "Экстренная нехватка бензина в россии",
-            "5 способов отмыва денег через криптовалюту",
-            "На Марсе снова ничего не нашли, но все довольны",
-            "Колосальные потери под Малой Токмачкой - ВС рф",
-            "Отряд бабок в россии отменил сам себя",
-            "Токсис стал настолько популярным, что его стали узнавать собственные родители",
-            "Учёные нашли кореляцию между походом за хлебом и рождением ребенка в молодых семьях",
-            "В россии импортозаместили импортозамещение",
-            "В россии нашли виноватого. Им оказался предыдущий виноватый",
-            "На дне Марианской впадины наконец-то обнаружили дно российской экономики, но снизу снова постучали",
-            "По опросам 90% жителей согласны с тем, о чем их еще не спрашивали"
+            'Экстренная нехватка бензина в россии',
+            '5 способов отмыва денег через криптовалюту',
+            'На Марсе снова ничего не нашли, но все довольны',
+            'Колосальные потери под Малой Токмачкой - ВС рф',
+            'Отряд бабок в россии отменил сам себя',
+            'Токсис стал настолько популярным, что его стали узнавать собственные родители',
+            'Учёные нашли кореляцию между походом за хлебом и рождением ребенка в молодых семьях',
+            'В россии импортозаместили импортозамещение',
+            'В россии нашли виноватого. Им оказался предыдущий виноватый',
+            'На дне Марианской впадины наконец-то обнаружили дно российской экономики, но снизу снова постучали',
+            'По опросам 90% жителей согласны с тем, о чем их еще не спрашивали',
         ];
 
         return titleExamples[Math.floor(Math.random() * titleExamples.length)];
@@ -63,73 +61,70 @@ const EditPost = () => {
 
     useEffect(() => {
         const loadPost = async () => {
-            if (!id) return
+            if (!id) return;
 
-            const result = await getPostById(id)
+            const result = await getPostById(id);
             if (result?.status === true && result?.data) {
-                const post = result.data
+                const post = result.data;
                 setFields({
                     postTitle: post.title ?? '',
                     postContent: post.content_text ?? '',
                     categoryId: post.category?._id ?? post.category ?? '',
                     featuredImage: post.featured_image ?? null,
-                    author: post.author ?? null
-                })
-                setFeaturedImage(post.featured_image)
+                    author: post.author ?? null,
+                });
+                setFeaturedImage(post.featured_image);
             }
 
-            const categories_result = await getCategories()
+            const categories_result = await getCategories();
 
-            if(categories_result?.status === true) {
-                for(const category of categories_result.data) {
-                    category.className = CATEGORY_COLORS[category.color]?.className
-                    category.value = category._id
+            if (categories_result?.status === true) {
+                for (const category of categories_result.data) {
+                    category.className =
+                        CATEGORY_COLORS[category.color]?.className;
+                    category.value = category._id;
                 }
-                setAllCategories(categories_result.data)
+                setAllCategories(categories_result.data);
             }
-        }
+        };
 
-        loadPost()
-    }, [id])
+        loadPost();
+    }, [id]);
 
     const add_errors_to_image = (new_errors: any) => {
         const updated_errors = { ...errors };
 
-        if (!updated_errors.featuredImage) { 
+        if (!updated_errors.featuredImage) {
             updated_errors.featuredImage = [];
         }
 
-        for(const new_error of new_errors) {
-            updated_errors.featuredImage.push(new_error)
+        for (const new_error of new_errors) {
+            updated_errors.featuredImage.push(new_error);
         }
         setErrors(updated_errors);
-    }
+    };
 
     const clear_errors_from_image = () => {
         const updated_errors = { ...errors };
 
-        if(updated_errors.featuredImage) {
-            delete updated_errors.featuredImage
+        if (updated_errors.featuredImage) {
+            delete updated_errors.featuredImage;
         }
 
-        setErrors(updated_errors)
-    }
+        setErrors(updated_errors);
+    };
 
     useEffect(() => {
-        if (
-            profileLoading ||
-            !profile ||
-            !fields.author
-        ) {
+        if (profileLoading || !profile || !fields.author) {
             return;
         }
 
         const canEdit =
-            profile.permissions?.includes("edit_any_post") ||
+            profile.permissions?.includes('edit_any_post') ||
             profile._id.toString() === fields.author.toString();
 
         if (!canEdit) {
-            navigate("/posts");
+            navigate('/');
         }
     }, [profileLoading, profile, fields.author, navigate]);
 
@@ -140,7 +135,7 @@ const EditPost = () => {
     };
 
     const handleSubmit = async (e: any) => {
-        e.preventDefault()
+        e.preventDefault();
         const next: any = {};
         const title = (fields.postTitle || '').trim();
         if (title.length < FIELD_LIMITS.postTitle.min) {
@@ -158,10 +153,10 @@ const EditPost = () => {
             return;
         }
         setIsLoading(true);
-        const result = await create_post()
+        const result = await create_post();
         setIsLoading(false);
-        setCreateResult(result)
-    }
+        setCreateResult(result);
+    };
 
     const handleFocus = (fieldName: any) => {
         const other = { ...errors };
@@ -171,78 +166,82 @@ const EditPost = () => {
 
     const create_post = async () => {
         const formData = new FormData();
-        formData.append('postTitle', fields.postTitle)
-        formData.append('postContent', fields.postContent)
+        formData.append('postTitle', fields.postTitle);
+        formData.append('postContent', fields.postContent);
 
-        const isImageChanged = fields.featuredImage instanceof File ||
+        const isImageChanged =
+            fields.featuredImage instanceof File ||
             fields.featuredImage !== (featuredImage ?? null);
         if (isImageChanged) {
             formData.append('featuredImage', fields.featuredImage);
         }
-        
-        formData.append('categoryId', fields.categoryId)
 
-        const result = await editPost(id, formData)
-        
-        if(result.status === true) {
-            navigate("/posts")
-            showToast({ message: "Пост успешно отредактирован!", type: "success" })
-            return result
-        }
-        else {
-            showToast({ message: "Ошибка при редактировании поста!", type: "error" })
+        formData.append('categoryId', fields.categoryId);
+
+        const result = await editPost(id, formData);
+
+        if (result.status === true) {
+            navigate('/');
+            showToast({
+                message: 'Пост успешно отредактирован!',
+                type: 'success',
+            });
+            return result;
+        } else {
+            showToast({
+                message: 'Ошибка при редактировании поста!',
+                type: 'error',
+            });
             if (result?.errors?.body) {
-                setErrors(Object.fromEntries(Object.entries(result.errors.body).map(([field, obj]: any) => [field, obj.message])));
+                setErrors(
+                    Object.fromEntries(
+                        Object.entries(result.errors.body).map(
+                            ([field, obj]: any) => [field, obj.message],
+                        ),
+                    ),
+                );
             }
-            return result
+            return result;
         }
-    }
+    };
 
     return (
         <form className="edit_post" onSubmit={handleSubmit}>
-            <Field
-                error={errors?.postTitle}
-                title={"Заголовок"}
-            >
+            <Field error={errors?.postTitle} title={'Заголовок'}>
                 <InputFiled
                     value={fields.postTitle}
                     placeholder={titlePlaceholder}
                     className={
-                        "edit_post_title" +
-                        (
-                            createResult.status === "error" &&
-                            createResult.message === "Incorrect 'title'"
-                                ? " incorrect_field"
-                                : ""
-                        )
+                        'edit_post_title' +
+                        (createResult.status === 'error' &&
+                        createResult.message === "Incorrect 'title'"
+                            ? ' incorrect_field'
+                            : '')
                     }
                     isMultiline={true}
                     multilineRows={1}
                     onChange={(e: any) =>
                         setFields({
                             ...fields,
-                            postTitle: e.target.value
+                            postTitle: e.target.value,
                         })
                     }
-                    onFocus={() => handleFocus("postTitle")}
+                    onFocus={() => handleFocus('postTitle')}
                     length={FIELD_LIMITS.postTitle.max}
                     error={errors?.postTitle}
                 />
             </Field>
 
-            <Field
-                error={errors?.categoryId}
-                title={"Категория"}
-            >
+            <Field error={errors?.categoryId} title={'Категория'}>
                 <SearchSelect
                     value={fields?.categoryId}
                     onSetValue={(value: any) =>
                         setFields((prev: any) => ({
                             ...prev,
-                            categoryId: value
+                            categoryId: value,
                         }))
                     }
-                    onFocus={() => handleFocus("categoryId")}
+                    onFocus={() => handleFocus('categoryId')}
                     error={errors?.categoryId}
                     options={allCategories}
                 />
@@ -253,11 +252,11 @@ const EditPost = () => {
                 setValue={(file: any) =>
                     setFields((prev: any) => ({
                         ...prev,
-                        featuredImage: file
+                        featuredImage: file,
                     }))
                 }
-                dropFileType={"image/*"}
-                fileTypes={"SVG, PNG, JPEG, JPG и другие"}
+                dropFileType={'image/*'}
+                fileTypes={'SVG, PNG, JPEG, JPG и другие'}
                 errors={errors?.featuredImage}
                 addNewErrors={add_errors_to_image}
                 clearErrors={clear_errors_from_image}
@@ -265,17 +264,14 @@ const EditPost = () => {
                 previewUrl={fields.featuredImage}
             />
 
-            <Field
-                error={errors?.postContent}
-                title={"Текст поста"}
-            >
+            <Field error={errors?.postContent} title={'Текст поста'}>
                 <TextEditorField
                     initialHtml={fields.postContent}
-                    onFocus={() => handleFocus("postContent")}
+                    onFocus={() => handleFocus('postContent')}
                     onChange={(html: any) =>
                         setFields({
                             ...fields,
-                            postContent: html
+                            postContent: html,
                         })
                     }
                     error={errors?.postContent}
@@ -283,19 +279,19 @@ const EditPost = () => {
             </Field>
 
             <div className="edit_post_buttons">
-                <PrimaryButton
-                    onClick={handleSubmit}
-                    isLoading={isLoading}
-                >
+                <PrimaryButton onClick={handleSubmit} isLoading={isLoading}>
                     Сохранить
                 </PrimaryButton>
 
-                <DangerButton disabled={isLoading} onClick={() => navigate("/posts")}>
+                <DangerButton
+                    disabled={isLoading}
+                    onClick={() => navigate('/')}
+                >
                     Отмена
                 </DangerButton>
             </div>
         </form>
     );
-}
+};
 
-export default EditPost
+export default EditPost;

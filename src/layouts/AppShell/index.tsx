@@ -1,8 +1,8 @@
 'use client';
 
-import AppSidebar from "../../components/AppSidebar/index";
+import AppSidebar from '../../components/AppSidebar/index';
 
-import "./AppShell.scss";
+import './AppShell.scss';
 
 const AppShell = ({ children }: any) => (
     <div className="app-shell">

@@ -1,11 +1,11 @@
-@use "../../styles/helpers" as *;
+@use '../../styles/helpers' as *;
 
 .create_post {
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
 
-    .drop_file{
+    .drop_file {
         min-height: 230px;
         border-radius: 8px;
 
@@ -23,11 +23,11 @@
             width: 96%;
             background-color: var(--sticky-button-background-color);
             border: 1px solid var(--line-color);
-            
+
             .remove_image_button {
                 cursor: pointer;
-    
-                svg{
+
+                svg {
                     color: red;
                     height: 20px;
                 }
@@ -50,7 +50,7 @@
                 }
             }
 
-            &_help_text{
+            &_help_text {
                 @include screen() {
                     font-size: 12px;
                 }
@@ -70,11 +70,11 @@
         width: 100%;
         height: 100%;
     }
-    
+
     .input_field::placeholder {
         color: var(--input-placeholder-color);
-        transition: .3s;    
-    }    
+        transition: 0.3s;
+    }
 
     .input_field_label {
         span {
@@ -88,7 +88,7 @@
         }
     }
 
-    &_main_text{
+    &_main_text {
         height: 300px;
         font-size: 24px;
 
@@ -101,7 +101,7 @@
     .create_post_buttons {
         display: flex;
         justify-content: space-between;
-        
+
         @include screen() {
             flex-direction: column;
             gap: 10px;

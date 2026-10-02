@@ -1,21 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import "./DropDown.scss";
-import { useOverlayEnter } from "../useOverlayEnter";
+import './DropDown.scss';
+import { useOverlayEnter } from '../useOverlayEnter';
 
-import ChevronDownIcon from "../../../assets/svg/chevron-down.svg";
+import ChevronDownIcon from '../../../assets/svg/chevron-down.svg';
 
-const optionLabel = (option: any) => option?.name ?? option?.label ?? "";
+const optionLabel = (option: any) => option?.name ?? option?.label ?? '';
 
 const DropDown = ({
     options = [],
     value,
     onChange,
-    placeholder = "Выбрать",
+    placeholder = 'Выбрать',
     error = false,
-    className = ""
+    className = '',
 }: any) => {
     const [isOpen, setIsOpen] = useState<any>(false);
     const wrapperRef = useRef<any>(null);
@@ -23,7 +23,7 @@ const DropDown = ({
 
     const selectedOption = useMemo(
         () => options.find((option: any) => option.value === value),
-        [options, value]
+        [options, value],
     );
 
     const close = useCallback(() => setIsOpen(false), []);
@@ -36,17 +36,17 @@ const DropDown = ({
         };
 
         const handleEscape = (event: any) => {
-            if (event.key === "Escape") {
+            if (event.key === 'Escape') {
                 close();
             }
         };
 
-        document.addEventListener("mousedown", handleClickOutside);
-        document.addEventListener("keydown", handleEscape);
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleEscape);
 
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-            document.removeEventListener("keydown", handleEscape);
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleEscape);
         };
     }, [close]);
 
@@ -58,7 +58,7 @@ const DropDown = ({
     return (
         <div
             ref={wrapperRef}
-            className={`dropdown ${isOpen ? "dropdown_open" : ""} ${error ? "dropdown_error" : ""} ${className}`.trim()}
+            className={`dropdown ${isOpen ? 'dropdown_open' : ''} ${error ? 'dropdown_error' : ''} ${className}`.trim()}
         >
             <button
                 type="button"
@@ -69,14 +69,20 @@ const DropDown = ({
                 {selectedOption?.icon ? (
                     <span className="dropdown_icon">{selectedOption.icon}</span>
                 ) : null}
-                <p className={selectedOption ? "" : "dropdown_select_placeholder"}>
+                <p
+                    className={
+                        selectedOption ? '' : 'dropdown_select_placeholder'
+                    }
+                >
                     {selectedOption ? optionLabel(selectedOption) : placeholder}
                 </p>
                 <ChevronDownIcon className="dropdown_chevron" />
             </button>
 
             {isOpen ? (
-                <div className={`dropdown_list blurred float_section${listVisible ? " dropdown_list_visible" : ""}`}>
+                <div
+                    className={`dropdown_list blurred float_section${listVisible ? ' dropdown_list_visible' : ''}`}
+                >
                     {options.map((option: any) => {
                         const selected = option.value === value;
 
@@ -84,11 +90,13 @@ const DropDown = ({
                             <button
                                 type="button"
                                 key={String(option.value)}
-                                className={`dropdown_item app-transition ${selected ? "dropdown_item_selected" : ""}`}
+                                className={`dropdown_item app-transition ${selected ? 'dropdown_item_selected' : ''}`}
                                 onClick={() => handleSelect(option)}
                             >
                                 {option.icon ? (
-                                    <span className="dropdown_icon">{option.icon}</span>
+                                    <span className="dropdown_icon">
+                                        {option.icon}
+                                    </span>
                                 ) : null}
                                 <p>{optionLabel(option)}</p>
                             </button>

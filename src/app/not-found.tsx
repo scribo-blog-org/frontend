@@ -1,10 +1,10 @@
-import PageNotFound from "@/views/PageNotFound";
-import DefaultContainer from "@/layouts/DefaultContainer";
-import { buildMetadata } from "@/lib/metadata";
+import PageNotFound from '@/views/PageNotFound';
+import DefaultContainer from '@/layouts/DefaultContainer';
+import { buildMetadata } from '@/lib/metadata';
 
 export const metadata = buildMetadata({
-    title: "Страница не найдена",
-    path: "/404",
+    title: 'Страница не найдена',
+    path: '/404',
     noindex: true,
 });
 

@@ -1,10 +1,10 @@
 'use client';
 
-import { apiUrl } from "@/config";
-import { useNavigate, useLocation } from "@/navigation";
+import { apiUrl } from '@/config';
+import { useNavigate, useLocation } from '@/navigation';
 
-import PrimaryButton from "../../components/Ui/PrimaryButton";
-import "./PageNotFound.scss";
+import PrimaryButton from '../../components/Ui/PrimaryButton';
+import './PageNotFound.scss';
 
 const PageNotFound = () => {
     const navigate = useNavigate();
@@ -33,9 +33,10 @@ const PageNotFound = () => {
             <div className="page_not_found_copy">
                 <h1>Страница не найдена</h1>
                 <p className="page_not_found_lead">
-                    Здесь пока пусто. Возможно черновик навсегда остался в голове автора.
+                    Здесь пока пусто. Возможно черновик навсегда остался в
+                    голове автора.
                 </p>
-                <PrimaryButton type="button" onClick={() => navigate("/posts")}>
+                <PrimaryButton type="button" onClick={() => navigate('/')}>
                     На главную
                 </PrimaryButton>
             </div>

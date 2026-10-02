@@ -1,5 +1,5 @@
-@use "../../styles/categoryColors.scss" as *;
-@use "../../styles/helpers.scss" as *;
+@use '../../styles/categoryColors.scss' as *;
+@use '../../styles/helpers.scss' as *;
 
 .category_content {
     display: flex;
@@ -22,10 +22,10 @@
         &.chip_button_active {
             color: var(--category-color);
             border-color: transparent;
-            background: rgb(from var(--category-color) r g b / .1);
+            background: rgb(from var(--category-color) r g b / 0.1);
 
             @include hover() {
-                background: rgb(from var(--category-color) r g b / .3);
+                background: rgb(from var(--category-color) r g b / 0.3);
             }
 
             p {
@@ -44,7 +44,9 @@
             background: var(--category-color, var(--light-text-color));
             flex-shrink: 0;
             opacity: 0.4;
-            transition: opacity 0.15s ease, background 0.3s ease;
+            transition:
+                opacity 0.15s ease,
+                background 0.3s ease;
         }
 
         @include category-colors {

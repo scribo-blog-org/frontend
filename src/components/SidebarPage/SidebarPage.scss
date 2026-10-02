@@ -1,4 +1,4 @@
-@use "../../styles/helpers" as *;
+@use '../../styles/helpers' as *;
 
 .sidebar_page {
     display: flex;
@@ -17,7 +17,7 @@
         width: 240px;
         min-width: 240px;
         box-sizing: border-box;
-        
+
         @include screen() {
             display: none;
         }
@@ -37,7 +37,7 @@
                 padding: 8px 12px;
                 border-radius: var(--radius-sm);
                 width: 100%;
-                
+
                 @include hover {
                     background: var(--section-item-hover-background-color);
                     color: var(--section-light-hover-color);
@@ -46,12 +46,12 @@
                         color: var(--section-light-hover-color);
                     }
                 }
-                
+
                 svg {
                     width: 16px;
                     height: 16px;
                 }
-                
+
                 p {
                     font-size: 14px;
                     color: var(--section-light-color);
@@ -70,7 +70,6 @@
         }
     }
 
-    
     &_content {
         flex: 1;
         min-width: 0;

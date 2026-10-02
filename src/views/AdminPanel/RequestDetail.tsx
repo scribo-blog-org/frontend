@@ -1,13 +1,13 @@
 'use client';
 
-import { useContext, useEffect } from "react";
-import { useNavigate, useParams } from "@/navigation";
+import { useContext, useEffect } from 'react';
+import { useNavigate, useParams } from '@/navigation';
 
-import { AppContext } from "@/providers/AppProviders";
-import { getSupportRequest } from "../../api/support.api";
-import Loading from "../../components/Ui/Loading";
+import { AppContext } from '@/providers/AppProviders';
+import { getSupportRequest } from '../../api/support.api';
+import Loading from '../../components/Ui/Loading';
 
-import "./RequestDetail.scss";
+import './RequestDetail.scss';
 
 const RequestDetailPage = () => {
     const { id } = useParams();
@@ -15,8 +15,11 @@ const RequestDetailPage = () => {
     const { profile, profileLoading, showToast } = useContext(AppContext);
 
     useEffect(() => {
-        if (!profileLoading && !["admin", "tech_admin"].includes(profile?.role)) {
-            navigate("/");
+        if (
+            !profileLoading &&
+            !['admin', 'tech_admin'].includes(profile?.role)
+        ) {
+            navigate('/');
         }
     }, [profile, profileLoading, navigate]);
 
@@ -31,15 +34,18 @@ const RequestDetailPage = () => {
             }
 
             if (!result.status || !result.data?.access_key) {
-                showToast({ type: "error", message: result.message || "Запрос не найден" });
-                navigate("/admin-panel?tab=requests", { replace: true });
+                showToast({
+                    type: 'error',
+                    message: result.message || 'Запрос не найден',
+                });
+                navigate('/admin-panel?tab=requests', { replace: true });
                 return;
             }
 
             navigate(`/support/${result.data.access_key}`, { replace: true });
         };
 
-        if (["admin", "tech_admin"].includes(profile?.role)) {
+        if (['admin', 'tech_admin'].includes(profile?.role)) {
             redirectToPublic();
         }
 

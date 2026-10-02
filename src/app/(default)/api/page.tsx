@@ -1,10 +1,10 @@
-import ApiDocs from "@/views/Api";
-import { buildMetadata } from "@/lib/metadata";
+import ApiDocs from '@/views/Api';
+import { buildMetadata } from '@/lib/metadata';
 
 export const metadata = buildMetadata({
-    title: "API",
-    description: "Документация API Scribo.",
-    path: "/api",
+    title: 'API',
+    description: 'Документация API Scribo.',
+    path: '/api',
     noindex: true,
 });
 

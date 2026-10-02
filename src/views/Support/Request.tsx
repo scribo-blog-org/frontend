@@ -1,29 +1,34 @@
 'use client';
 
-import { useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "@/navigation";
+import { useContext, useEffect, useState } from 'react';
+import { useNavigate, useParams } from '@/navigation';
 
-import { AppContext } from "@/providers/AppProviders";
-import { getPublicSupportRequest, replyPublicSupportRequest, updateSupportRequestStatus } from "../../api/support.api";
-import { FIELD_LIMITS } from "../../constants/fieldLimits";
-import { SUPPORT_STATUSES, kindLabel, statusLabel } from "./constants";
-import { format_date_time } from "../../utils/format";
+import { AppContext } from '@/providers/AppProviders';
+import {
+    getPublicSupportRequest,
+    replyPublicSupportRequest,
+    updateSupportRequestStatus,
+} from '../../api/support.api';
+import { FIELD_LIMITS } from '../../constants/fieldLimits';
+import { SUPPORT_STATUSES, kindLabel, statusLabel } from './constants';
+import { format_date_time } from '../../utils/format';
 
-import Field from "../../components/Ui/Field/index";
-import RichInputField from "../../components/RichInputField";
-import RichText from "../../components/RichText";
-import PrimaryButton from "../../components/Ui/PrimaryButton";
-import ActionButton from "../../components/Ui/ActionButton";
-import DropDown from "../../components/Ui/DropDown";
-import Loading from "../../components/Ui/Loading";
-import UserBadge from "../../components/UserBadge/index";
+import Field from '../../components/Ui/Field/index';
+import RichInputField from '../../components/RichInputField';
+import RichText from '../../components/RichText';
+import PrimaryButton from '../../components/Ui/PrimaryButton';
+import ActionButton from '../../components/Ui/ActionButton';
+import DropDown from '../../components/Ui/DropDown';
+import Loading from '../../components/Ui/Loading';
+import UserBadge from '../../components/UserBadge/index';
 
-import ArrowLeftIcon from "../../assets/svg/arrow-left.svg";
+import ArrowLeftIcon from '../../assets/svg/arrow-left.svg';
 
-import "../AdminPanel/Requests.scss";
-import "../AdminPanel/RequestDetail.scss";
+import '../AdminPanel/Requests.scss';
+import '../AdminPanel/RequestDetail.scss';
 
-const canManageSupport = (profile: any) => ["admin", "tech_admin"].includes(profile?.role);
+const canManageSupport = (profile: any) =>
+    ['admin', 'tech_admin'].includes(profile?.role);
 
 const SupportRequestPage = () => {
     const { key } = useParams();
@@ -31,7 +36,7 @@ const SupportRequestPage = () => {
     const { profile, showToast } = useContext(AppContext);
     const [item, setItem] = useState<any>(null);
     const [loading, setLoading] = useState<any>(true);
-    const [reply, setReply] = useState<any>("");
+    const [reply, setReply] = useState<any>('');
     const [error, setError] = useState<any>(null);
     const [sending, setSending] = useState<any>(false);
     const [statusSaving, setStatusSaving] = useState<any>(false);
@@ -51,7 +56,7 @@ const SupportRequestPage = () => {
             }
 
             if (!result.status) {
-                showToast({ type: "error", message: result.message });
+                showToast({ type: 'error', message: result.message });
                 setItem(null);
                 setLoading(false);
                 return;
@@ -70,11 +75,13 @@ const SupportRequestPage = () => {
 
     const handleReply = async () => {
         if (!reply.trim()) {
-            setError("Напишите сообщение");
+            setError('Напишите сообщение');
             return;
         }
         if (reply.length > FIELD_LIMITS.supportReply.max) {
-            setError(`Сообщение не длиннее ${FIELD_LIMITS.supportReply.max} символов`);
+            setError(
+                `Сообщение не длиннее ${FIELD_LIMITS.supportReply.max} символов`,
+            );
             return;
         }
 
@@ -83,7 +90,10 @@ const SupportRequestPage = () => {
             const result = await replyPublicSupportRequest(key, reply.trim());
 
             if (!result.status) {
-                showToast({ type: "error", message: result.message || "Не удалось отправить сообщение" });
+                showToast({
+                    type: 'error',
+                    message: result.message || 'Не удалось отправить сообщение',
+                });
                 if (result?.errors?.body?.replyText?.message) {
                     setError(result.errors.body.replyText.message);
                 }
@@ -91,17 +101,18 @@ const SupportRequestPage = () => {
             }
 
             setItem(result.data);
-            setReply("");
+            setReply('');
             setError(null);
             showToast({
-                type: "success",
-                message: isStaff ? "Ответ отправлен" : "Сообщение добавлено"
+                type: 'success',
+                message: isStaff ? 'Ответ отправлен' : 'Сообщение добавлено',
             });
-        }
-        catch {
-            showToast({ type: "error", message: "Не удалось отправить сообщение" });
-        }
-        finally {
+        } catch {
+            showToast({
+                type: 'error',
+                message: 'Не удалось отправить сообщение',
+            });
+        } finally {
             setSending(false);
         }
     };
@@ -116,17 +127,18 @@ const SupportRequestPage = () => {
             const result = await updateSupportRequestStatus(item._id, status);
 
             if (!result.status) {
-                showToast({ type: "error", message: result.message || "Не удалось изменить статус" });
+                showToast({
+                    type: 'error',
+                    message: result.message || 'Не удалось изменить статус',
+                });
                 return;
             }
 
             setItem(result.data);
-            showToast({ type: "success", message: "Статус обновлён" });
-        }
-        catch {
-            showToast({ type: "error", message: "Не удалось изменить статус" });
-        }
-        finally {
+            showToast({ type: 'success', message: 'Статус обновлён' });
+        } catch {
+            showToast({ type: 'error', message: 'Не удалось изменить статус' });
+        } finally {
             setStatusSaving(false);
         }
     };
@@ -140,28 +152,47 @@ const SupportRequestPage = () => {
     }
 
     if (!item) {
-        navigate("/404")
+        navigate('/404');
     }
 
     return (
         <div className="support_request_detail">
             <div className="support_request_detail_card app-transition">
                 <div className="support_request_detail_top">
-                    <ActionButton disabled={sending || statusSaving} onClick={() => navigate(isStaff ? "/admin-panel?tab=requests" : item.is_owner ? "/support/mine" : "/support")}>
+                    <ActionButton
+                        disabled={sending || statusSaving}
+                        onClick={() =>
+                            navigate(
+                                isStaff
+                                    ? '/admin-panel?tab=requests'
+                                    : item.is_owner
+                                      ? '/support/mine'
+                                      : '/support',
+                            )
+                        }
+                    >
                         <ArrowLeftIcon />
-                        {isStaff ? "К обращениям" : "Поддержка"}
+                        {isStaff ? 'К обращениям' : 'Поддержка'}
                     </ActionButton>
                     <div className="support_request_detail_tags">
                         {showStatus ? (
-                            <span className={`support_status support_status_${item.status}`}>
+                            <span
+                                className={`support_status support_status_${item.status}`}
+                            >
                                 {statusLabel(item.status)}
                             </span>
                         ) : null}
-                        <span className="support_kind">{kindLabel(item.kind)}</span>
+                        <span className="support_kind">
+                            {kindLabel(item.kind)}
+                        </span>
                     </div>
                 </div>
-                {isStaff ? <p className="support_request_detail_email">{item.email}</p> : null}
-                <p className="support_request_detail_date">{format_date_time(item.created_date)}</p>
+                {isStaff ? (
+                    <p className="support_request_detail_email">{item.email}</p>
+                ) : null}
+                <p className="support_request_detail_date">
+                    {format_date_time(item.created_date)}
+                </p>
                 <div className="support_request_detail_message">
                     <RichText text={item.message} />
                 </div>
@@ -178,59 +209,81 @@ const SupportRequestPage = () => {
 
             <div className="support_request_detail_card app-transition">
                 <h1 className="kicker">Переписка</h1>
-                {
-                    item.replies?.length ?
-                        <div className="support_request_detail_replies">
-                            {item.replies.map((entry: any) => (
-                                <div
-                                    key={entry._id}
-                                    className={`support_request_detail_reply app-transition ${entry.author_type === "requester" ? "support_request_detail_reply_requester" : ""}`}
-                                >
-                                    <div className="support_request_detail_reply_head">
-                                        {entry.author_type === "staff" && entry.admin ? (
-                                            <UserBadge data={entry.admin} />
-                                        ) : (
-                                            <p className="support_request_detail_reply_author">Автор обращения</p>
-                                        )}
-                                        <p>{format_date_time(entry.created_date)}</p>
-                                    </div>
-                                    <RichText className="support_request_detail_reply_text" text={entry.text} />
+                {item.replies?.length ? (
+                    <div className="support_request_detail_replies">
+                        {item.replies.map((entry: any) => (
+                            <div
+                                key={entry._id}
+                                className={`support_request_detail_reply app-transition ${entry.author_type === 'requester' ? 'support_request_detail_reply_requester' : ''}`}
+                            >
+                                <div className="support_request_detail_reply_head">
+                                    {entry.author_type === 'staff' &&
+                                    entry.admin ? (
+                                        <UserBadge data={entry.admin} />
+                                    ) : (
+                                        <p className="support_request_detail_reply_author">
+                                            Автор обращения
+                                        </p>
+                                    )}
+                                    <p>
+                                        {format_date_time(entry.created_date)}
+                                    </p>
                                 </div>
-                            ))}
-                        </div>
-                    :
-                        <p className="support_request_detail_empty">Ответов пока нет</p>
-                }
+                                <RichText
+                                    className="support_request_detail_reply_text"
+                                    text={entry.text}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="support_request_detail_empty">
+                        Ответов пока нет
+                    </p>
+                )}
                 {canReply ? (
-                <form
-                    className="support_request_detail_form"
-                    onSubmit={(event: any) => {
-                        event.preventDefault();
-                        handleReply();
-                    }}
-                >
-                    <Field title={isStaff ? "Ответ" : "Сообщение"} error={error}>
-                        <RichInputField
-                            preset="social"
-                            isMultiline={true}
-                            multilineRows={6}
-                            length={FIELD_LIMITS.supportReply.max}
-                            value={reply}
-                            placeholder={isStaff ? "Текст ответа" : "Дополните обращение"}
-                            onChange={(event: any) => setReply(event.target.value)}
-                            onFocus={() => setError(null)}
+                    <form
+                        className="support_request_detail_form"
+                        onSubmit={(event: any) => {
+                            event.preventDefault();
+                            handleReply();
+                        }}
+                    >
+                        <Field
+                            title={isStaff ? 'Ответ' : 'Сообщение'}
                             error={error}
-                        />
-                    </Field>
-                    <PrimaryButton type="submit" isLoading={sending} disabled={statusSaving}>
-                        Отправить
-                    </PrimaryButton>
-                </form>
+                        >
+                            <RichInputField
+                                preset="social"
+                                isMultiline={true}
+                                multilineRows={6}
+                                length={FIELD_LIMITS.supportReply.max}
+                                value={reply}
+                                placeholder={
+                                    isStaff
+                                        ? 'Текст ответа'
+                                        : 'Дополните обращение'
+                                }
+                                onChange={(event: any) =>
+                                    setReply(event.target.value)
+                                }
+                                onFocus={() => setError(null)}
+                                error={error}
+                            />
+                        </Field>
+                        <PrimaryButton
+                            type="submit"
+                            isLoading={sending}
+                            disabled={statusSaving}
+                        >
+                            Отправить
+                        </PrimaryButton>
+                    </form>
                 ) : (
                     <p className="support_request_detail_empty">
                         {item.closed
-                            ? "Обращение рассмотрено, новые ответы закрыты."
-                            : "Ответить могут только администраторы. Чтобы писать в переписку, отправьте запрос из аккаунта."}
+                            ? 'Обращение рассмотрено, новые ответы закрыты.'
+                            : 'Ответить могут только администраторы. Чтобы писать в переписку, отправьте запрос из аккаунта.'}
                     </p>
                 )}
             </div>

@@ -1,4 +1,3 @@
-/** Presets for rich text fields — opt in per screen, not in plain InputField. */
 export const COMPOSER_PRESETS = {
     plain: { hashtags: false, mentions: false },
     hashtags: { hashtags: true, mentions: false },

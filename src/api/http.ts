@@ -1,4 +1,4 @@
-import { apiUrl } from "../config";
+import { apiUrl } from '../config';
 
 let accessToken: any = null;
 let refreshPromise: any = null;
@@ -35,8 +35,8 @@ export function markBackendAvailable() {
 export async function probeBackend() {
     try {
         const response = await fetch(`${apiUrl()}/health`, {
-            method: "GET",
-            credentials: "include",
+            method: 'GET',
+            credentials: 'include',
         });
 
         if (!response.ok) {
@@ -70,7 +70,7 @@ export function subscribeAccessToken(listener: any) {
 }
 
 function isAuthRefreshUrl(url: any) {
-    return typeof url === "string" && url.includes("/api/auth/refresh");
+    return typeof url === 'string' && url.includes('/api/auth/refresh');
 }
 
 async function parseJson(response: any) {
@@ -91,8 +91,8 @@ export async function refreshAccessToken() {
     refreshPromise = (async () => {
         try {
             const response = await fetch(`${apiUrl()}/api/auth/refresh`, {
-                method: "POST",
-                credentials: "include",
+                method: 'POST',
+                credentials: 'include',
             });
             if (isServerErrorStatus(response.status)) {
                 markBackendUnavailable();
@@ -128,12 +128,18 @@ export async function refreshAccessToken() {
 }
 
 export async function apiFetch(url: any, options: any = {}) {
-    const { skipAuth, _retry, reportOutage = true, headers: initHeaders, ...rest } = options;
+    const {
+        skipAuth,
+        _retry,
+        reportOutage = true,
+        headers: initHeaders,
+        ...rest
+    } = options;
     const headers = new Headers(initHeaders || {});
     const token = getAccessToken();
 
-    if (!skipAuth && token && !headers.has("Authorization")) {
-        headers.set("Authorization", `Bearer ${token}`);
+    if (!skipAuth && token && !headers.has('Authorization')) {
+        headers.set('Authorization', `Bearer ${token}`);
     }
 
     let response: any;
@@ -142,7 +148,7 @@ export async function apiFetch(url: any, options: any = {}) {
         response = await fetch(url, {
             ...rest,
             headers,
-            credentials: "include",
+            credentials: 'include',
         });
     } catch (error: any) {
         if (reportOutage) {

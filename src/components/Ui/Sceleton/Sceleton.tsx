@@ -1,6 +1,6 @@
 'use client';
 
-import "./Sceleton.scss";
+import './Sceleton.scss';
 
 const Sceleton = ({
     isLoading = false,
@@ -8,16 +8,16 @@ const Sceleton = ({
     circle = false,
     rounded = false,
     section = true,
-    className = ""
+    className = '',
 }: any) => {
     if (isLoading) {
         return (
             <div
                 className={
                     `sceleton app-transition ${className}` +
-                    (circle ? " circle" : "") +
-                    (rounded ? " rounded" : "") +
-                    (section ? " sceleton_section" : "")
+                    (circle ? ' circle' : '') +
+                    (rounded ? ' rounded' : '') +
+                    (section ? ' sceleton_section' : '')
                 }
             />
         );

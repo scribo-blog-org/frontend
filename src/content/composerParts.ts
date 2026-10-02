@@ -1,12 +1,10 @@
-import { MENTION_STORAGE_PATTERN } from "./mentions";
-import { HASHTAG_PATTERN } from "../utils/hashtags";
+import { MENTION_STORAGE_PATTERN } from './mentions';
+import { HASHTAG_PATTERN } from '../utils/hashtags';
 
-const COMPOSER_TOKEN =
-    /(@\[user:[a-f0-9]{24}\]|#[^\s#]+)/gi;
+const COMPOSER_TOKEN = /(@\[user:[a-f0-9]{24}\]|#[^\s#]+)/gi;
 
-/** Split stored text into plain text, hashtag, and mention segments. */
 export function splitComposerParts(text: any) {
-    const src = String(text || "");
+    const src = String(text || '');
     const parts: any[] = [];
     COMPOSER_TOKEN.lastIndex = 0;
     let lastIndex = 0;
@@ -14,14 +12,17 @@ export function splitComposerParts(text: any) {
 
     while (match) {
         if (match.index > lastIndex) {
-            parts.push({ type: "text", value: src.slice(lastIndex, match.index) });
+            parts.push({
+                type: 'text',
+                value: src.slice(lastIndex, match.index),
+            });
         }
 
         const value = match[0];
-        if (value.startsWith("@")) {
-            parts.push({ type: "mention", value, userId: value.slice(7, -1) });
+        if (value.startsWith('@')) {
+            parts.push({ type: 'mention', value, userId: value.slice(7, -1) });
         } else {
-            parts.push({ type: "tag", value });
+            parts.push({ type: 'tag', value });
         }
 
         lastIndex = match.index + value.length;
@@ -29,37 +30,37 @@ export function splitComposerParts(text: any) {
     }
 
     if (lastIndex < src.length) {
-        parts.push({ type: "text", value: src.slice(lastIndex) });
+        parts.push({ type: 'text', value: src.slice(lastIndex) });
     }
 
     return parts;
 }
 
 export function escapeComposerHtml(value: any) {
-    return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 }
 
 export function highlightComposerHtml(text: any, userMap: any = {}) {
     return splitComposerParts(text)
         .map((part: any) => {
-            if (part.type === "tag") {
+            if (part.type === 'tag') {
                 return `<span class="hashtag">${escapeComposerHtml(part.value)}</span>`;
             }
 
-            if (part.type === "mention") {
+            if (part.type === 'mention') {
                 const user = userMap[part.userId];
-                const label = user?.nick_name ? `@${user.nick_name}` : "@user";
+                const label = user?.nick_name ? `@${user.nick_name}` : '@user';
                 return `<span class="mention">${escapeComposerHtml(label)}</span>`;
             }
 
             return escapeComposerHtml(part.value);
         })
-        .join("")
-        .replace(/\n/g, "<br>");
+        .join('')
+        .replace(/\n/g, '<br>');
 }
 
 export { HASHTAG_PATTERN, MENTION_STORAGE_PATTERN };

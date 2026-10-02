@@ -1,22 +1,22 @@
 'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "@/navigation";
+import { useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from '@/navigation';
 
-import { searchSite } from "../../api/search.api";
-import Category from "../../components/Category";
-import UserBadge from "../../components/UserBadge";
-import InputField from "../../components/Ui/InputField";
-import { format_back } from "../../utils/format";
-import { CATEGORY_COLORS } from "../../styles/constants";
+import { searchSite } from '../../api/search.api';
+import Category from '../../components/Category';
+import UserBadge from '../../components/UserBadge';
+import InputField from '../../components/Ui/InputField';
+import { format_back } from '../../utils/format';
+import { CATEGORY_COLORS } from '../../styles/constants';
 
-import DefaultProfileAvatar from "../../assets/images/default-profile-avatar.png";
-import { imageSrc } from "../../utils/image";
-import Verified from "../../assets/svg/verified.svg";
-import ChevronRightIcon from "../../assets/svg/chevron-right.svg";
-import CrossIcon from "../../assets/svg/cross-icon.svg";
+import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
+import { imageSrc } from '../../utils/image';
+import Verified from '../../assets/svg/verified.svg';
+import ChevronRightIcon from '../../assets/svg/chevron-right.svg';
+import CrossIcon from '../../assets/svg/cross-icon.svg';
 
-import "./Search.scss";
+import './Search.scss';
 
 const emptyResults = { posts: [], users: [], categories: [] };
 
@@ -29,7 +29,7 @@ const GroupHead = ({ title, count }: any) => (
 
 const SearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const urlQuery = searchParams.get("q") || "";
+    const urlQuery = searchParams.get('q') || '';
     const [value, setValue] = useState<any>(urlQuery);
     const [results, setResults] = useState<any>(emptyResults);
     const [isLoading, setIsLoading] = useState<any>(false);
@@ -51,7 +51,7 @@ const SearchPage = () => {
         const trimmed = value.trim();
         const handle = window.setTimeout(() => {
             const next = trimmed ? { q: trimmed } : {};
-            const current = searchParams.get("q") || "";
+            const current = searchParams.get('q') || '';
             if (current !== trimmed) {
                 setSearchParams(next, { replace: true });
             }
@@ -97,7 +97,7 @@ const SearchPage = () => {
                 <InputField
                     ref={inputRef}
                     type="search"
-                    className={value ? "search_page_input" : ""}
+                    className={value ? 'search_page_input' : ''}
                     value={value}
                     placeholder="Посты, люди, категории"
                     length={80}
@@ -110,7 +110,7 @@ const SearchPage = () => {
                         className="search_page_clear app-transition"
                         aria-label="Очистить"
                         onClick={() => {
-                            setValue("");
+                            setValue('');
                             setSearchParams({}, { replace: true });
                             inputRef.current?.focus();
                         }}
@@ -120,7 +120,9 @@ const SearchPage = () => {
                 ) : null}
             </div>
             {!hasQuery ? (
-                <p className="search_page_hint">Минимум две буквы — найдутся посты, люди и категории.</p>
+                <p className="search_page_hint">
+                    Минимум две буквы — найдутся посты, люди и категории.
+                </p>
             ) : isLoading ? (
                 <p className="search_page_hint">Ищем…</p>
             ) : total === 0 ? (
@@ -139,7 +141,10 @@ const SearchPage = () => {
                                         >
                                             <img
                                                 className="search_page_person_avatar"
-                                                src={imageSrc(user.avatar, DefaultProfileAvatar)}
+                                                src={imageSrc(
+                                                    user.avatar,
+                                                    DefaultProfileAvatar,
+                                                )}
                                                 alt=""
                                             />
                                             <span className="search_page_person_copy">
@@ -150,12 +155,19 @@ const SearchPage = () => {
                                                     ) : null}
                                                 </span>
                                                 {user.description ? (
-                                                    <span className="search_page_person_bio">{user.description}</span>
+                                                    <span className="search_page_person_bio">
+                                                        {user.description}
+                                                    </span>
                                                 ) : (
-                                                    <span className="search_page_person_bio">Профиль на сайте</span>
+                                                    <span className="search_page_person_bio">
+                                                        Профиль на сайте
+                                                    </span>
                                                 )}
                                             </span>
-                                            <ChevronRightIcon className="search_page_chevron" aria-hidden="true" />
+                                            <ChevronRightIcon
+                                                className="search_page_chevron"
+                                                aria-hidden="true"
+                                            />
                                         </Link>
                                     </li>
                                 ))}
@@ -165,7 +177,10 @@ const SearchPage = () => {
 
                     {categories.length ? (
                         <section className="search_page_group">
-                            <GroupHead title="Категории" count={categories.length} />
+                            <GroupHead
+                                title="Категории"
+                                count={categories.length}
+                            />
                             <ul className="search_page_cats">
                                 {categories.map((category: any) => (
                                     <li key={category._id}>
@@ -173,12 +188,22 @@ const SearchPage = () => {
                                             className="search_page_cat app-transition"
                                             href={`/posts?filter=${category._id}`}
                                         >
-                                            <span className={`search_page_cat_mark ${CATEGORY_COLORS[category.color]?.className ?? ""}`}>
-                                                <span className="search_page_cat_dot" aria-hidden="true" />
+                                            <span
+                                                className={`search_page_cat_mark ${CATEGORY_COLORS[category.color]?.className ?? ''}`}
+                                            >
+                                                <span
+                                                    className="search_page_cat_dot"
+                                                    aria-hidden="true"
+                                                />
                                                 {category.name}
                                             </span>
-                                            <span className="search_page_cat_hint">В ленте</span>
-                                            <ChevronRightIcon className="search_page_chevron" aria-hidden="true" />
+                                            <span className="search_page_cat_hint">
+                                                В ленте
+                                            </span>
+                                            <ChevronRightIcon
+                                                className="search_page_chevron"
+                                                aria-hidden="true"
+                                            />
                                         </Link>
                                     </li>
                                 ))}
@@ -191,19 +216,38 @@ const SearchPage = () => {
                             <GroupHead title="Посты" count={posts.length} />
                             <ul className="search_page_posts">
                                 {posts.map((post: any) => (
-                                    <li key={post._id} className="search_page_post">
+                                    <li
+                                        key={post._id}
+                                        className="search_page_post"
+                                    >
                                         <div className="search_page_post_meta">
                                             <UserBadge data={post.author} />
                                             {post.created_date ? (
-                                                <p className="search_page_post_date">{format_back(post.created_date)}</p>
+                                                <p className="search_page_post_date">
+                                                    {format_back(
+                                                        post.created_date,
+                                                    )}
+                                                </p>
                                             ) : null}
-                                            {post.category ? <Category tag category={post.category} /> : null}
+                                            {post.category ? (
+                                                <Category
+                                                    tag
+                                                    category={post.category}
+                                                />
+                                            ) : null}
                                         </div>
-                                        <Link className="search_page_post_body" href={`/posts/${post._id}`}>
+                                        <Link
+                                            className="search_page_post_body"
+                                            href={`/posts/${post._id}`}
+                                        >
                                             <span className="search_page_post_copy">
-                                                <span className="search_page_post_title">{post.title}</span>
+                                                <span className="search_page_post_title">
+                                                    {post.title}
+                                                </span>
                                                 {post.snippet ? (
-                                                    <span className="search_page_post_snippet">{post.snippet}</span>
+                                                    <span className="search_page_post_snippet">
+                                                        {post.snippet}
+                                                    </span>
                                                 ) : null}
                                             </span>
                                             {post.featured_image ? (

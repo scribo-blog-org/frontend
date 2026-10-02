@@ -1,14 +1,14 @@
 'use client';
 
-import "./AppStatusScreen.scss";
+import './AppStatusScreen.scss';
 
 const AppStatusScreen = ({
     illustration,
     title,
     children,
     actions,
-    role = "status",
-    live = "polite",
+    role = 'status',
+    live = 'polite',
     busy = false,
     label,
 }: any) => (
@@ -25,7 +25,9 @@ const AppStatusScreen = ({
         <div className="app-status_copy">
             <h1>{title}</h1>
             {children}
-            {actions ? <div className="app-status_actions">{actions}</div> : null}
+            {actions ? (
+                <div className="app-status_actions">{actions}</div>
+            ) : null}
         </div>
     </div>
 );

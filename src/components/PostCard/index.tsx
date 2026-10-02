@@ -1,39 +1,50 @@
 'use client';
 
-import { memo, useCallback } from "react";
-import { Link } from "@/navigation";
+import { memo, useCallback } from 'react';
+import { Link } from '@/navigation';
 
-import "./PostCard.scss";
+import './PostCard.scss';
 
-import PostHeader from "../PostHeader";
-import PostActions from "../PostActions";
-import PostHashtags from "../PostHashtags";
+import PostHeader from '../PostHeader';
+import PostActions from '../PostActions';
+import PostHashtags from '../PostHashtags';
 
-import Sceleton from "../Ui/Sceleton/Sceleton";
+import Sceleton from '../Ui/Sceleton/Sceleton';
 
-const PostCard = ({
-    isLoading = false,
-    post,
-    setPosts,
-}: any) => {
-    const updatePost = useCallback((next: any) => {
-        setPosts((prev: any) =>
-            prev.map((item: any) => {
-                if (item._id !== post._id) {
-                    return item;
-                }
-                return typeof next === "function" ? next(item) : { ...item, ...next };
-            })
-        );
-    }, [setPosts, post._id]);
+const PostCard = ({ isLoading = false, post, setPosts }: any) => {
+    const updatePost = useCallback(
+        (next: any) => {
+            setPosts((prev: any) =>
+                prev.map((item: any) => {
+                    if (item._id !== post._id) {
+                        return item;
+                    }
+                    return typeof next === 'function'
+                        ? next(item)
+                        : { ...item, ...next };
+                }),
+            );
+        },
+        [setPosts, post._id],
+    );
 
-    const deletePost = useCallback((id: any) => {
-        setPosts((prev: any) => prev.filter((item: any) => item._id !== id));
-    }, [setPosts]);
+    const deletePost = useCallback(
+        (id: any) => {
+            setPosts((prev: any) =>
+                prev.filter((item: any) => item._id !== id),
+            );
+        },
+        [setPosts],
+    );
 
     const body = (
         <>
-            <Sceleton isLoading={isLoading} rounded={true} section={false} className="posts_item_title">
+            <Sceleton
+                isLoading={isLoading}
+                rounded={true}
+                section={false}
+                className="posts_item_title"
+            >
                 <h2 className="posts_item_title">{post.title}</h2>
             </Sceleton>
             {post.featured_image ? (

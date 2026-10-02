@@ -1,20 +1,20 @@
 'use client';
 
-import { Fragment, useEffect, useMemo } from "react";
-import { Link } from "@/navigation";
+import { Fragment, useEffect, useMemo } from 'react';
+import { Link } from '@/navigation';
 
-import RichText from "../RichText";
-import { LinkPreviewCard, PostMessageCard } from "../PostEntity";
-import { useMessageEmbeds } from "../../hooks/useMessageEmbeds";
-import { profilePathFromNick } from "../../content/plainRichText";
-import { splitMessageRichParts } from "../../utils/messageLinks";
-import { hashtagSearchPath } from "../../utils/hashtags";
+import RichText from '../RichText';
+import { LinkPreviewCard, PostMessageCard } from '../PostEntity';
+import { useMessageEmbeds } from '../../hooks/useMessageEmbeds';
+import { profilePathFromNick } from '../../content/plainRichText';
+import { splitMessageRichParts } from '../../utils/messageLinks';
+import { hashtagSearchPath } from '../../utils/hashtags';
 
-import "./MessageContent.scss";
+import './MessageContent.scss';
 
 function hasBlockContent(parts: any) {
     return parts.some((part: any) => {
-        if (part.type !== "text") {
+        if (part.type !== 'text') {
             return true;
         }
 
@@ -32,14 +32,14 @@ function buildMessageBlocks(parts: any) {
             return;
         }
 
-        blocks.push({ type: "text", parts: textParts });
+        blocks.push({ type: 'text', parts: textParts });
         textParts = [];
     };
 
     for (const part of parts) {
-        if (part.type === "link") {
+        if (part.type === 'link') {
             flushText();
-            blocks.push({ type: "link", url: part.value });
+            blocks.push({ type: 'link', url: part.value });
             continue;
         }
 
@@ -51,7 +51,7 @@ function buildMessageBlocks(parts: any) {
 }
 
 function renderInlinePart(part: any, key: any) {
-    if (part.type === "tag") {
+    if (part.type === 'tag') {
         return (
             <Link
                 key={key}
@@ -63,7 +63,7 @@ function renderInlinePart(part: any, key: any) {
         );
     }
 
-    if (part.type === "mention") {
+    if (part.type === 'mention') {
         return (
             <Link
                 key={key}
@@ -76,7 +76,7 @@ function renderInlinePart(part: any, key: any) {
     }
 
     return String(part.value)
-        .split("\n")
+        .split('\n')
         .map((line: any, lineIndex: any, lines: any) => (
             <Fragment key={`${key}-${lineIndex}`}>
                 {line}
@@ -85,20 +85,29 @@ function renderInlinePart(part: any, key: any) {
         ));
 }
 
-const MessageRichContent = ({ text, className, id, embeds, onLayoutChange }: any) => {
+const MessageRichContent = ({
+    text,
+    className,
+    id,
+    embeds,
+    onLayoutChange,
+}: any) => {
     const blocks = useMemo(() => {
         return buildMessageBlocks(splitMessageRichParts(text));
     }, [text]);
 
     const embedByUrl = useMemo(
-        () => new Map<string, any>(embeds.map((embed: any) => [embed.url, embed])),
+        () =>
+            new Map<string, any>(
+                embeds.map((embed: any) => [embed.url, embed]),
+            ),
         [embeds],
     );
 
     return (
         <div className={className} id={id}>
             {blocks.map((block: any, index: any) => {
-                if (block.type === "link") {
+                if (block.type === 'link') {
                     const embed = embedByUrl.get(block.url);
 
                     return (
@@ -116,14 +125,14 @@ const MessageRichContent = ({ text, className, id, embeds, onLayoutChange }: any
                                     {block.url}
                                 </a>
                             </p>
-                            {embed?.type === "post" ? (
+                            {embed?.type === 'post' ? (
                                 <PostMessageCard
                                     post={embed.post}
                                     className="messages_post_share"
                                     onMediaLoad={onLayoutChange}
                                 />
                             ) : null}
-                            {embed?.type === "link" ? (
+                            {embed?.type === 'link' ? (
                                 <LinkPreviewCard
                                     preview={embed.preview}
                                     className="messages_link_preview"
@@ -153,7 +162,7 @@ const MessageContent = ({
     deleted = false,
     onLayoutChange,
 }: any) => {
-    const embeds = useMessageEmbeds(deleted ? "" : text);
+    const embeds = useMessageEmbeds(deleted ? '' : text);
 
     useEffect(() => {
         if (!embeds.length) {
@@ -171,7 +180,7 @@ const MessageContent = ({
         );
     }
 
-    const hasLinks = /https?:\/\//.test(text || "");
+    const hasLinks = /https?:\/\//.test(text || '');
 
     if (hasLinks) {
         return (

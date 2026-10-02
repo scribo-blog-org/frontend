@@ -1,12 +1,12 @@
 'use client';
 
-import WarningIcon from "../../../assets/svg/warning-icon.svg";
+import WarningIcon from '../../../assets/svg/warning-icon.svg';
 
-import "./Field.scss";
+import './Field.scss';
 
 const Field = ({ children, title, error }: any) => {
     return (
-        <div className={`field ${error ? "show" : ""}`}>
+        <div className={`field ${error ? 'show' : ''}`}>
             <div className="field_content">
                 {title && <p className="field_content_label">{title}</p>}
                 {children}

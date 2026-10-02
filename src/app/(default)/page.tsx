@@ -1,33 +1,39 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 
-import HomePage from "@/views/HomePage";
-import { POSTS_PAGE_LIMIT } from "@/api/posts.api";
-import { buildMetadata } from "@/lib/metadata";
-import { fetchPosts } from "@/lib/server-api";
-import { SITE_DESCRIPTION } from "@/seo/site";
+import HomePage from '@/views/HomePage';
+import { POSTS_PAGE_LIMIT } from '@/api/posts.api';
+import { buildMetadata } from '@/lib/metadata';
+import { fetchPosts } from '@/lib/server-api';
+import { HOME_TITLE, SITE_DESCRIPTION } from '@/seo/site';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
-type PostsRouteProps = {
+type HomeRouteProps = {
     searchParams: Promise<{ filter?: string | string[] }>;
 };
 
-export async function generateMetadata({ searchParams }: PostsRouteProps): Promise<Metadata> {
+export async function generateMetadata({
+    searchParams,
+}: HomeRouteProps): Promise<Metadata> {
     const params = await searchParams;
-    const filter = Array.isArray(params.filter) ? params.filter[0] : params.filter;
+    const filter = Array.isArray(params.filter)
+        ? params.filter[0]
+        : params.filter;
 
     return buildMetadata({
-        title: filter?.trim() ? undefined : "Главная",
+        absoluteTitle: HOME_TITLE,
         description: SITE_DESCRIPTION,
-        path: "/posts",
+        path: '/',
         noindex: Boolean(filter?.trim()),
         follow: true,
     });
 }
 
-export default async function PostsPage({ searchParams }: PostsRouteProps) {
+export default async function HomeRoute({ searchParams }: HomeRouteProps) {
     const params = await searchParams;
-    const filter = Array.isArray(params.filter) ? params.filter[0] : params.filter;
+    const filter = Array.isArray(params.filter)
+        ? params.filter[0]
+        : params.filter;
     const initial = filter?.trim() ? null : await loadFeed();
 
     return (
@@ -40,7 +46,7 @@ export default async function PostsPage({ searchParams }: PostsRouteProps) {
 
 async function loadFeed() {
     const result = await fetchPosts({
-        expand: "author,category",
+        expand: 'author,category',
         page: 1,
         limit: POSTS_PAGE_LIMIT,
     });

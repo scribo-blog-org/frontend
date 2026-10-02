@@ -1,32 +1,32 @@
-import type { MetadataRoute } from "next";
-import { connection } from "next/server";
+import type { MetadataRoute } from 'next';
+import { connection } from 'next/server';
 
-import { absoluteUrl, getSiteOrigin } from "@/seo/site";
+import { absoluteUrl, getSiteOrigin } from '@/seo/site';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
     await connection();
 
     return {
         rules: {
-            userAgent: "*",
-            allow: "/",
+            userAgent: '*',
+            allow: '/',
             disallow: [
-                "/admin-panel",
-                "/settings",
-                "/messages",
-                "/notifications",
-                "/create-post",
-                "/posts/*/edit",
-                "/auth/",
-                "/support/mine",
-                "/support/",
-                "/status",
-                "/404",
+                '/admin-panel',
+                '/settings',
+                '/messages',
+                '/notifications',
+                '/create-post',
+                '/posts/*/edit',
+                '/auth/',
+                '/support/mine',
+                '/support/',
+                '/status',
+                '/404',
             ],
         },
-        sitemap: absoluteUrl("/sitemap.xml"),
+        sitemap: absoluteUrl('/sitemap.xml'),
         host: getSiteOrigin(),
     };
 }

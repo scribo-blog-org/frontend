@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 export function PageSeo(_props: {
     title?: string;

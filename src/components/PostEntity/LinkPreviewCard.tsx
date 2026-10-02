@@ -1,6 +1,6 @@
 'use client';
 
-const LinkPreviewCard = ({ preview, className = "", onMediaLoad }: any) => {
+const LinkPreviewCard = ({ preview, className = '', onMediaLoad }: any) => {
     if (!preview?.url) {
         return null;
     }

@@ -1,13 +1,13 @@
 .field {
     display: flex;
     flex-direction: column;
-    
+
     &_content {
         display: flex;
         flex-direction: column;
         gap: 6px;
 
-        &_label{
+        &_label {
             font-size: var(--text-md);
             font-weight: 500;
             color: var(--text-color);
@@ -18,7 +18,7 @@
         margin-top: 10px;
         display: grid;
         grid-template-rows: 0fr;
-        transition: grid-template-rows .3s ease;
+        transition: grid-template-rows 0.3s ease;
     }
 
     .field_error_content {
@@ -28,8 +28,8 @@
         opacity: 0;
         transform: translateY(-6px);
         transition:
-            opacity .3s ease,
-            transform .3s ease;
+            opacity 0.3s ease,
+            transform 0.3s ease;
     }
 
     .field_error_content p {

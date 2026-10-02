@@ -1,5 +1,5 @@
-import { apiUrl } from "../config";
-import { apiFetch } from "./http";
+import { apiUrl } from '../config';
+import { apiFetch } from './http';
 
 export async function fetchLinkPreview(url: any) {
     try {

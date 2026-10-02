@@ -1,48 +1,57 @@
 'use client';
 
-import { useParams, useNavigate } from "@/navigation";
-import { useState, useEffect, useContext, useMemo } from "react";
+import { useParams, useNavigate } from '@/navigation';
+import { useState, useEffect, useContext, useMemo } from 'react';
 
-import { AppContext } from "@/providers/AppProviders";
+import { AppContext } from '@/providers/AppProviders';
 
-import "./Profile.scss"
+import './Profile.scss';
 
-import { getUsers } from "../../api/users.api";
-import { getPosts, unwrapPostsResponse, POSTS_PAGE_LIMIT } from "../../api/posts.api";
-import { format_date_time, format_back } from "../../utils/format";
+import { getUsers } from '../../api/users.api';
+import {
+    getPosts,
+    unwrapPostsResponse,
+    POSTS_PAGE_LIMIT,
+} from '../../api/posts.api';
+import { format_date_time, format_back } from '../../utils/format';
 
-import { scrollTo } from "../../utils/navigation"
-import { decodeRouteParam } from "../../utils/routeParam";
+import { scrollTo } from '../../utils/navigation';
+import { decodeRouteParam } from '../../utils/routeParam';
 
-import Verified from "../../assets/svg/verified.svg";
-import Calendar from "../../assets/svg/calendar-icon.svg";
-import PostIcon from "../../assets/svg/post.svg";
-import BookmarkOutline from "../../assets/svg/bookmark-outline.svg";
-import SettingsIcon from "../../assets/svg/settings.svg";
-import CommentIcon from "../../assets/svg/comment.svg";
-import { startConversationWithUser } from "../Messages/index";
+import Verified from '../../assets/svg/verified.svg';
+import Calendar from '../../assets/svg/calendar-icon.svg';
+import PostIcon from '../../assets/svg/post.svg';
+import BookmarkOutline from '../../assets/svg/bookmark-outline.svg';
+import SettingsIcon from '../../assets/svg/settings.svg';
+import CommentIcon from '../../assets/svg/comment.svg';
+import { startConversationWithUser } from '../Messages/index';
 
-import Sceleton from "../../components/Ui/Sceleton/Sceleton";
+import Sceleton from '../../components/Ui/Sceleton/Sceleton';
 
-import Posts from "../../components/Posts/index"
-import UserBadge from "../../components/UserBadge/index"
-import DefaultProfileAvatar from "../../assets/images/default-profile-avatar.png"
-import { imageSrc } from "../../utils/image";
-import FollowButton from "../../components/FollowButton";
-import ActionButton from "../../components/Ui/ActionButton";
-import SwitchBar from "../../components/Ui/SwitchBar";
-import Tooltip from "../../components/Ui/Tooltip/index";
-import RoleBadge from "../../components/RoleBadge/index";
-import PageSeo from "../../components/Seo/index";
-import UserActivityStatus from "../../components/UserActivityStatus/index";
+import Posts from '../../components/Posts/index';
+import UserBadge from '../../components/UserBadge/index';
+import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
+import { imageSrc } from '../../utils/image';
+import FollowButton from '../../components/FollowButton';
+import ActionButton from '../../components/Ui/ActionButton';
+import SwitchBar from '../../components/Ui/SwitchBar';
+import Tooltip from '../../components/Ui/Tooltip/index';
+import RoleBadge from '../../components/RoleBadge/index';
+import PageSeo from '../../components/Seo/index';
+import UserActivityStatus from '../../components/UserActivityStatus/index';
 
-const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | null }) => {
+const Profile = ({
+    initialUser = null,
+}: {
+    initialUser?: Record<string, any> | null;
+}) => {
     const params = useParams();
     const id = decodeRouteParam(params.id);
     const navigate = useNavigate();
-    const { profile, setProfile, showModalWindow, showToast } = useContext(AppContext);
-    const [ isProfileLoading, setIsProfileLoading ] = useState<any>(!initialUser);
-    const [ activeTab, setActiveTab ] = useState<any>(0);
+    const { profile, setProfile, showModalWindow, showToast } =
+        useContext(AppContext);
+    const [isProfileLoading, setIsProfileLoading] = useState<any>(!initialUser);
+    const [activeTab, setActiveTab] = useState<any>(0);
     const [user, setUser] = useState<Record<string, any> | null>(initialUser);
     const [posts, setPosts] = useState<any[]>([]);
     const [postsPage, setPostsPage] = useState<any>(1);
@@ -56,7 +65,7 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
 
         setProfile((prevProfile: any) => ({
             ...prevProfile,
-            follows: followThisUser?.follower?.follows
+            follows: followThisUser?.follower?.follows,
         }));
 
         setUser((prevUser: any) => {
@@ -65,7 +74,7 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
             return {
                 ...prevUser,
                 followers: followThisUser?.followed?.followers,
-                follows: followThisUser?.followed?.follows
+                follows: followThisUser?.followed?.follows,
             };
         });
     }, [followThisUser, setProfile]);
@@ -75,7 +84,7 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
 
         setProfile((prevProfile: any) => ({
             ...prevProfile,
-            follows: followAnotherUser?.follower?.follows
+            follows: followAnotherUser?.follower?.follows,
         }));
 
         setUser((prevUser: any) => {
@@ -88,7 +97,7 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
             return {
                 ...prevUser,
                 follows: followAnotherUser?.follower?.follows,
-                followers: followAnotherUser?.follower?.followers
+                followers: followAnotherUser?.follower?.followers,
             };
         });
     }, [followAnotherUser, profile?._id, setProfile]);
@@ -162,15 +171,14 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
             setIsPostsLoading(true);
 
             const query: any = {
-                expand: "author,category",
+                expand: 'author,category',
                 page: postsPage,
-                limit: POSTS_PAGE_LIMIT
+                limit: POSTS_PAGE_LIMIT,
             };
 
             if (activeTab === 0) {
                 query.author = user._id;
-            }
-            else {
+            } else {
                 query._id = savedPostsIds;
             }
 
@@ -185,8 +193,7 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
             if (response?.status === true) {
                 setPosts(items);
                 setPostsPages(pagination.pages || 0);
-            }
-            else {
+            } else {
                 setPosts([]);
                 setPostsPages(0);
             }
@@ -208,7 +215,7 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
     const fetchUsers = async (query: any) => {
         const response = await getUsers(query);
         return response.status === true ? response.data : [];
-    }
+    };
 
     const open_follows = async () => {
         const ids = (user?.follows || [])
@@ -217,31 +224,36 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
 
         if (!ids.length) {
             showModalWindow({
-                title: "Подписки",
-                content: <p className="profile_follow_empty">Пока никого нет</p>
+                title: 'Подписки',
+                content: (
+                    <p className="profile_follow_empty">Пока никого нет</p>
+                ),
             });
             return;
         }
 
         const result = await fetchUsers(ids);
 
-        showModalWindow(
-            {
-                title: `Подписки`,
-                content: result.map((authorData: any) => (
-                    <div key={authorData._id} className="modal_window_body_content_user">
-                        <UserBadge data={authorData} />
-                        {
-                            profile && profile._id === authorData._id ?
-                                <></>
-                            :
-                                <FollowButton setNewData={setFollowAnotherUser} authorId={authorData._id}/>
-                        }
-                    </div>
-                  ))
-            }
-        )
-    }
+        showModalWindow({
+            title: `Подписки`,
+            content: result.map((authorData: any) => (
+                <div
+                    key={authorData._id}
+                    className="modal_window_body_content_user"
+                >
+                    <UserBadge data={authorData} />
+                    {profile && profile._id === authorData._id ? (
+                        <></>
+                    ) : (
+                        <FollowButton
+                            setNewData={setFollowAnotherUser}
+                            authorId={authorData._id}
+                        />
+                    )}
+                </div>
+            )),
+        });
+    };
 
     const open_followers = async () => {
         const ids = (user?.followers || [])
@@ -250,38 +262,46 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
 
         if (!ids.length) {
             showModalWindow({
-                title: "Подписчики",
-                content: <p className="profile_follow_empty">Пока никого нет</p>
+                title: 'Подписчики',
+                content: (
+                    <p className="profile_follow_empty">Пока никого нет</p>
+                ),
             });
             return;
         }
 
         const result = await fetchUsers(ids);
-        
-        showModalWindow(
-            {
-                title: `Подписчики`,
-                content: result.map((authorData: any) => (
-                    <div key={authorData?._id } className="modal_window_body_content_user">
-                        <UserBadge data={authorData} />
-                        {
-                            profile && profile._id === authorData._id ?
-                                <></>
-                            :
-                                <FollowButton setNewData={setFollowAnotherUser} authorId={authorData._id}/>
-                        }
-                    </div>
-                  ))
-            }
-        )
-    }
+
+        showModalWindow({
+            title: `Подписчики`,
+            content: result.map((authorData: any) => (
+                <div
+                    key={authorData?._id}
+                    className="modal_window_body_content_user"
+                >
+                    <UserBadge data={authorData} />
+                    {profile && profile._id === authorData._id ? (
+                        <></>
+                    ) : (
+                        <FollowButton
+                            setNewData={setFollowAnotherUser}
+                            authorId={authorData._id}
+                        />
+                    )}
+                </div>
+            )),
+        });
+    };
 
     return (
         <div className="profile">
             {user ? (
                 <PageSeo
                     title={user.nick_name}
-                    description={user.description || `Профиль ${user.nick_name} на Scribo.`}
+                    description={
+                        user.description ||
+                        `Профиль ${user.nick_name} на Scribo.`
+                    }
                     path={`/users/${user.nick_name}`}
                     image={user.avatar || undefined}
                     type="website"
@@ -296,7 +316,10 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
                     >
                         <div className="profile_info_avatar">
                             <img
-                                src={imageSrc(user?.avatar, DefaultProfileAvatar)}
+                                src={imageSrc(
+                                    user?.avatar,
+                                    DefaultProfileAvatar,
+                                )}
                                 alt="img"
                             />
                         </div>
@@ -309,14 +332,12 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
                             className="profile_info_nick"
                         >
                             <div className="profile_info_nick">
-                            <h1 className="profile_info_nick_name">
-                                {user?.nick_name}
-                            </h1>
+                                <h1 className="profile_info_nick_name">
+                                    {user?.nick_name}
+                                </h1>
                                 {user?.is_verified && (
                                     <Tooltip text="Подтвержденный аккаунт">
-                                        <Verified
-                                            className="profile_info_nick_verified verified-icon"
-                                        />
+                                        <Verified className="profile_info_nick_verified verified-icon" />
                                     </Tooltip>
                                 )}
                                 {isProfileLoading || user ? (
@@ -334,28 +355,27 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
                                 ) : null}
                             </div>
                         </Sceleton>
-                        {
-                            user && !isProfileLoading && (
-                                <RoleBadge user={user} />
-                            )
-                        }
-                        {
-                            user && user.email &&
+                        {user && !isProfileLoading && <RoleBadge user={user} />}
+                        {user && user.email && (
                             <Sceleton
                                 isLoading={isProfileLoading}
                                 rounded={true}
                                 className="profile_info_email"
                             >
-                                <p className="profile_info_email">{user?.email}</p>
+                                <p className="profile_info_email">
+                                    {user?.email}
+                                </p>
                             </Sceleton>
-                        }
-                        {(isProfileLoading || user?.description) ? (
+                        )}
+                        {isProfileLoading || user?.description ? (
                             <Sceleton
                                 isLoading={isProfileLoading}
                                 rounded={true}
                                 className="profile_info_description"
                             >
-                                <p className="profile_info_description">{user?.description}</p>
+                                <p className="profile_info_description">
+                                    {user?.description}
+                                </p>
                             </Sceleton>
                         ) : null}
                         <Sceleton
@@ -365,9 +385,12 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
                         >
                             <div className="profile_info_date">
                                 <Calendar />
-                                <Tooltip text={format_date_time(user?.created_date)}>
+                                <Tooltip
+                                    text={format_date_time(user?.created_date)}
+                                >
                                     <p>
-                                        Регистрация: {format_back(user?.created_date)}
+                                        Регистрация:{' '}
+                                        {format_back(user?.created_date)}
                                     </p>
                                 </Tooltip>
                             </div>
@@ -381,10 +404,16 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
                                 <button
                                     type="button"
                                     className="profile_info_stat app-transition"
-                                    onClick={() => scrollTo("posts_column", "start")}
+                                    onClick={() =>
+                                        scrollTo('posts_column', 'start')
+                                    }
                                 >
-                                    <span className="profile_info_stat_value">{posts?.length ?? "0"}</span>
-                                    <span className="profile_info_stat_label">постов</span>
+                                    <span className="profile_info_stat_value">
+                                        {posts?.length ?? '0'}
+                                    </span>
+                                    <span className="profile_info_stat_label">
+                                        постов
+                                    </span>
                                 </button>
                             </Sceleton>
                             <Sceleton
@@ -397,8 +426,12 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
                                     className="profile_info_stat app-transition"
                                     onClick={open_followers}
                                 >
-                                    <span className="profile_info_stat_value">{user?.followers?.length ?? "0"}</span>
-                                    <span className="profile_info_stat_label">подписчиков</span>
+                                    <span className="profile_info_stat_value">
+                                        {user?.followers?.length ?? '0'}
+                                    </span>
+                                    <span className="profile_info_stat_label">
+                                        подписчиков
+                                    </span>
                                 </button>
                             </Sceleton>
                             <Sceleton
@@ -411,8 +444,12 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
                                     className="profile_info_stat app-transition"
                                     onClick={open_follows}
                                 >
-                                    <span className="profile_info_stat_value">{user?.follows?.length ?? "0"}</span>
-                                    <span className="profile_info_stat_label">подписок</span>
+                                    <span className="profile_info_stat_value">
+                                        {user?.follows?.length ?? '0'}
+                                    </span>
+                                    <span className="profile_info_stat_label">
+                                        подписок
+                                    </span>
                                 </button>
                             </Sceleton>
                         </div>
@@ -422,40 +459,38 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
                         isLoading={isProfileLoading}
                         className="profile_info_action"
                     >
-                        {
-                            profile && profile._id === user?._id
-                                ?
-                                <ActionButton
+                        {profile && profile._id === user?._id ? (
+                            <ActionButton
+                                className="profile_info_action"
+                                onClick={open_settings}
+                            >
+                                <SettingsIcon className="profile_info_action_icon" />
+                                Настройки
+                            </ActionButton>
+                        ) : (
+                            <div className="profile_info_actions">
+                                <FollowButton
+                                    setNewData={setFollowThisUser}
+                                    authorId={user?._id}
                                     className="profile_info_action"
-                                    onClick={open_settings}
-                                >
-                                    <SettingsIcon className="profile_info_action_icon" />
-                                    Настройки
-                                </ActionButton>
-                                :
-                                <div className="profile_info_actions">
-                                    <FollowButton
-                                        setNewData={setFollowThisUser}
-                                        authorId={user?._id}
+                                />
+                                {profile ? (
+                                    <ActionButton
                                         className="profile_info_action"
-                                    />
-                                    {profile ? (
-                                        <ActionButton
-                                            className="profile_info_action"
-                                            onClick={() =>
-                                                startConversationWithUser(
-                                                    user?._id,
-                                                    navigate,
-                                                    showToast,
-                                                )
-                                            }
-                                        >
-                                            <CommentIcon className="profile_info_action_icon" />
-                                            Начать общение
-                                        </ActionButton>
-                                    ) : null}
-                                </div>
-                        }
+                                        onClick={() =>
+                                            startConversationWithUser(
+                                                user?._id,
+                                                navigate,
+                                                showToast,
+                                            )
+                                        }
+                                    >
+                                        <CommentIcon className="profile_info_action_icon" />
+                                        Начать общение
+                                    </ActionButton>
+                                ) : null}
+                            </div>
+                        )}
                     </Sceleton>
                 </div>
             </div>
@@ -477,7 +512,7 @@ const Profile = ({ initialUser = null }: { initialUser?: Record<string, any> | n
                                 <>
                                     <BookmarkOutline />
                                     Избранные
-                                </>
+                                </>,
                             ]}
                             activeIndex={activeTab}
                             setActiveIndex={setActiveTab}

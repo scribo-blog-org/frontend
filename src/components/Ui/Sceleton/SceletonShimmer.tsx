@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 const SceletonShimmer = () => {
     useEffect(() => {
@@ -15,8 +15,8 @@ const SceletonShimmer = () => {
             const x = -300 + progress * 600;
 
             document.documentElement.style.setProperty(
-                "--sceleton-shimmer-x",
-                `${x}vw`
+                '--sceleton-shimmer-x',
+                `${x}vw`,
             );
 
             animationFrame = requestAnimationFrame(animate);

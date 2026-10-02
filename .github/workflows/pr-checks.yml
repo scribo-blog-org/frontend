@@ -73,31 +73,17 @@ jobs:
           step: install
           state: ${{ steps.node.outcome != 'success' && steps.node.outcome != 'skipped' && steps.node.outcome || steps.install.outcome }}
 
-      # Заглушки вроде "no tests configured" ничего не проверяют, поэтому
-      # этап с ними помечается как пропущенный, а не как успешный.
-      - name: Detect configured scripts
-        id: scripts
-        run: |
-          for name in lint test; do
-            body=$(node -p "(require('./package.json').scripts || {})['$name'] || ''")
-            key=$(echo "$name" | tr ':' '_')
-            if [ -n "$body" ] && ! echo "$body" | grep -qiE 'no (tests?|lint) configured'; then
-              echo "$key=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "$key=false" >> "$GITHUB_OUTPUT"
-            fi
-          done
-
       - name: Lint running
-        if: success() && steps.scripts.outputs.lint == 'true'
+        if: success()
         uses: ./.github/actions/pr-steps
         with:
           step: lint
           state: running
 
+      # ESLint и проверка форматирования Prettier (npm run lint)
       - name: Lint
         id: lint
-        if: success() && steps.scripts.outputs.lint == 'true'
+        if: success()
         run: npm run lint
 
       - name: Lint status
@@ -108,15 +94,16 @@ jobs:
           state: ${{ steps.lint.outcome }}
 
       - name: Test running
-        if: success() && steps.scripts.outputs.test == 'true'
+        if: success()
         uses: ./.github/actions/pr-steps
         with:
           step: test
           state: running
 
+      # Vitest: SEO-метаданные, навигация, парсеры и редирект ленты (npm run test)
       - name: Test
         id: test
-        if: success() && steps.scripts.outputs.test == 'true'
+        if: success()
         run: npm run test
 
       - name: Test status

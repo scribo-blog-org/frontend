@@ -1,12 +1,15 @@
 'use client';
 
-import { useMemo } from "react";
-import { useSearchParams } from "@/navigation";
-import Banner from "../../components/Banner";
-import Posts from "../../components/Posts/index";
-import "./HomePage.scss";
+import { useMemo } from 'react';
+import { useSearchParams } from '@/navigation';
+import Banner from '../../components/Banner';
+import Posts from '../../components/Posts/index';
+import './HomePage.scss';
 
-const HomePage = ({ initialPosts = [], initialPagesCount = 0 }: {
+const HomePage = ({
+    initialPosts = [],
+    initialPagesCount = 0,
+}: {
     initialPosts?: Array<Record<string, unknown>>;
     initialPagesCount?: number;
 }) => {
@@ -15,8 +18,8 @@ const HomePage = ({ initialPosts = [], initialPagesCount = 0 }: {
     const filtersFromUrl = useMemo(() => {
         return (
             searchParams
-                .get("filter")
-                ?.split(",")
+                .get('filter')
+                ?.split(',')
                 .map((f: any) => f.toLowerCase()) || []
         );
     }, [searchParams]);

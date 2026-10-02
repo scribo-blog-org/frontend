@@ -1,4 +1,4 @@
-@use "../../styles/helpers" as *;
+@use '../../styles/helpers' as *;
 
 .role_badge {
     margin-top: 2px;
@@ -20,7 +20,7 @@
         height: 14px;
         width: 14px;
 
-        @include screen (){
+        @include screen() {
             height: 12px;
             width: 12px;
         }

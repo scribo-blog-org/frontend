@@ -1,4 +1,4 @@
-@use "../../styles/helpers.scss" as *;
+@use '../../styles/helpers.scss' as *;
 
 .edit_post {
     display: flex;
@@ -12,7 +12,7 @@
 
     .input_field::placeholder {
         color: var(--input-placeholder-color);
-        transition: .3s;
+        transition: 0.3s;
     }
 
     .input_field_label {

@@ -1,25 +1,19 @@
 'use client';
 
-import "./OtpInput.scss";
+import './OtpInput.scss';
 
-import { useRef } from "react";
-import InputField from "../InputField";
+import { useRef } from 'react';
+import InputField from '../InputField';
 
-const OtpInput = ({
-    length = 6,
-    value,
-    onChange,
-    error,
-    onFocus,
-}: any) => {
+const OtpInput = ({ length = 6, value, onChange, error, onFocus }: any) => {
     const inputsRef = useRef<any[]>([]);
 
     const handleChange = (e: any, index: any) => {
-        const digits = e.target.value.replace(/\D/g, "");
+        const digits = e.target.value.replace(/\D/g, '');
 
         if (!digits) {
             const newValue = [...value];
-            newValue[index] = "";
+            newValue[index] = '';
             onChange(newValue);
             return;
         }
@@ -28,7 +22,7 @@ const OtpInput = ({
 
         digits
             .slice(0, length - index)
-            .split("")
+            .split('')
             .forEach((digit: any, i: any) => {
                 newValue[index + i] = digit;
             });
@@ -41,53 +35,53 @@ const OtpInput = ({
 
     const handleKeyDown = (e: any, index: any) => {
         switch (e.key) {
-            case "Backspace": {
+            case 'Backspace': {
                 e.preventDefault();
 
                 const newValue = [...value];
 
                 if (newValue[index]) {
-                    newValue[index] = "";
+                    newValue[index] = '';
                     onChange(newValue);
                 } else if (index > 0) {
                     inputsRef.current[index - 1]?.focus();
 
-                    newValue[index - 1] = "";
+                    newValue[index - 1] = '';
                     onChange(newValue);
                 }
 
                 break;
             }
 
-            case "Delete": {
+            case 'Delete': {
                 e.preventDefault();
 
                 const newValue = [...value];
-                newValue[index] = "";
+                newValue[index] = '';
                 onChange(newValue);
                 break;
             }
 
-            case "ArrowLeft":
+            case 'ArrowLeft':
                 e.preventDefault();
                 if (index > 0) {
                     inputsRef.current[index - 1]?.focus();
                 }
                 break;
 
-            case "ArrowRight":
+            case 'ArrowRight':
                 e.preventDefault();
                 if (index < length - 1) {
                     inputsRef.current[index + 1]?.focus();
                 }
                 break;
 
-            case "Home":
+            case 'Home':
                 e.preventDefault();
                 inputsRef.current[0]?.focus();
                 break;
 
-            case "End":
+            case 'End':
                 e.preventDefault();
                 inputsRef.current[length - 1]?.focus();
                 break;
@@ -101,15 +95,15 @@ const OtpInput = ({
         e.preventDefault();
 
         const pasted = e.clipboardData
-            .getData("text")
-            .replace(/\D/g, "")
+            .getData('text')
+            .replace(/\D/g, '')
             .slice(0, length);
 
         if (!pasted) return;
 
-        const newValue = Array(length).fill("");
+        const newValue = Array(length).fill('');
 
-        pasted.split("").forEach((digit: any, index: any) => {
+        pasted.split('').forEach((digit: any, index: any) => {
             newValue[index] = digit;
         });
 
@@ -144,6 +138,6 @@ const OtpInput = ({
             ))}
         </>
     );
-}
+};
 
 export default OtpInput;

@@ -1,60 +1,69 @@
 'use client';
 
-import { useContext, useEffect, useMemo, useState } from "react";
-import { Link } from "@/navigation";
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { Link } from '@/navigation';
 
-import { AppContext } from "@/providers/AppProviders";
-import { getDashboard } from "../../api/analytics.api";
-import { hashtagSearchPath } from "../../utils/hashtags";
+import { AppContext } from '@/providers/AppProviders';
+import { getDashboard } from '../../api/analytics.api';
+import { hashtagSearchPath } from '../../utils/hashtags';
 
-import ChipButton from "../../components/Ui/ChipButton";
-import Loading from "../../components/Ui/Loading";
+import ChipButton from '../../components/Ui/ChipButton';
+import Loading from '../../components/Ui/Loading';
 
-import "./Dashboard.scss";
+import './Dashboard.scss';
 
 const RANGES = [
-    { value: "24h", label: "24 часа" },
-    { value: 7, label: "7 дней" },
-    { value: 14, label: "14 дней" },
-    { value: 30, label: "30 дней" },
+    { value: '24h', label: '24 часа' },
+    { value: 7, label: '7 дней' },
+    { value: 14, label: '14 дней' },
+    { value: 30, label: '30 дней' },
 ];
 
 const TRAFFIC_KEYS = [
-    { key: "visits", label: "Посещения", color: "var(--text-color)" },
+    { key: 'visits', label: 'Посещения', color: 'var(--text-color)' },
 ];
 
 const formatDay = (iso: any) => {
     const date = new Date(`${iso}T00:00:00Z`);
-    return date.toLocaleDateString("ru-RU", {
-        day: "numeric",
-        month: "short",
+    return date.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'short',
     });
 };
 
 const formatHour = (iso: any) => {
     const date = new Date(`${iso}:00:00Z`);
-    return date.toLocaleTimeString("ru-RU", {
-        hour: "2-digit",
-        minute: "2-digit",
+    return date.toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit',
     });
 };
 
 const formatRange = (range: any) => {
-    if (range === "24h") {
+    if (range === '24h') {
         const end = new Date();
         const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
-        const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" };
-        return `${start.toLocaleString("ru-RU", options)} — ${end.toLocaleString("ru-RU", options)}`;
+        const options: Intl.DateTimeFormatOptions = {
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+        };
+        return `${start.toLocaleString('ru-RU', options)} — ${end.toLocaleString('ru-RU', options)}`;
     }
 
     const end = new Date();
     const start = new Date();
     start.setDate(end.getDate() - range + 1);
-    const options: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
-    return `${start.toLocaleDateString("ru-RU", options)} — ${end.toLocaleDateString("ru-RU", options)}`;
+    const options: Intl.DateTimeFormatOptions = {
+        day: 'numeric',
+        month: 'short',
+    };
+    return `${start.toLocaleDateString('ru-RU', options)} — ${end.toLocaleDateString('ru-RU', options)}`;
 };
 
-const formatNumber = (value: any) => new Intl.NumberFormat("ru-RU").format(value || 0);
+const formatNumber = (value: any) =>
+    new Intl.NumberFormat('ru-RU').format(value || 0);
 
 const deltaLabel = (current: any, previous: any) => {
     if (previous == null) {
@@ -69,17 +78,17 @@ const deltaLabel = (current: any, previous: any) => {
     }
 
     if (!prev) {
-        return { text: "Нет данных за прошлый период", tone: "flat" };
+        return { text: 'Нет данных за прошлый период', tone: 'flat' };
     }
 
     const abs = curr - prev;
     if (abs === 0) {
-        return { text: "без изменений", tone: "flat" };
+        return { text: 'без изменений', tone: 'flat' };
     }
 
     return {
-        text: `${abs > 0 ? "+" : ""}${formatNumber(abs)} к прошлому периоду`,
-        tone: abs > 0 ? "up" : "down",
+        text: `${abs > 0 ? '+' : ''}${formatNumber(abs)} к прошлому периоду`,
+        tone: abs > 0 ? 'up' : 'down',
     };
 };
 
@@ -95,7 +104,9 @@ const TrendChart = ({ series, keys, hourly = false }: any) => {
 
     const maxValue = Math.max(
         1,
-        ...series.flatMap((point: any) => keys.map((item: any) => Number(point[item.key] || 0))),
+        ...series.flatMap((point: any) =>
+            keys.map((item: any) => Number(point[item.key] || 0)),
+        ),
     );
 
     const moveCursor = (event: any) => {
@@ -115,18 +126,22 @@ const TrendChart = ({ series, keys, hourly = false }: any) => {
         return pad.left + (index / (series.length - 1)) * innerWidth;
     };
 
-    const toY = (value: any) => pad.top + innerHeight - (value / maxValue) * innerHeight;
+    const toY = (value: any) =>
+        pad.top + innerHeight - (value / maxValue) * innerHeight;
 
     const polylines = keys.map((item: any) => ({
         ...item,
         points: series
-            .map((point: any, index: any) => `${toX(index)},${toY(Number(point[item.key] || 0))}`)
-            .join(" "),
+            .map(
+                (point: any, index: any) =>
+                    `${toX(index)},${toY(Number(point[item.key] || 0))}`,
+            )
+            .join(' '),
     }));
 
     const areaPath = (() => {
         if (!series.length) {
-            return "";
+            return '';
         }
         const first = polylines[0];
         const start = `${toX(0)},${toY(0)}`;
@@ -138,21 +153,27 @@ const TrendChart = ({ series, keys, hourly = false }: any) => {
         if (series.length <= 8) {
             return true;
         }
-        return index === 0 || index === series.length - 1 || index % Math.ceil(series.length / 6) === 0;
+        return (
+            index === 0 ||
+            index === series.length - 1 ||
+            index % Math.ceil(series.length / 6) === 0
+        );
     });
 
-    const yTicks = [0, 0.5, 1].map((ratio: any) => Math.round(maxValue * ratio));
+    const yTicks = [0, 0.5, 1].map((ratio: any) =>
+        Math.round(maxValue * ratio),
+    );
     const hitWidth = series.length ? innerWidth / series.length : innerWidth;
     const active = hover != null ? series[hover] : null;
 
     const tooltipStyle = cursor
         ? {
-            left: cursor.x,
-            top: cursor.y,
-            transform: `translate(${cursor.x > cursor.w * 0.62 ? "calc(-100% - 12px)" : "12px"}, ${
-                cursor.y > cursor.h * 0.7 ? "calc(-100% - 8px)" : "8px"
-            })`,
-        }
+              left: cursor.x,
+              top: cursor.y,
+              transform: `translate(${cursor.x > cursor.w * 0.62 ? 'calc(-100% - 12px)' : '12px'}, ${
+                  cursor.y > cursor.h * 0.7 ? 'calc(-100% - 8px)' : '8px'
+              })`,
+          }
         : undefined;
 
     return (
@@ -164,7 +185,11 @@ const TrendChart = ({ series, keys, hourly = false }: any) => {
                 setCursor(null);
             }}
         >
-            <svg className="analytics_chart" viewBox={`0 0 ${width} ${height}`} role="img">
+            <svg
+                className="analytics_chart"
+                viewBox={`0 0 ${width} ${height}`}
+                role="img"
+            >
                 {yTicks.map((value: any) => (
                     <g key={value}>
                         <line
@@ -174,13 +199,22 @@ const TrendChart = ({ series, keys, hourly = false }: any) => {
                             x2={pad.left + innerWidth}
                             y2={toY(value)}
                         />
-                        <text className="analytics_chart_ytick" x={pad.left - 8} y={toY(value) + 3} textAnchor="end">
+                        <text
+                            className="analytics_chart_ytick"
+                            x={pad.left - 8}
+                            y={toY(value) + 3}
+                            textAnchor="end"
+                        >
                             {formatNumber(value)}
                         </text>
                     </g>
                 ))}
                 {areaPath ? (
-                    <path className="analytics_chart_area" d={areaPath} fill={keys[0]?.color} />
+                    <path
+                        className="analytics_chart_area"
+                        d={areaPath}
+                        fill={keys[0]?.color}
+                    />
                 ) : null}
                 {polylines.map((line: any) => (
                     <polyline
@@ -253,7 +287,10 @@ const TrendChart = ({ series, keys, hourly = false }: any) => {
                 <div className="analytics_legend">
                     {keys.map((item: any) => (
                         <span className="analytics_legend_item" key={item.key}>
-                            <span className="analytics_legend_swatch" style={{ background: item.color }} />
+                            <span
+                                className="analytics_legend_swatch"
+                                style={{ background: item.color }}
+                            />
                             {item.label}
                         </span>
                     ))}
@@ -264,36 +301,54 @@ const TrendChart = ({ series, keys, hourly = false }: any) => {
 };
 
 const RankedBars = ({ items, empty, wideLabel }: any) => {
-    const maxValue = Math.max(1, ...items.map((item: any) => item.count || item.visits || 0));
+    const maxValue = Math.max(
+        1,
+        ...items.map((item: any) => item.count || item.visits || 0),
+    );
 
     if (!items.length) {
-        return <p className="analytics_empty">{empty || "Нет данных за период"}</p>;
+        return (
+            <p className="analytics_empty">{empty || 'Нет данных за период'}</p>
+        );
     }
 
     return (
-        <div className={`analytics_bars${wideLabel ? " analytics_bars_wide" : ""}`}>
+        <div
+            className={`analytics_bars${wideLabel ? ' analytics_bars_wide' : ''}`}
+        >
             {items.map((item: any) => {
-                const label = item.label || item.type || item.path || item.query || item.tag || item.title;
-                const value = item.count ?? item.visits ?? item.views_count ?? 0;
+                const label =
+                    item.label ||
+                    item.type ||
+                    item.path ||
+                    item.query ||
+                    item.tag ||
+                    item.title;
+                const value =
+                    item.count ?? item.visits ?? item.views_count ?? 0;
                 const note = item.note || null;
 
                 return (
                     <div className="analytics_bars_row" key={item.key || label}>
                         {item.href ? (
                             <Link
-                                className={`analytics_bars_label${item.hashtag ? " hashtag" : ""}`}
+                                className={`analytics_bars_label${item.hashtag ? ' hashtag' : ''}`}
                                 href={item.href}
                                 title={label}
                             >
                                 {label}
                             </Link>
                         ) : (
-                            <p className="analytics_bars_label" title={label}>{label}</p>
+                            <p className="analytics_bars_label" title={label}>
+                                {label}
+                            </p>
                         )}
                         <div className="analytics_bars_track">
                             <div
                                 className="analytics_bars_fill app-transition"
-                                style={{ width: `${Math.max(6, (value / maxValue) * 100)}%` }}
+                                style={{
+                                    width: `${Math.max(6, (value / maxValue) * 100)}%`,
+                                }}
                             />
                         </div>
                         <p className="analytics_bars_value">
@@ -308,7 +363,7 @@ const RankedBars = ({ items, empty, wideLabel }: any) => {
 };
 
 const AnalyticsGroup = ({ title, hint, className, children }: any) => (
-    <section className={`analytics_group ${className || ""}`.trim()}>
+    <section className={`analytics_group ${className || ''}`.trim()}>
         <div className="analytics_group_head">
             <h2 className="kicker">{title}</h2>
             {hint ? <p className="analytics_group_hint">{hint}</p> : null}
@@ -318,7 +373,7 @@ const AnalyticsGroup = ({ title, hint, className, children }: any) => (
 );
 
 const AnalyticsScope = ({ title, hint, className, children }: any) => (
-    <section className={`analytics_scope ${className || ""}`.trim()}>
+    <section className={`analytics_scope ${className || ''}`.trim()}>
         <header className="analytics_scope_head">
             <h2 className="kicker">{title}</h2>
             {hint ? <p className="analytics_scope_hint">{hint}</p> : null}
@@ -336,7 +391,11 @@ const StatCard = ({ label, value, previous, hint }: any) => {
             <p className="analytics_stat_value">{formatNumber(value)}</p>
             {hint ? <p className="analytics_stat_hint">{hint}</p> : null}
             {delta ? (
-                <p className={`analytics_stat_delta analytics_stat_delta_${delta.tone}`}>{delta.text}</p>
+                <p
+                    className={`analytics_stat_delta analytics_stat_delta_${delta.tone}`}
+                >
+                    {delta.text}
+                </p>
             ) : null}
         </div>
     );
@@ -354,30 +413,57 @@ const ActivityPanel = ({ activity }: any) => (
         <div className="analytics_activity_group">
             <h3 className="analytics_block_title">Посты</h3>
             <div className="analytics_activity_metrics">
-                <ActivityMetric label="Написано" value={activity?.posts?.created} />
-                <ActivityMetric label="Изменено" value={activity?.posts?.updated} />
-                <ActivityMetric label="Удалено" value={activity?.posts?.deleted} />
+                <ActivityMetric
+                    label="Написано"
+                    value={activity?.posts?.created}
+                />
+                <ActivityMetric
+                    label="Изменено"
+                    value={activity?.posts?.updated}
+                />
+                <ActivityMetric
+                    label="Удалено"
+                    value={activity?.posts?.deleted}
+                />
             </div>
         </div>
         <div className="analytics_activity_group">
             <h3 className="analytics_block_title">Пользователи</h3>
             <div className="analytics_activity_metrics">
-                <ActivityMetric label="Новые" value={activity?.users?.registered} />
-                <ActivityMetric label="Авторизации" value={activity?.users?.logins} />
+                <ActivityMetric
+                    label="Новые"
+                    value={activity?.users?.registered}
+                />
+                <ActivityMetric
+                    label="Авторизации"
+                    value={activity?.users?.logins}
+                />
             </div>
         </div>
         <div className="analytics_activity_group">
             <h3 className="analytics_block_title">Комментарии</h3>
             <div className="analytics_activity_metrics">
-                <ActivityMetric label="Написано" value={activity?.comments?.created} />
-                <ActivityMetric label="Изменено" value={activity?.comments?.updated} />
-                <ActivityMetric label="Удалено" value={activity?.comments?.deleted} />
+                <ActivityMetric
+                    label="Написано"
+                    value={activity?.comments?.created}
+                />
+                <ActivityMetric
+                    label="Изменено"
+                    value={activity?.comments?.updated}
+                />
+                <ActivityMetric
+                    label="Удалено"
+                    value={activity?.comments?.deleted}
+                />
             </div>
         </div>
         <div className="analytics_activity_group">
             <h3 className="analytics_block_title">Лайки</h3>
             <div className="analytics_activity_metrics">
-                <ActivityMetric label="На посты" value={activity?.likes?.posts} />
+                <ActivityMetric
+                    label="На посты"
+                    value={activity?.likes?.posts}
+                />
             </div>
         </div>
     </section>
@@ -437,7 +523,11 @@ const DashboardPage = () => {
             }
 
             if (!result?.status) {
-                showToast({ type: "error", message: result?.message || "Не удалось загрузить аналитику" });
+                showToast({
+                    type: 'error',
+                    message:
+                        result?.message || 'Не удалось загрузить аналитику',
+                });
                 setData(null);
                 setIsLoading(false);
                 return;
@@ -456,7 +546,7 @@ const DashboardPage = () => {
 
     const totals = data?.totals || {};
     const series = data?.series || [];
-    const isHourlyRange = range === "24h";
+    const isHourlyRange = range === '24h';
     const topPosts = useMemo(
         () =>
             (data?.top_posts || []).map((item: any) => ({
@@ -509,7 +599,9 @@ const DashboardPage = () => {
                     </div>
                 </div>
                 <p className="analytics_period_bounds">
-                    <span className="analytics_period_bounds_label">Границы</span>
+                    <span className="analytics_period_bounds_label">
+                        Границы
+                    </span>
                     {formatRange(range)}
                 </p>
             </div>
@@ -520,10 +612,13 @@ const DashboardPage = () => {
                 <>
                     <AnalyticsScope
                         title="За выбранный период"
-                        hint={`Метрики ниже считаются только за ${activeRange?.label?.toLowerCase() || "период"}`}
+                        hint={`Метрики ниже считаются только за ${activeRange?.label?.toLowerCase() || 'период'}`}
                         className="analytics_scope_period"
                     >
-                        <AnalyticsGroup title="Трафик" hint="По дням, а за последние сутки по часам">
+                        <AnalyticsGroup
+                            title="Трафик"
+                            hint="По дням, а за последние сутки по часам"
+                        >
                             <div className="analytics_traffic">
                                 <div className="analytics_traffic_stats">
                                     <StatCard
@@ -540,13 +635,18 @@ const DashboardPage = () => {
                                             hourly={isHourlyRange}
                                         />
                                     ) : (
-                                        <p className="analytics_empty">Нет посещений за период</p>
+                                        <p className="analytics_empty">
+                                            Нет посещений за период
+                                        </p>
                                     )}
                                 </section>
                             </div>
                         </AnalyticsGroup>
 
-                        <AnalyticsGroup title="Активность" hint="Посты, пользователи, комментарии и лайки">
+                        <AnalyticsGroup
+                            title="Активность"
+                            hint="Посты, пользователи, комментарии и лайки"
+                        >
                             <ActivityPanel activity={data?.activity} />
                         </AnalyticsGroup>
 
@@ -574,7 +674,10 @@ const DashboardPage = () => {
                         className="analytics_scope_overall"
                     >
                         <div className="analytics_grid">
-                            <AnalyticsGroup title="Топ постов" hint="Суммарные просмотры постов">
+                            <AnalyticsGroup
+                                title="Топ постов"
+                                hint="Суммарные просмотры постов"
+                            >
                                 <section className="analytics_block app-transition">
                                     <RankedBars
                                         items={topPosts}
@@ -584,7 +687,10 @@ const DashboardPage = () => {
                                 </section>
                             </AnalyticsGroup>
 
-                            <AnalyticsGroup title="Теги" hint="По всему контенту на сайте">
+                            <AnalyticsGroup
+                                title="Теги"
+                                hint="По всему контенту на сайте"
+                            >
                                 <section className="analytics_block app-transition">
                                     <RankedBars
                                         items={topHashtags}

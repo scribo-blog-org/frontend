@@ -1,3 +1,3 @@
 'use client';
 
-export { default } from "../Ui/ModalWindow";
+export { default } from '../Ui/ModalWindow';
