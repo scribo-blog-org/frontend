@@ -58,7 +58,7 @@ const DeletePostActions = ({
                 onClick={requestCloseModal}
                 className="modal_delete_post_content_button"
             >
-                Отмена
+                Cancel
             </ActionButton>
             <DangerButton
                 onClick={handleDelete}
@@ -66,7 +66,7 @@ const DeletePostActions = ({
                 isActive={true}
                 isLoading={isDeleting}
             >
-                Удалить
+                Delete
             </DangerButton>
         </div>
     );
@@ -118,7 +118,7 @@ const PostHeader = memo(
 
         const handleDeletePost = async () => {
             showModalWindow({
-                title: `Вы уверены что хотите удалить пост?`,
+                title: `Are you sure you want to delete this post?`,
                 content: getDeleteModalContent(
                     post,
                     requestCloseModal,
@@ -133,14 +133,14 @@ const PostHeader = memo(
         const popupBody = [
             [
                 {
-                    title: 'Редактировать',
+                    title: 'Edit',
                     icon: <EditIcon />,
                     onClick: () => navigate(`/posts/${post._id}/edit`),
                 },
             ],
             [
                 {
-                    title: 'Удалить',
+                    title: 'Delete',
                     icon: <DeleteIcon />,
                     type: 'danger',
                     onClick: () => handleDeletePost(),

@@ -1,7 +1,3 @@
-# Проверки pull request в master и dev для Next.js (сервис frontend).
-# Обычная сборка без Docker: образ собирается и публикуется только при пуше
-# в dev и master (deploy.yml). Таблица в комментарии PR обновляется после
-# каждого этапа, пропущенные и упавшие этапы отмечаются сразу.
 
 name: PR checks
 
@@ -23,13 +19,9 @@ concurrency:
 jobs:
   check:
     name: Build
-    # Тот же aarch64, что и на машине: иначе PR проверял бы не ту платформу,
-    # на которой потом работает сервис.
     runs-on: ubuntu-24.04-arm
-    # Зависший job иначе держал бы строку "In progress" до шести часов.
     timeout-minutes: 15
     steps:
-      # Код репозитория на раннере
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -52,7 +44,6 @@ jobs:
           step: install
           state: running
 
-      # В package.json нет engines.node, образ собирается на node:22, поэтому CI закреплён на 22.x. Кэш npm по package-lock.json
       - name: Setup Node.js
         id: node
         uses: actions/setup-node@v4
@@ -60,12 +51,10 @@ jobs:
           node-version: "22.x"
           cache: npm
 
-      # Зависимости строго по lock-файлу
       - name: Install dependencies
         id: install
         run: npm ci
 
-      # Падение установки Node тоже считается падением этапа Install
       - name: Install status
         if: always()
         uses: ./.github/actions/pr-steps
@@ -80,7 +69,6 @@ jobs:
           step: lint
           state: running
 
-      # ESLint и проверка форматирования Prettier (npm run lint)
       - name: Lint
         id: lint
         if: success()
@@ -100,7 +88,6 @@ jobs:
           step: test
           state: running
 
-      # Vitest: SEO-метаданные, навигация, парсеры и редирект ленты (npm run test)
       - name: Test
         id: test
         if: success()
@@ -120,8 +107,6 @@ jobs:
           step: build
           state: running
 
-      # Обычная сборка проекта. Образ здесь не нужен: Dockerfile проверяется
-      # при пуше в dev, до того как изменения попадут в master.
       - name: Build
         id: build
         if: success()

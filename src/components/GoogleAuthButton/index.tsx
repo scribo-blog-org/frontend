@@ -24,7 +24,7 @@ const GoogleAuthButton = (props: GoogleAuthButtonProps) => {
         return (
             <ActionButton disabled className="google_auth_button">
                 <GoogleIcon />
-                {props.children || 'Продолжить с Google'}
+                {props.children || 'Continue with Google'}
             </ActionButton>
         );
     }
@@ -38,7 +38,7 @@ const GoogleAuthButtonReady = ({
     disabled = false,
     onClickStart,
     onAuthEnd,
-    children = 'Продолжить с Google',
+    children = 'Continue with Google',
 }: GoogleAuthButtonProps) => {
     const [popupLoading, setPopupLoading] = useState<any>(false);
     const loading = isLoading || popupLoading;

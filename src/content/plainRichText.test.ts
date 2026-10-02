@@ -4,17 +4,19 @@ import { splitPlainRichParts } from './plainRichText';
 
 describe('splitPlainRichParts', () => {
     it('splits text into plain, mention and hashtag parts', () => {
-        expect(splitPlainRichParts('привет @maks_k0s, это #scribo')).toEqual([
-            { type: 'text', value: 'привет ' },
-            { type: 'mention', value: '@maks_k0s', nick: 'maks_k0s' },
-            { type: 'text', value: ', это ' },
-            { type: 'tag', value: '#scribo' },
-        ]);
+        expect(splitPlainRichParts('hello @maks_k0s, this is #scribo')).toEqual(
+            [
+                { type: 'text', value: 'hello ' },
+                { type: 'mention', value: '@maks_k0s', nick: 'maks_k0s' },
+                { type: 'text', value: ', this is ' },
+                { type: 'tag', value: '#scribo' },
+            ],
+        );
     });
 
     it('keeps plain text as a single part', () => {
-        expect(splitPlainRichParts('просто текст')).toEqual([
-            { type: 'text', value: 'просто текст' },
+        expect(splitPlainRichParts('plain text')).toEqual([
+            { type: 'text', value: 'plain text' },
         ]);
     });
 

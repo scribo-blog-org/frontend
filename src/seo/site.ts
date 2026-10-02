@@ -3,16 +3,15 @@ import { publicEnv } from '../config/publicEnv';
 export const SITE_NAME = 'Scribo';
 
 export const SITE_DESCRIPTION =
-    'Scribo (Скрибо) — блог-платформа: создавайте посты, ведите личный блог, обсуждайте в комментариях и переписывайтесь в личных сообщениях.';
+    'Scribo is a blogging platform: write posts, keep a personal blog, talk in comments, and send direct messages.';
 
-export const HOME_TITLE =
-    'Scribo — блог-платформа: посты, личные блоги и общение';
+export const HOME_TITLE = 'Scribo — posts, personal blogs, and conversation';
 
 export const SITE_ALTERNATE_NAMES = [
     'Scribo Blog',
     'scribo-blog',
-    'Скрибо',
-    'Скрибо блог',
+    'Scribo',
+    'Scribo blog',
 ];
 
 export const SITE_KEYWORDS = [
@@ -20,15 +19,15 @@ export const SITE_KEYWORDS = [
     'scribo-blog',
     'scribo blog',
     'sribo',
-    'Скрибо',
-    'скрибо блог',
-    'блог платформа',
-    'платформа для блогов',
-    'создать пост',
-    'личный блог',
-    'личные сообщения',
-    'статьи',
-    'обсуждения',
+    'Scribo',
+    'scribo blog',
+    'blog platform',
+    'a platform for blogs',
+    'create a post',
+    'personal blog',
+    'direct messages',
+    'articles',
+    'discussions',
 ];
 
 export const DEFAULT_OG_IMAGE = '/og.png';

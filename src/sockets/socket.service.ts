@@ -19,7 +19,7 @@ class SocketService {
     async init(user: any, accessToken: any) {
         const token = accessToken || getAccessToken();
         if (!user?._id || !token) {
-            console.warn('[SocketService] Недостатньо даних для підключення');
+            console.warn('[SocketService] Not enough data to connect');
             return;
         }
 

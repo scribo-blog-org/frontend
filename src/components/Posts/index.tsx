@@ -79,7 +79,7 @@ const Posts = ({
             ...category,
             isActive: isPostsFiltersEmpty
                 ? true
-                : postsFilters.includes('все') ||
+                : postsFilters.includes('all') ||
                   postsFilters.includes(String(category._id).toLowerCase()) ||
                   postsFilters.includes(category._id),
         }));
@@ -87,8 +87,8 @@ const Posts = ({
         if (profile?._id) {
             uniqueFilters.unshift({
                 _id: 'subscription',
-                name: 'По подписке',
-                isActive: postsFilters.includes('по подписке'),
+                name: 'Following',
+                isActive: postsFilters.includes('following'),
                 color: null,
                 iconObject: null,
             });
@@ -96,8 +96,8 @@ const Posts = ({
 
         uniqueFilters.unshift({
             _id: 'all',
-            name: 'Все',
-            isActive: isPostsFiltersEmpty || postsFilters.includes('все'),
+            name: 'All',
+            isActive: isPostsFiltersEmpty || postsFilters.includes('all'),
             color: null,
             iconObject: null,
         });
@@ -215,7 +215,7 @@ const Posts = ({
                 [0, 1, 2, 3, 4].map((index: any) => (
                     <PostCard
                         key={index}
-                        post={{ title: 'Загрузка...' }}
+                        post={{ title: 'Loading...' }}
                         isLoading={true}
                     />
                 ))

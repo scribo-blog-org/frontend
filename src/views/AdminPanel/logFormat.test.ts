@@ -6,7 +6,7 @@ describe('describeChanges', () => {
     it('shows a category rename as old to new', () => {
         expect(
             describeChanges([{ field: 'name', from: 'test', to: 'test1' }]),
-        ).toEqual([{ label: 'Название', from: 'test', to: 'test1' }]);
+        ).toEqual([{ label: 'Name', from: 'test', to: 'test1' }]);
     });
 
     it('lists what changed in a post: title, category, photo and text', () => {
@@ -18,10 +18,10 @@ describe('describeChanges', () => {
                 { field: 'content', changed: true },
             ]),
         ).toEqual([
-            { label: 'Название', from: 'Old', to: 'New' },
-            { label: 'Категория', from: 'News', to: 'Tech' },
-            { label: 'Фото', from: null, to: 'удалено' },
-            { label: 'Текст', from: null, to: 'изменён' },
+            { label: 'Name', from: 'Old', to: 'New' },
+            { label: 'Category', from: 'News', to: 'Tech' },
+            { label: 'Photo', from: null, to: 'deleted' },
+            { label: 'Text', from: null, to: 'edited' },
         ]);
     });
 
@@ -33,9 +33,9 @@ describe('describeChanges', () => {
                 { field: 'icon', from: 3, to: 5 },
             ]),
         ).toEqual([
-            { label: 'Почта видна всем', from: 'нет', to: 'да' },
-            { label: 'Описание', from: '—', to: 'bio' },
-            { label: 'Иконка', from: '№3', to: '№5' },
+            { label: 'Email is visible to everyone', from: 'no', to: 'yes' },
+            { label: 'Description', from: '—', to: 'bio' },
+            { label: 'Icon', from: '№3', to: '№5' },
         ]);
     });
 
@@ -58,7 +58,7 @@ describe('describeChanges sizes', () => {
                 },
             ]),
         ).toEqual([
-            { label: 'Текст', from: null, to: 'изменён · 1240 → 1310 симв.' },
+            { label: 'Text', from: null, to: 'edited · 1240 → 1310 chars' },
         ]);
     });
 });
@@ -77,17 +77,35 @@ describe('describeDetails', () => {
                 user_nick: 'Dev',
                 user_role: 'tech_admin',
                 updated_user: 'u3',
-                target_nick: 'Пчеловод',
+                target_nick: 'Beekeeper',
                 old_role: 'user',
                 new_role: 'author',
             },
         });
-        expect(value(details, 'Роль')).toBe('user → author');
+        expect(value(details, 'Role')).toBe('user → author');
         expect(
-            details.facts.find((row: any) => row.label === 'Роль')?.change,
+            details.facts.find((row: any) => row.label === 'Role')?.change,
         ).toEqual({ kind: 'role', from: 'user', to: 'author' });
-        expect(value(details, 'Кто')).toBe('Dev · tech_admin');
-        expect(value(details, 'Над пользователем')).toBe('Пчеловод');
+        expect(value(details, 'Who')).toBe('Dev · tech_admin');
+        expect(value(details, 'On the user')).toBe('Beekeeper');
+    });
+
+    it('shows a support status change as the same badges as the list', () => {
+        const details = describeDetails({
+            type: 'update_support_status',
+            data: {
+                status: 'reviewed',
+                previous_status: 'in_review',
+            },
+        });
+        expect(value(details, 'Status')).toBe('In review → Reviewed');
+        expect(
+            details.facts.find((row: any) => row.label === 'Status')?.change,
+        ).toEqual({
+            kind: 'status',
+            from: 'in_review',
+            to: 'reviewed',
+        });
     });
 
     it('keeps a role change structured even when the old role was not recorded', () => {
@@ -96,7 +114,7 @@ describe('describeDetails', () => {
             data: { user: 'u1', new_role: 'author' },
         });
         expect(
-            details.facts.find((row: any) => row.label === 'Роль')?.change,
+            details.facts.find((row: any) => row.label === 'Role')?.change,
         ).toEqual({ kind: 'role', from: null, to: 'author' });
     });
 
@@ -105,16 +123,16 @@ describe('describeDetails', () => {
             type: 'delete_post',
             data: {
                 user: 'u1',
-                post_title: 'Старый пост',
+                post_title: 'Previous post',
                 comments_removed: 3,
                 likes_count: 12,
                 views_count: 340,
             },
         });
-        expect(value(details, 'Удалено комментариев')).toBe('3');
-        expect(value(details, 'Лайков было')).toBe('12');
-        expect(value(details, 'Просмотров было')).toBe('340');
-        expect(value(details, 'Пост')).toBe('Старый пост');
+        expect(value(details, 'Comments deleted')).toBe('3');
+        expect(value(details, 'Likes before')).toBe('12');
+        expect(value(details, 'Views before')).toBe('340');
+        expect(value(details, 'Post')).toBe('Previous post');
     });
 
     it('keeps the error, the stack and the request of a server error', () => {
@@ -135,8 +153,8 @@ describe('describeDetails', () => {
             },
         });
         expect(details.error.map((r: any) => r.label)).toEqual([
-            'Код ответа',
-            'Ошибка',
+            'Response code',
+            'Error',
         ]);
         expect(details.error[0].value).toBe('500');
         expect(details.error[1].value).toContain('reading');
@@ -175,7 +193,7 @@ describe('describeDetails', () => {
         );
         expect(details.time).toBe('TIME');
         expect(details.route).toEqual({ method: 'POST', path: '/api/p' });
-        expect(labels(details)).not.toContain('Время');
+        expect(labels(details)).not.toContain('Time');
     });
 
     it('fills names from live data for records made before snapshots, and says so when the user is gone', () => {
@@ -188,13 +206,13 @@ describe('describeDetails', () => {
             post: 'Hello',
             target: 'Maks',
         });
-        expect(value(known, 'Кто')).toBe('Dev');
-        expect(value(known, 'Пост')).toBe('Hello');
-        expect(value(known, 'Над пользователем')).toBe('Maks');
+        expect(value(known, 'Who')).toBe('Dev');
+        expect(value(known, 'Post')).toBe('Hello');
+        expect(value(known, 'On the user')).toBe('Maks');
 
         const gone = describeDetails(old);
-        expect(value(gone, 'Кто')).toBe('удалённый пользователь');
-        expect(labels(gone)).not.toContain('Пост');
+        expect(value(gone, 'Who')).toBe('deleted user');
+        expect(labels(gone)).not.toContain('Post');
     });
 
     it('works for a record with no data at all', () => {

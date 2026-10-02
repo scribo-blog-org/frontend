@@ -98,7 +98,7 @@ const EditorToolbar = () => {
 
     return (
         <div className="text_editor_body_top_side_toolbar app-transition">
-            <Tooltip text="Жирный">
+            <Tooltip text="Bold">
                 <button
                     type="button"
                     className="text_editor_body_top_side_toolbar_bold app-transition"
@@ -110,7 +110,7 @@ const EditorToolbar = () => {
                 </button>
             </Tooltip>
 
-            <Tooltip text="Курсив">
+            <Tooltip text="Italic">
                 <button
                     type="button"
                     className="app-transition"
@@ -122,7 +122,7 @@ const EditorToolbar = () => {
                 </button>
             </Tooltip>
 
-            <Tooltip text="Маркированный список">
+            <Tooltip text="Bulleted list">
                 <button
                     type="button"
                     className="app-transition"
@@ -137,7 +137,7 @@ const EditorToolbar = () => {
                 </button>
             </Tooltip>
 
-            <Tooltip text="Нумерованный список">
+            <Tooltip text="Numbered list">
                 <button
                     type="button"
                     className="app-transition"
@@ -152,12 +152,12 @@ const EditorToolbar = () => {
                 </button>
             </Tooltip>
 
-            <Tooltip text="Добавить ссылку">
+            <Tooltip text="Add a link">
                 <button
                     type="button"
                     className="app-transition"
                     onClick={() => {
-                        const url = prompt('Введите ссылку');
+                        const url = prompt('Enter a link');
                         if (url) {
                             editor.dispatchCommand(TOGGLE_LINK_COMMAND, {
                                 url,
@@ -212,7 +212,7 @@ export default function TextEditor({
                         <SwitchBar
                             activeIndex={switcherActiveIndex}
                             setActiveIndex={setSwitcherActiveIndex}
-                            items={['Редактировать', 'Предпросмотр']}
+                            items={['Edit', 'Preview']}
                         />
                     </div>
                     <RichTextPlugin

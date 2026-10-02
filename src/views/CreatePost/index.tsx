@@ -40,17 +40,17 @@ const CreatePost = () => {
 
     const titlePlaceholder = useMemo(() => {
         const titleExamples = [
-            'Экстренная нехватка бензина в россии',
-            '5 способов отмыва денег через криптовалюту',
-            'На Марсе снова ничего не нашли, но все довольны',
-            'Колосальные потери под Малой Токмачкой - ВС рф',
-            'Отряд бабок в россии отменил сам себя',
-            'Токсис стал настолько популярным, что его стали узнавать собственные родители',
-            'Учёные нашли кореляцию между походом за хлебом и рождением ребенка в молодых семьях',
-            'В россии импортозаместили импортозамещение',
-            'В россии нашли виноватого. Им оказался предыдущий виноватый',
-            'На дне Марианской впадины наконец-то обнаружили дно российской экономики, но снизу снова постучали',
-            'По опросам 90% жителей согласны с тем, о чем их еще не спрашивали',
+            'A sudden gasoline shortage',
+            'Five ways money moves through crypto',
+            'Another look at Mars found nothing, and everyone was fine with that',
+            'A report from the front line',
+            'A committee cancelled itself',
+            'Toxis got so well known that even his own parents started to recognize him',
+            'Researchers found a correlation between a bread run and a new baby in young families',
+            'A plan replaced the previous plan',
+            'They found someone to blame. It was the previous person they blamed',
+            'At the bottom of the Mariana Trench they finally found the bottom, and then something knocked from below',
+            'A poll says 90% agree with something they were never asked about',
         ];
 
         return titleExamples[Math.floor(Math.random() * titleExamples.length)];
@@ -118,14 +118,14 @@ const CreatePost = () => {
         const next: any = {};
         const title = (fields.postTitle || '').trim();
         if (title.length < FIELD_LIMITS.postTitle.min) {
-            next.postTitle = 'Введите заголовок';
+            next.postTitle = 'Enter a title';
         } else if (title.length > FIELD_LIMITS.postTitle.max) {
-            next.postTitle = `Заголовок не длиннее ${FIELD_LIMITS.postTitle.max} символов`;
+            next.postTitle = `Title must be at most ${FIELD_LIMITS.postTitle.max} characters`;
         }
         if (!(fields.postContent || '').trim()) {
-            next.postContent = 'Введите текст поста';
+            next.postContent = 'Enter the post text';
         } else if (fields.postContent.length > FIELD_LIMITS.postContent.max) {
-            next.postContent = `Текст не длиннее ${FIELD_LIMITS.postContent.max} символов`;
+            next.postContent = `Text must be at most ${FIELD_LIMITS.postContent.max} characters`;
         }
         if (Object.keys(next).length) {
             setErrors((prev: any) => ({ ...prev, ...next }));
@@ -154,10 +154,10 @@ const CreatePost = () => {
 
         if (result.status === true) {
             navigate('/');
-            showToast({ message: 'Опубликовано!', type: 'success' });
+            showToast({ message: 'Published!', type: 'success' });
             return result;
         } else {
-            showToast({ message: 'Ошибка при создании поста!', type: 'error' });
+            showToast({ message: 'Could not create the post!', type: 'error' });
             if (result?.errors?.body) {
                 setErrors(
                     Object.fromEntries(
@@ -174,7 +174,7 @@ const CreatePost = () => {
 
     return (
         <form className="create_post" onSubmit={handleSubmit}>
-            <Field error={errors?.postTitle} title={'Заголовок'}>
+            <Field error={errors?.postTitle} title={'Title'}>
                 <InputFiled
                     placeholder={titlePlaceholder}
                     className={
@@ -194,7 +194,7 @@ const CreatePost = () => {
                     error={errors?.postTitle}
                 />
             </Field>
-            <Field error={errors?.categoryId} title={'Категория'}>
+            <Field error={errors?.categoryId} title={'Category'}>
                 <SearchSelect
                     value={fields.categoryId}
                     onSetValue={(value: any) =>
@@ -205,7 +205,7 @@ const CreatePost = () => {
                     }
                     onFocus={() => handleFocus('categoryId')}
                     error={errors?.categoryId}
-                    placeholder={'Выбрать категорию'}
+                    placeholder={'Choose a category'}
                     options={allCategories}
                 />
             </Field>
@@ -215,13 +215,13 @@ const CreatePost = () => {
                     setFields({ ...fields, featuredImage: file })
                 }
                 dropFileType={'image/*'}
-                fileTypes={'SVG, PNG, JPEG, JPG и другие'}
+                fileTypes={'SVG, PNG, JPEG, JPG, and others'}
                 errors={errors?.featuredImage}
                 addNewErrors={add_errors_to_image}
                 clearErrors={clear_errors_from_image}
                 onRemove={handleClick}
             />
-            <Field error={errors?.postContent} title={'Текст поста'}>
+            <Field error={errors?.postContent} title={'Post text'}>
                 <TextEditorField
                     onFocus={() => handleFocus('postContent')}
                     onChange={(html: any) =>
@@ -232,13 +232,13 @@ const CreatePost = () => {
             </Field>
             <div className="create_post_buttons">
                 <PrimaryButton onClick={handleSubmit} isLoading={isLoading}>
-                    Создать пост
+                    Create post
                 </PrimaryButton>
                 <DangerButton
                     disabled={isLoading}
                     onClick={() => navigate('/')}
                 >
-                    Отмена
+                    Cancel
                 </DangerButton>
             </div>
         </form>

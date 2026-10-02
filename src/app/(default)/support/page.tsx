@@ -2,8 +2,8 @@ import Support from '@/views/Support';
 import { buildMetadata } from '@/lib/metadata';
 
 export const metadata = buildMetadata({
-    title: 'Поддержка',
-    description: 'Связаться с командой Scribo.',
+    title: 'Support',
+    description: 'Contact the Scribo team.',
     path: '/support',
 });
 

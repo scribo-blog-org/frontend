@@ -13,14 +13,14 @@ const AppBootScreen = () => (
                 </span>
             </>
         }
-        title="Загружаем..."
+        title="Loading..."
         busy
-        label="Загрузка приложения"
+        label="Loading the app"
     >
         <p className="app-status_lead">
-            Это может занять несколько секунд.
+            This can take a few seconds.
             <br />
-            Спасибо за терпение.
+            Thanks for your patience.
         </p>
     </AppStatusScreen>
 );

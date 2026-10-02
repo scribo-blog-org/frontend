@@ -1,6 +1,5 @@
 import { apiUrl } from '../config';
 
-/** Путь из базы (`/uploads/...`) плюс origin этого окружения. Абсолютные ссылки не трогает. */
 export function mediaUrl(value: unknown) {
     if (typeof value !== 'string' || !value) {
         return '';

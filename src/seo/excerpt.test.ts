@@ -4,13 +4,13 @@ import { plainTextExcerpt } from './excerpt';
 
 describe('plainTextExcerpt', () => {
     it('strips tags and collapses whitespace', () => {
-        expect(plainTextExcerpt('<p>Привет,   <b>мир</b></p>')).toBe(
-            'Привет, мир',
+        expect(plainTextExcerpt('<p>Hello,   <b>world</b></p>')).toBe(
+            'Hello, world',
         );
     });
 
     it('truncates long text with an ellipsis', () => {
-        const result = plainTextExcerpt('слово '.repeat(100), 20);
+        const result = plainTextExcerpt('word '.repeat(100), 20);
 
         expect(result.length).toBeLessThanOrEqual(20);
         expect(result.endsWith('…')).toBe(true);

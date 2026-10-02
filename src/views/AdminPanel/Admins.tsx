@@ -26,11 +26,11 @@ import Loading from '../../components/Ui/Loading';
 const ROLE_ORDER = ['tech_admin', 'admin', 'moderator', 'author', 'user'];
 
 const ROLE_LABELS = {
-    user: 'Пользователь',
-    author: 'Автор',
-    moderator: 'Модератор',
-    admin: 'Администратор',
-    tech_admin: 'Технический администратор',
+    user: 'User',
+    author: 'Author',
+    moderator: 'Moderator',
+    admin: 'Administrator',
+    tech_admin: 'Technical administrator',
 } as any;
 
 const roleLabel = (role: any) => ROLE_LABELS[role] ?? role;
@@ -90,7 +90,7 @@ const AdminsPage = () => {
     const getPopupBody = (user: any) => {
         const profileSection = [
             {
-                title: 'Перейти в профиль',
+                title: 'Go to profile',
                 icon: <RedirectIcon />,
                 onClick: () => {
                     navigate(`/users/${user?.nick_name}`);
@@ -139,7 +139,7 @@ const AdminsPage = () => {
             [
                 {
                     type: 'dropdown',
-                    title: 'Выдать роль',
+                    title: 'Assign role',
                     icon: getRoleIcon(user.role) ?? <UserIcon />,
                     valueLabel: roleLabel(user.role),
                     items: roleItems,
@@ -166,7 +166,7 @@ const AdminsPage = () => {
                                 <RoleBadge user={admin} />
                             </div>
                             <div className="admin_panel_content_amdins_page_item_actions">
-                                <Tooltip text="Дополнительные действия">
+                                <Tooltip text="More actions">
                                     <Popup body={getPopupBody(admin)}>
                                         <ThreeDotsIcon className="app-transition" />
                                     </Popup>

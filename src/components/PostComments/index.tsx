@@ -44,14 +44,14 @@ const CommentForm = ({
     navigate,
     profile,
     title,
-    placeholder = 'Напишите комментарий...',
+    placeholder = 'Write a comment...',
     isLoading = false,
 }: any) => {
     const handleInputMouseDown = (e: any) => {
         if (!profile) {
             e.preventDefault();
             showModalWindow({
-                title: `Войдите в аккаунт, чтобы оставить комментарий`,
+                title: `Log in to leave a comment`,
                 content: (
                     <PrimaryButton
                         onClick={() => {
@@ -60,7 +60,7 @@ const CommentForm = ({
                         className="modal_login_link"
                     >
                         <RedirectIcon />
-                        Войти
+                        Log in
                     </PrimaryButton>
                 ),
             });
@@ -106,7 +106,7 @@ const CommentForm = ({
                             disabled={isLoading}
                             onClick={onCancel}
                         >
-                            Отмена
+                            Cancel
                         </CancelButton>
                     )}
 
@@ -115,7 +115,7 @@ const CommentForm = ({
                         disabled={!value.trim()}
                         isLoading={isLoading}
                     >
-                        Отправить
+                        Send
                     </PrimaryButton>
                 </div>
             </div>
@@ -177,7 +177,7 @@ const Comment = ({
                     setShowForm(false);
                     showToast({
                         type: 'success',
-                        message: 'Ответ опубликован',
+                        message: 'Reply published',
                     });
                 },
             });
@@ -199,7 +199,7 @@ const Comment = ({
                     setShowForm(false);
                     showToast({
                         type: 'success',
-                        message: 'Изменения сохранены',
+                        message: 'Changes saved',
                     });
                 },
             });
@@ -239,7 +239,7 @@ const Comment = ({
                     }));
                     showToast({
                         type: 'success',
-                        message: wantLiked ? 'Лайк поставлен' : 'Лайк снят',
+                        message: wantLiked ? 'Liked' : 'Like removed',
                     });
                 } else if (result.statusCode === 409) {
                     patchComment(comment._id, (item: any) => ({
@@ -275,7 +275,7 @@ const Comment = ({
         if (!profile) {
             showToast({
                 type: 'error',
-                message: 'Войдите в аккаунт, чтобы поставить лайк',
+                message: 'Log in to like this',
             });
             return;
         }
@@ -294,7 +294,7 @@ const Comment = ({
     if (profile && profile._id.toString() === comment.author?._id?.toString()) {
         actionsBody.push([
             {
-                title: 'Редактировать',
+                title: 'Edit',
                 onClick: () => {
                     setEditMode(true);
                 },
@@ -310,7 +310,7 @@ const Comment = ({
     ) {
         actionsBody.push([
             {
-                title: 'Удалить',
+                title: 'Delete',
                 onClick: () => {
                     deleteComment(comment._id).then((result: any) => {
                         if (result.status === true) {
@@ -318,7 +318,7 @@ const Comment = ({
                                 onSuccessFetch: () => {
                                     showToast({
                                         type: 'success',
-                                        message: 'Комментарий удален',
+                                        message: 'Comment deleted',
                                     });
                                 },
                             });
@@ -382,8 +382,8 @@ const Comment = ({
                             <Tooltip
                                 text={
                                     hasId(comment.likes, profile?._id)
-                                        ? 'Убрать лайк'
-                                        : 'Поставить лайк'
+                                        ? 'Unlike'
+                                        : 'Like'
                                 }
                             >
                                 <button
@@ -403,7 +403,7 @@ const Comment = ({
                                     </p>
                                 </button>
                             </Tooltip>
-                            <Tooltip text="Ответить">
+                            <Tooltip text="Reply">
                                 <div
                                     className="comment_body_bottom_side_button app-transition"
                                     onClick={() => {
@@ -434,7 +434,7 @@ const Comment = ({
                     profile={profile}
                     title={
                         <div className="comment_form_reply_info">
-                            <p>Ответ пользователю</p>
+                            <p>Reply to the user</p>
                             <UserBadge data={comment.author} />
                         </div>
                     }
@@ -519,7 +519,7 @@ const PostComments = ({ postId, navigateTo, onCommentsChange }: any) => {
                     setCommentText('');
                     showToast({
                         type: 'success',
-                        message: 'Комментарий опубликован',
+                        message: 'Comment published',
                     });
                 },
             });

@@ -27,9 +27,7 @@ function Header() {
                         type="button"
                         onClick={() => setIsDarkTheme(!isDarkTheme)}
                         className="header_item app-transition"
-                        aria-label={
-                            isDarkTheme ? 'Светлая тема' : 'Тёмная тема'
-                        }
+                        aria-label={isDarkTheme ? 'Light theme' : 'Dark theme'}
                     >
                         {isDarkTheme ? (
                             <MoonIcon className="header_item_icon app-transition" />

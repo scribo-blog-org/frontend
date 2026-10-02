@@ -138,10 +138,9 @@ const Notifications = () => {
     return (
         <div className="notifications_page">
             <div className="notifications_page_intro">
-                <h1>Уведомления</h1>
+                <h1>Notifications</h1>
                 <p>
-                    Лайки, комментарии, упоминания, подписки и ответы по
-                    запросам.
+                    Likes, comments, mentions, follows, and replies to requests.
                 </p>
             </div>
 
@@ -151,7 +150,7 @@ const Notifications = () => {
                 ) : items.length ? (
                     items.map((item: any) => {
                         const actor = userMap[item.user] || {
-                            nick_name: 'Пользователь',
+                            nick_name: 'User',
                         };
 
                         const isUnread = item.is_read === false;
@@ -196,7 +195,7 @@ const Notifications = () => {
                     })
                 ) : (
                     <p className="notifications_page_empty">
-                        Пока нет уведомлений
+                        No notifications yet
                     </p>
                 )}
             </div>

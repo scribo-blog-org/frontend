@@ -72,12 +72,12 @@ const SharePostModal = ({
         try {
             await copyText(shareUrl);
             setCopied(true);
-            showToast?.({ message: 'Ссылка скопирована', type: 'success' });
+            showToast?.({ message: 'Link copied', type: 'success' });
             window.setTimeout(() => setCopied(false), 2000);
         } catch (error: any) {
             console.error(error);
             showToast?.({
-                message: 'Не удалось скопировать ссылку',
+                message: 'Could not copy the link',
                 type: 'error',
             });
         }
@@ -93,7 +93,7 @@ const SharePostModal = ({
 
             console.error(error);
             showToast?.({
-                message: 'Не удалось открыть меню «Поделиться»',
+                message: 'Could not open the Share menu',
                 type: 'error',
             });
         }
@@ -115,12 +115,12 @@ const SharePostModal = ({
         if (!result?.status) {
             showToast?.({
                 type: 'error',
-                message: result?.message || 'Не удалось отправить пост',
+                message: result?.message || 'Could not send the post',
             });
             return;
         }
 
-        showToast?.({ type: 'success', message: 'Пост отправлен в чат' });
+        showToast?.({ type: 'success', message: 'Post sent to the chat' });
         requestCloseModal?.();
         navigate(`/messages/${conversationId}`);
     };
@@ -132,7 +132,7 @@ const SharePostModal = ({
                     className="share_post_modal_label"
                     htmlFor="share_post_modal_link"
                 >
-                    Ссылка на пост
+                    Link to the post
                 </label>
                 <div className="share_post_modal_link_row">
                     <input
@@ -145,17 +145,17 @@ const SharePostModal = ({
                         onClick={(event: any) => event.target.select()}
                     />
                     <PrimaryButton type="button" onClick={handleCopy}>
-                        {copied ? 'Скопировано' : 'Копировать'}
+                        {copied ? 'Copied' : 'Copy'}
                     </PrimaryButton>
                 </div>
             </div>
 
             <div className="share_post_modal_group">
-                <p className="share_post_modal_kicker">Отправить в чат</p>
+                <p className="share_post_modal_kicker">Send to chat</p>
                 {!profile ? (
                     <>
                         <p className="share_post_modal_hint">
-                            Войдите, чтобы отправить пост в личные сообщения.
+                            Log in to send this post as a direct message.
                         </p>
                         <PrimaryButton
                             type="button"
@@ -166,7 +166,7 @@ const SharePostModal = ({
                             }}
                         >
                             <RedirectIcon />
-                            Войти
+                            Log in
                         </PrimaryButton>
                     </>
                 ) : isLoadingChats ? (
@@ -189,7 +189,7 @@ const SharePostModal = ({
                                 />
                                 {sendingId === item._id ? (
                                     <span className="share_post_modal_chat_status">
-                                        Отправка…
+                                        Sending…
                                     </span>
                                 ) : null}
                             </button>
@@ -197,8 +197,8 @@ const SharePostModal = ({
                     </div>
                 ) : (
                     <p className="share_post_modal_hint">
-                        Пока нет чатов. Напишите пользователю из профиля —
-                        диалог появится здесь.
+                        No chats yet. Write to someone from their profile — the
+                        conversation will show up here.
                     </p>
                 )}
             </div>
@@ -209,7 +209,7 @@ const SharePostModal = ({
                     className="share_post_modal_native"
                     onClick={handleNativeShare}
                 >
-                    Поделиться…
+                    Share…
                 </ActionButton>
             ) : null}
         </div>

@@ -25,27 +25,26 @@ import { formatSize } from './logFormat';
 import './Backups.scss';
 
 const STATUS_LABELS: Record<string, string> = {
-    running: 'Идёт',
-    success: 'Успешно',
-    failed: 'Ошибка',
+    running: 'Running',
+    success: 'Success',
+    failed: 'Error',
 };
 
 const TRIGGER_LABELS: Record<string, string> = {
-    schedule: 'По расписанию',
-    manual: 'Вручную',
-    upload: 'Загружен вручную',
+    schedule: 'Scheduled',
+    manual: 'Manual',
+    upload: 'Uploaded manually',
 };
 
 const PHASE_LABELS: Record<string, string> = {
-    verifying: 'Проверка архива',
-    snapshot: 'Страховочный снимок текущего состояния',
-    database: 'Восстановление базы',
-    files: 'Восстановление файлов',
-    rollback: 'Возврат к состоянию до отката',
+    verifying: 'Checking the archive',
+    snapshot: 'Safety snapshot of the current state',
+    database: 'Restoring the database',
+    files: 'Restoring files',
+    rollback: 'Rolling back to the state before the restore',
 };
 
-// Слово, которое нужно ввести, чтобы подтвердить откат.
-const CONFIRM_WORD = 'ВОССТАНОВИТЬ';
+const CONFIRM_WORD = 'RESTORE';
 
 const POLL_MS = 3000;
 const POLL_RESTORE_MS = 2000;
@@ -62,27 +61,26 @@ const formatDuration = (item: any) => {
     );
 
     return seconds < 60
-        ? `${seconds} с`
-        : `${Math.floor(seconds / 60)} мин ${seconds % 60} с`;
+        ? `${seconds} s`
+        : `${Math.floor(seconds / 60)} min ${seconds % 60} s`;
 };
 
 const kindLabel = (item: any) =>
     item.kind === 'pre_restore'
-        ? 'Перед откатом'
+        ? 'Before restore'
         : TRIGGER_LABELS[item.trigger] || item.trigger;
 
 const describeContents = (contents: any) =>
     contents
-        ? `база ${formatSize(contents.db_bytes)}, файлов ${contents.uploads_files} (${formatSize(contents.uploads_bytes)})`
+        ? `database ${formatSize(contents.db_bytes)}, files ${contents.uploads_files} (${formatSize(contents.uploads_bytes)})`
         : null;
 
 const SOURCE_TRIGGER_LABELS: Record<string, string> = {
-    schedule: 'по расписанию',
-    manual: 'вручную',
-    restore: 'страховочный снимок перед откатом',
+    schedule: 'on schedule',
+    manual: 'manually',
+    restore: 'safety snapshot before restore',
 };
 
-/** Что за бекап: когда снят, какой версией, из какой базы и что внутри. */
 const BackupDetails = ({ item, info }: any) => {
     const source = item.source;
     const contents = item.contents;
@@ -91,33 +89,33 @@ const BackupDetails = ({ item, info }: any) => {
     const dbVersion = contents?.db_version ?? source?.db_version;
 
     const rows: [string, any][] = [
-        ['Снят', format_date_time(source?.created_at ?? item.started_at)],
+        ['Taken', format_date_time(source?.created_at ?? item.started_at)],
         [
-            'Как создан',
+            'How it was created',
             source
                 ? SOURCE_TRIGGER_LABELS[source.trigger] || source.trigger
                 : kindLabel(item),
         ],
         [
-            'Версия приложения',
-            contents?.app_version ?? source?.app_version ?? 'неизвестна',
+            'App version',
+            contents?.app_version ?? source?.app_version ?? 'unknown',
         ],
         [
-            'Версия данных',
+            'Data version',
             dbVersion
-                ? `${dbVersion}${current ? (dbVersion === current ? ` · совпадает с текущей (${current})` : ` · текущая ${current}`) : ''}`
-                : 'неизвестна',
+                ? `${dbVersion}${current ? (dbVersion === current ? ` · matches the current one (${current})` : ` · current ${current}`) : ''}`
+                : 'unknown',
         ],
         [
-            'База',
+            'Database',
             archiveDb && info?.db_name && archiveDb !== info.db_name
-                ? `${archiveDb} → будет установлена в ${info.db_name}`
+                ? `${archiveDb} → will be restored into ${info.db_name}`
                 : archiveDb,
         ],
-        ['Внутри', describeContents(contents)],
-        ['Коллекций', contents?.collections],
-        ['Размер архива', formatSize(item.size_bytes)],
-        ['Файл', source?.original_name ?? item.file_name],
+        ['Contents', describeContents(contents)],
+        ['Collections', contents?.collections],
+        ['Archive size', formatSize(item.size_bytes)],
+        ['File', source?.original_name ?? item.file_name],
     ];
 
     return (
@@ -138,14 +136,14 @@ const UploadedDialog = ({ item, info, duplicate, onClose, onRestore }: any) => (
     <div className="backup_restore_dialog">
         <p className="backup_restore_dialog_hint">
             {duplicate
-                ? 'Этот бекап уже есть в списке, второй раз он не добавлен. Его можно восстановить прямо отсюда или кнопкой в списке.'
-                : 'Архив проверен и добавлен в список. Версии совпадают, ничего пока не изменено: восстановить его можно сейчас или позже кнопкой в списке.'}
+                ? 'This backup is already in the list, so it was not added again. You can restore it from here or with the button in the list.'
+                : 'The archive was checked and added to the list. The versions match and nothing has been changed yet: you can restore it now or later with the button in the list.'}
         </p>
         <BackupDetails item={item} info={info} />
         <div className="backup_restore_dialog_bottom">
-            <ActionButton onClick={onClose}>Закрыть</ActionButton>
+            <ActionButton onClick={onClose}>Close</ActionButton>
             <DangerButton onClick={onRestore} isActive={true}>
-                Восстановить…
+                Restore…
             </DangerButton>
         </div>
     </div>
@@ -176,26 +174,27 @@ const RestoreDialog = ({ item, info, onCancel, onStarted, showToast }: any) => {
             <BackupDetails item={item} info={info} />
             <ul className="backup_restore_dialog_warnings">
                 <li>
-                    База и загруженные файлы будут заменены полностью.
-                    Пользователи, посты, комментарии и картинки, появившиеся
-                    после этого бекапа, пропадут.
+                    The database and uploaded files will be replaced completely.
+                    Users, posts, comments, and images created after this backup
+                    will be gone.
                 </li>
                 <li>
-                    Перед заменой автоматически снимается страховочный снимок
-                    текущего состояния. Если откат не удастся, система вернётся
-                    к нему сама. После успешного отката снимок удаляется.
+                    Before the replacement, a safety snapshot of the current
+                    state is taken automatically. If the restore fails, the
+                    system returns to it on its own. After a successful restore
+                    the snapshot is deleted.
                 </li>
                 <li>
-                    На время отката сайт доступен только для чтения, обычно это
-                    около минуты.
+                    During a restore the site is read-only, usually for about a
+                    minute.
                 </li>
                 <li>
-                    Сессии тоже откатятся вместе с базой, поэтому вам и другим
-                    пользователям может понадобиться войти заново.
+                    Sessions roll back with the database, so you and other users
+                    may need to log in again.
                 </li>
             </ul>
             <p className="backup_restore_dialog_label">
-                Чтобы подтвердить, введите {CONFIRM_WORD}
+                To confirm, type {CONFIRM_WORD}
             </p>
             <InputField
                 value={word}
@@ -204,7 +203,7 @@ const RestoreDialog = ({ item, info, onCancel, onStarted, showToast }: any) => {
             />
             <div className="backup_restore_dialog_bottom">
                 <ActionButton disabled={isStarting} onClick={onCancel}>
-                    Отмена
+                    Cancel
                 </ActionButton>
                 <DangerButton
                     onClick={start}
@@ -212,7 +211,7 @@ const RestoreDialog = ({ item, info, onCancel, onStarted, showToast }: any) => {
                     isLoading={isStarting}
                     disabled={word.trim().toUpperCase() !== CONFIRM_WORD}
                 >
-                    Восстановить
+                    Restore
                 </DangerButton>
             </div>
         </div>
@@ -246,24 +245,21 @@ const BackupsPage = () => {
 
         const status = result.data?.status || null;
 
-        // Откат закончился, пока страница открыта: сообщаем итог. После
-        // успешного отката перезагружаем страницу, иначе интерфейс покажет
-        // данные, которых в базе уже нет.
         if (wasRestoring.current && !status?.restoring) {
             const job = status?.restore_job;
 
             if (job?.status === 'success') {
                 showToast({
                     type: 'success',
-                    message: 'Бекап восстановлен. Страница перезагрузится.',
+                    message: 'Backup restored. The page will reload.',
                 });
                 setTimeout(() => window.location.reload(), 1500);
             } else {
                 showToast({
                     type: 'error',
                     message: job?.error
-                        ? `Откат не удался: ${job.error}`
-                        : 'Откат не удался',
+                        ? `Restore failed: ${job.error}`
+                        : 'Restore failed',
                 });
             }
         }
@@ -282,7 +278,6 @@ const BackupsPage = () => {
     const running = Boolean(info?.running);
     const restoring = Boolean(info?.restoring);
 
-    // Пока дамп или откат идёт, перечитываем список: запуск не держит запрос открытым.
     useEffect(() => {
         if (!running && !restoring) {
             return;
@@ -302,14 +297,13 @@ const BackupsPage = () => {
             return;
         }
 
-        showToast({ type: 'success', message: 'Бекап запущен' });
+        showToast({ type: 'success', message: 'Backup started' });
         setPage(1);
         await load();
     };
 
     const upload = async (event: any) => {
         const file = event.target.files?.[0];
-        // Тот же файл можно выбрать снова после ошибки.
         event.target.value = '';
 
         if (!file) {
@@ -319,7 +313,7 @@ const BackupsPage = () => {
         if (info?.upload_max_bytes && file.size > info.upload_max_bytes) {
             showToast({
                 type: 'error',
-                message: `Файл больше ${formatSize(info.upload_max_bytes)}`,
+                message: `File is larger than ${formatSize(info.upload_max_bytes)}`,
             });
             return;
         }
@@ -337,8 +331,8 @@ const BackupsPage = () => {
         await load();
         showModalWindow({
             title: result.data?.already_listed
-                ? 'Этот бекап уже в списке'
-                : 'Бекап загружен и проверен',
+                ? 'This backup is already in the list'
+                : 'Backup uploaded and checked',
             content: (
                 <UploadedDialog
                     item={result.data}
@@ -365,7 +359,7 @@ const BackupsPage = () => {
 
     const askRestore = (item: any) => {
         showModalWindow({
-            title: 'Восстановить этот бекап?',
+            title: 'Restore this backup?',
             content: (
                 <RestoreDialog
                     item={item}
@@ -399,23 +393,15 @@ const BackupsPage = () => {
                     {info?.enabled ? (
                         <>
                             <p>
-                                Ежедневно в {info.schedule_at_utc} UTC.
-                                Сегодняшние бекапы хранятся все, за прошлые{' '}
-                                {info.keep_daily_days} дн. по одному в день,
-                                дальше по одному в месяц (последнего дня) за{' '}
-                                {info.keep_months} мес.
-                            </p>
-                            <p className="admin_panel_content_backups_page_hint">
-                                В архиве база и загрузки. Ручной запуск
-                                добавляет ещё один бекап. Архивы лежат на
-                                сервере вместе с приложением, время от времени
-                                скачивайте свежий. Свой архив можно загрузить:
-                                он проверяется целиком и появляется в списке, а
-                                устанавливается обычным откатом.
+                                Daily at {info.schedule_at_utc} UTC — the
+                                database and uploaded files. Copies from today
+                                stay, then one a day for {info.keep_daily_days}{' '}
+                                days and one a month for {info.keep_months}{' '}
+                                months.
                             </p>
                         </>
                     ) : (
-                        <p>Бекапы выключены на этом окружении.</p>
+                        <p>Backups are disabled in this environment.</p>
                     )}
                 </div>
                 <div className="admin_panel_content_backups_page_header_actions">
@@ -433,8 +419,8 @@ const BackupsPage = () => {
                                 disabled={busy}
                             >
                                 {uploading
-                                    ? 'Загрузка и проверка…'
-                                    : 'Загрузить бекап'}
+                                    ? 'Uploading and checking…'
+                                    : 'Upload a backup'}
                             </ActionButton>
                         </>
                     ) : null}
@@ -443,7 +429,7 @@ const BackupsPage = () => {
                         isLoading={starting}
                         disabled={!info?.enabled || busy}
                     >
-                        {running ? 'Идёт бекап…' : 'Запустить бекап'}
+                        {running ? 'Backup in progress…' : 'Run a backup'}
                     </PrimaryButton>
                 </div>
             </div>
@@ -451,12 +437,12 @@ const BackupsPage = () => {
             {restoring ? (
                 <div className="backup_notice backup_notice_warning">
                     <p>
-                        <b>Идёт восстановление.</b>{' '}
-                        {PHASE_LABELS[job?.phase] || 'Подготовка'}…
+                        <b>Restore in progress.</b>{' '}
+                        {PHASE_LABELS[job?.phase] || 'Preparing'}…
                     </p>
                     <p className="admin_panel_content_backups_page_hint">
-                        Сайт сейчас доступен только для чтения. Не закрывайте
-                        страницу, она обновится сама.
+                        The site is read-only right now. Do not close the page;
+                        it will refresh on its own.
                     </p>
                 </div>
             ) : null}
@@ -464,13 +450,13 @@ const BackupsPage = () => {
             {!restoring && info?.current ? (
                 <div className="backup_notice">
                     <p>
-                        <b>Сейчас система на бекапе от </b>
+                        <b>The system is currently on the backup from </b>
                         {format_date_time(info.current.taken_at)}
                     </p>
                     <p className="admin_panel_content_backups_page_hint">
-                        Восстановлен{' '}
-                        {format_date_time(info.current.restored_at)}. Всё, что
-                        менялось после этого, уже новые данные поверх бекапа.
+                        Restored {format_date_time(info.current.restored_at)}.
+                        Anything that changed after that is already new data on
+                        top of the backup.
                     </p>
                 </div>
             ) : null}
@@ -482,14 +468,14 @@ const BackupsPage = () => {
                     <p>
                         <b>
                             {last.status === 'interrupted'
-                                ? 'Последний откат был прерван.'
-                                : 'Последний откат не удался.'}
+                                ? 'The last restore was interrupted.'
+                                : 'The last restore failed.'}
                         </b>{' '}
                         {last.rolled_back
-                            ? 'Система возвращена к состоянию до отката.'
+                            ? 'The system was returned to the state before the restore.'
                             : last.status === 'interrupted'
-                              ? 'База и файлы могут быть восстановлены наполовину. Восстановите страховочный снимок «Перед откатом» из списка ниже.'
-                              : 'Проверьте данные, при необходимости восстановите страховочный снимок из списка ниже.'}
+                              ? 'The database and files may have been restored only halfway. Restore the “Before restore” safety snapshot from the list below.'
+                              : 'Check the data and, if needed, restore the safety snapshot from the list below.'}
                     </p>
                     {last.error ? (
                         <p className="backup_notice_details">{last.error}</p>
@@ -526,15 +512,17 @@ const BackupsPage = () => {
                                     {kindLabel(item)}
                                     {info?.current?.backup_id === item._id ? (
                                         <span className="backup_current">
-                                            Текущий
+                                            Current
                                         </span>
                                     ) : null}
                                 </p>
                                 <p className="admin_panel_content_backups_page_item_size">
-                                    {formatSize(item.size_bytes)}
-                                    {item.source
-                                        ? ` · снят ${format_date_time(item.source.created_at)}`
-                                        : ` · ${formatDuration(item)}`}
+                                    <span className="admin_panel_content_backups_page_item_meta">
+                                        {formatSize(item.size_bytes)}
+                                        {item.source
+                                            ? ` · taken ${format_date_time(item.source.created_at)}`
+                                            : ` · ${formatDuration(item)}`}
+                                    </span>
                                     {item.contents ? (
                                         <span className="admin_panel_content_backups_page_item_contents">
                                             {describeContents(item.contents)}
@@ -549,17 +537,17 @@ const BackupsPage = () => {
                                                 downloadingId === item._id
                                             }
                                         >
-                                            Скачать
+                                            Download
                                         </ActionButton>
                                     ) : item.file_removed_at ? (
                                         <p className="admin_panel_content_backups_page_hint">
                                             {item.file_removed_reason ===
                                             'replaced'
-                                                ? 'Удалён: заменён новым за этот день'
+                                                ? 'Deleted: replaced by a newer one for this day'
                                                 : item.file_removed_reason ===
                                                     'restored'
-                                                  ? 'Удалён: откат прошёл успешно, снимок не нужен'
-                                                  : 'Удалён по сроку хранения'}
+                                                  ? 'Deleted: the restore succeeded, so the snapshot is no longer needed'
+                                                  : 'Deleted because it expired'}
                                         </p>
                                     ) : null}
                                     {item.restore_blocked ? (
@@ -573,7 +561,7 @@ const BackupsPage = () => {
                                             onClick={() => askRestore(item)}
                                             disabled={busy}
                                         >
-                                            Восстановить
+                                            Restore
                                         </DangerButton>
                                     ) : null}
                                 </div>
@@ -586,7 +574,7 @@ const BackupsPage = () => {
                         ))
                     ) : (
                         <p className="admin_panel_content_backups_page_empty">
-                            Бекапов пока нет
+                            No backups yet
                         </p>
                     )
                 }

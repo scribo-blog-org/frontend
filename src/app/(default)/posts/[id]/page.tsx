@@ -18,13 +18,13 @@ export async function generateMetadata({ params }: ArticleRouteProps) {
 
     if (!article?._id) {
         return buildMetadata({
-            title: 'Статья не найдена',
+            title: 'Article not found',
             path: `/posts/${id}`,
             noindex: true,
         });
     }
 
-    const title = typeof article.title === 'string' ? article.title : 'Статья';
+    const title = typeof article.title === 'string' ? article.title : 'Article';
     const text =
         typeof article.content_text === 'string' ? article.content_text : '';
     const image =

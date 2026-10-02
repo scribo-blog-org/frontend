@@ -26,11 +26,8 @@ const SearchSelect = ({
     error,
     className = '',
     onFocus,
-    placeholder = 'Выбрать',
-    emptyLabel = 'Ничего не найдено',
-    // Внешний поиск. Если передан onInput, список не фильтруется внутри: его
-    // присылают снаружи (запросом), а компонент только сообщает, что ввели,
-    // показывает загрузку и просит следующую порцию, когда список докрутили до конца.
+    placeholder = 'Choose',
+    emptyLabel = 'Nothing found',
     onInput,
     loading = false,
     hasMore = false,
@@ -94,15 +91,20 @@ const SearchSelect = ({
         resetValue();
     }, [resetValue]);
 
-    // При внешнем поиске список меняется на каждый ввод, и подставлять из него
-    // подпись нельзя: она стёрла бы то, что человек печатает.
-    const optionsDep = external ? null : options;
+    const optionsRef = useRef(options);
+    optionsRef.current = options;
 
     useEffect(() => {
+        if (external) return;
         const option = options.find((o: any) => o.value === value);
         setInputValue(optionLabel(option));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [value, optionsDep]);
+    }, [external, options, value]);
+
+    useEffect(() => {
+        if (!external) return;
+        const option = optionsRef.current.find((o: any) => o.value === value);
+        setInputValue(optionLabel(option));
+    }, [external, value]);
 
     useEffect(() => {
         const handleClickOutside = (e: any) => {
@@ -118,16 +120,22 @@ const SearchSelect = ({
         };
     }, [closeSelect]);
 
+    const filteredOptionsRef = useRef(filteredOptions);
+    filteredOptionsRef.current = filteredOptions;
+
     useEffect(() => {
         if (!isOpen) {
             setHighlightedIndex(-1);
             return;
         }
-
+        if (external) return;
         setHighlightedIndex(filteredOptions.length ? 0 : -1);
-        // Подгруженная порция не должна сбрасывать выделение и прокручивать список наверх.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen, external ? inputValue : filteredOptions]);
+    }, [external, filteredOptions, isOpen]);
+
+    useEffect(() => {
+        if (!isOpen || !external) return;
+        setHighlightedIndex(filteredOptionsRef.current.length ? 0 : -1);
+    }, [external, inputValue, isOpen]);
 
     useEffect(() => {
         if (highlightedIndex < 0) return;
@@ -311,7 +319,7 @@ const SearchSelect = ({
                     )}
                     {loading ? (
                         <div className="search_select_empty">
-                            <p>Загрузка…</p>
+                            <p>Loading…</p>
                         </div>
                     ) : null}
                 </div>

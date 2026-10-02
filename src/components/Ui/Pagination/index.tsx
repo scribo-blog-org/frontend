@@ -31,8 +31,8 @@ const Pagination = ({
     pagesCount: pagesCountProp,
     onPageChange,
     children,
-    prevLabel = 'Назад',
-    nextLabel = 'Вперед',
+    prevLabel = 'Back',
+    nextLabel = 'Forward',
 }: any) => {
     const isServer =
         typeof pagesCountProp === 'number' &&

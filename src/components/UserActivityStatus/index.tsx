@@ -54,7 +54,7 @@ const UserActivityStatus = ({
                 className={`user_activity_status user_activity_status--online ${className}`.trim()}
             >
                 <span className="user_activity_status_dot" aria-hidden="true" />
-                <p>В сети</p>
+                <p>Online</p>
             </div>
         );
     }

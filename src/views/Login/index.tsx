@@ -56,20 +56,20 @@ const Login = () => {
                     await loginGoogle(googleToken);
                     navigate('/');
                     showToast({
-                        message: 'Вы вошли в аккаунт!',
+                        message: 'You are signed in!',
                         type: 'success',
                     });
                     return;
                 }
 
                 showToast({
-                    message: 'Не удалось войти через Google',
+                    message: 'Could not sign in with Google',
                     type: 'error',
                 });
                 setPendingAuth(null);
             } catch {
                 showToast({
-                    message: 'Не удалось войти через Google',
+                    message: 'Could not sign in with Google',
                     type: 'error',
                 });
                 setPendingAuth(null);
@@ -92,28 +92,28 @@ const Login = () => {
         if (fields.userName.length < FIELD_LIMITS.login.min) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userName: `Логин не короче ${FIELD_LIMITS.login.min} символов`,
+                userName: `Login must be at least ${FIELD_LIMITS.login.min} characters`,
             }));
             is_error = true;
         }
         if (fields.userName.length > FIELD_LIMITS.login.max) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userName: `Логин не длиннее ${FIELD_LIMITS.login.max} символов`,
+                userName: `Login must be at most ${FIELD_LIMITS.login.max} characters`,
             }));
             is_error = true;
         }
         if (fields.userPassword.length < FIELD_LIMITS.password.min) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userPassword: `Пароль не короче ${FIELD_LIMITS.password.min} символов`,
+                userPassword: `Password must be at least ${FIELD_LIMITS.password.min} characters`,
             }));
             is_error = true;
         }
         if (fields.userPassword.length > FIELD_LIMITS.password.max) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userPassword: `Пароль не длиннее ${FIELD_LIMITS.password.max} символов`,
+                userPassword: `Password must be at most ${FIELD_LIMITS.password.max} characters`,
             }));
             is_error = true;
         }
@@ -135,10 +135,10 @@ const Login = () => {
 
         if (result.status === true) {
             navigate('/');
-            showToast({ message: 'Вы вошли в аккаунт!', type: 'success' });
+            showToast({ message: 'You are signed in!', type: 'success' });
             return result;
         } else {
-            showToast({ message: 'Неверно!', type: 'error' });
+            showToast({ message: 'Incorrect!', type: 'error' });
             if (result?.errors?.body) {
                 setErrors(
                     Object.fromEntries(
@@ -163,9 +163,9 @@ const Login = () => {
                 }}
             >
                 <div className="auth_page_stack">
-                    <h1 className="auth_page_title">Вход</h1>
+                    <h1 className="auth_page_title">Sign-in</h1>
                     <div className="auth_page_group section app-transition">
-                        <Field title="Логин" error={errors?.userName ?? null}>
+                        <Field title="Login" error={errors?.userName ?? null}>
                             <InputField
                                 className={`userName`}
                                 type="text"
@@ -176,14 +176,14 @@ const Login = () => {
                                     })
                                 }
                                 onFocus={() => handleFocus('userName')}
-                                placeholder="Имя пользователя или email"
+                                placeholder="Username or email"
                                 value={fields.userName}
                                 error={errors?.userName ?? null}
                                 length={FIELD_LIMITS.login.max}
                             />
                         </Field>
                         <Field
-                            title="Пароль"
+                            title="Password"
                             error={errors?.userPassword ?? null}
                         >
                             <InputField
@@ -196,7 +196,7 @@ const Login = () => {
                                     })
                                 }
                                 onFocus={() => handleFocus('userPassword')}
-                                placeholder="Введите пароль"
+                                placeholder="Enter a password"
                                 value={fields.userPassword}
                                 error={errors?.userPassword ?? null}
                                 length={FIELD_LIMITS.password.max}
@@ -204,7 +204,7 @@ const Login = () => {
                         </Field>
                         <div className="auth_page_forgot">
                             <Link href="/auth/forgot-password">
-                                Забыли пароль?
+                                Forgot password?
                             </Link>
                         </div>
                         <PrimaryButton
@@ -212,11 +212,11 @@ const Login = () => {
                             isLoading={pendingAuth === 'password'}
                             disabled={Boolean(pendingAuth)}
                         >
-                            Войти
+                            Log in
                         </PrimaryButton>
                     </div>
                 </div>
-                <p className="auth_page_or">или</p>
+                <p className="auth_page_or">or</p>
                 <GoogleAuthButton
                     setGoogleToken={setGoogleToken}
                     isLoading={pendingAuth === 'google'}
@@ -225,8 +225,8 @@ const Login = () => {
                     onAuthEnd={() => setPendingAuth(null)}
                 />
                 <p className="redirect_object">
-                    Нет аккаунта?
-                    <Link href={'/auth/register'}>Зарегистрироваться</Link>
+                    No account?
+                    <Link href={'/auth/register'}>Sign up</Link>
                 </p>
             </form>
         </div>

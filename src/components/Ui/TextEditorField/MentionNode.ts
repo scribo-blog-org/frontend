@@ -4,7 +4,6 @@ function isCompleteMention(text: any) {
     return /^@[a-zA-Z0-9_]{3,24}$/.test(text);
 }
 
-// @ts-expect-error lexical TextNode static inheritance
 export class MentionNode extends TextNode {
     static getType() {
         return 'mention';
@@ -67,7 +66,7 @@ export class MentionNode extends TextNode {
                 }
                 return {
                     conversion: convertMentionElement,
-                    priority: 3,
+                    priority: 3 as const,
                 };
             },
             a: (domNode: any) => {
@@ -76,7 +75,7 @@ export class MentionNode extends TextNode {
                 }
                 return {
                     conversion: convertMentionElement,
-                    priority: 3,
+                    priority: 3 as const,
                 };
             },
         };

@@ -21,16 +21,16 @@ import Tooltip from '../../components/Ui/Tooltip';
 import './Requests.scss';
 
 const STATUS_OPTIONS = [
-    { value: 'all', name: 'Все статусы' },
+    { value: 'all', name: 'All statuses' },
     ...SUPPORT_STATUSES,
 ];
 
-const KIND_OPTIONS = [{ value: 'all', name: 'Все типы' }, ...SUPPORT_KINDS];
+const KIND_OPTIONS = [{ value: 'all', name: 'All types' }, ...SUPPORT_KINDS];
 
 const SORT_OPTIONS = [
-    { value: 'created_date:desc', name: 'Сначала новые' },
-    { value: 'created_date:asc', name: 'Сначала старые' },
-    { value: 'updated_date:desc', name: 'Недавно обновлённые' },
+    { value: 'created_date:desc', name: 'Newest first' },
+    { value: 'created_date:asc', name: 'Oldest first' },
+    { value: 'updated_date:desc', name: 'Recently updated' },
 ];
 
 const RequestsPage = () => {
@@ -95,7 +95,7 @@ const RequestsPage = () => {
                 <DropDown
                     options={STATUS_OPTIONS}
                     value={status}
-                    placeholder="Статус"
+                    placeholder="Status"
                     onChange={(value: any) => {
                         setStatus(value);
                         setPage(1);
@@ -104,7 +104,7 @@ const RequestsPage = () => {
                 <DropDown
                     options={KIND_OPTIONS}
                     value={kind}
-                    placeholder="Тип"
+                    placeholder="Type"
                     onChange={(value: any) => {
                         setKind(value);
                         setPage(1);
@@ -113,7 +113,7 @@ const RequestsPage = () => {
                 <DropDown
                     options={SORT_OPTIONS}
                     value={sortValue}
-                    placeholder="Сортировка"
+                    placeholder="Sort"
                     onChange={(value: any) => {
                         setSortValue(value);
                         setPage(1);
@@ -168,7 +168,7 @@ const RequestsPage = () => {
                         ))
                     ) : (
                         <p className="admin_panel_content_requests_page_empty">
-                            Запросов нет
+                            No requests
                         </p>
                     )
                 }

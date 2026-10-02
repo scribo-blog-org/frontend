@@ -8,10 +8,10 @@ import AppStatusScreen from './AppStatusScreen';
 const AppUnavailableScreen = ({ onRetry, isRetrying = false }: any) => (
     <AppStatusScreen
         illustration={<ErrorIllustration />}
-        title="Упс... у нас ошибка"
+        title="Something went wrong"
         role="alert"
         live="assertive"
-        label="Сервер недоступен"
+        label="Server unavailable"
         actions={
             <PrimaryButton
                 type="button"
@@ -19,14 +19,14 @@ const AppUnavailableScreen = ({ onRetry, isRetrying = false }: any) => (
                 isLoading={isRetrying}
             >
                 <RetryIcon width={16} height={16} />
-                Попробовать снова
+                Try again
             </PrimaryButton>
         }
     >
         <p className="app-status_lead">
-            Похоже, что-то пошло не так на сервере.
+            Something went wrong on the server.
             <br />
-            Мы уже работаем над этим.
+            We are already looking into it.
         </p>
     </AppStatusScreen>
 );
