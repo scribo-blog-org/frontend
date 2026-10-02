@@ -1,4 +1,4 @@
-@use "../../styles/helpers.scss" as *;
+@use '../../styles/helpers.scss' as *;
 
 .page_not_found {
     min-height: 70dvh;
@@ -24,7 +24,7 @@
         }
 
         &::before {
-            content: "";
+            content: '';
             position: absolute;
             left: 12px;
             top: 0;

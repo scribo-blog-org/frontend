@@ -1,37 +1,43 @@
 'use client';
 
-import { Link } from "@/navigation";
+import { Link } from '@/navigation';
 
-import { statusLabel } from "../../views/Support/constants";
+import { statusLabel } from '../../views/Support/constants';
 
 const NotificationMessage = ({ item }: any) => {
     switch (item.type) {
-        case "follow":
-            return "Подписался(-ась) на ваши обновления";
-        case "unfollow":
-            return "Отписался(-ась) от вас";
-        case "like_post":
+        case 'follow':
+            return 'Подписался(-ась) на ваши обновления';
+        case 'unfollow':
+            return 'Отписался(-ась) от вас';
+        case 'like_post':
             return (
                 <>
-                    Поставил лайк на ваш{" "}
-                    <Link className="notification_link app-transition" href={`/posts/${item.post}`}>
+                    Поставил лайк на ваш{' '}
+                    <Link
+                        className="notification_link app-transition"
+                        href={`/posts/${item.post}`}
+                    >
                         пост
                     </Link>
                 </>
             );
-        case "comment_post":
+        case 'comment_post':
             return (
                 <>
-                    Прокомментировал(-а) ваш{" "}
-                    <Link className="notification_link app-transition" href={`/posts/${item.post}`}>
+                    Прокомментировал(-а) ваш{' '}
+                    <Link
+                        className="notification_link app-transition"
+                        href={`/posts/${item.post}`}
+                    >
                         пост
                     </Link>
                 </>
             );
-        case "reply_comment":
+        case 'reply_comment':
             return (
                 <>
-                    Ответил(-а) на{" "}
+                    Ответил(-а) на{' '}
                     <Link
                         className="notification_link app-transition"
                         href={`/posts/${item.post}`}
@@ -41,19 +47,22 @@ const NotificationMessage = ({ item }: any) => {
                     </Link>
                 </>
             );
-        case "mention_post":
+        case 'mention_post':
             return (
                 <>
-                    Упомянул(-а) вас в{" "}
-                    <Link className="notification_link app-transition" href={`/posts/${item.post}`}>
+                    Упомянул(-а) вас в{' '}
+                    <Link
+                        className="notification_link app-transition"
+                        href={`/posts/${item.post}`}
+                    >
                         посте
                     </Link>
                 </>
             );
-        case "mention_comment":
+        case 'mention_comment':
             return (
                 <>
-                    Упомянул(-а) вас в{" "}
+                    Упомянул(-а) вас в{' '}
                     <Link
                         className="notification_link app-transition"
                         href={`/posts/${item.post}`}
@@ -63,27 +72,33 @@ const NotificationMessage = ({ item }: any) => {
                     </Link>
                 </>
             );
-        case "support_reply":
+        case 'support_reply':
             return (
                 <>
-                    Новый ответ по вашему{" "}
-                    <Link className="notification_link app-transition" href={`/support/${item.support_request}`}>
+                    Новый ответ по вашему{' '}
+                    <Link
+                        className="notification_link app-transition"
+                        href={`/support/${item.support_request}`}
+                    >
                         запросу
                     </Link>
                 </>
             );
-        case "support_status":
+        case 'support_status':
             return (
                 <>
-                    Статус вашего{" "}
-                    <Link className="notification_link app-transition" href={`/support/${item.support_request}`}>
+                    Статус вашего{' '}
+                    <Link
+                        className="notification_link app-transition"
+                        href={`/support/${item.support_request}`}
+                    >
                         запроса
                     </Link>
                     : {statusLabel(item.support_status)}
                 </>
             );
         default:
-            return "";
+            return '';
     }
 };
 

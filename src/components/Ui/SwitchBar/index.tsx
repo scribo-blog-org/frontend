@@ -1,14 +1,20 @@
 'use client';
 
-import "./SwitchBar.scss";
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
+import './SwitchBar.scss';
+import {
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+    useCallback,
+} from 'react';
 
 export default function SwitchBar({
     activeIndex,
     setActiveIndex,
     onChange,
     items,
-    className = "",
+    className = '',
 }: any) {
     const selectIndex = onChange ?? setActiveIndex;
     const containerRef = useRef<any>(null);
@@ -34,7 +40,6 @@ export default function SwitchBar({
             left: button.offsetLeft,
             width: button.offsetWidth,
         });
-
     }, [activeIndex]);
 
     useLayoutEffect(() => {
@@ -42,7 +47,7 @@ export default function SwitchBar({
     }, [activeIndex, items, updateIndicator]);
 
     useEffect(() => {
-        window.addEventListener("resize", updateIndicator);
+        window.addEventListener('resize', updateIndicator);
 
         const container = containerRef.current;
         const observer = container
@@ -56,7 +61,7 @@ export default function SwitchBar({
         }
 
         return () => {
-            window.removeEventListener("resize", updateIndicator);
+            window.removeEventListener('resize', updateIndicator);
             observer?.disconnect();
         };
     }, [updateIndicator]);
@@ -81,9 +86,7 @@ export default function SwitchBar({
                     ref={(el: any) => (buttonsRef.current[index] = el)}
                     type="button"
                     className={`switcher_bar_item app-transition ${
-                        activeIndex === index
-                            ? "switcher_bar_item_active"
-                            : ""
+                        activeIndex === index ? 'switcher_bar_item_active' : ''
                     }`}
                     onClick={() => selectIndex?.(index)}
                 >

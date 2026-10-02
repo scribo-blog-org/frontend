@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-import { getPostById } from "../api/posts.api";
-import { fetchLinkPreview } from "../api/linkPreview.api";
-import { plainTextExcerpt } from "../seo/excerpt";
-import { extractUrls, parseOwnPostUrl } from "../utils/messageLinks";
+import { getPostById } from '../api/posts.api';
+import { fetchLinkPreview } from '../api/linkPreview.api';
+import { plainTextExcerpt } from '../seo/excerpt';
+import { extractUrls, parseOwnPostUrl } from '../utils/messageLinks';
 
 export function useMessageEmbeds(text: any) {
     const [embeds, setEmbeds] = useState<any[]>([]);
@@ -25,16 +25,18 @@ export function useMessageEmbeds(text: any) {
 
                     if (postId) {
                         const result = await getPostById(postId, {
-                            expand: "author,category",
+                            expand: 'author,category',
                         });
 
                         if (result?.status === true && result.data) {
                             return {
-                                type: "post",
+                                type: 'post',
                                 url,
                                 post: {
                                     ...result.data,
-                                    excerpt: plainTextExcerpt(result.data.content_text),
+                                    excerpt: plainTextExcerpt(
+                                        result.data.content_text,
+                                    ),
                                 },
                             };
                         }
@@ -46,7 +48,7 @@ export function useMessageEmbeds(text: any) {
 
                     if (preview?.status === true && preview.data?.title) {
                         return {
-                            type: "link",
+                            type: 'link',
                             url,
                             preview: preview.data,
                         };

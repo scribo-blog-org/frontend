@@ -3,9 +3,9 @@
 import { useState, useEffect, useContext } from 'react';
 import { AppContext } from '@/providers/AppProviders';
 import { Link } from '@/navigation';
-import './LinkToProfile.scss'
+import './LinkToProfile.scss';
 
-const LinkToProfile = ({children, className}: any) => {
+const LinkToProfile = ({ children, className }: any) => {
     const [link, setLink] = useState<any>('/auth/login');
 
     const { profile } = useContext(AppContext);
@@ -19,7 +19,7 @@ const LinkToProfile = ({children, className}: any) => {
     }, [profile]);
 
     return (
-        <Link href={link} className={`profile_link ${className ?? ""}`}>
+        <Link href={link} className={`profile_link ${className ?? ''}`}>
             {children}
         </Link>
     );

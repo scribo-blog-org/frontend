@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export function useOverlayEnter(active: any = true) {
     const [visible, setVisible] = useState<any>(false);

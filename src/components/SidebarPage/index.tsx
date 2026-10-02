@@ -1,20 +1,22 @@
 'use client';
 
-import "./SidebarPage.scss";
+import './SidebarPage.scss';
 
-import { useSearchParams } from "@/navigation";
+import { useSearchParams } from '@/navigation';
 
-import DropDown from "../Ui/DropDown";
+import DropDown from '../Ui/DropDown';
 
 const SidebarPage = ({ pages, pageTitle }: any) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const activeKey = searchParams.get("tab") ?? pages[0].key;
+    const activeKey = searchParams.get('tab') ?? pages[0].key;
 
     const pageMatchesTab = (page: any, key: any) =>
         page.key === key || (page.aliases || []).includes(key);
 
-    let activePage = pages.findIndex((page: any) => pageMatchesTab(page, activeKey));
+    let activePage = pages.findIndex((page: any) =>
+        pageMatchesTab(page, activeKey),
+    );
 
     if (activePage === -1) {
         activePage = 0;
@@ -26,16 +28,18 @@ const SidebarPage = ({ pages, pageTitle }: any) => {
 
     return (
         <div className="sidebar_page">
-            <div className="sidebar_page_navigation app-transition" aria-label={pageTitle}>
-
+            <div
+                className="sidebar_page_navigation app-transition"
+                aria-label={pageTitle}
+            >
                 <div className="sidebar_page_navigation_list">
                     {pages.map((page: any, index: any) => (
                         <button
                             key={page.key}
                             className={`sidebar_page_navigation_list_item app-transition ${
                                 activePage === index
-                                    ? "sidebar_page_navigation_list_item_active"
-                                    : ""
+                                    ? 'sidebar_page_navigation_list_item_active'
+                                    : ''
                             }`}
                             onClick={() => setPage(page.key)}
                         >
@@ -53,7 +57,7 @@ const SidebarPage = ({ pages, pageTitle }: any) => {
                             options={pages.map((page: any) => ({
                                 value: page.key,
                                 name: page.title,
-                                icon: page.icon
+                                icon: page.icon,
                             }))}
                             value={pages[activePage].key}
                             onChange={setPage}

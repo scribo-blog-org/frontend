@@ -1,16 +1,25 @@
-import { headers } from "next/headers";
+import { headers } from 'next/headers';
 
-import { loadPublicPost, loadPublicProfile } from "@/lib/server-api";
-import { plainTextExcerpt } from "@/seo/excerpt";
-import { JsonLd } from "@/seo/json-ld";
-import { BRAND_LOGO, DEFAULT_OG_IMAGE, SITE_NAME, absoluteUrl } from "@/seo/site";
+import { loadPublicPost, loadPublicProfile } from '@/lib/server-api';
+import { plainTextExcerpt } from '@/seo/excerpt';
+import { JsonLd } from '@/seo/json-ld';
+import {
+    BRAND_LOGO,
+    DEFAULT_OG_IMAGE,
+    SITE_NAME,
+    absoluteUrl,
+} from '@/seo/site';
 
 function asString(value: unknown) {
-    return typeof value === "string" ? value : "";
+    return typeof value === 'string' ? value : '';
 }
 
 function isoDate(value: unknown) {
-    if (typeof value !== "string" && typeof value !== "number" && !(value instanceof Date)) {
+    if (
+        typeof value !== 'string' &&
+        typeof value !== 'number' &&
+        !(value instanceof Date)
+    ) {
         return undefined;
     }
 
@@ -27,45 +36,49 @@ async function postJsonLd(id: string) {
         return null;
     }
 
-    const title = asString(article.title) || "Статья";
-    const description = plainTextExcerpt(asString(article.content_text)) || title;
-    const image = asString(article.featured_image) || absoluteUrl(DEFAULT_OG_IMAGE);
+    const title = asString(article.title) || 'Статья';
+    const description =
+        plainTextExcerpt(asString(article.content_text)) || title;
+    const image =
+        asString(article.featured_image) || absoluteUrl(DEFAULT_OG_IMAGE);
     const published = isoDate(article.created_date);
     const url = absoluteUrl(`/posts/${String(article._id)}`);
     const authorRecord =
-        article.author && typeof article.author === "object"
+        article.author && typeof article.author === 'object'
             ? (article.author as Record<string, unknown>)
             : null;
     const authorName = asString(authorRecord?.nick_name);
     const categoryRecord =
-        article.category && typeof article.category === "object"
+        article.category && typeof article.category === 'object'
             ? (article.category as Record<string, unknown>)
             : null;
     const category = asString(categoryRecord?.name);
 
     return {
-        "@context": "https://schema.org",
-        "@type": "BlogPosting",
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
         headline: title,
         description,
-        inLanguage: "ru",
+        inLanguage: 'ru',
         mainEntityOfPage: url,
         url,
         image,
-        ...(published ? { datePublished: published, dateModified: published } : {}),
+        ...(published
+            ? { datePublished: published, dateModified: published }
+            : {}),
         ...(category ? { articleSection: category } : {}),
         author: authorName
             ? {
-                  "@type": "Person",
+                  '@type': 'Person',
                   name: authorName,
                   url: absoluteUrl(`/users/${encodeURIComponent(authorName)}`),
               }
-            : { "@type": "Organization", name: SITE_NAME },
+            : { '@type': 'Organization', name: SITE_NAME },
         publisher: {
-            "@type": "Organization",
+            '@type': 'Organization',
             name: SITE_NAME,
             logo: {
-                "@type": "ImageObject",
+                '@type': 'ImageObject',
                 url: absoluteUrl(BRAND_LOGO),
             },
         },
@@ -80,18 +93,19 @@ async function profileJsonLd(id: string) {
         return null;
     }
 
-    const name = asString(user.nick_name) || asString(user.login) || "Профиль";
+    const name = asString(user.nick_name) || asString(user.login) || 'Профиль';
     const nick = asString(user.nick_name) || id;
-    const description = asString(user.description) || `Профиль ${name} на Scribo`;
+    const description =
+        asString(user.description) || `Профиль ${name} на Scribo`;
     const avatar = asString(user.avatar);
     const url = absoluteUrl(`/users/${encodeURIComponent(nick)}`);
 
     return {
-        "@context": "https://schema.org",
-        "@type": "ProfilePage",
+        '@context': 'https://schema.org',
+        '@type': 'ProfilePage',
         url,
         mainEntity: {
-            "@type": "Person",
+            '@type': 'Person',
             name,
             url,
             description,
@@ -101,7 +115,7 @@ async function profileJsonLd(id: string) {
 }
 
 export async function RouteJsonLd() {
-    const pathname = (await headers()).get("x-pathname") || "";
+    const pathname = (await headers()).get('x-pathname') || '';
     const postId = pathname.match(/^\/posts\/([^/]+)$/)?.[1];
     const profileId = pathname.match(/^\/users\/([^/]+)$/)?.[1];
     const data = postId

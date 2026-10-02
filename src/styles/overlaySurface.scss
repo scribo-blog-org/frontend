@@ -1,5 +1,5 @@
 @mixin overlay-surface-enter(
-    $visible-class: "is-visible",
+    $visible-class: 'is-visible',
     $origin: top center,
     $offset-y: -8px,
     $offset-x: 0px

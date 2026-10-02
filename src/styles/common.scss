@@ -1,20 +1,22 @@
-@use "./variables.scss";
-@use "./theme";
-@use "./helpers.scss" as *;
+@use './variables.scss';
+@use './theme';
+@use './helpers.scss' as *;
 
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
 
 * {
     box-sizing: border-box;
 }
 
 :root {
-    
 }
 
-html, body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+html,
+body {
+    font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+        Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
     margin: 0;
     height: 100%;
     width: 100%;
@@ -22,7 +24,8 @@ html, body {
     scrollbar-color: var(--gray-4f) transparent;
 }
 
-#root, #app-root {
+#root,
+#app-root {
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -49,11 +52,17 @@ body.no-scroll {
     overflow-y: hidden;
 }
 
-p, h1, h2, h3, h4 ,h5, h6 {
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     margin: 0;
     padding: 0;
     color: var(--text-color);
-} 
+}
 
 h1 {
     font-size: var(--text-2xl);
@@ -97,7 +106,14 @@ small {
     line-height: 1.4;
 }
 
-p::selection, h1::selection, h2::selection, h3::selection, h4::selection, h5::selection, h6::selection, span::selection {
+p::selection,
+h1::selection,
+h2::selection,
+h3::selection,
+h4::selection,
+h5::selection,
+h6::selection,
+span::selection {
     color: var(--text-selection-color);
     background-color: var(--text-selection-background-color);
 }
@@ -114,11 +130,19 @@ p::selection, h1::selection, h2::selection, h3::selection, h4::selection, h5::se
     @include use-transition-text();
 }
 
-span, p, h1, h2, h3, h4, h5, h6, a, li::marker {
+span,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+a,
+li::marker {
     @include use-transition-text();
 }
 
-// Цвет темы — один раз на корне ссылки/кнопки, не на span/svg внутри (иначе «длинный» переход).
 :where(a, button).app-transition-color :where(span, p, svg),
 .app-transition.app-transition-color :where(span, p, svg) {
     transition: none;
@@ -181,7 +205,10 @@ button {
     margin: 0;
     cursor: pointer;
     color: inherit;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+        Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
 .blurred {
@@ -200,7 +227,8 @@ button {
     color: var(--text-color);
 }
 
-img, svg {
+img,
+svg {
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -229,7 +257,7 @@ svg {
     --category-color: var(--category-color-4);
 }
 
-textarea:focus-visible{
+textarea:focus-visible {
     outline: none;
 }
 
@@ -243,8 +271,8 @@ textarea:focus-visible{
 .not_allowed {
     cursor: not-allowed;
     user-select: none;
-    
-    *{
+
+    * {
         cursor: not-allowed;
         user-select: none;
     }

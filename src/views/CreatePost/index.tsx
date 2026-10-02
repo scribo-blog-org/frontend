@@ -6,53 +6,51 @@ import { useContext, useEffect, useState, useMemo } from 'react';
 import { AppContext } from '@/providers/AppProviders';
 
 import DropFile from '../../components/Ui/DropFile/index';
-import InputFiled from "../../components/Ui/InputField";
-import TextEditorField from "../../components/Ui/TextEditorField";
-import PrimaryButton from "../../components/Ui/PrimaryButton";
-import DangerButton from "../../components/Ui/DangerButton";
+import InputFiled from '../../components/Ui/InputField';
+import TextEditorField from '../../components/Ui/TextEditorField';
+import PrimaryButton from '../../components/Ui/PrimaryButton';
+import DangerButton from '../../components/Ui/DangerButton';
 import SearchSelect from '../../components/Ui/SearchSelect/index';
 import Field from '../../components/Ui/Field/index';
 
-import { CATEGORY_COLORS } from "../../styles/constants";
+import { CATEGORY_COLORS } from '../../styles/constants';
 
 import { getCategories } from '../../api/categories.api';
 import { createPost } from '../../api/posts.api';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 
-import "./CreatePost.scss"
+import './CreatePost.scss';
 
 const CreatePost = () => {
-    const navigate = useNavigate()
-    const { profile, profileLoading, showToast } = useContext(AppContext)
-    const [ initialized, setInitialized ] = useState<any>(false);
-    const [ createResult, setCreateResult ] = useState<any>({})
-    const [errors, setErrors] = useState<any>({ });
-    const [allCategories, setAllCategories] = useState<any[]>([])
+    const navigate = useNavigate();
+    const { profile, profileLoading, showToast } = useContext(AppContext);
+    const [initialized, setInitialized] = useState<any>(false);
+    const [createResult, setCreateResult] = useState<any>({});
+    const [errors, setErrors] = useState<any>({});
+    const [allCategories, setAllCategories] = useState<any[]>([]);
 
-    const [ isLoading, setIsLoading ] = useState<any>(false);
+    const [isLoading, setIsLoading] = useState<any>(false);
 
-    const [ fields, setFields ] = useState<any>(
-        {
-            postTitle: '',
-            postContent: '',
-            featuredImage: null,
-            categoryId: ''
-        }
-    )
+    const [fields, setFields] = useState<any>({
+        postTitle: '',
+        postContent: '',
+        featuredImage: null,
+        categoryId: '',
+    });
 
     const titlePlaceholder = useMemo(() => {
         const titleExamples = [
-            "Экстренная нехватка бензина в россии",
-            "5 способов отмыва денег через криптовалюту",
-            "На Марсе снова ничего не нашли, но все довольны",
-            "Колосальные потери под Малой Токмачкой - ВС рф",
-            "Отряд бабок в россии отменил сам себя",
-            "Токсис стал настолько популярным, что его стали узнавать собственные родители",
-            "Учёные нашли кореляцию между походом за хлебом и рождением ребенка в молодых семьях",
-            "В россии импортозаместили импортозамещение",
-            "В россии нашли виноватого. Им оказался предыдущий виноватый",
-            "На дне Марианской впадины наконец-то обнаружили дно российской экономики, но снизу снова постучали",
-            "По опросам 90% жителей согласны с тем, о чем их еще не спрашивали"
+            'Экстренная нехватка бензина в россии',
+            '5 способов отмыва денег через криптовалюту',
+            'На Марсе снова ничего не нашли, но все довольны',
+            'Колосальные потери под Малой Токмачкой - ВС рф',
+            'Отряд бабок в россии отменил сам себя',
+            'Токсис стал настолько популярным, что его стали узнавать собственные родители',
+            'Учёные нашли кореляцию между походом за хлебом и рождением ребенка в молодых семьях',
+            'В россии импортозаместили импортозамещение',
+            'В россии нашли виноватого. Им оказался предыдущий виноватый',
+            'На дне Марианской впадины наконец-то обнаружили дно российской экономики, но снизу снова постучали',
+            'По опросам 90% жителей согласны с тем, о чем их еще не спрашивали',
         ];
 
         return titleExamples[Math.floor(Math.random() * titleExamples.length)];
@@ -61,50 +59,53 @@ const CreatePost = () => {
     const add_errors_to_image = (new_errors: any) => {
         const updated_errors = { ...errors };
 
-        if (!updated_errors.featuredImage) { 
+        if (!updated_errors.featuredImage) {
             updated_errors.featuredImage = [];
         }
 
-        for(const new_error of new_errors) {
-            updated_errors.featuredImage.push(new_error)
+        for (const new_error of new_errors) {
+            updated_errors.featuredImage.push(new_error);
         }
         setErrors(updated_errors);
-    }
+    };
 
     const clear_errors_from_image = () => {
         const updated_errors = { ...errors };
 
-        if(updated_errors.featuredImage) {
-            delete updated_errors.featuredImage
+        if (updated_errors.featuredImage) {
+            delete updated_errors.featuredImage;
         }
 
-        setErrors(updated_errors)
-    }
+        setErrors(updated_errors);
+    };
 
     useEffect(() => {
         const load = async () => {
-            if(initialized){
-                if(!profileLoading && (!profile || !profile.permissions.includes("create_post"))) {
-                    navigate("/posts")
+            if (initialized) {
+                if (
+                    !profileLoading &&
+                    (!profile || !profile.permissions.includes('create_post'))
+                ) {
+                    navigate('/');
                 }
-            }
-            else{
+            } else {
                 setInitialized(true);
-    
-                const categories_result = await getCategories()
 
-                if(categories_result?.status === true) {
-                    for(const category of categories_result.data) {
-                        category.className = CATEGORY_COLORS[category.color]?.className
-                        category.value = category._id
+                const categories_result = await getCategories();
+
+                if (categories_result?.status === true) {
+                    for (const category of categories_result.data) {
+                        category.className =
+                            CATEGORY_COLORS[category.color]?.className;
+                        category.value = category._id;
                     }
-                    setAllCategories(categories_result.data)
+                    setAllCategories(categories_result.data);
                 }
             }
-        }
+        };
 
-        load()
-    },[profileLoading, initialized, profile, navigate])
+        load();
+    }, [profileLoading, initialized, profile, navigate]);
 
     const handleClick = () => {
         const other = { ...errors };
@@ -113,7 +114,7 @@ const CreatePost = () => {
     };
 
     const handleSubmit = async (e: any) => {
-        e.preventDefault()
+        e.preventDefault();
         const next: any = {};
         const title = (fields.postTitle || '').trim();
         if (title.length < FIELD_LIMITS.postTitle.min) {
@@ -131,10 +132,10 @@ const CreatePost = () => {
             return;
         }
         setIsLoading(true);
-        const result = await create_post(fields.postTitle)
+        const result = await create_post(fields.postTitle);
         setIsLoading(false);
-        setCreateResult(result)
-    }
+        setCreateResult(result);
+    };
 
     const handleFocus = (fieldName: any) => {
         const other = { ...errors };
@@ -144,82 +145,104 @@ const CreatePost = () => {
 
     const create_post = async (title: any) => {
         const formData = new FormData();
-        formData.append('postTitle', title)
-        formData.append('postContent', fields.postContent)
-        formData.append('featuredImage', fields.featuredImage)
-        formData.append('categoryId', fields.categoryId)
+        formData.append('postTitle', title);
+        formData.append('postContent', fields.postContent);
+        formData.append('featuredImage', fields.featuredImage);
+        formData.append('categoryId', fields.categoryId);
 
-        
-        const result = await createPost(formData)
+        const result = await createPost(formData);
 
-        if(result.status === true) {
-            navigate("/posts")
-            showToast({ message: "Опубликовано!", type: "success" })
-            return result
-        }
-        else {
-            showToast({ message: "Ошибка при создании поста!", type: "error" })
+        if (result.status === true) {
+            navigate('/');
+            showToast({ message: 'Опубликовано!', type: 'success' });
+            return result;
+        } else {
+            showToast({ message: 'Ошибка при создании поста!', type: 'error' });
             if (result?.errors?.body) {
-                setErrors(Object.fromEntries(Object.entries(result.errors.body).map(([field, obj]: any) => [field, obj.message])));
+                setErrors(
+                    Object.fromEntries(
+                        Object.entries(result.errors.body).map(
+                            ([field, obj]: any) => [field, obj.message],
+                        ),
+                    ),
+                );
             }
-            console.log(result)
-            return result
+            console.log(result);
+            return result;
         }
-    }
+    };
 
     return (
-        <form className='create_post' onSubmit={handleSubmit}>
-            <Field error={errors?.postTitle} title={"Заголовок"}>
-                <InputFiled 
+        <form className="create_post" onSubmit={handleSubmit}>
+            <Field error={errors?.postTitle} title={'Заголовок'}>
+                <InputFiled
                     placeholder={titlePlaceholder}
-                    className={"create_post_title"  + (createResult.status === "error" && createResult.message === "Incorrect 'title'" ? " incorrect_field" : "")}
+                    className={
+                        'create_post_title' +
+                        (createResult.status === 'error' &&
+                        createResult.message === "Incorrect 'title'"
+                            ? ' incorrect_field'
+                            : '')
+                    }
                     isMultiline={true}
                     multilineRows={1}
-                    onChange={(e: any) => setFields({ ...fields, postTitle: e.target.value })}
+                    onChange={(e: any) =>
+                        setFields({ ...fields, postTitle: e.target.value })
+                    }
                     onFocus={() => handleFocus('postTitle')}
                     length={FIELD_LIMITS.postTitle.max}
                     error={errors?.postTitle}
                 />
             </Field>
-            <Field error={errors?.categoryId} title={"Категория"}>
+            <Field error={errors?.categoryId} title={'Категория'}>
                 <SearchSelect
                     value={fields.categoryId}
                     onSetValue={(value: any) =>
                         setFields((prev: any) => ({
                             ...prev,
-                            categoryId: value
+                            categoryId: value,
                         }))
                     }
                     onFocus={() => handleFocus('categoryId')}
                     error={errors?.categoryId}
-                    placeholder={"Выбрать категорию"}
+                    placeholder={'Выбрать категорию'}
                     options={allCategories}
                 />
             </Field>
             <DropFile
                 value={fields.featuredImage}
-                setValue={(file: any) => setFields({ ...fields, featuredImage: file })}
-                dropFileType={"image/*"}
-                fileTypes={"SVG, PNG, JPEG, JPG и другие"}
+                setValue={(file: any) =>
+                    setFields({ ...fields, featuredImage: file })
+                }
+                dropFileType={'image/*'}
+                fileTypes={'SVG, PNG, JPEG, JPG и другие'}
                 errors={errors?.featuredImage}
                 addNewErrors={add_errors_to_image}
                 clearErrors={clear_errors_from_image}
                 onRemove={handleClick}
             />
-            <Field error={errors?.postContent} title={"Текст поста"}>
-
+            <Field error={errors?.postContent} title={'Текст поста'}>
                 <TextEditorField
                     onFocus={() => handleFocus('postContent')}
-                    onChange={(html: any) => setFields({ ...fields, postContent: html })}
+                    onChange={(html: any) =>
+                        setFields({ ...fields, postContent: html })
+                    }
                     error={errors?.postContent}
                 />
             </Field>
             <div className="create_post_buttons">
-                <PrimaryButton onClick={handleSubmit} isLoading={isLoading}>Создать пост</PrimaryButton>
-                <DangerButton disabled={isLoading} onClick={() => navigate("/posts")}>Отмена</DangerButton>
+                <PrimaryButton onClick={handleSubmit} isLoading={isLoading}>
+                    Создать пост
+                </PrimaryButton>
+                <DangerButton
+                    disabled={isLoading}
+                    onClick={() => navigate('/')}
+                >
+                    Отмена
+                </DangerButton>
             </div>
         </form>
-    )
-}
+    );
+};
 
-export default CreatePost
+export default CreatePost;

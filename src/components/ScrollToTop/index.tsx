@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useLayoutEffect } from "react";
-import { useLocation } from "@/navigation";
+import { useEffect, useLayoutEffect } from 'react';
+import { useLocation } from '@/navigation';
 
-import { scrollToTop } from "../../utils/navigation";
+import { scrollToTop } from '../../utils/navigation';
 
 const ScrollToTop = () => {
     const location = useLocation();

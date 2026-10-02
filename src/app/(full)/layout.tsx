@@ -1,5 +1,9 @@
-import FullContainer from "@/layouts/FullContainer";
+import FullContainer from '@/layouts/FullContainer';
 
-export default function FullLayout({ children }: { children: React.ReactNode }) {
+export default function FullLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
     return <FullContainer>{children}</FullContainer>;
 }

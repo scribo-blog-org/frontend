@@ -1,21 +1,23 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 
 import {
     SITE_NAME,
     SITE_DESCRIPTION,
+    SITE_KEYWORDS,
     DEFAULT_OG_IMAGE,
     absoluteUrl,
     pageTitle,
-} from "@/seo/site";
+} from '@/seo/site';
 
 type MetadataInput = {
     title?: string;
+    absoluteTitle?: string;
     description?: string;
     path?: string;
     image?: string;
     noindex?: boolean;
     follow?: boolean;
-    type?: "website" | "article";
+    type?: 'website' | 'article';
     publishedTime?: string;
     modifiedTime?: string;
     authors?: string[];
@@ -23,24 +25,26 @@ type MetadataInput = {
 
 export function buildMetadata({
     title,
+    absoluteTitle,
     description = SITE_DESCRIPTION,
-    path = "/",
+    path = '/',
     image,
     noindex = false,
     follow = !noindex,
-    type = "website",
+    type = 'website',
     publishedTime,
     modifiedTime,
     authors,
 }: MetadataInput = {}): Metadata {
     const canonical = absoluteUrl(path);
-    const fullTitle = pageTitle(title);
+    const fullTitle = absoluteTitle || pageTitle(title);
     const ogImage = image || absoluteUrl(DEFAULT_OG_IMAGE);
     const usingBrandImage = !image;
 
     return {
-        title: fullTitle,
+        title: absoluteTitle ? { absolute: fullTitle } : fullTitle,
         description,
+        keywords: SITE_KEYWORDS,
         alternates: noindex ? undefined : { canonical },
         robots: noindex
             ? { index: false, follow }
@@ -50,9 +54,9 @@ export function buildMetadata({
                   googleBot: {
                       index: true,
                       follow: true,
-                      "max-image-preview": "large",
-                      "max-snippet": -1,
-                      "max-video-preview": -1,
+                      'max-image-preview': 'large',
+                      'max-snippet': -1,
+                      'max-video-preview': -1,
                   },
               },
         openGraph: {
@@ -60,7 +64,7 @@ export function buildMetadata({
             description,
             url: canonical,
             siteName: SITE_NAME,
-            locale: "ru_RU",
+            locale: 'ru_RU',
             type,
             images: [
                 {
@@ -69,7 +73,7 @@ export function buildMetadata({
                     ...(usingBrandImage ? { width: 1200, height: 630 } : {}),
                 },
             ],
-            ...(type === "article"
+            ...(type === 'article'
                 ? {
                       publishedTime,
                       modifiedTime,
@@ -78,7 +82,7 @@ export function buildMetadata({
                 : {}),
         },
         twitter: {
-            card: "summary_large_image",
+            card: 'summary_large_image',
             title: fullTitle,
             description,
             images: [ogImage],

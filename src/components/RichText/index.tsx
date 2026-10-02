@@ -1,22 +1,30 @@
 'use client';
 
-import { Fragment } from "react";
-import { Link } from "@/navigation";
+import { Fragment } from 'react';
+import { Link } from '@/navigation';
 
 import {
     profilePathFromNick,
     splitPlainRichParts,
-} from "../../content/plainRichText";
-import { splitMessageRichParts } from "../../utils/messageLinks";
-import { hashtagSearchPath } from "../../utils/hashtags";
+} from '../../content/plainRichText';
+import { splitMessageRichParts } from '../../utils/messageLinks';
+import { hashtagSearchPath } from '../../utils/hashtags';
 
-const RichText = ({ text, className, id, as: Tag = "p", linkify = false }: any) => {
-    const parts = linkify ? splitMessageRichParts(text) : splitPlainRichParts(text);
+const RichText = ({
+    text,
+    className,
+    id,
+    as: Tag = 'p',
+    linkify = false,
+}: any) => {
+    const parts = linkify
+        ? splitMessageRichParts(text)
+        : splitPlainRichParts(text);
 
     return (
         <Tag className={className} id={id}>
             {parts.map((part: any, index: any) => {
-                if (part.type === "tag") {
+                if (part.type === 'tag') {
                     return (
                         <Link
                             key={`${part.value}-${index}`}
@@ -28,7 +36,7 @@ const RichText = ({ text, className, id, as: Tag = "p", linkify = false }: any) 
                     );
                 }
 
-                if (part.type === "mention") {
+                if (part.type === 'mention') {
                     return (
                         <Link
                             key={`${part.nick}-${index}`}
@@ -40,7 +48,7 @@ const RichText = ({ text, className, id, as: Tag = "p", linkify = false }: any) 
                     );
                 }
 
-                if (part.type === "link") {
+                if (part.type === 'link') {
                     return (
                         <a
                             key={`${part.value}-${index}`}
@@ -55,7 +63,7 @@ const RichText = ({ text, className, id, as: Tag = "p", linkify = false }: any) 
                 }
 
                 return String(part.value)
-                    .split("\n")
+                    .split('\n')
                     .map((line: any, lineIndex: any, lines: any) => (
                         <Fragment key={`${index}-${lineIndex}`}>
                             {line}

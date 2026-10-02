@@ -1,58 +1,63 @@
 'use client';
 
-import { getAllLogs } from "../../api/logs.api";
-import { getUsers } from "../../api/users.api";
+import { getAllLogs } from '../../api/logs.api';
+import { getUsers } from '../../api/users.api';
 
-import { Children, useEffect, useState, useContext } from "react";
-import { useNavigate } from "@/navigation";
+import { Children, useEffect, useState, useContext } from 'react';
+import { useNavigate } from '@/navigation';
 
-import { AppContext } from "@/providers/AppProviders";
+import { AppContext } from '@/providers/AppProviders';
 
-import { format_back, format_date_time } from "../../utils/format";
-import { getCategories } from "../../api/categories.api";
-import { getPosts } from "../../api/posts.api";
+import { format_back, format_date_time } from '../../utils/format';
+import { getCategories } from '../../api/categories.api';
+import { getPosts } from '../../api/posts.api';
 
-import EditIcon from "../../assets/svg/edit.svg";
-import PlusIcon from "../../assets/svg/plus-icon.svg";
-import DeleteIcon from "../../assets/svg/delete.svg";
-import NewUserIcon from "../../assets/svg/new-user.svg";
-import RedirectIcon from "../../assets/svg/redirect.svg";
-import TagIcon from "../../assets/svg/tag.svg";
-import CommentIcon from "../../assets/svg/comment.svg";
-import FilterIcon from "../../assets/svg/filter.svg";
+import EditIcon from '../../assets/svg/edit.svg';
+import PlusIcon from '../../assets/svg/plus-icon.svg';
+import DeleteIcon from '../../assets/svg/delete.svg';
+import NewUserIcon from '../../assets/svg/new-user.svg';
+import RedirectIcon from '../../assets/svg/redirect.svg';
+import TagIcon from '../../assets/svg/tag.svg';
+import CommentIcon from '../../assets/svg/comment.svg';
+import FilterIcon from '../../assets/svg/filter.svg';
 
-import SearchSelect from "../../components/Ui/SearchSelect";
-import CancelButton from "../../components/Ui/CancelButton";
-import Loading from "../../components/Ui/Loading";
-import Tooltip from "../../components/Ui/Tooltip"; 
-import UserBadge from "../../components/UserBadge/index";
-import Category from "../../components/Category/index";
-import Popup from "../../components/Ui/Popup";
-import ChipButton from "../../components/Ui/ChipButton";
-import RoleBadge from "../../components/RoleBadge/index";
-import { PostEntityChip } from "../../components/PostEntity";
-import { kindLabel, statusLabel } from "../Support/constants";
+import SearchSelect from '../../components/Ui/SearchSelect';
+import CancelButton from '../../components/Ui/CancelButton';
+import Loading from '../../components/Ui/Loading';
+import Tooltip from '../../components/Ui/Tooltip';
+import UserBadge from '../../components/UserBadge/index';
+import Category from '../../components/Category/index';
+import Popup from '../../components/Ui/Popup';
+import ChipButton from '../../components/Ui/ChipButton';
+import RoleBadge from '../../components/RoleBadge/index';
+import { PostEntityChip } from '../../components/PostEntity';
+import { kindLabel, statusLabel } from '../Support/constants';
 
-import Pagination from "../../components/Ui/Pagination";
-import "./Logs.scss";
-import "./Requests.scss";
-
+import Pagination from '../../components/Ui/Pagination';
+import './Logs.scss';
+import './Requests.scss';
 
 const formatTime = (date: any) => {
     return (
         <Tooltip text={format_date_time(date)}>
             <p>{format_back(date)}</p>
         </Tooltip>
-    )
-
+    );
 };
 
 const LogLayout = ({ action, user, time, children, setFilter, log }: any) => {
     return (
-        <div className={`admin_panel_content_logs_page_item admin_panel_content_logs_page_item_${action?.className} app-transition`}>
+        <div
+            className={`admin_panel_content_logs_page_item admin_panel_content_logs_page_item_${action?.className} app-transition`}
+        >
             <div className="admin_panel_content_logs_page_item_left">
                 {log.data?.user ? (
-                    <UserEntity className="test" id={log.data.user} data={user} setFilter={setFilter} />
+                    <UserEntity
+                        className="test"
+                        id={log.data.user}
+                        data={user}
+                        setFilter={setFilter}
+                    />
                 ) : (
                     <GuestEntity email={log.data?.email} />
                 )}
@@ -67,199 +72,209 @@ const LogLayout = ({ action, user, time, children, setFilter, log }: any) => {
                 {Children.toArray(children?.props?.children ?? children)[2]}
             </div>
             <div className="admin_panel_content_logs_page_item_time">
-                {Children.toArray(children?.props?.children ?? children)[3] ?? (time && formatTime(time))}
+                {Children.toArray(children?.props?.children ?? children)[3] ??
+                    (time && formatTime(time))}
             </div>
         </div>
-    )
-}
+    );
+};
 
 const UserEntity = ({ id, data, setFilter }: any) => {
     const navigate = useNavigate();
     const { showToast } = useContext(AppContext);
 
     return (
-        <Popup body={[
-            {
-                title: "Перейти в профиль",
-                onClick: () => {
-                    data ? navigate(`/users/${data.nick_name}`) : showToast({
-                        type: "error",
-                        message: "Пользователь не найден"
-                    })
-                },
-                icon: <RedirectIcon/>
-            },
-            {
-                title: "Просмотреть действия пользователя",
-                onClick: () => {
-                    setFilter({
-                        type: "user",
-                        id: id
-                    })
-                },
-                icon: <FilterIcon/>
-            }
-        ]}>
-            <div className="admin_panel_content_logs_page_item_entity admin_panel_content_logs_page_item_entity_user">
+        <Popup
+            body={[
                 {
-                    data ?
-                        <UserBadge asLink={false} data={data} />
-                        :
-                        <>
-                            <UserBadge asLink={false} data={{ nick_name: "" }} />
-                            <div className="admin_panel_content_logs_page_item_entity_deleted">
-                                <p> 
-                                    DELETED
-                                </p>
-                            </div>
-                        </>
-                }
+                    title: 'Перейти в профиль',
+                    onClick: () => {
+                        data
+                            ? navigate(`/users/${data.nick_name}`)
+                            : showToast({
+                                  type: 'error',
+                                  message: 'Пользователь не найден',
+                              });
+                    },
+                    icon: <RedirectIcon />,
+                },
+                {
+                    title: 'Просмотреть действия пользователя',
+                    onClick: () => {
+                        setFilter({
+                            type: 'user',
+                            id: id,
+                        });
+                    },
+                    icon: <FilterIcon />,
+                },
+            ]}
+        >
+            <div className="admin_panel_content_logs_page_item_entity admin_panel_content_logs_page_item_entity_user">
+                {data ? (
+                    <UserBadge asLink={false} data={data} />
+                ) : (
+                    <>
+                        <UserBadge asLink={false} data={{ nick_name: '' }} />
+                        <div className="admin_panel_content_logs_page_item_entity_deleted">
+                            <p>DELETED</p>
+                        </div>
+                    </>
+                )}
             </div>
         </Popup>
-    )
-}
+    );
+};
 
 const PostEntity = ({ id, data, setFilter }: any) => {
     const navigate = useNavigate();
     const { showToast } = useContext(AppContext);
 
     return (
-        <Popup body={[
-            {
-                title: "Перейти к посту",
-                onClick: () => {
-                    data ? navigate(`/posts/${data._id}`) : showToast({
-                        type: "error",
-                        message: "Пост не найден"
-                    })
+        <Popup
+            body={[
+                {
+                    title: 'Перейти к посту',
+                    onClick: () => {
+                        data
+                            ? navigate(`/posts/${data._id}`)
+                            : showToast({
+                                  type: 'error',
+                                  message: 'Пост не найден',
+                              });
+                    },
+                    icon: <RedirectIcon />,
                 },
-                icon: <RedirectIcon/>
-
-            },
-            {
-                title: "Просмотреть историю поста",
-                onClick: () => {
-                    setFilter({
-                        type: "post",
-                        id: id
-                    })
+                {
+                    title: 'Просмотреть историю поста',
+                    onClick: () => {
+                        setFilter({
+                            type: 'post',
+                            id: id,
+                        });
+                    },
+                    icon: <FilterIcon />,
                 },
-                icon: <FilterIcon/>
-            }
-        ]}>
+            ]}
+        >
             <PostEntityChip title={data?.title} deleted={!data} />
         </Popup>
-    )
-}
+    );
+};
 
 const CategoryEntity = ({ id, data, setFilter }: any) => {
     const navigate = useNavigate();
     const { showToast } = useContext(AppContext);
 
     return (
-        <Popup body={[
-            {
-                title: "Перейти к категории",
-                onClick: () => {
-                    data ? navigate(`/posts/?filter=${data._id}`) : showToast({
-                        type: "error",
-                        message: "Категория не найдена"
-                    })
-
-                },
-                icon: <RedirectIcon/>
-
-            },
-            {
-                title: "Просмотреть историю категории",
-                onClick: () => {
-                    setFilter({
-                        type: "category",
-                        id: id
-                    })
-                },
-                icon: <FilterIcon/>
-            }
-        ]}>
-            <div className="admin_panel_content_logs_page_item_entity admin_panel_content_logs_page_item_entity_category">
+        <Popup
+            body={[
                 {
-                    data ? 
-                        <Category category={data} isActive={true} onClick={() => {}} /> :
+                    title: 'Перейти к категории',
+                    onClick: () => {
+                        data
+                            ? navigate(`/posts/?filter=${data._id}`)
+                            : showToast({
+                                  type: 'error',
+                                  message: 'Категория не найдена',
+                              });
+                    },
+                    icon: <RedirectIcon />,
+                },
+                {
+                    title: 'Просмотреть историю категории',
+                    onClick: () => {
+                        setFilter({
+                            type: 'category',
+                            id: id,
+                        });
+                    },
+                    icon: <FilterIcon />,
+                },
+            ]}
+        >
+            <div className="admin_panel_content_logs_page_item_entity admin_panel_content_logs_page_item_entity_category">
+                {data ? (
+                    <Category
+                        category={data}
+                        isActive={true}
+                        onClick={() => {}}
+                    />
+                ) : (
                     <div className="admin_panel_content_logs_page_item_entity admin_panel_content_logs_page_item_entity_category_deleted">
-                    
-                        <ChipButton >
-                            <TagIcon/>
-                            <p>
-                                No longer exist
-                            </p>
+                        <ChipButton>
+                            <TagIcon />
+                            <p>No longer exist</p>
                         </ChipButton>
                     </div>
-                }
+                )}
             </div>
         </Popup>
-    )
-}
+    );
+};
 
 const RoleEntity = ({ data }: any) => {
     return (
         <div className="admin_panel_content_logs_page_item_entity admin_panel_content_logs_page_item_entity_role">
-            {
-                data ? 
-                    <RoleBadge user={data} /> :
-                    <div className="admin_panel_content_logs_page_item_entity admin_panel_content_logs_page_item_entity_role_deleted">
-                        <ChipButton >
-                            <p>
-                                No longer exist
-                            </p>
-                        </ChipButton>
-                    </div>
-            }
+            {data ? (
+                <RoleBadge user={data} />
+            ) : (
+                <div className="admin_panel_content_logs_page_item_entity admin_panel_content_logs_page_item_entity_role_deleted">
+                    <ChipButton>
+                        <p>No longer exist</p>
+                    </ChipButton>
+                </div>
+            )}
         </div>
-    )
-}
+    );
+};
 
 const GuestEntity = ({ email }: any) => {
     return (
         <div className="admin_panel_content_logs_page_item_entity admin_panel_content_logs_page_item_entity_guest">
-            <p>Гость{email ? ` · ${email}` : ""}</p>
+            <p>Гость{email ? ` · ${email}` : ''}</p>
         </div>
-    )
-}
+    );
+};
 
 const SupportEntity = ({ id, accessKey, kind, setFilter }: any) => {
     const navigate = useNavigate();
     const { showToast } = useContext(AppContext);
 
     return (
-        <Popup body={[
-            {
-                title: "Открыть обращение",
-                onClick: () => {
-                    accessKey ? navigate(`/support/${accessKey}`) : showToast({
-                        type: "error",
-                        message: "Обращение не найдено"
-                    })
+        <Popup
+            body={[
+                {
+                    title: 'Открыть обращение',
+                    onClick: () => {
+                        accessKey
+                            ? navigate(`/support/${accessKey}`)
+                            : showToast({
+                                  type: 'error',
+                                  message: 'Обращение не найдено',
+                              });
+                    },
+                    icon: <RedirectIcon />,
                 },
-                icon: <RedirectIcon/>
-            },
-            {
-                title: "История обращения",
-                onClick: () => {
-                    setFilter({
-                        type: "support_request",
-                        id
-                    })
+                {
+                    title: 'История обращения',
+                    onClick: () => {
+                        setFilter({
+                            type: 'support_request',
+                            id,
+                        });
+                    },
+                    icon: <FilterIcon />,
                 },
-                icon: <FilterIcon/>
-            }
-        ]}>
+            ]}
+        >
             <div className="admin_panel_content_logs_page_item_entity admin_panel_content_logs_page_item_entity_post">
-                <CommentIcon/>
-                <p>{kindLabel(kind) || "Обращение"}</p>
+                <CommentIcon />
+                <p>{kindLabel(kind) || 'Обращение'}</p>
             </div>
         </Popup>
-    )
-}
+    );
+};
 
 const SupportStatusEntity = ({ status }: any) => {
     if (!status) {
@@ -271,42 +286,54 @@ const SupportStatusEntity = ({ status }: any) => {
             {statusLabel(status)}
         </span>
     );
-}
+};
 
 const LOG_RENDERERS: any = {
     create_post: ({ log, posts, setFilter }: any) => (
         <>
             <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <PlusIcon/>
+                    <PlusIcon />
                 </div>
                 <p>Создал пост</p>
             </div>
-            <PostEntity id={log.data.post} data={posts.find((p: any) => p._id === log.data.post)} setFilter={setFilter} />
-        </> 
+            <PostEntity
+                id={log.data.post}
+                data={posts.find((p: any) => p._id === log.data.post)}
+                setFilter={setFilter}
+            />
+        </>
     ),
 
     update_post: ({ log, posts, setFilter }: any) => (
         <>
             <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <EditIcon/>
+                    <EditIcon />
                 </div>
                 <p>Отредактировал пост</p>
             </div>
-            <PostEntity id={log.data.post} data={posts.find((p: any) => p._id === log.data.post)} setFilter={setFilter} />
+            <PostEntity
+                id={log.data.post}
+                data={posts.find((p: any) => p._id === log.data.post)}
+                setFilter={setFilter}
+            />
         </>
     ),
-    
+
     delete_post: ({ log, posts, setFilter }: any) => (
         <>
-             <div className="admin_panel_content_logs_page_item_message">
+            <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <DeleteIcon/>
+                    <DeleteIcon />
                 </div>
                 <p>Удалил пост</p>
             </div>
-            <PostEntity id={log.data.post} data={posts.find((p: any) => p._id === log.data.post)} setFilter={setFilter} />
+            <PostEntity
+                id={log.data.post}
+                data={posts.find((p: any) => p._id === log.data.post)}
+                setFilter={setFilter}
+            />
         </>
     ),
 
@@ -314,12 +341,11 @@ const LOG_RENDERERS: any = {
         <>
             <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <NewUserIcon/>
+                    <NewUserIcon />
                 </div>
                 <p>Зарегестрировался</p>
             </div>
-            <div className="admin_panel_content_logs_page_item_entity">
-            </div>
+            <div className="admin_panel_content_logs_page_item_entity"></div>
         </>
     ),
 
@@ -327,11 +353,17 @@ const LOG_RENDERERS: any = {
         <>
             <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <PlusIcon/>
+                    <PlusIcon />
                 </div>
                 <p>Создал категорию</p>
             </div>
-            <CategoryEntity id={log.data.category} data={categories.find((cat: any) => cat._id === log.data.category)} setFilter={setFilter} />
+            <CategoryEntity
+                id={log.data.category}
+                data={categories.find(
+                    (cat: any) => cat._id === log.data.category,
+                )}
+                setFilter={setFilter}
+            />
         </>
     ),
 
@@ -339,11 +371,17 @@ const LOG_RENDERERS: any = {
         <>
             <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <EditIcon/>
+                    <EditIcon />
                 </div>
                 <p>Отредактировал категорию</p>
             </div>
-            <CategoryEntity id={log.data.category} data={categories.find((cat: any) => cat._id === log.data.category)} setFilter={setFilter} />
+            <CategoryEntity
+                id={log.data.category}
+                data={categories.find(
+                    (cat: any) => cat._id === log.data.category,
+                )}
+                setFilter={setFilter}
+            />
         </>
     ),
 
@@ -351,11 +389,17 @@ const LOG_RENDERERS: any = {
         <>
             <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <DeleteIcon/>
+                    <DeleteIcon />
                 </div>
                 <p>Удалил категорию</p>
             </div>
-            <CategoryEntity id={log.data.category} data={categories.find((cat: any) => cat._id === log.data.category)} setFilter={setFilter} />
+            <CategoryEntity
+                id={log.data.category}
+                data={categories.find(
+                    (cat: any) => cat._id === log.data.category,
+                )}
+                setFilter={setFilter}
+            />
         </>
     ),
 
@@ -363,12 +407,20 @@ const LOG_RENDERERS: any = {
         <>
             <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <EditIcon/>
+                    <EditIcon />
                 </div>
                 <p>Изменил роль пользователя</p>
             </div>
-            <UserEntity id={log.data.updated_user} data={users.find((u: any) => u._id === log.data.updated_user)} setFilter={setFilter} />
-            <RoleEntity id={log.data.new_role} data={ { role: log.data.new_role } } setFilter={setFilter} />
+            <UserEntity
+                id={log.data.updated_user}
+                data={users.find((u: any) => u._id === log.data.updated_user)}
+                setFilter={setFilter}
+            />
+            <RoleEntity
+                id={log.data.new_role}
+                data={{ role: log.data.new_role }}
+                setFilter={setFilter}
+            />
         </>
     ),
 
@@ -376,14 +428,14 @@ const LOG_RENDERERS: any = {
         <>
             <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <PlusIcon/>
+                    <PlusIcon />
                 </div>
                 <p>
-                    {log.data?.kind === "complaint"
-                        ? "Оставил жалобу"
-                        : log.data?.kind === "help"
-                            ? "Запросил помощь"
-                            : "Оставил запрос"}
+                    {log.data?.kind === 'complaint'
+                        ? 'Оставил жалобу'
+                        : log.data?.kind === 'help'
+                          ? 'Запросил помощь'
+                          : 'Оставил запрос'}
                 </p>
             </div>
             <SupportEntity
@@ -399,9 +451,13 @@ const LOG_RENDERERS: any = {
         <>
             <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <CommentIcon/>
+                    <CommentIcon />
                 </div>
-                <p>{log.data?.author_type === "requester" ? "Дополнил обращение" : "Ответил на обращение"}</p>
+                <p>
+                    {log.data?.author_type === 'requester'
+                        ? 'Дополнил обращение'
+                        : 'Ответил на обращение'}
+                </p>
             </div>
             <SupportEntity
                 id={log.data.support_request}
@@ -416,7 +472,7 @@ const LOG_RENDERERS: any = {
         <>
             <div className="admin_panel_content_logs_page_item_message">
                 <div className="admin_panel_content_logs_page_item_message_icon">
-                    <EditIcon/>
+                    <EditIcon />
                 </div>
                 <p>Сменил статус обращения</p>
             </div>
@@ -428,73 +484,72 @@ const LOG_RENDERERS: any = {
             />
             <SupportStatusEntity status={log.data.status} />
         </>
-    )
+    ),
 };
 
 const ACTIONS: any = {
     create_post: {
-        title: "Создание поста",
-        className: "create_post",
-        icon: PlusIcon
+        title: 'Создание поста',
+        className: 'create_post',
+        icon: PlusIcon,
     },
 
     update_post: {
-        title: "Редактирование поста",
-        className: "update_post",
-        icon: EditIcon
+        title: 'Редактирование поста',
+        className: 'update_post',
+        icon: EditIcon,
     },
 
     delete_post: {
-        title: "Удаление поста",
-        className: "delete_post",
-        icon: DeleteIcon
+        title: 'Удаление поста',
+        className: 'delete_post',
+        icon: DeleteIcon,
     },
 
     register: {
-        title: "Регистрация",
-        className: "register",
-        icon: NewUserIcon
+        title: 'Регистрация',
+        className: 'register',
+        icon: NewUserIcon,
     },
 
     create_category: {
-        title: "Создание категории",
-        className: "create_category",
-        icon: PlusIcon
+        title: 'Создание категории',
+        className: 'create_category',
+        icon: PlusIcon,
     },
-    
+
     update_category: {
-        title: "Редактирование категории",
-        className: "update_category",
-        icon: EditIcon
+        title: 'Редактирование категории',
+        className: 'update_category',
+        icon: EditIcon,
     },
 
     delete_category: {
-        title: "Удаление категории",
-        className: "delete_category",
-        icon: DeleteIcon
+        title: 'Удаление категории',
+        className: 'delete_category',
+        icon: DeleteIcon,
     },
     update_role: {
-        title: "Role update",
-        className: "update_role",
-        icon: EditIcon
+        title: 'Role update',
+        className: 'update_role',
+        icon: EditIcon,
     },
     create_support_request: {
-        title: "Обращение",
-        className: "create_support_request",
-        icon: PlusIcon
+        title: 'Обращение',
+        className: 'create_support_request',
+        icon: PlusIcon,
     },
     reply_support_request: {
-        title: "Ответ на обращение",
-        className: "reply_support_request",
-        icon: CommentIcon
+        title: 'Ответ на обращение',
+        className: 'reply_support_request',
+        icon: CommentIcon,
     },
     update_support_status: {
-        title: "Статус обращения",
-        className: "update_support_status",
-        icon: EditIcon
-    }
+        title: 'Статус обращения',
+        className: 'update_support_status',
+        icon: EditIcon,
+    },
 };
-
 
 const LogsPage = () => {
     const [logs, setLogs] = useState<any[]>([]);
@@ -506,7 +561,7 @@ const LogsPage = () => {
     const [pagesCount, setPagesCount] = useState<any>(0);
     const [filter, setFilter] = useState<any>({
         type: null,
-        id: null
+        id: null,
     });
 
     const { showToast } = useContext(AppContext);
@@ -529,16 +584,22 @@ const LogsPage = () => {
         const fetchData = async () => {
             const logsQuery: any = {
                 page,
-                limit: 9
+                limit: 9,
             };
 
-            if (filter.type && filter.id && ["user", "post", "category", "support_request"].includes(filter.type)) {
+            if (
+                filter.type &&
+                filter.id &&
+                ['user', 'post', 'category', 'support_request'].includes(
+                    filter.type,
+                )
+            ) {
                 logsQuery[filter.type] = filter.id;
             }
 
             const [logsResult, categoriesResult] = await Promise.all([
                 getAllLogs(logsQuery),
-                getCategories()
+                getCategories(),
             ]);
 
             if (cancelled) {
@@ -549,8 +610,8 @@ const LogsPage = () => {
 
             if (!logsResult.status) {
                 showToast({
-                    type: "error",
-                    message: logsResult.message
+                    type: 'error',
+                    message: logsResult.message,
                 });
 
                 setLogs([]);
@@ -563,18 +624,21 @@ const LogsPage = () => {
             setLogs(items);
             setPagesCount(logsResult.data?.pagination?.pages || 0);
 
-            const postIds = [...new Set(items.map((log: any) => log.data?.post).filter(Boolean))];
+            const postIds = [
+                ...new Set(
+                    items.map((log: any) => log.data?.post).filter(Boolean),
+                ),
+            ];
 
             if (postIds.length) {
                 const postsResult = await getPosts({
                     _id: postIds,
-                    limit: Math.min(50, postIds.length)
+                    limit: Math.min(50, postIds.length),
                 });
                 if (!cancelled) {
                     setPosts(postsResult?.data?.items || []);
                 }
-            }
-            else if (!cancelled) {
+            } else if (!cancelled) {
                 setPosts([]);
             }
 
@@ -589,34 +653,34 @@ const LogsPage = () => {
             cancelled = true;
         };
     }, [page, filter.id, filter.type, showToast]);
-    
+
     useEffect(() => {
         const fetchUsers = async () => {
             const userIds = [
                 ...new Set(
                     logs
-                        .flatMap((log: any) => [log.data?.user, log.data?.updated_user])
-                        .filter(Boolean)
-                )
+                        .flatMap((log: any) => [
+                            log.data?.user,
+                            log.data?.updated_user,
+                        ])
+                        .filter(Boolean),
+                ),
             ];
-    
-            const usersResult = await getUsers(
-                userIds.map((_id: any) => ({ _id }))
-            )
 
-            if(usersResult.status) {
+            const usersResult = await getUsers(
+                userIds.map((_id: any) => ({ _id })),
+            );
+
+            if (usersResult.status) {
                 setUsers(usersResult.data);
             }
-        } 
+        };
 
         fetchUsers();
-    },[logs]);
+    }, [logs]);
 
     if (loading) {
-        return (
-            <Loading size={40} />
-        );
-
+        return <Loading size={40} />;
     }
 
     const search_select_options: any[] = [];
@@ -625,17 +689,17 @@ const LogsPage = () => {
         if (
             log.data?.user &&
             !search_select_options.some(
-                (option: any) => 
-                    option.value.type === "user" &&
-                    option.value.value === log.data.user
+                (option: any) =>
+                    option.value.type === 'user' &&
+                    option.value.value === log.data.user,
             )
         ) {
             const user = users.find((u: any) => u._id === log.data.user);
 
             search_select_options.push({
                 value: {
-                    type: "user",
-                    value: log.data.user
+                    type: 'user',
+                    value: log.data.user,
                 },
                 name: user?.nick_name ?? log.data.user,
                 _id: log.data.user,
@@ -645,24 +709,22 @@ const LogsPage = () => {
                         data={user}
                         setFilter={() => {}}
                     />
-                )
+                ),
             });
-        }
-
-        else if (
+        } else if (
             log.data?.post &&
             !search_select_options.some(
                 (option: any) =>
-                    option.value.type === "post" &&
-                    option.value.value === log.data.post
+                    option.value.type === 'post' &&
+                    option.value.value === log.data.post,
             )
         ) {
             const post = posts.find((p: any) => p._id === log.data.post);
 
             search_select_options.push({
                 value: {
-                    type: "post",
-                    value: log.data.post
+                    type: 'post',
+                    value: log.data.post,
                 },
                 name: post?.title ?? log.data.post,
                 _id: log.data.post,
@@ -672,20 +734,24 @@ const LogsPage = () => {
                         data={post}
                         setFilter={() => {}}
                     />
-                )
+                ),
             });
-        }
-        else if(log.data?.category && !search_select_options.some(
-            (option: any) =>
-                option.value.type === "category" &&
-                option.value.value === log.data.category
-        )) {
-            const category = categories.find((c: any) => c._id === log.data.category);
+        } else if (
+            log.data?.category &&
+            !search_select_options.some(
+                (option: any) =>
+                    option.value.type === 'category' &&
+                    option.value.value === log.data.category,
+            )
+        ) {
+            const category = categories.find(
+                (c: any) => c._id === log.data.category,
+            );
 
             search_select_options.push({
                 value: {
-                    type: "category",
-                    value: log.data.category
+                    type: 'category',
+                    value: log.data.category,
                 },
                 name: category?.name ?? log.data.category,
                 _id: log.data.category,
@@ -695,7 +761,7 @@ const LogsPage = () => {
                         data={category}
                         setFilter={() => {}}
                     />
-                )
+                ),
             });
         }
 
@@ -703,16 +769,16 @@ const LogsPage = () => {
             log.data?.support_request &&
             !search_select_options.some(
                 (option: any) =>
-                    option.value.type === "support_request" &&
-                    option.value.value === log.data.support_request
+                    option.value.type === 'support_request' &&
+                    option.value.value === log.data.support_request,
             )
         ) {
             search_select_options.push({
                 value: {
-                    type: "support_request",
-                    value: log.data.support_request
+                    type: 'support_request',
+                    value: log.data.support_request,
                 },
-                name: kindLabel(log.data.kind) || "Обращение",
+                name: kindLabel(log.data.kind) || 'Обращение',
                 _id: log.data.support_request,
                 render: () => (
                     <SupportEntity
@@ -721,39 +787,81 @@ const LogsPage = () => {
                         kind={log.data.kind}
                         setFilter={() => {}}
                     />
-                )
+                ),
             });
         }
     });
 
     return (
         <div className="admin_panel_content_logs_page">
-            {
-                filter.type ?
-                    <div className="admin_panel_content_logs_page_filter">
-                        <FilterIcon className="admin_panel_content_logs_page_filter_icon" />
-                        {filter.type === "user" && <UserEntity id={filter.id} data={users.find((u: any) => u._id === filter.id)} setFilter={applyFilter} />}
-                        {filter.type === "post" && <PostEntity id={filter.id} data={posts.find((p: any) => p._id === filter.id)} setFilter={applyFilter} />}
-                        {filter.type === "category" && <CategoryEntity id={filter.id} data={categories.find((c: any) => c._id === filter.id)} setFilter={applyFilter} />}
-                        {filter.type === "support_request" && (
-                            <SupportEntity
-                                id={filter.id}
-                                accessKey={logs.find((log: any) => log.data?.support_request === filter.id)?.data?.access_key}
-                                kind={logs.find((log: any) => log.data?.support_request === filter.id)?.data?.kind}
-                                setFilter={applyFilter}
-                            />
-                        )}
-                        {filter.type === "role" && <RoleEntity id={filter.id} data={ { role: filter.id } } setFilter={applyFilter} />}
-                        <CancelButton onClick={() => applyFilter({ type: null, id: null })}>Отмена</CancelButton>
-                    </div>
-                :
-                    <SearchSelect options={search_select_options} onChange={(value: any) => {
+            {filter.type ? (
+                <div className="admin_panel_content_logs_page_filter">
+                    <FilterIcon className="admin_panel_content_logs_page_filter_icon" />
+                    {filter.type === 'user' && (
+                        <UserEntity
+                            id={filter.id}
+                            data={users.find((u: any) => u._id === filter.id)}
+                            setFilter={applyFilter}
+                        />
+                    )}
+                    {filter.type === 'post' && (
+                        <PostEntity
+                            id={filter.id}
+                            data={posts.find((p: any) => p._id === filter.id)}
+                            setFilter={applyFilter}
+                        />
+                    )}
+                    {filter.type === 'category' && (
+                        <CategoryEntity
+                            id={filter.id}
+                            data={categories.find(
+                                (c: any) => c._id === filter.id,
+                            )}
+                            setFilter={applyFilter}
+                        />
+                    )}
+                    {filter.type === 'support_request' && (
+                        <SupportEntity
+                            id={filter.id}
+                            accessKey={
+                                logs.find(
+                                    (log: any) =>
+                                        log.data?.support_request === filter.id,
+                                )?.data?.access_key
+                            }
+                            kind={
+                                logs.find(
+                                    (log: any) =>
+                                        log.data?.support_request === filter.id,
+                                )?.data?.kind
+                            }
+                            setFilter={applyFilter}
+                        />
+                    )}
+                    {filter.type === 'role' && (
+                        <RoleEntity
+                            id={filter.id}
+                            data={{ role: filter.id }}
+                            setFilter={applyFilter}
+                        />
+                    )}
+                    <CancelButton
+                        onClick={() => applyFilter({ type: null, id: null })}
+                    >
+                        Отмена
+                    </CancelButton>
+                </div>
+            ) : (
+                <SearchSelect
+                    options={search_select_options}
+                    onChange={(value: any) => {
                         if (!value?.type) {
                             return;
                         }
                         applyFilter({ type: value.type, id: value.value });
-                    }}/>
-            }
+                    }}
+                />
+            )}
             {
                 <Pagination
                     content={logs}
@@ -761,7 +869,7 @@ const LogsPage = () => {
                     pagesCount={pagesCount}
                     onPageChange={(index: any) => setPage(index + 1)}
                 >
-                    {(visibleContent: any) => (
+                    {(visibleContent: any) =>
                         visibleContent.map((log: any) => {
                             const Renderer = LOG_RENDERERS[log.type];
                             const action = ACTIONS[log.type];
@@ -771,7 +879,10 @@ const LogsPage = () => {
                                     key={log._id}
                                     action={action}
                                     setFilter={applyFilter}
-                                    user={users.find((user: any) => user._id === log.data?.user)}
+                                    user={users.find(
+                                        (user: any) =>
+                                            user._id === log.data?.user,
+                                    )}
                                     log={log}
                                     time={log.date_time}
                                 >
@@ -780,17 +891,16 @@ const LogsPage = () => {
                                         users,
                                         posts,
                                         categories,
-                                        setFilter: applyFilter
+                                        setFilter: applyFilter,
                                     })}
                                 </LogLayout>
                             );
                         })
-                    )}
+                    }
                 </Pagination>
             }
         </div>
     );
-
 };
 
 export default LogsPage;

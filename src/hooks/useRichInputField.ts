@@ -1,22 +1,26 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     autoUpdate,
     flip,
     offset,
     shift,
     useFloating,
-} from "@floating-ui/react";
+} from '@floating-ui/react';
 
-import { searchHashtags, searchUsers } from "../api/search.api";
-import { applyMentionAtCursor, getActiveMention, stripLegacyMentionTokens } from "../content/mentions";
-import { highlightPlainRichHtml } from "../content/plainRichText";
-import { resolveComposerFeatures } from "../content/presets";
-import { applyHashtagAtCursor, getActiveHashtag } from "../utils/hashtags";
+import { searchHashtags, searchUsers } from '../api/search.api';
+import {
+    applyMentionAtCursor,
+    getActiveMention,
+    stripLegacyMentionTokens,
+} from '../content/mentions';
+import { highlightPlainRichHtml } from '../content/plainRichText';
+import { resolveComposerFeatures } from '../content/presets';
+import { applyHashtagAtCursor, getActiveHashtag } from '../utils/hashtags';
 
 export function useRichInputField({
     value,
     onChange,
-    preset = "plain",
+    preset = 'plain',
     features,
 }: any) {
     const anchorRef = useRef<any>(null);
@@ -35,7 +39,7 @@ export function useRichInputField({
         [features, preset],
     );
 
-    const text = useMemo(() => stripLegacyMentionTokens(value ?? ""), [value]);
+    const text = useMemo(() => stripLegacyMentionTokens(value ?? ''), [value]);
 
     const mirrorHtml = useMemo(
         () => highlightPlainRichHtml(text, resolvedFeatures),
@@ -60,8 +64,8 @@ export function useRichInputField({
 
     const { refs, floatingStyles } = useFloating({
         open: suggestOpen,
-        placement: "top-start",
-        strategy: "fixed",
+        placement: 'top-start',
+        strategy: 'fixed',
         middleware: [offset(8), flip(), shift({ padding: 8 })],
         whileElementsMounted: suggestOpen ? autoUpdate : undefined,
     });
@@ -74,9 +78,9 @@ export function useRichInputField({
 
     const refreshSuggest = useCallback(() => {
         const field = textareaRef.current;
-        const current = field?.value ?? text ?? "";
+        const current = field?.value ?? text ?? '';
         const caret =
-            typeof field?.selectionStart === "number"
+            typeof field?.selectionStart === 'number'
                 ? field.selectionStart
                 : current.length;
 
@@ -96,7 +100,7 @@ export function useRichInputField({
                         return;
                     }
 
-                    setSuggestKind("mention");
+                    setSuggestKind('mention');
                     setActiveIndex(0);
                     setItems(users || []);
                 }, 80);
@@ -121,7 +125,7 @@ export function useRichInputField({
                         return;
                     }
 
-                    setSuggestKind("hashtag");
+                    setSuggestKind('hashtag');
                     setActiveIndex(0);
                     setItems(tags || []);
                 }, 80);
@@ -141,7 +145,7 @@ export function useRichInputField({
                 return;
             }
 
-            if (suggestKind === "mention") {
+            if (suggestKind === 'mention') {
                 const next = applyMentionAtCursor(
                     field.value,
                     field.selectionStart,
@@ -159,7 +163,11 @@ export function useRichInputField({
                 return;
             }
 
-            const next = applyHashtagAtCursor(field.value, field.selectionStart, item);
+            const next = applyHashtagAtCursor(
+                field.value,
+                field.selectionStart,
+                item,
+            );
             onChange?.({ target: { value: next.text } });
             setItems([]);
             setSuggestKind(null);
@@ -185,23 +193,26 @@ export function useRichInputField({
                 return;
             }
 
-            if (event.key === "ArrowDown") {
+            if (event.key === 'ArrowDown') {
                 event.preventDefault();
-                setActiveIndex((index: any) => (index + 1) % itemsRef.current.length);
+                setActiveIndex(
+                    (index: any) => (index + 1) % itemsRef.current.length,
+                );
                 return;
             }
 
-            if (event.key === "ArrowUp") {
+            if (event.key === 'ArrowUp') {
                 event.preventDefault();
                 setActiveIndex(
                     (index: any) =>
-                        (index - 1 + itemsRef.current.length) % itemsRef.current.length,
+                        (index - 1 + itemsRef.current.length) %
+                        itemsRef.current.length,
                 );
                 return;
             }
 
             if (
-                (event.key === "Enter" || event.key === "Tab") &&
+                (event.key === 'Enter' || event.key === 'Tab') &&
                 itemsRef.current[activeIndexRef.current]
             ) {
                 event.preventDefault();
@@ -209,7 +220,7 @@ export function useRichInputField({
                 return;
             }
 
-            if (event.key === "Escape") {
+            if (event.key === 'Escape') {
                 event.preventDefault();
                 setItems([]);
                 setSuggestKind(null);

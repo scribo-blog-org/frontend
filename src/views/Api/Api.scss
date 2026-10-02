@@ -1,4 +1,4 @@
-@use "../../styles/helpers" as *;
+@use '../../styles/helpers' as *;
 
 .api-docs {
     width: 100%;
@@ -9,7 +9,6 @@
         margin: 0 0 var(--space-3);
         font-size: 14px;
         color: var(--light-text-color);
-
     }
 
     &_outdated {
@@ -19,7 +18,6 @@
     .swagger-ui {
         font-family: inherit;
 
-
         .wrapper,
         .information-container,
         .scheme-container {
@@ -27,7 +25,6 @@
             padding-right: 0;
             background: transparent;
             box-shadow: none;
-
         }
 
         .scheme-container {
@@ -107,30 +104,12 @@
             }
         }
 
-//         .expand-operation svg,
-//         .expand-methods svg,
-//         .arrow,
-//         .opblock-control-arrow,
-//         .model-toggle:after,
-//         svg.arrow {
-//             fill: var(--swagger-main-text-color);
-//             color: var(--swagger-main-text-color);
-
-//         }
-
-//         .authorization__btn svg,
-//         .unlocked,
-//         .locked {
-//             fill: #49cc90;
-//         }
-
         .opblock {
             background: var(--section-background-color);
             border: none;
             border-radius: var(--radius, 12px);
             box-shadow: none;
             @include use-transition;
-
         }
 
         .opblock .opblock-summary {
@@ -141,7 +120,6 @@
             background: transparent;
             box-shadow: none;
             border-color: var(--line-color);
-
 
             h4,
             label {
@@ -158,9 +136,9 @@
             @include use-transition;
         }
 
-        input[type="text"],
-        input[type="password"],
-        input[type="search"],
+        input[type='text'],
+        input[type='password'],
+        input[type='search'],
         textarea,
         select,
         .operation-filter-input {
@@ -176,71 +154,5 @@
             background: var(--swagger-option-background-color);
             color: var(--swagger-field-color);
         }
-
-//         .btn {
-//             border-radius: 8px;
-//             font-weight: 500;
-
-//         }
-
-//         .btn.cancel {
-//             color: var(--swagger-secondary-text-color);
-//             border-color: var(--line-color);
-//         }
-
-//         .copy-to-clipboard {
-//             background: var(--section-item-hover-background-color);
-
-//         }
-
-//         .highlight-code,
-//         .microlight,
-//         .renderedMarkdown code,
-//         .opblock-body pre {
-//             background: var(--main-background);
-//             color: var(--swagger-main-text-color);
-
-//         }
-
-//         .model-box,
-//         section.models,
-//         section.models h4,
-//         section.models .model-container {
-//             background: var(--section-background-color);
-//             border: none;
-//             border-color: var(--line-color);
-//             color: var(--swagger-main-text-color);
-//             border-radius: var(--radius, 12px);
-
-//         }
-
-//         table thead tr th,
-//         table tbody tr td {
-//             border-color: var(--line-color);
-//         }
-
-//         .dialog-ux .modal-ux {
-//             background: var(--section-background-color);
-//             border: none;
-//             color: var(--swagger-main-text-color);
-
-//         }
-
-//         .dialog-ux .modal-ux-header,
-//         .dialog-ux .modal-ux-content {
-//             background: transparent;
-//             border-color: var(--line-color);
-//             color: var(--swagger-main-text-color);
-//         }
-
-//         .auth-container,
-//         .auth-btn-wrapper,
-//         .wrapper .block-desktop {
-
-//         }
-
-//         .topbar {
-//             display: none;
-//         }
     }
 }

@@ -1,23 +1,23 @@
 'use client';
 
-import { Link } from "@/navigation";
+import { Link } from '@/navigation';
 
-import UserBadge from "../UserBadge";
-import Category from "../Category";
-import { plainTextExcerpt } from "../../seo/excerpt";
+import UserBadge from '../UserBadge';
+import Category from '../Category';
+import { plainTextExcerpt } from '../../seo/excerpt';
 
-import PostEntityChip from "./PostEntityChip";
+import PostEntityChip from './PostEntityChip';
 
-import "./PostEntity.scss";
+import './PostEntity.scss';
 
-const PostMessageCard = ({ post, className = "", onMediaLoad }: any) => {
+const PostMessageCard = ({ post, className = '', onMediaLoad }: any) => {
     if (!post?._id) {
         return <PostEntityChip deleted className={className} />;
     }
 
     const href = `/posts/${post._id}`;
     const excerpt =
-        post.excerpt || plainTextExcerpt(post.content_text || "", 160);
+        post.excerpt || plainTextExcerpt(post.content_text || '', 160);
 
     return (
         <article
@@ -55,9 +55,13 @@ const PostMessageCard = ({ post, className = "", onMediaLoad }: any) => {
                     </div>
                 ) : null}
                 <div className="post_message_card_body">
-                    <span className="post_message_card_title">{post.title}</span>
+                    <span className="post_message_card_title">
+                        {post.title}
+                    </span>
                     {excerpt ? (
-                        <span className="post_message_card_excerpt">{excerpt}</span>
+                        <span className="post_message_card_excerpt">
+                            {excerpt}
+                        </span>
                     ) : null}
                 </div>
             </Link>

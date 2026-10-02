@@ -1,4 +1,4 @@
-@use "../../styles/helpers" as *;
+@use '../../styles/helpers' as *;
 
 .messages_page {
     width: 100%;
@@ -407,13 +407,19 @@
     border: 0;
     border-left: 2px solid var(--accent-color);
     border-radius: var(--radius-sm);
-    background: var(--message-quote-bg, var(--section-item-hover-background-color));
+    background: var(
+        --message-quote-bg,
+        var(--section-item-hover-background-color)
+    );
     text-align: left;
     box-sizing: border-box;
     cursor: pointer;
 
     @include hover {
-        background: var(--message-quote-bg-hover, var(--section-item-hover-background-color));
+        background: var(
+            --message-quote-bg-hover,
+            var(--section-item-hover-background-color)
+        );
     }
 
     &_author {
@@ -438,7 +444,10 @@
         cursor: default;
 
         @include hover {
-            background: var(--message-quote-bg, var(--section-item-hover-background-color));
+            background: var(
+                --message-quote-bg,
+                var(--section-item-hover-background-color)
+            );
         }
 
         .messages_quote_text {
@@ -515,7 +524,7 @@
 }
 
 .messages_edited::before {
-    content: "·";
+    content: '·';
     margin-right: 6px;
     color: var(--light-text-color);
 }
@@ -701,7 +710,11 @@
         }
 
         @include hover {
-            background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+            background: color-mix(
+                in srgb,
+                var(--accent-color) 12%,
+                transparent
+            );
         }
     }
 

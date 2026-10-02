@@ -1,24 +1,36 @@
 'use client';
 
-import { createContext, Suspense, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { usePathname } from "next/navigation";
-import { GoogleOAuthProvider } from "@react-oauth/google";
+import {
+    createContext,
+    Suspense,
+    useEffect,
+    useRef,
+    useState,
+    type Dispatch,
+    type SetStateAction,
+} from 'react';
+import { usePathname } from 'next/navigation';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
-import AppLayout from "../layouts/AppLayout";
-import AppShell from "../layouts/AppShell";
-import PageLayout from "../layouts/PageLayout";
+import AppLayout from '../layouts/AppLayout';
+import AppShell from '../layouts/AppShell';
+import PageLayout from '../layouts/PageLayout';
 
-import ModalWindow from "../components/Ui/ModalWindow";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import Toast from "../components/Ui/Toast";
-import MobileNavigationBar from "../components/MobileNavigationBar";
-import ScrollToTop from "../components/ScrollToTop";
+import ModalWindow from '../components/Ui/ModalWindow';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import Toast from '../components/Ui/Toast';
+import MobileNavigationBar from '../components/MobileNavigationBar';
+import ScrollToTop from '../components/ScrollToTop';
 
-import { publicEnv } from "../config/publicEnv";
-import { ACCENT_COLOR, CATEGORY_COLORS } from "../styles/constants";
-import { getAccessToken, setAccessToken, subscribeAccessToken } from "../api/http";
-import SessionBootstrap from "../session/SessionBootstrap";
+import { publicEnv } from '../config/publicEnv';
+import { ACCENT_COLOR, CATEGORY_COLORS } from '../styles/constants';
+import {
+    getAccessToken,
+    setAccessToken,
+    subscribeAccessToken,
+} from '../api/http';
+import SessionBootstrap from '../session/SessionBootstrap';
 
 export type AppContextValue = {
     profile: any;
@@ -36,9 +48,15 @@ export type AppContextValue = {
     setAccessToken: (token: string | null) => void;
 };
 
-export const AppContext = createContext<AppContextValue>(null as unknown as AppContextValue);
+export const AppContext = createContext<AppContextValue>(
+    null as unknown as AppContextValue,
+);
 
-function AppModals({ modalWindow, showModalWindow, modalCloseRequest }: {
+function AppModals({
+    modalWindow,
+    showModalWindow,
+    modalCloseRequest,
+}: {
     modalWindow: unknown;
     showModalWindow: Dispatch<SetStateAction<unknown>>;
     modalCloseRequest: number;
@@ -56,16 +74,24 @@ function AppModals({ modalWindow, showModalWindow, modalCloseRequest }: {
 }
 
 function AppFooter() {
-    const pathname = usePathname() || "";
+    const pathname = usePathname() || '';
 
-    if (pathname.startsWith("/messages")) {
+    if (pathname.startsWith('/messages')) {
         return null;
     }
 
     return <Footer />;
 }
 
-function AppChrome({ children, hasSession, modalWindow, showModalWindow, modalCloseRequest, toast, showToast }: {
+function AppChrome({
+    children,
+    hasSession,
+    modalWindow,
+    showModalWindow,
+    modalCloseRequest,
+    toast,
+    showToast,
+}: {
     children: React.ReactNode;
     hasSession: boolean;
     modalWindow: unknown;
@@ -86,9 +112,7 @@ function AppChrome({ children, hasSession, modalWindow, showModalWindow, modalCl
                     <AppShell>
                         <Header />
                         <div className="app-shell_content">
-                            <PageLayout>
-                                {children}
-                            </PageLayout>
+                            <PageLayout>{children}</PageLayout>
                             <AppFooter />
                         </div>
                         <MobileNavigationBar />
@@ -100,7 +124,10 @@ function AppChrome({ children, hasSession, modalWindow, showModalWindow, modalCl
     );
 }
 
-export default function AppProviders({ children, hasSession = false }: {
+export default function AppProviders({
+    children,
+    hasSession = false,
+}: {
     children: React.ReactNode;
     hasSession?: boolean;
 }) {
@@ -111,24 +138,23 @@ export default function AppProviders({ children, hasSession = false }: {
     const [modalWindow, showModalWindow] = useState<any>(false);
     const [modalCloseRequest, setModalCloseRequest] = useState<any>(0);
     const [accessToken, setAccessTokenState] = useState<any>(getAccessToken());
-    const requestCloseModal = () => setModalCloseRequest((count: any) => count + 1);
+    const requestCloseModal = () =>
+        setModalCloseRequest((count: any) => count + 1);
     const skipThemePersist = useRef(true);
 
     useEffect(() => {
         let dark = true;
 
         try {
-            const stored = localStorage.getItem("theme");
+            const stored = localStorage.getItem('theme');
 
             if (stored !== null) {
                 dark = JSON.parse(stored);
             }
-        } catch {
-            // keep default dark theme
-        }
+        } catch {}
 
         setIsDarkTheme(dark);
-        document.body.classList.toggle("dark-theme", dark);
+        document.body.classList.toggle('dark-theme', dark);
     }, []);
 
     useEffect(() => {
@@ -141,14 +167,16 @@ export default function AppProviders({ children, hasSession = false }: {
             return;
         }
 
-        localStorage.setItem("theme", JSON.stringify(isDarkTheme));
-        document.body.classList.toggle("dark-theme", isDarkTheme);
+        localStorage.setItem('theme', JSON.stringify(isDarkTheme));
+        document.body.classList.toggle('dark-theme', isDarkTheme);
 
-        const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        const metaThemeColor = document.querySelector(
+            'meta[name="theme-color"]',
+        );
 
         metaThemeColor?.setAttribute(
-            "content",
-            isDarkTheme ? "#1e1e1e" : "#ffffff",
+            'content',
+            isDarkTheme ? '#1e1e1e' : '#ffffff',
         );
     }, [isDarkTheme]);
 
@@ -184,7 +212,9 @@ export default function AppProviders({ children, hasSession = false }: {
                 setAccessToken,
             }}
         >
-            <GoogleOAuthProvider clientId={publicEnv("NEXT_PUBLIC_GOOGLE_CLIENT_ID")}>
+            <GoogleOAuthProvider
+                clientId={publicEnv('NEXT_PUBLIC_GOOGLE_CLIENT_ID')}
+            >
                 <Suspense fallback={null}>
                     <ScrollToTop />
                     <AppChrome

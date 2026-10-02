@@ -1,22 +1,22 @@
 'use client';
 
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useLocation } from "@/navigation";
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useLocation } from '@/navigation';
 
-import { AppContext } from "@/providers/AppProviders";
-import { getProfile } from "../api/profile.api";
-import { trackVisit } from "../api/analytics.api";
+import { AppContext } from '@/providers/AppProviders';
+import { getProfile } from '../api/profile.api';
+import { trackVisit } from '../api/analytics.api';
 import {
     getAccessToken,
     probeBackend,
     refreshAccessToken,
     subscribeAccessToken,
     subscribeBackendAvailability,
-} from "../api/http";
-import { socketService } from "../sockets/socket.service";
-import AppBootScreen from "./AppBootScreen";
-import AppUnavailableScreen from "./AppUnavailableScreen";
-import "./AppStatusScreen.scss";
+} from '../api/http';
+import { socketService } from '../sockets/socket.service';
+import AppBootScreen from './AppBootScreen';
+import AppUnavailableScreen from './AppUnavailableScreen';
+import './AppStatusScreen.scss';
 
 const SKIP_TRACKING = /^\/admin-panel/;
 const SOCKET_WAIT_MS = 8000;
@@ -44,45 +44,48 @@ const SessionBootstrap = ({ children, hasSession = false }: any) => {
     profileRef.current = profile;
     backendDownRef.current = backendDown;
 
-    const loadSession = useCallback(async ({ blocking = false }: any = {}) => {
-        const requestId = ++requestIdRef.current;
+    const loadSession = useCallback(
+        async ({ blocking = false }: any = {}) => {
+            const requestId = ++requestIdRef.current;
 
-        if (!getAccessToken()) {
-            setProfile(null);
-            setProfileLoading(false);
-            return;
-        }
-
-        const silent = Boolean(profileRef.current) && !blocking;
-
-        if (!silent) {
-            setProfileLoading(true);
-        }
-
-        try {
-            const result = await getProfile();
-
-            if (requestId !== requestIdRef.current || !getAccessToken()) {
+            if (!getAccessToken()) {
+                setProfile(null);
+                setProfileLoading(false);
                 return;
             }
 
-            if (result.status) {
-                setProfile(result.data);
-                profileRef.current = result.data;
-                await waitWithTimeout(
-                    socketService.init(result.data, getAccessToken()),
-                    SOCKET_WAIT_MS
-                );
-            } else if (result.unauthorized) {
-                setProfile(null);
-                profileRef.current = null;
+            const silent = Boolean(profileRef.current) && !blocking;
+
+            if (!silent) {
+                setProfileLoading(true);
             }
-        } finally {
-            if (requestId === requestIdRef.current) {
-                setProfileLoading(false);
+
+            try {
+                const result = await getProfile();
+
+                if (requestId !== requestIdRef.current || !getAccessToken()) {
+                    return;
+                }
+
+                if (result.status) {
+                    setProfile(result.data);
+                    profileRef.current = result.data;
+                    await waitWithTimeout(
+                        socketService.init(result.data, getAccessToken()),
+                        SOCKET_WAIT_MS,
+                    );
+                } else if (result.unauthorized) {
+                    setProfile(null);
+                    profileRef.current = null;
+                }
+            } finally {
+                if (requestId === requestIdRef.current) {
+                    setProfileLoading(false);
+                }
             }
-        }
-    }, [setProfile, setProfileLoading]);
+        },
+        [setProfile, setProfileLoading],
+    );
 
     const startSession = useCallback(async () => {
         const reachable = await probeBackend();
@@ -102,12 +105,15 @@ const SessionBootstrap = ({ children, hasSession = false }: any) => {
     }, [loadSession, setProfileLoading]);
 
     useEffect(() => {
-        const unsubscribe = socketService.on("notification", (notifications: any) => {
-            setProfile((prevProfile: any) => ({
-                ...prevProfile,
-                notifications,
-            }));
-        });
+        const unsubscribe = socketService.on(
+            'notification',
+            (notifications: any) => {
+                setProfile((prevProfile: any) => ({
+                    ...prevProfile,
+                    notifications,
+                }));
+            },
+        );
 
         return unsubscribe;
     }, [setProfile]);
@@ -201,22 +207,13 @@ const SessionBootstrap = ({ children, hasSession = false }: any) => {
         }
     };
 
-    const statusScreen = !sessionReady
-        ? <AppBootScreen />
-        : backendDown
-            ? (
-                <AppUnavailableScreen
-                    onRetry={retry}
-                    isRetrying={isRetrying}
-                />
-            )
-            : null;
+    const statusScreen = !sessionReady ? (
+        <AppBootScreen />
+    ) : backendDown ? (
+        <AppUnavailableScreen onRetry={retry} isRetrying={isRetrying} />
+    ) : null;
 
-    return (
-        <div className="session-gate">
-            {statusScreen || children}
-        </div>
-    );
+    return <div className="session-gate">{statusScreen || children}</div>;
 };
 
 export default SessionBootstrap;

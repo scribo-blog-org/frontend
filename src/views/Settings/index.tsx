@@ -5,7 +5,11 @@ import { useContext, useEffect, useState } from 'react';
 import { AppContext } from '@/providers/AppProviders';
 
 import { editProfile, changePassword } from '../../api/profile.api';
-import { logout as logoutRequest, getSessions, deleteSession } from '../../api/auth.api';
+import {
+    logout as logoutRequest,
+    getSessions,
+    deleteSession,
+} from '../../api/auth.api';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import { format_back, format_date_time } from '../../utils/format';
 
@@ -19,17 +23,18 @@ import Field from '../../components/Ui/Field';
 import Tooltip from '../../components/Ui/Tooltip';
 import SidebarPage from '../../components/SidebarPage';
 
-import "./Settings.scss";
+import './Settings.scss';
 
-import AvatarIcon from "../../assets/svg/avatar-icon.svg"
-import ProfileIcon from "../../assets/svg/profile-icon.svg"
-import ShieldIcon from "../../assets/svg/shield-security.svg"
+import AvatarIcon from '../../assets/svg/avatar-icon.svg';
+import ProfileIcon from '../../assets/svg/profile-icon.svg';
+import ShieldIcon from '../../assets/svg/shield-security.svg';
 
 const Settings = () => {
-    const { profile, setProfile, profileLoading, showToast } = useContext(AppContext)
-    const [ initialized, setInitialized ] = useState<any>(false);
+    const { profile, setProfile, profileLoading, showToast } =
+        useContext(AppContext);
+    const [initialized, setInitialized] = useState<any>(false);
     const navigate = useNavigate();
-    const [errors, setErrors] = useState<any>({})
+    const [errors, setErrors] = useState<any>({});
     const [isLoading, setIsLoading] = useState<any>(false);
     const [passwordLoading, setPasswordLoading] = useState<any>(false);
     const [changingPassword, setChangingPassword] = useState<any>(false);
@@ -38,42 +43,40 @@ const Settings = () => {
     const [logoutLoading, setLogoutLoading] = useState<any>(false);
     const [endingSessionId, setEndingSessionId] = useState<any>(null);
     const [passwordFields, setPasswordFields] = useState<any>({
-        currentPassword: "",
-        newPassword: "",
-        newPasswordConfirm: ""
+        currentPassword: '',
+        newPassword: '',
+        newPasswordConfirm: '',
     });
 
-    const [ fields, setFields ] = useState<any>(
-        {
-            userNickName: '',
-            userDescription: '',
-            isEmailPublic: false,
-            isSavedPostsPublic: false,
-            isLastActivityPublic: true,
-            userAvatar: null
-        }
-    )
+    const [fields, setFields] = useState<any>({
+        userNickName: '',
+        userDescription: '',
+        isEmailPublic: false,
+        isSavedPostsPublic: false,
+        isLastActivityPublic: true,
+        userAvatar: null,
+    });
 
     const set_email_visibility = (visibility: any) => {
         setFields((prev: any) => ({
             ...prev,
-            isEmailPublic: visibility
-        }))
-    }
-    
+            isEmailPublic: visibility,
+        }));
+    };
+
     const set_saved_posts_visibility = (visibility: any) => {
         setFields((prev: any) => ({
             ...prev,
-            isSavedPostsPublic: visibility
-        }))
-    }
+            isSavedPostsPublic: visibility,
+        }));
+    };
 
     const set_last_activity_visibility = (visibility: any) => {
         setFields((prev: any) => ({
             ...prev,
-            isLastActivityPublic: visibility
-        }))
-    }
+            isLastActivityPublic: visibility,
+        }));
+    };
 
     useEffect(() => {
         if (!initialized) {
@@ -81,8 +84,8 @@ const Settings = () => {
             return;
         }
 
-        if (!profileLoading && (!profile)) {
-            navigate("/posts");
+        if (!profileLoading && !profile) {
+            navigate('/');
             return;
         }
 
@@ -91,12 +94,12 @@ const Settings = () => {
 
             setFields((prev: any) => ({
                 ...prev,
-                userNickName: profile.nick_name ?? "",
-                userDescription: profile.description ?? "",
+                userNickName: profile.nick_name ?? '',
+                userDescription: profile.description ?? '',
                 userAvatar: profile.avatar,
                 isEmailPublic: profile.is_email_public,
                 isSavedPostsPublic: profile.is_saved_posts_public,
-                isLastActivityPublic: profile.is_last_activity_public !== false
+                isLastActivityPublic: profile.is_last_activity_public !== false,
             }));
         };
 
@@ -104,130 +107,145 @@ const Settings = () => {
     }, [profileLoading, profile, initialized, navigate]);
 
     useEffect(() => {
-        let cancelled = false
+        let cancelled = false;
 
         const loadSessions = async () => {
-            setSessionsLoading(true)
-            const result = await getSessions()
+            setSessionsLoading(true);
+            const result = await getSessions();
             if (!cancelled && result?.status) {
                 const list = Array.isArray(result.data)
                     ? result.data
                     : Array.isArray(result.data?.sessions)
-                        ? result.data.sessions
-                        : [];
+                      ? result.data.sessions
+                      : [];
                 setSessions(list);
             }
             if (!cancelled) {
-                setSessionsLoading(false)
+                setSessionsLoading(false);
             }
-        }
+        };
 
-        loadSessions()
+        loadSessions();
 
         return () => {
-            cancelled = true
-        }
+            cancelled = true;
+        };
     }, []);
 
     const add_errors_to_image = (new_errors: any) => {
         const updated_errors = { ...errors };
 
-        if (!updated_errors.userAvatar) { 
+        if (!updated_errors.userAvatar) {
             updated_errors.userAvatar = [];
         }
 
-        for(const new_error of new_errors) {
-            updated_errors.userAvatar.push(new_error)
+        for (const new_error of new_errors) {
+            updated_errors.userAvatar.push(new_error);
         }
         setErrors(updated_errors);
-    }
+    };
 
     const clear_errors_from_image = () => {
         const updated_errors = { ...errors };
 
-        if(updated_errors.userAvatar) {
-            delete updated_errors.userAvatar
+        if (updated_errors.userAvatar) {
+            delete updated_errors.userAvatar;
         }
 
-        setErrors(updated_errors)
-    }
+        setErrors(updated_errors);
+    };
 
     const handleFocus = (fieldName: any) => {
         const other = { ...errors };
         delete other[fieldName];
         setErrors(other);
-        
     };
 
     const field_validation = () => {
-        let is_error = false
+        let is_error = false;
         if (fields.userNickName.length < FIELD_LIMITS.nick.min) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userNickName: `Имя должно быть не короче ${FIELD_LIMITS.nick.min} символов`
+                userNickName: `Имя должно быть не короче ${FIELD_LIMITS.nick.min} символов`,
             }));
-            is_error = true
+            is_error = true;
         }
         if (fields.userNickName.length > FIELD_LIMITS.nick.max) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userNickName: `Имя не длиннее ${FIELD_LIMITS.nick.max} символов`
+                userNickName: `Имя не длиннее ${FIELD_LIMITS.nick.max} символов`,
             }));
-            is_error = true
+            is_error = true;
         }
         if (fields.userDescription.length > FIELD_LIMITS.description.max) {
             setErrors((prevErrors: any) => ({
                 ...prevErrors,
-                userDescription: `Описание не длиннее ${FIELD_LIMITS.description.max} символов`
+                userDescription: `Описание не длиннее ${FIELD_LIMITS.description.max} символов`,
             }));
-            is_error = true
+            is_error = true;
         }
-        return !is_error
-    }
+        return !is_error;
+    };
 
     const password_field_validation = () => {
-        let is_error = false
-        const next: any = {}
+        let is_error = false;
+        const next: any = {};
 
-        if (passwordFields.currentPassword.length < FIELD_LIMITS.password.min || passwordFields.currentPassword.length > FIELD_LIMITS.password.max) {
-            next.currentPassword = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`
-            is_error = true
+        if (
+            passwordFields.currentPassword.length < FIELD_LIMITS.password.min ||
+            passwordFields.currentPassword.length > FIELD_LIMITS.password.max
+        ) {
+            next.currentPassword = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`;
+            is_error = true;
         }
-        if (passwordFields.newPassword.length < FIELD_LIMITS.password.min || passwordFields.newPassword.length > FIELD_LIMITS.password.max) {
-            next.newPassword = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`
-            is_error = true
+        if (
+            passwordFields.newPassword.length < FIELD_LIMITS.password.min ||
+            passwordFields.newPassword.length > FIELD_LIMITS.password.max
+        ) {
+            next.newPassword = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`;
+            is_error = true;
         }
-        if (passwordFields.newPasswordConfirm.length < FIELD_LIMITS.password.min || passwordFields.newPasswordConfirm.length > FIELD_LIMITS.password.max) {
-            next.newPasswordConfirm = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`
-            is_error = true
+        if (
+            passwordFields.newPasswordConfirm.length <
+                FIELD_LIMITS.password.min ||
+            passwordFields.newPasswordConfirm.length > FIELD_LIMITS.password.max
+        ) {
+            next.newPasswordConfirm = `Пароль должен быть от ${FIELD_LIMITS.password.min} до ${FIELD_LIMITS.password.max} символов`;
+            is_error = true;
         }
-        if (!is_error && passwordFields.newPassword !== passwordFields.newPasswordConfirm) {
-            next.newPasswordConfirm = "Пароли не совпадают"
-            is_error = true
+        if (
+            !is_error &&
+            passwordFields.newPassword !== passwordFields.newPasswordConfirm
+        ) {
+            next.newPasswordConfirm = 'Пароли не совпадают';
+            is_error = true;
         }
-        if (!is_error && passwordFields.currentPassword === passwordFields.newPassword) {
-            next.newPassword = "Новый пароль должен отличаться от текущего"
-            is_error = true
+        if (
+            !is_error &&
+            passwordFields.currentPassword === passwordFields.newPassword
+        ) {
+            next.newPassword = 'Новый пароль должен отличаться от текущего';
+            is_error = true;
         }
 
         if (is_error) {
             setErrors((prev: any) => {
-                const other = { ...prev }
-                delete other.currentPassword
-                delete other.newPassword
-                delete other.newPasswordConfirm
-                return { ...other, ...next }
-            })
+                const other = { ...prev };
+                delete other.currentPassword;
+                delete other.newPassword;
+                delete other.newPasswordConfirm;
+                return { ...other, ...next };
+            });
         }
 
-        return !is_error
-    }
+        return !is_error;
+    };
 
     const save_password = async () => {
         setPasswordLoading(true);
         if (!password_field_validation()) {
             setPasswordLoading(false);
-            return
+            return;
         }
 
         try {
@@ -236,9 +254,9 @@ const Settings = () => {
             setPasswordLoading(false);
             if (result.status === true) {
                 setPasswordFields({
-                    currentPassword: "",
-                    newPassword: "",
-                    newPasswordConfirm: ""
+                    currentPassword: '',
+                    newPassword: '',
+                    newPasswordConfirm: '',
                 });
                 setErrors((prev: any) => {
                     const next = { ...prev };
@@ -248,27 +266,31 @@ const Settings = () => {
                     return next;
                 });
                 setChangingPassword(false);
-                showToast({ message: "Пароль изменён", type: "success" });
+                showToast({ message: 'Пароль изменён', type: 'success' });
             } else {
                 if (result?.errors?.body) {
-                    const formattedErrors = Object.fromEntries(Object.entries(result.errors.body).map(([field, obj]: any) => [field, obj.message]));
+                    const formattedErrors = Object.fromEntries(
+                        Object.entries(result.errors.body).map(
+                            ([field, obj]: any) => [field, obj.message],
+                        ),
+                    );
 
                     setErrors((prev: any) => ({ ...prev, ...formattedErrors }));
                 }
-                showToast({ message: "Ошибка!", type: "error" });
+                showToast({ message: 'Ошибка!', type: 'error' });
             }
         } catch (error: any) {
             console.log(error);
             setPasswordLoading(false);
-            showToast({ message: "Ошибка!", type: "error" });
+            showToast({ message: 'Ошибка!', type: 'error' });
         }
     };
 
     const save_settings = async () => {
         setIsLoading(true);
-        if(!field_validation()) {
+        if (!field_validation()) {
             setIsLoading(false);
-            return
+            return;
         }
 
         const formData = new FormData();
@@ -278,20 +300,20 @@ const Settings = () => {
             fields.userAvatar !== (profile?.avatar ?? null);
 
         const profileCompare: any = {
-            userNickName: profile.nick_name ?? "",
-            userDescription: profile.description ?? "",
+            userNickName: profile.nick_name ?? '',
+            userDescription: profile.description ?? '',
             isEmailPublic: profile.is_email_public,
             isSavedPostsPublic: profile.is_saved_posts_public,
-            isLastActivityPublic: profile.is_last_activity_public !== false
-        }
+            isLastActivityPublic: profile.is_last_activity_public !== false,
+        };
 
         for (let field in fields) {
             if (field === 'userAvatar') {
                 continue;
             }
 
-            if (fields[field] === profileCompare[field]) continue
-            formData.append(field, fields[field])
+            if (fields[field] === profileCompare[field]) continue;
+            formData.append(field, fields[field]);
         }
 
         if (avatarChanged) {
@@ -305,76 +327,97 @@ const Settings = () => {
             if (result.status === true) {
                 setProfile((prev: any) => ({
                     ...prev,
-                    ...result.data
+                    ...result.data,
                 }));
-                navigate(result.data.nick_name ? `/users/${result.data.nick_name}` : `/users/${profile.nick_name}`);
-                showToast({ message: "Успешно сохранено!", type: "success" });
+                navigate(
+                    result.data.nick_name
+                        ? `/users/${result.data.nick_name}`
+                        : `/users/${profile.nick_name}`,
+                );
+                showToast({ message: 'Успешно сохранено!', type: 'success' });
             } else {
                 if (result?.errors?.body) {
-                    setErrors(Object.fromEntries(Object.entries(result.errors.body).map(([field, obj]: any) => [field, obj.message])));
+                    setErrors(
+                        Object.fromEntries(
+                            Object.entries(result.errors.body).map(
+                                ([field, obj]: any) => [field, obj.message],
+                            ),
+                        ),
+                    );
                 }
-                showToast({ message: "Ошибка!", type: "error" });
+                showToast({ message: 'Ошибка!', type: 'error' });
                 return result;
             }
         } catch (error: any) {
             console.log(error);
-            if(error instanceof TypeError && error.message === "Failed to fetch") {
+            if (
+                error instanceof TypeError &&
+                error.message === 'Failed to fetch'
+            ) {
                 setErrors({
-                    userAvatar: [ "Max size of image is 5 mb"] 
-                })
+                    userAvatar: ['Max size of image is 5 mb'],
+                });
             }
-            return { status: "error", message: "server not found" };
+            return { status: 'error', message: 'server not found' };
         }
     };
 
     const handleLogout = async () => {
-        setLogoutLoading(true)
+        setLogoutLoading(true);
         try {
             await logoutRequest();
             setProfile(null);
-            showToast({ message: "Вы вышли из аккаунта!", type: "success" });
-            navigate("/posts");
+            showToast({ message: 'Вы вышли из аккаунта!', type: 'success' });
+            navigate('/');
         } finally {
-            setLogoutLoading(false)
+            setLogoutLoading(false);
         }
-    }
+    };
 
     const handleDeleteSession = async (session: any) => {
-        setEndingSessionId(session._id)
+        setEndingSessionId(session._id);
         try {
-            const result = await deleteSession(session._id)
+            const result = await deleteSession(session._id);
 
             if (!result?.status) {
-                showToast({ message: "Не удалось завершить сеанс", type: "error" })
-                return
+                showToast({
+                    message: 'Не удалось завершить сеанс',
+                    type: 'error',
+                });
+                return;
             }
 
             if (result.data?.wasCurrent) {
-                setProfile(null)
-                showToast({ message: "Текущий сеанс завершён", type: "success" })
-                navigate("/posts")
-                return
+                setProfile(null);
+                showToast({
+                    message: 'Текущий сеанс завершён',
+                    type: 'success',
+                });
+                navigate('/');
+                return;
             }
 
-            setSessions((prev: any) => prev.filter((item: any) => item._id !== session._id))
-            showToast({ message: "Сеанс удалён", type: "success" })
+            setSessions((prev: any) =>
+                prev.filter((item: any) => item._id !== session._id),
+            );
+            showToast({ message: 'Сеанс удалён', type: 'success' });
         } finally {
-            setEndingSessionId(null)
+            setEndingSessionId(null);
         }
-    }
+    };
 
     const handleAvatarRemove = () => {
         setFields((prev: any) => ({
             ...prev,
-            userAvatar: null
+            userAvatar: null,
         }));
     };
 
     const openPasswordForm = () => {
         setPasswordFields({
-            currentPassword: "",
-            newPassword: "",
-            newPasswordConfirm: ""
+            currentPassword: '',
+            newPassword: '',
+            newPasswordConfirm: '',
         });
         setErrors((prev: any) => {
             const next = { ...prev };
@@ -388,9 +431,9 @@ const Settings = () => {
 
     const closePasswordForm = () => {
         setPasswordFields({
-            currentPassword: "",
-            newPassword: "",
-            newPasswordConfirm: ""
+            currentPassword: '',
+            newPassword: '',
+            newPasswordConfirm: '',
         });
         setErrors((prev: any) => {
             const next = { ...prev };
@@ -408,9 +451,9 @@ const Settings = () => {
                 pageTitle="Настройки"
                 pages={[
                     {
-                        title: "Профиль",
-                        key: "profile",
-                        aliases: ["privacy"],
+                        title: 'Профиль',
+                        key: 'profile',
+                        aliases: ['privacy'],
                         icon: <ProfileIcon />,
                         content: (
                             <form
@@ -427,14 +470,25 @@ const Settings = () => {
                                             <DropFile
                                                 value={fields.userAvatar}
                                                 setValue={(file: any) =>
-                                                    setFields((prev: any) => ({ ...prev, userAvatar: file }))
+                                                    setFields((prev: any) => ({
+                                                        ...prev,
+                                                        userAvatar: file,
+                                                    }))
                                                 }
-                                                background={<AvatarIcon className="drop_file_info_avatar_icon app-transition" />}
-                                                dropFileType={"image/*"}
-                                                fileTypes={"SVG, PNG, JPEG, JPG и другие"}
+                                                background={
+                                                    <AvatarIcon className="drop_file_info_avatar_icon app-transition" />
+                                                }
+                                                dropFileType={'image/*'}
+                                                fileTypes={
+                                                    'SVG, PNG, JPEG, JPG и другие'
+                                                }
                                                 errors={errors?.userAvatar}
-                                                addNewErrors={add_errors_to_image}
-                                                clearErrors={clear_errors_from_image}
+                                                addNewErrors={
+                                                    add_errors_to_image
+                                                }
+                                                clearErrors={
+                                                    clear_errors_from_image
+                                                }
                                                 onRemove={handleAvatarRemove}
                                                 previewUrl={profile?.avatar}
                                             />
@@ -444,44 +498,86 @@ const Settings = () => {
                                                 <InputField
                                                     type="email"
                                                     value={profile.email}
-                                                    confirmed={Boolean(profile.is_verified)}
+                                                    confirmed={Boolean(
+                                                        profile.is_verified,
+                                                    )}
                                                     onChange={() => {}}
                                                 />
                                             </Field>
                                         ) : null}
-                                        <Field error={errors?.userNickName ?? null} title={"Имя пользователя"}>
+                                        <Field
+                                            error={errors?.userNickName ?? null}
+                                            title={'Имя пользователя'}
+                                        >
                                             <InputField
                                                 className={`user_name`}
                                                 type="text"
-                                                onChange={(e: any) => setFields({ ...fields, userNickName: e.target.value })}
-                                                onFocus={() => handleFocus('userNickName')}
+                                                onChange={(e: any) =>
+                                                    setFields({
+                                                        ...fields,
+                                                        userNickName:
+                                                            e.target.value,
+                                                    })
+                                                }
+                                                onFocus={() =>
+                                                    handleFocus('userNickName')
+                                                }
                                                 placeholder="User Name"
                                                 value={fields?.userNickName}
-                                                error={errors?.userNickName ?? null}
+                                                error={
+                                                    errors?.userNickName ?? null
+                                                }
                                                 length={FIELD_LIMITS.nick.max}
                                             />
                                         </Field>
-                                        <Field error={errors?.userDescription ?? null} title={"Описание"}>
+                                        <Field
+                                            error={
+                                                errors?.userDescription ?? null
+                                            }
+                                            title={'Описание'}
+                                        >
                                             <InputField
                                                 className={`description`}
                                                 type="text"
                                                 isMultiline={true}
-                                                length={FIELD_LIMITS.description.max}
+                                                length={
+                                                    FIELD_LIMITS.description.max
+                                                }
                                                 rows={3}
-                                                onChange={(e: any) => setFields({ ...fields, userDescription: e.target.value })}
-                                                onFocus={() => handleFocus('userDescription')}
+                                                onChange={(e: any) =>
+                                                    setFields({
+                                                        ...fields,
+                                                        userDescription:
+                                                            e.target.value,
+                                                    })
+                                                }
+                                                onFocus={() =>
+                                                    handleFocus(
+                                                        'userDescription',
+                                                    )
+                                                }
                                                 placeholder="Description of profile"
                                                 value={fields?.userDescription}
-                                                error={errors?.userDescription ?? null}
+                                                error={
+                                                    errors?.userDescription ??
+                                                    null
+                                                }
                                             />
                                         </Field>
                                     </div>
                                     <div className="settings_group">
-                                        <p className="kicker">Конфиденциальность</p>
+                                        <p className="kicker">
+                                            Конфиденциальность
+                                        </p>
                                         <div className="settings_switch">
                                             <div className="settings_switch_copy">
-                                                <p className="settings_switch_title">Показывать email</p>
-                                                <p className="settings_switch_hint">Адрес будет виден на странице профиля</p>
+                                                <p className="settings_switch_title">
+                                                    Показывать email
+                                                </p>
+                                                <p className="settings_switch_hint">
+                                                    Адрес будет виден на
+                                                    странице профиля
+                                                </p>
                                             </div>
                                             <Toggle
                                                 checked={fields.isEmailPublic}
@@ -490,36 +586,60 @@ const Settings = () => {
                                         </div>
                                         <div className="settings_switch">
                                             <div className="settings_switch_copy">
-                                                <p className="settings_switch_title">Открытые сохранённые</p>
-                                                <p className="settings_switch_hint">Закладки увидят посетители профиля</p>
+                                                <p className="settings_switch_title">
+                                                    Открытые сохранённые
+                                                </p>
+                                                <p className="settings_switch_hint">
+                                                    Закладки увидят посетители
+                                                    профиля
+                                                </p>
                                             </div>
                                             <Toggle
-                                                checked={fields.isSavedPostsPublic}
-                                                onChange={set_saved_posts_visibility}
+                                                checked={
+                                                    fields.isSavedPostsPublic
+                                                }
+                                                onChange={
+                                                    set_saved_posts_visibility
+                                                }
                                             />
                                         </div>
                                         <div className="settings_switch">
                                             <div className="settings_switch_copy">
-                                                <p className="settings_switch_title">Показывать последнюю активность</p>
-                                                <p className="settings_switch_hint">Дата и время будут видны на странице профиля</p>
+                                                <p className="settings_switch_title">
+                                                    Показывать последнюю
+                                                    активность
+                                                </p>
+                                                <p className="settings_switch_hint">
+                                                    Дата и время будут видны на
+                                                    странице профиля
+                                                </p>
                                             </div>
                                             <Toggle
-                                                checked={fields.isLastActivityPublic}
-                                                onChange={set_last_activity_visibility}
+                                                checked={
+                                                    fields.isLastActivityPublic
+                                                }
+                                                onChange={
+                                                    set_last_activity_visibility
+                                                }
                                             />
                                         </div>
                                     </div>
                                     <div className="settings_panel_actions">
-                                        <PrimaryButton type="submit" isLoading={isLoading}>Сохранить</PrimaryButton>
+                                        <PrimaryButton
+                                            type="submit"
+                                            isLoading={isLoading}
+                                        >
+                                            Сохранить
+                                        </PrimaryButton>
                                     </div>
                                 </div>
                             </form>
-                        )
+                        ),
                     },
                     {
-                        title: "Безопасность",
-                        key: "security",
-                        aliases: ["sessions", "password"],
+                        title: 'Безопасность',
+                        key: 'security',
+                        aliases: ['sessions', 'password'],
                         icon: <ShieldIcon />,
                         content: (
                             <div className="settings_panel">
@@ -534,45 +654,139 @@ const Settings = () => {
                                                     save_password();
                                                 }}
                                             >
-                                                <Field error={errors?.currentPassword ?? null} title={"Текущий пароль"}>
+                                                <Field
+                                                    error={
+                                                        errors?.currentPassword ??
+                                                        null
+                                                    }
+                                                    title={'Текущий пароль'}
+                                                >
                                                     <InputField
                                                         type="password"
                                                         autoComplete="current-password"
-                                                        length={FIELD_LIMITS.password.max}
-                                                        onChange={(e: any) => setPasswordFields({ ...passwordFields, currentPassword: e.target.value })}
-                                                        onFocus={() => handleFocus('currentPassword')}
+                                                        length={
+                                                            FIELD_LIMITS
+                                                                .password.max
+                                                        }
+                                                        onChange={(e: any) =>
+                                                            setPasswordFields({
+                                                                ...passwordFields,
+                                                                currentPassword:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        }
+                                                        onFocus={() =>
+                                                            handleFocus(
+                                                                'currentPassword',
+                                                            )
+                                                        }
                                                         placeholder="Текущий пароль"
-                                                        value={passwordFields.currentPassword}
-                                                        error={errors?.currentPassword ?? null}
+                                                        value={
+                                                            passwordFields.currentPassword
+                                                        }
+                                                        error={
+                                                            errors?.currentPassword ??
+                                                            null
+                                                        }
                                                     />
                                                 </Field>
-                                                <Field error={errors?.newPassword ?? null} title={"Новый пароль"}>
+                                                <Field
+                                                    error={
+                                                        errors?.newPassword ??
+                                                        null
+                                                    }
+                                                    title={'Новый пароль'}
+                                                >
                                                     <InputField
                                                         type="password"
                                                         autoComplete="new-password"
-                                                        length={FIELD_LIMITS.password.max}
-                                                        onChange={(e: any) => setPasswordFields({ ...passwordFields, newPassword: e.target.value })}
-                                                        onFocus={() => handleFocus('newPassword')}
+                                                        length={
+                                                            FIELD_LIMITS
+                                                                .password.max
+                                                        }
+                                                        onChange={(e: any) =>
+                                                            setPasswordFields({
+                                                                ...passwordFields,
+                                                                newPassword:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        }
+                                                        onFocus={() =>
+                                                            handleFocus(
+                                                                'newPassword',
+                                                            )
+                                                        }
                                                         placeholder="Новый пароль"
-                                                        value={passwordFields.newPassword}
-                                                        error={errors?.newPassword ?? null}
+                                                        value={
+                                                            passwordFields.newPassword
+                                                        }
+                                                        error={
+                                                            errors?.newPassword ??
+                                                            null
+                                                        }
                                                     />
                                                 </Field>
-                                                <Field error={errors?.newPasswordConfirm ?? null} title={"Повторите новый пароль"}>
+                                                <Field
+                                                    error={
+                                                        errors?.newPasswordConfirm ??
+                                                        null
+                                                    }
+                                                    title={
+                                                        'Повторите новый пароль'
+                                                    }
+                                                >
                                                     <InputField
                                                         type="password"
                                                         autoComplete="new-password"
-                                                        length={FIELD_LIMITS.password.max}
-                                                        onChange={(e: any) => setPasswordFields({ ...passwordFields, newPasswordConfirm: e.target.value })}
-                                                        onFocus={() => handleFocus('newPasswordConfirm')}
+                                                        length={
+                                                            FIELD_LIMITS
+                                                                .password.max
+                                                        }
+                                                        onChange={(e: any) =>
+                                                            setPasswordFields({
+                                                                ...passwordFields,
+                                                                newPasswordConfirm:
+                                                                    e.target
+                                                                        .value,
+                                                            })
+                                                        }
+                                                        onFocus={() =>
+                                                            handleFocus(
+                                                                'newPasswordConfirm',
+                                                            )
+                                                        }
                                                         placeholder="Повторите новый пароль"
-                                                        value={passwordFields.newPasswordConfirm}
-                                                        error={errors?.newPasswordConfirm ?? null}
+                                                        value={
+                                                            passwordFields.newPasswordConfirm
+                                                        }
+                                                        error={
+                                                            errors?.newPasswordConfirm ??
+                                                            null
+                                                        }
                                                     />
                                                 </Field>
                                                 <div className="settings_panel_actions">
-                                                    <PrimaryButton type="submit" isLoading={passwordLoading}>Изменить пароль</PrimaryButton>
-                                                    <ActionButton type="button" disabled={passwordLoading} onClick={closePasswordForm}>Отмена</ActionButton>
+                                                    <PrimaryButton
+                                                        type="submit"
+                                                        isLoading={
+                                                            passwordLoading
+                                                        }
+                                                    >
+                                                        Изменить пароль
+                                                    </PrimaryButton>
+                                                    <ActionButton
+                                                        type="button"
+                                                        disabled={
+                                                            passwordLoading
+                                                        }
+                                                        onClick={
+                                                            closePasswordForm
+                                                        }
+                                                    >
+                                                        Отмена
+                                                    </ActionButton>
                                                 </div>
                                             </form>
                                         ) : (
@@ -584,7 +798,10 @@ const Settings = () => {
                                                     tabIndex={-1}
                                                     onChange={() => {}}
                                                 />
-                                                <ActionButton type="button" onClick={openPasswordForm}>
+                                                <ActionButton
+                                                    type="button"
+                                                    onClick={openPasswordForm}
+                                                >
                                                     Сменить пароль
                                                 </ActionButton>
                                             </div>
@@ -594,9 +811,13 @@ const Settings = () => {
                                         <p className="kicker">Сеансы</p>
                                         <div className="settings_sessions">
                                             {sessionsLoading ? (
-                                                <p className="settings_sessions_empty">Загрузка…</p>
+                                                <p className="settings_sessions_empty">
+                                                    Загрузка…
+                                                </p>
                                             ) : sessions.length === 0 ? (
-                                                <p className="settings_sessions_empty">Нет активных сеансов</p>
+                                                <p className="settings_sessions_empty">
+                                                    Нет активных сеансов
+                                                </p>
                                             ) : (
                                                 sessions.map((session: any) => (
                                                     <div
@@ -605,26 +826,59 @@ const Settings = () => {
                                                     >
                                                         <div className="settings_sessions_item_info">
                                                             <div className="settings_sessions_item_head">
-                                                                <p className="settings_sessions_item_device">{session.device}</p>
+                                                                <p className="settings_sessions_item_device">
+                                                                    {
+                                                                        session.device
+                                                                    }
+                                                                </p>
                                                                 {session.isCurrent ? (
-                                                                    <span className="settings_sessions_badge app-transition">Этот сеанс</span>
+                                                                    <span className="settings_sessions_badge app-transition">
+                                                                        Этот
+                                                                        сеанс
+                                                                    </span>
                                                                 ) : null}
                                                             </div>
                                                             <div className="settings_sessions_item_meta">
-                                                                <span>{session.location || "—"}</span>
-                                                                <span aria-hidden="true">·</span>
-                                                                <Tooltip text={format_date_time(session.lastSeen)}>
+                                                                <span>
+                                                                    {session.location ||
+                                                                        '—'}
+                                                                </span>
+                                                                <span aria-hidden="true">
+                                                                    ·
+                                                                </span>
+                                                                <Tooltip
+                                                                    text={format_date_time(
+                                                                        session.lastSeen,
+                                                                    )}
+                                                                >
                                                                     <span className="settings_sessions_item_time">
-                                                                        {format_back(session.lastSeen) || format_date_time(session.lastSeen)}
+                                                                        {format_back(
+                                                                            session.lastSeen,
+                                                                        ) ||
+                                                                            format_date_time(
+                                                                                session.lastSeen,
+                                                                            )}
                                                                     </span>
                                                                 </Tooltip>
                                                             </div>
                                                         </div>
                                                         <DangerButton
                                                             type="button"
-                                                            isLoading={endingSessionId === session._id}
-                                                            disabled={Boolean(endingSessionId) || logoutLoading}
-                                                            onClick={() => handleDeleteSession(session)}
+                                                            isLoading={
+                                                                endingSessionId ===
+                                                                session._id
+                                                            }
+                                                            disabled={
+                                                                Boolean(
+                                                                    endingSessionId,
+                                                                ) ||
+                                                                logoutLoading
+                                                            }
+                                                            onClick={() =>
+                                                                handleDeleteSession(
+                                                                    session,
+                                                                )
+                                                            }
                                                         >
                                                             Завершить
                                                         </DangerButton>
@@ -646,13 +900,12 @@ const Settings = () => {
                                     </div>
                                 </div>
                             </div>
-                        )
-                    }
+                        ),
+                    },
                 ]}
             />
         </div>
     );
 };
-
 
 export default Settings;

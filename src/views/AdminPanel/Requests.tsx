@@ -1,34 +1,36 @@
 'use client';
 
-import { useContext, useEffect, useState } from "react";
-import { useNavigate } from "@/navigation";
+import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from '@/navigation';
 
-import { AppContext } from "@/providers/AppProviders";
-import { getSupportRequests } from "../../api/support.api";
-import { SUPPORT_KINDS, SUPPORT_STATUSES, kindLabel, statusLabel } from "../Support/constants";
-import { format_back, format_date_time } from "../../utils/format";
+import { AppContext } from '@/providers/AppProviders';
+import { getSupportRequests } from '../../api/support.api';
+import {
+    SUPPORT_KINDS,
+    SUPPORT_STATUSES,
+    kindLabel,
+    statusLabel,
+} from '../Support/constants';
+import { format_back, format_date_time } from '../../utils/format';
 
-import DropDown from "../../components/Ui/DropDown";
-import Pagination from "../../components/Ui/Pagination";
-import Loading from "../../components/Ui/Loading";
-import Tooltip from "../../components/Ui/Tooltip";
+import DropDown from '../../components/Ui/DropDown';
+import Pagination from '../../components/Ui/Pagination';
+import Loading from '../../components/Ui/Loading';
+import Tooltip from '../../components/Ui/Tooltip';
 
-import "./Requests.scss";
+import './Requests.scss';
 
 const STATUS_OPTIONS = [
-    { value: "all", name: "Все статусы" },
-    ...SUPPORT_STATUSES
+    { value: 'all', name: 'Все статусы' },
+    ...SUPPORT_STATUSES,
 ];
 
-const KIND_OPTIONS = [
-    { value: "all", name: "Все типы" },
-    ...SUPPORT_KINDS
-];
+const KIND_OPTIONS = [{ value: 'all', name: 'Все типы' }, ...SUPPORT_KINDS];
 
 const SORT_OPTIONS = [
-    { value: "created_date:desc", name: "Сначала новые" },
-    { value: "created_date:asc", name: "Сначала старые" },
-    { value: "updated_date:desc", name: "Недавно обновлённые" }
+    { value: 'created_date:desc', name: 'Сначала новые' },
+    { value: 'created_date:asc', name: 'Сначала старые' },
+    { value: 'updated_date:desc', name: 'Недавно обновлённые' },
 ];
 
 const RequestsPage = () => {
@@ -38,22 +40,22 @@ const RequestsPage = () => {
     const [loading, setLoading] = useState<any>(true);
     const [page, setPage] = useState<any>(1);
     const [pagesCount, setPagesCount] = useState<any>(0);
-    const [status, setStatus] = useState<any>("all");
-    const [kind, setKind] = useState<any>("all");
-    const [sortValue, setSortValue] = useState<any>("created_date:desc");
+    const [status, setStatus] = useState<any>('all');
+    const [kind, setKind] = useState<any>('all');
+    const [sortValue, setSortValue] = useState<any>('created_date:desc');
 
     useEffect(() => {
         let cancelled = false;
 
         const fetchRequests = async () => {
-            const [sort, order] = sortValue.split(":");
+            const [sort, order] = sortValue.split(':');
             const result = await getSupportRequests({
                 page,
                 limit: 9,
-                status: status === "all" ? undefined : status,
-                kind: kind === "all" ? undefined : kind,
+                status: status === 'all' ? undefined : status,
+                kind: kind === 'all' ? undefined : kind,
                 sort,
-                order
+                order,
             });
 
             if (cancelled) {
@@ -62,8 +64,8 @@ const RequestsPage = () => {
 
             if (!result.status) {
                 showToast({
-                    type: "error",
-                    message: result.message
+                    type: 'error',
+                    message: result.message,
                 });
                 setItems([]);
                 setPagesCount(0);
@@ -124,33 +126,52 @@ const RequestsPage = () => {
                 pagesCount={pagesCount}
                 onPageChange={(index: any) => setPage(index + 1)}
             >
-                {(visibleContent: any) => (
-                    visibleContent.length ?
+                {(visibleContent: any) =>
+                    visibleContent.length ? (
                         visibleContent.map((item: any) => (
                             <button
                                 type="button"
                                 key={item._id}
                                 className="admin_panel_content_requests_page_item app-transition"
-                                onClick={() => navigate(item.access_key ? `/support/${item.access_key}` : `/admin-panel/requests/${item._id}`)}
+                                onClick={() =>
+                                    navigate(
+                                        item.access_key
+                                            ? `/support/${item.access_key}`
+                                            : `/admin-panel/requests/${item._id}`,
+                                    )
+                                }
                             >
                                 <div className="admin_panel_content_requests_page_item_meta">
-                                    <span className={`support_status support_status_${item.status}`}>
+                                    <span
+                                        className={`support_status support_status_${item.status}`}
+                                    >
                                         {statusLabel(item.status)}
                                     </span>
-                                    <span className="support_kind">{kindLabel(item.kind)}</span>
+                                    <span className="support_kind">
+                                        {kindLabel(item.kind)}
+                                    </span>
                                 </div>
-                                <p className="admin_panel_content_requests_page_item_email">{item.email}</p>
-                                <p className="admin_panel_content_requests_page_item_preview">{item.message_preview}</p>
-                                <Tooltip text={format_date_time(item.created_date)}>
+                                <p className="admin_panel_content_requests_page_item_email">
+                                    {item.email}
+                                </p>
+                                <p className="admin_panel_content_requests_page_item_preview">
+                                    {item.message_preview}
+                                </p>
+                                <Tooltip
+                                    text={format_date_time(item.created_date)}
+                                >
                                     <p className="admin_panel_content_requests_page_item_time">
                                         {format_back(item.created_date)}
                                     </p>
                                 </Tooltip>
                             </button>
                         ))
-                    :
-                        <p className="admin_panel_content_requests_page_empty">Запросов нет</p>
-                )}
+                    ) : (
+                        <p className="admin_panel_content_requests_page_empty">
+                            Запросов нет
+                        </p>
+                    )
+                }
             </Pagination>
         </div>
     );

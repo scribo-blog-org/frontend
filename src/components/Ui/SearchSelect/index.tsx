@@ -1,36 +1,38 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import "./SearchSelect.scss";
-import { useOverlayEnter } from "../useOverlayEnter";
+import './SearchSelect.scss';
+import { useOverlayEnter } from '../useOverlayEnter';
 
-import InputField from "../InputField";
+import InputField from '../InputField';
 
-import ArrowDownUpIcon from "../../../assets/svg/chevron-down-up.svg";
-import  CloseIcon from "../../../assets/svg/cross-icon.svg";
+import ArrowDownUpIcon from '../../../assets/svg/chevron-down-up.svg';
+import CloseIcon from '../../../assets/svg/cross-icon.svg';
 
-
-const optionLabel = (option: any) => option?.label ?? option?.name ?? "";
+const optionLabel = (option: any) => option?.label ?? option?.name ?? '';
 
 const optionKey = (option: any, index: any) =>
-    option?.id ?? option?._id ?? (typeof option?.value === "object" ? index : option?.value) ?? index;
+    option?.id ??
+    option?._id ??
+    (typeof option?.value === 'object' ? index : option?.value) ??
+    index;
 
 const SearchSelect = ({
     options = [],
-    value = "",
+    value = '',
     onChange,
     onSetValue,
     error,
-    className = "",
+    className = '',
     onFocus,
-    placeholder = "Выбрать",
-    emptyLabel = "Ничего не найдено",
+    placeholder = 'Выбрать',
+    emptyLabel = 'Ничего не найдено',
 }: any) => {
     const setValue = onChange ?? onSetValue;
 
     const [isOpen, setIsOpen] = useState<any>(false);
-    const [inputValue, setInputValue] = useState<any>("");
+    const [inputValue, setInputValue] = useState<any>('');
     const [isSearching, setIsSearching] = useState<any>(false);
     const [highlightedIndex, setHighlightedIndex] = useState<any>(-1);
 
@@ -44,30 +46,28 @@ const SearchSelect = ({
     }, [options, value]);
 
     const filteredOptions = useMemo(() => {
-
         const search = inputValue.trim().toLowerCase();
 
-        if (!search)
-            return options;
+        if (!search) return options;
 
         return options.filter((option: any) =>
-            optionLabel(option).toLowerCase().includes(search)
+            optionLabel(option).toLowerCase().includes(search),
         );
-
     }, [options, inputValue]);
 
     const resetValue = useCallback(() => {
         const search = inputValue.trim().toLowerCase();
 
         const exactOption = options.find(
-            (option: any) => optionLabel(option).trim().toLowerCase() === search
+            (option: any) =>
+                optionLabel(option).trim().toLowerCase() === search,
         );
 
         if (!exactOption) {
-            if (value !== "" && value != null) {
-                setValue?.("");
+            if (value !== '' && value != null) {
+                setValue?.('');
             }
-            setInputValue("");
+            setInputValue('');
         } else if (exactOption.value !== value) {
             setValue?.(exactOption.value);
             setInputValue(optionLabel(exactOption));
@@ -97,40 +97,35 @@ const SearchSelect = ({
             }
         };
 
-        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener('mousedown', handleClickOutside);
 
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [closeSelect]);
 
     useEffect(() => {
-
         if (!isOpen) {
             setHighlightedIndex(-1);
             return;
         }
 
         setHighlightedIndex(filteredOptions.length ? 0 : -1);
-
     }, [isOpen, filteredOptions]);
 
     useEffect(() => {
-
         if (highlightedIndex < 0) return;
 
         optionRefs.current[highlightedIndex]?.scrollIntoView({
-            block: "nearest"
+            block: 'nearest',
         });
-
     }, [highlightedIndex]);
 
     const handleChange = (e: any) => {
         setInputValue(e.target.value);
         setIsSearching(true);
 
-        if (!isOpen)
-            setIsOpen(true);
+        if (!isOpen) setIsOpen(true);
     };
 
     const handleSelect = (option: any) => {
@@ -142,10 +137,8 @@ const SearchSelect = ({
     };
 
     const handleKeyDown = (e: any) => {
-
         switch (e.key) {
-
-            case "ArrowDown":
+            case 'ArrowDown':
                 e.preventDefault();
 
                 if (!isOpen) {
@@ -154,12 +147,12 @@ const SearchSelect = ({
                 }
 
                 setHighlightedIndex((prev: any) =>
-                    prev >= filteredOptions.length - 1 ? 0 : prev + 1
+                    prev >= filteredOptions.length - 1 ? 0 : prev + 1,
                 );
 
                 break;
 
-            case "ArrowUp":
+            case 'ArrowUp':
                 e.preventDefault();
 
                 if (!isOpen) {
@@ -168,13 +161,12 @@ const SearchSelect = ({
                 }
 
                 setHighlightedIndex((prev: any) =>
-                    prev <= 0 ? filteredOptions.length - 1 : prev - 1
+                    prev <= 0 ? filteredOptions.length - 1 : prev - 1,
                 );
 
                 break;
 
-            case "Enter":
-
+            case 'Enter':
                 if (
                     isOpen &&
                     highlightedIndex >= 0 &&
@@ -186,14 +178,13 @@ const SearchSelect = ({
 
                 break;
 
-            case "Escape":
+            case 'Escape':
                 closeSelect();
                 break;
 
             default:
                 break;
         }
-
     };
 
     const ShowSelected = !isSearching && selectedOption;
@@ -205,12 +196,17 @@ const SearchSelect = ({
             ref={wrapperRef}
             className={`search_select ${className} app-transition`}
         >
-            <div className={`search_select_input ${error ? "incorrect_field" : ""} app-transition`}>
+            <div
+                className={`search_select_input ${error ? 'incorrect_field' : ''} app-transition`}
+            >
                 {showCategoryDot ? (
-                    <span className={`category_dot ${ShowSelected.className}`} aria-hidden="true" />
+                    <span
+                        className={`category_dot ${ShowSelected.className}`}
+                        aria-hidden="true"
+                    />
                 ) : Icon ? (
                     <div className={`search_select_icon ${className}`}>
-                        <Icon/>
+                        <Icon />
                     </div>
                 ) : null}
 
@@ -219,8 +215,8 @@ const SearchSelect = ({
                     value={inputValue}
                     placeholder={placeholder}
                     onFocus={() => {
-                        setIsOpen(true)
-                        onFocus?.()
+                        setIsOpen(true);
+                        onFocus?.();
                     }}
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
@@ -233,64 +229,59 @@ const SearchSelect = ({
                         e.preventDefault();
 
                         if (isOpen) {
-                            setValue?.("");
-                            setInputValue("");
+                            setValue?.('');
+                            setInputValue('');
                             setIsSearching(false);
                         } else {
                             setIsOpen(true);
                         }
                     }}
                 >
-                    {isOpen ? <CloseIcon/> : <ArrowDownUpIcon />}
+                    {isOpen ? <CloseIcon /> : <ArrowDownUpIcon />}
                 </button>
-
             </div>
 
             {isOpen && (
-                <div className={`search_select_list blurred float_section${listVisible ? " search_select_list_visible" : ""}`}>
-
+                <div
+                    className={`search_select_list blurred float_section${listVisible ? ' search_select_list_visible' : ''}`}
+                >
                     {filteredOptions.length ? (
-
                         filteredOptions.map((option: any, index: any) => (
-
                             <button
                                 key={optionKey(option, index)}
-                                ref={(el: any) => optionRefs.current[index] = el}
+                                ref={(el: any) =>
+                                    (optionRefs.current[index] = el)
+                                }
                                 type="button"
-                                className={`search_select_item ${option.className ?? ""} ${highlightedIndex === index ? "search_select_item_selected" : ""} app-transition`}
+                                className={`search_select_item ${option.className ?? ''} ${highlightedIndex === index ? 'search_select_item_selected' : ''} app-transition`}
                                 onMouseDown={() => handleSelect(option)}
                             >
-                                {
-                                    option.render?.() ?? (
-                                        <>
-                                            {option.className ? (
-                                                <span className={`category_dot ${option.className}`} aria-hidden="true" />
-                                            ) : option.iconObject ? (
-                                                <div className={`search_select_icon ${option.className ?? ""}`}>
-                                                    <option.iconObject />
-                                                </div>
-                                            ) : null}
-                                            <p>{optionLabel(option)}</p>
-                                        </>
-                                    )
-                                }
+                                {option.render?.() ?? (
+                                    <>
+                                        {option.className ? (
+                                            <span
+                                                className={`category_dot ${option.className}`}
+                                                aria-hidden="true"
+                                            />
+                                        ) : option.iconObject ? (
+                                            <div
+                                                className={`search_select_icon ${option.className ?? ''}`}
+                                            >
+                                                <option.iconObject />
+                                            </div>
+                                        ) : null}
+                                        <p>{optionLabel(option)}</p>
+                                    </>
+                                )}
                             </button>
-
                         ))
-
                     ) : (
-
                         <div className="search_select_empty">
-                            <p>
-                                {emptyLabel}
-                            </p>
+                            <p>{emptyLabel}</p>
                         </div>
-
                     )}
-
                 </div>
             )}
-
         </div>
     );
 };

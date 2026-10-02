@@ -1,16 +1,16 @@
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
 const svgrLoader = {
-    loader: "@svgr/webpack",
+    loader: '@svgr/webpack',
     options: {
         dimensions: false,
         svgoConfig: {
             plugins: [
                 {
-                    name: "preset-default",
+                    name: 'preset-default',
                     params: {
                         overrides: {
                             removeViewBox: false,
@@ -27,8 +27,8 @@ const nextConfig = {
     async redirects() {
         return [
             {
-                source: "/",
-                destination: "/posts",
+                source: '/posts',
+                destination: '/',
                 permanent: true,
             },
         ];
@@ -47,15 +47,15 @@ const nextConfig = {
     turbopack: {
         root: rootDir,
         rules: {
-            "*.svg": {
+            '*.svg': {
                 loaders: [svgrLoader],
-                as: "*.js",
+                as: '*.js',
             },
         },
     },
     webpack: (config) => {
         const fileLoaderRule = config.module.rules.find((rule) =>
-            rule.test?.test?.(".svg"),
+            rule.test?.test?.('.svg'),
         );
 
         if (fileLoaderRule) {

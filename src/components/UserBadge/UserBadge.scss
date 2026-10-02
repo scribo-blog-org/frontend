@@ -1,4 +1,4 @@
-@use "../../styles/helpers" as *;
+@use '../../styles/helpers' as *;
 
 .user_badge {
     display: flex;
@@ -22,7 +22,7 @@
         overflow: hidden;
         border-radius: 50%;
         user-select: none;
-        
+
         @include screen() {
             width: 18px;
             height: 18px;
@@ -34,7 +34,6 @@
             object-fit: cover;
         }
     }
-
 
     &_avatar_only {
         padding: 0;
@@ -54,17 +53,17 @@
             margin-left: 4px;
         }
 
-        &_name  {
+        &_name {
             font-size: 14px;
             line-height: 1;
             color: var(--user-badge-name-color);
 
-            @include screen(){
+            @include screen() {
                 font-size: 12px;
             }
         }
 
-        &_verified{
+        &_verified {
             width: 14px;
             height: 14px;
 

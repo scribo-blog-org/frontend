@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from 'react';
 
-import "./DropFile.scss";
+import './DropFile.scss';
 
-import DeleteIcon from "../../../assets/svg/delete.svg";
-import WarningIcon from "../../../assets/svg/warning-icon.svg";
-import UploadFileIcon from "../../../assets/svg/upload-file-icon.svg";
+import DeleteIcon from '../../../assets/svg/delete.svg';
+import WarningIcon from '../../../assets/svg/warning-icon.svg';
+import UploadFileIcon from '../../../assets/svg/upload-file-icon.svg';
 
 const DropFile = ({
     value,
@@ -21,8 +21,8 @@ const DropFile = ({
     clearErrors,
     onRemove,
     maxSizeBytes = 4 * 1024 * 1024,
-    typeError = "Incorrect type of file!",
-    sizeError = "Max size of image must be 4 mb!",
+    typeError = 'Incorrect type of file!',
+    sizeError = 'Max size of image must be 4 mb!',
 }: any) => {
     const setFile = onChange ?? setValue;
     const [preview, setPreview] = useState<any>(null);
@@ -61,7 +61,7 @@ const DropFile = ({
 
         if (
             dropFileType &&
-            dropFileType.trim() !== "" &&
+            dropFileType.trim() !== '' &&
             !new RegExp(dropFileType).test(file.type)
         ) {
             errors.push(typeError);
@@ -123,16 +123,16 @@ const DropFile = ({
             }
         };
 
-        el.addEventListener("dragenter", handleDragIn);
-        el.addEventListener("dragleave", handleDragOut);
-        el.addEventListener("dragover", handleDrag);
-        el.addEventListener("drop", handleDrop);
+        el.addEventListener('dragenter', handleDragIn);
+        el.addEventListener('dragleave', handleDragOut);
+        el.addEventListener('dragover', handleDrag);
+        el.addEventListener('drop', handleDrop);
 
         return () => {
-            el.removeEventListener("dragenter", handleDragIn);
-            el.removeEventListener("dragleave", handleDragOut);
-            el.removeEventListener("dragover", handleDrag);
-            el.removeEventListener("drop", handleDrop);
+            el.removeEventListener('dragenter', handleDragIn);
+            el.removeEventListener('dragleave', handleDragOut);
+            el.removeEventListener('dragover', handleDrag);
+            el.removeEventListener('drop', handleDrop);
         };
     }, [setFile]);
 
@@ -140,8 +140,8 @@ const DropFile = ({
         <>
             <div
                 ref={fileRef}
-                className={`drop_file app-transition${isDragged ? " drop_file_dragged" : ""} ${
-                    errors ? "drop_file_incorrect_field" : ""
+                className={`drop_file app-transition${isDragged ? ' drop_file_dragged' : ''} ${
+                    errors ? 'drop_file_incorrect_field' : ''
                 }`}
             >
                 {preview ? (
@@ -151,16 +151,16 @@ const DropFile = ({
                             <p>
                                 {value instanceof File
                                     ? value.name
-                                    : typeof value === "string"
-                                    ? value.split("/").pop()
-                                    : "Выбранный файл"
-                                }
+                                    : typeof value === 'string'
+                                      ? value.split('/').pop()
+                                      : 'Выбранный файл'}
                             </p>
                             <button
                                 className="remove_image_button"
                                 onClick={(e: any) => {
                                     e.preventDefault();
-                                    inputRef.current && (inputRef.current.value = "");
+                                    inputRef.current &&
+                                        (inputRef.current.value = '');
                                     setIsPreviewHidden(true);
                                     setPreview(null);
                                     setFile(null);
@@ -180,7 +180,9 @@ const DropFile = ({
                                     <p className="drop_file_info_main_text">
                                         Выберите файл или перетащите его сюда
                                     </p>
-                                    <p className="drop_file_info_help_text">{fileTypes}</p>
+                                    <p className="drop_file_info_help_text">
+                                        {fileTypes}
+                                    </p>
                                     <div className="drop_file_info_select app-transition">
                                         Выбрать
                                     </div>
@@ -199,7 +201,9 @@ const DropFile = ({
             </div>
 
             {Array.isArray(errors) && (
-                <div className={`drop_file_error_messages ${errors.length ? "show" : ""}`}>
+                <div
+                    className={`drop_file_error_messages ${errors.length ? 'show' : ''}`}
+                >
                     {errors.map((error: any, index: any) => (
                         <div key={index} className="drop_file_error_message">
                             <WarningIcon className="drop_file_error_message_logo" />

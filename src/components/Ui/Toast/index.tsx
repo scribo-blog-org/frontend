@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from "react";
-import "./Toast.scss";
+import { useEffect, useRef, useState } from 'react';
+import './Toast.scss';
 
 const TOAST_DURATION = 3000;
 const ENTER_DELAY = 20;
@@ -22,26 +22,23 @@ const Toast = ({ toast }: any) => {
         const newToast = {
             id,
             message: toast.message,
-            type: toast.type || "info",
+            type: toast.type || 'info',
             isEntering: true,
-            isExiting: false
+            isExiting: false,
         };
 
-        setToasts((prev: any) => [
-            ...prev,
-            newToast
-        ]);
+        setToasts((prev: any) => [...prev, newToast]);
 
         const enterTimer = setTimeout(() => {
             setToasts((prev: any) =>
                 prev.map((item: any) =>
                     item.id === id
                         ? {
-                            ...item,
-                            isEntering: false
-                        }
-                        : item
-                )
+                              ...item,
+                              isEntering: false,
+                          }
+                        : item,
+                ),
             );
 
             timersRef.current.delete(`${id}-enter`);
@@ -54,16 +51,16 @@ const Toast = ({ toast }: any) => {
                 prev.map((item: any) =>
                     item.id === id
                         ? {
-                            ...item,
-                            isExiting: true
-                        }
-                        : item
-                )
+                              ...item,
+                              isExiting: true,
+                          }
+                        : item,
+                ),
             );
 
             const exitTimer = setTimeout(() => {
                 setToasts((prev: any) =>
-                    prev.filter((item: any) => item.id !== id)
+                    prev.filter((item: any) => item.id !== id),
                 );
 
                 timersRef.current.delete(`${id}-exit`);
@@ -104,8 +101,8 @@ const Toast = ({ toast }: any) => {
                             blurred
                             toast
                             toast_position_${index}
-                            ${toast.isEntering ? "toast_enter" : ""}
-                            ${toast.isExiting ? "toast_exit" : ""}
+                            ${toast.isEntering ? 'toast_enter' : ''}
+                            ${toast.isExiting ? 'toast_exit' : ''}
                         `}
                     >
                         <div className="toast_content">

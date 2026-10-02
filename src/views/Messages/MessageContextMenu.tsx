@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from 'react';
 import {
     FloatingPortal,
     autoUpdate,
@@ -8,13 +8,13 @@ import {
     offset,
     shift,
     useFloating,
-} from "@floating-ui/react";
+} from '@floating-ui/react';
 
-import { useOverlayEnter } from "../../components/Ui/useOverlayEnter";
+import { useOverlayEnter } from '../../components/Ui/useOverlayEnter';
 
-import "../../components/Ui/Popup/Popup.scss";
+import '../../components/Ui/Popup/Popup.scss';
 
-const PORTAL_ROOT = "app-layout";
+const PORTAL_ROOT = 'app-layout';
 
 const MessageContextMenu = ({ x, y, items, onClose }: any) => {
     const visible = useOverlayEnter(true);
@@ -37,8 +37,8 @@ const MessageContextMenu = ({ x, y, items, onClose }: any) => {
 
     const { refs, floatingStyles } = useFloating({
         open: true,
-        placement: "bottom-start",
-        strategy: "fixed",
+        placement: 'bottom-start',
+        strategy: 'fixed',
         middleware: [offset(4), flip(), shift({ padding: 8 })],
         whileElementsMounted: autoUpdate,
         elements: {
@@ -52,30 +52,32 @@ const MessageContextMenu = ({ x, y, items, onClose }: any) => {
 
     useEffect(() => {
         const onKeyDown = (event: any) => {
-            if (event.key === "Escape") {
+            if (event.key === 'Escape') {
                 onClose();
             }
         };
 
         const onPointerDown = (event: any) => {
-            if (event.target.closest(".popup_menu")) {
+            if (event.target.closest('.popup_menu')) {
                 return;
             }
 
             onClose();
         };
 
-        window.addEventListener("keydown", onKeyDown);
-        window.addEventListener("mousedown", onPointerDown);
+        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('mousedown', onPointerDown);
 
         return () => {
-            window.removeEventListener("keydown", onKeyDown);
-            window.removeEventListener("mousedown", onPointerDown);
+            window.removeEventListener('keydown', onKeyDown);
+            window.removeEventListener('mousedown', onPointerDown);
         };
     }, [onClose]);
 
     const portalRoot =
-        typeof document === "undefined" ? null : document.getElementById(PORTAL_ROOT);
+        typeof document === 'undefined'
+            ? null
+            : document.getElementById(PORTAL_ROOT);
 
     if (!items.length) {
         return null;
@@ -91,7 +93,7 @@ const MessageContextMenu = ({ x, y, items, onClose }: any) => {
             >
                 <div
                     className={`popup_menu_surface float_section blurred${
-                        visible ? " popup_menu_surface_visible" : ""
+                        visible ? ' popup_menu_surface_visible' : ''
                     }`}
                 >
                     <div className="popup_menu_section">
@@ -99,25 +101,29 @@ const MessageContextMenu = ({ x, y, items, onClose }: any) => {
                             const Icon = item.icon;
 
                             return (
-                            <button
-                                key={item.id}
-                                type="button"
-                                disabled={item.disabled}
-                                className={`popup_menu_item app-transition${
-                                    item.type === "danger" ? " popup_menu_item_danger" : ""
-                                }`}
-                                onClick={() => {
-                                    if (item.disabled) {
-                                        return;
-                                    }
+                                <button
+                                    key={item.id}
+                                    type="button"
+                                    disabled={item.disabled}
+                                    className={`popup_menu_item app-transition${
+                                        item.type === 'danger'
+                                            ? ' popup_menu_item_danger'
+                                            : ''
+                                    }`}
+                                    onClick={() => {
+                                        if (item.disabled) {
+                                            return;
+                                        }
 
-                                    item.onClick?.();
-                                    onClose();
-                                }}
-                            >
-                                <Icon />
-                                <p className="popup_menu_item_title">{item.title}</p>
-                            </button>
+                                        item.onClick?.();
+                                        onClose();
+                                    }}
+                                >
+                                    <Icon />
+                                    <p className="popup_menu_item_title">
+                                        {item.title}
+                                    </p>
+                                </button>
                             );
                         })}
                     </div>

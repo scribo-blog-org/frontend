@@ -1,4 +1,4 @@
-@use "../../../styles/helpers" as *;
+@use '../../../styles/helpers' as *;
 
 .popup {
     display: flex;
@@ -46,22 +46,22 @@
         opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1),
         transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 
-    .popup_menu[data-popup-placement^="bottom"] &:not(&_visible) {
+    .popup_menu[data-popup-placement^='bottom'] &:not(&_visible) {
         transform: scale(0.96) translateY(-8px);
         transform-origin: top left;
     }
 
-    .popup_menu[data-popup-placement^="top"] &:not(&_visible) {
+    .popup_menu[data-popup-placement^='top'] &:not(&_visible) {
         transform: scale(0.96) translateY(8px);
         transform-origin: bottom left;
     }
 
-    .popup_menu[data-popup-placement^="right"] &:not(&_visible) {
+    .popup_menu[data-popup-placement^='right'] &:not(&_visible) {
         transform: scale(0.96) translateX(-8px);
         transform-origin: center left;
     }
 
-    .popup_menu[data-popup-placement^="left"] &:not(&_visible) {
+    .popup_menu[data-popup-placement^='left'] &:not(&_visible) {
         transform: scale(0.96) translateX(8px);
         transform-origin: center right;
     }
@@ -98,7 +98,9 @@
         font-size: var(--text-sm);
         font-weight: 500;
         line-height: 1.2;
-        transition: background-color 0.15s ease, color 0.15s ease;
+        transition:
+            background-color 0.15s ease,
+            color 0.15s ease;
 
         @include hover {
             background-color: var(--section-item-hover-background-color);
@@ -129,7 +131,9 @@
         width: 14px;
         height: 14px;
         opacity: 0.45;
-        transition: opacity 0.15s ease, transform 0.15s ease;
+        transition:
+            opacity 0.15s ease,
+            transform 0.15s ease;
     }
 
     .popup_menu_item_flyout {

@@ -1,15 +1,15 @@
-import type { MetadataRoute } from "next";
-import { connection } from "next/server";
+import type { MetadataRoute } from 'next';
+import { connection } from 'next/server';
 
-import { apiUrl } from "@/config";
-import { absoluteUrl } from "@/seo/site";
+import { apiUrl } from '@/config';
+import { absoluteUrl } from '@/seo/site';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 type SitemapEntry = MetadataRoute.Sitemap[number];
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-    if (!value || typeof value !== "object") {
+    if (!value || typeof value !== 'object') {
         return null;
     }
 
@@ -17,7 +17,11 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 }
 
 function isoDate(value: unknown) {
-    if (typeof value !== "string" && typeof value !== "number" && !(value instanceof Date)) {
+    if (
+        typeof value !== 'string' &&
+        typeof value !== 'number' &&
+        !(value instanceof Date)
+    ) {
         return undefined;
     }
 
@@ -27,7 +31,7 @@ function isoDate(value: unknown) {
 }
 
 async function fetchJson(path: string) {
-    const base = apiUrl().replace(/\/$/, "");
+    const base = apiUrl().replace(/\/$/, '');
 
     if (!base) {
         return null;
@@ -35,8 +39,8 @@ async function fetchJson(path: string) {
 
     try {
         const response = await fetch(`${base}${path}`, {
-            headers: { Accept: "application/json" },
-            cache: "no-store",
+            headers: { Accept: 'application/json' },
+            cache: 'no-store',
         });
 
         if (!response.ok) {
@@ -55,7 +59,9 @@ async function postEntries(): Promise<SitemapEntry[]> {
     let pages = 1;
 
     while (page <= pages && page <= 100) {
-        const result = asRecord(await fetchJson(`/api/posts?page=${page}&limit=50`));
+        const result = asRecord(
+            await fetchJson(`/api/posts?page=${page}&limit=50`),
+        );
 
         if (!result?.status) {
             break;
@@ -72,18 +78,21 @@ async function postEntries(): Promise<SitemapEntry[]> {
 
         for (const item of items) {
             const post = asRecord(item);
-            const id = post?._id ? String(post._id) : "";
+            const id = post?._id ? String(post._id) : '';
 
             if (!post || !id) {
                 continue;
             }
 
-            const image = typeof post.featured_image === "string" ? post.featured_image : "";
+            const image =
+                typeof post.featured_image === 'string'
+                    ? post.featured_image
+                    : '';
 
             entries.push({
                 url: absoluteUrl(`/posts/${id}`),
                 lastModified: isoDate(post.created_date),
-                changeFrequency: "weekly",
+                changeFrequency: 'weekly',
                 priority: 0.8,
                 ...(image ? { images: [image] } : {}),
             });
@@ -96,7 +105,7 @@ async function postEntries(): Promise<SitemapEntry[]> {
 }
 
 async function profileEntries(): Promise<SitemapEntry[]> {
-    const result = asRecord(await fetchJson("/api/users/"));
+    const result = asRecord(await fetchJson('/api/users/'));
 
     if (!result?.status || !Array.isArray(result.data)) {
         return [];
@@ -106,7 +115,8 @@ async function profileEntries(): Promise<SitemapEntry[]> {
 
     for (const item of result.data) {
         const user = asRecord(item);
-        const nick = typeof user?.nick_name === "string" ? user.nick_name.trim() : "";
+        const nick =
+            typeof user?.nick_name === 'string' ? user.nick_name.trim() : '';
 
         if (!user || !nick) {
             continue;
@@ -114,8 +124,9 @@ async function profileEntries(): Promise<SitemapEntry[]> {
 
         entries.push({
             url: absoluteUrl(`/users/${encodeURIComponent(nick)}`),
-            lastModified: isoDate(user.last_activity_at) || isoDate(user.created_date),
-            changeFrequency: "weekly",
+            lastModified:
+                isoDate(user.last_activity_at) || isoDate(user.created_date),
+            changeFrequency: 'weekly',
             priority: 0.5,
         });
     }
@@ -128,23 +139,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     const staticEntries: SitemapEntry[] = [
         {
-            url: absoluteUrl("/posts"),
-            changeFrequency: "daily",
+            url: absoluteUrl('/'),
+            changeFrequency: 'daily',
             priority: 1,
         },
         {
-            url: absoluteUrl("/search"),
-            changeFrequency: "weekly",
+            url: absoluteUrl('/search'),
+            changeFrequency: 'weekly',
             priority: 0.6,
         },
         {
-            url: absoluteUrl("/support"),
-            changeFrequency: "monthly",
+            url: absoluteUrl('/support'),
+            changeFrequency: 'monthly',
             priority: 0.4,
         },
     ];
 
-    const [posts, profiles] = await Promise.all([postEntries(), profileEntries()]);
+    const [posts, profiles] = await Promise.all([
+        postEntries(),
+        profileEntries(),
+    ]);
 
     return [...staticEntries, ...posts, ...profiles];
 }
