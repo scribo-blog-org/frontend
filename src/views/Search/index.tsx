@@ -121,7 +121,8 @@ const SearchPage = () => {
             </div>
             {!hasQuery ? (
                 <p className="search_page_hint">
-                    At least two letters — then posts, people, and categories will show up.
+                    At least two letters — then posts, people, and categories
+                    will show up.
                 </p>
             ) : isLoading ? (
                 <p className="search_page_hint">Searching…</p>

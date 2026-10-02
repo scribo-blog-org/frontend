@@ -32,10 +32,7 @@ const MessageStatus = ({ status }: any) => {
     }
 
     return (
-        <span
-            className="message_status message_status_read"
-            aria-label="Read"
-        >
+        <span className="message_status message_status_read" aria-label="Read">
             ✓✓
         </span>
     );

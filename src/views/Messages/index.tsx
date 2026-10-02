@@ -258,8 +258,8 @@ const getDeleteChatModalContent = ({
 }: any) => (
     <div className="messages_delete_modal">
         <p className="messages_delete_modal_text">
-            Conversation with {participant?.nick_name || 'user'} and all messages
-            will be deleted permanently. This cannot be undone.
+            Conversation with {participant?.nick_name || 'user'} and all
+            messages will be deleted permanently. This cannot be undone.
         </p>
         <DeleteChatModalActions
             conversationId={conversationId}
@@ -473,7 +473,8 @@ const MessagesPage = () => {
             if (!conversationResult?.status) {
                 showToast?.({
                     type: 'error',
-                    message: conversationResult?.message || 'Conversation not found',
+                    message:
+                        conversationResult?.message || 'Conversation not found',
                 });
                 navigate('/messages');
                 setIsChatLoading(false);
@@ -997,8 +998,8 @@ const MessagesPage = () => {
                         </ul>
                     ) : (
                         <p className="messages_empty_hint">
-                            No conversations yet. Start one from a
-                            the user profile.
+                            No conversations yet. Start one from a the user
+                            profile.
                         </p>
                     )}
                 </aside>
@@ -1015,8 +1016,8 @@ const MessagesPage = () => {
                             <div className="messages_blank_copy">
                                 <h1>This conversation is still empty</h1>
                                 <p className="messages_blank_lead">
-                                    Choose a chat on the left. Or open a profile and
-                                    click “Start a conversation”.
+                                    Choose a chat on the left. Or open a profile
+                                    and click “Start a conversation”.
                                 </p>
                             </div>
                         </div>
@@ -1357,9 +1358,7 @@ const MessagesPage = () => {
                                         }
                                         isLoading={isSending}
                                     >
-                                        {editingMessage
-                                            ? 'Save'
-                                            : 'Send'}
+                                        {editingMessage ? 'Save' : 'Send'}
                                     </PrimaryButton>
                                 </div>
                             </form>

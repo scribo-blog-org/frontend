@@ -316,10 +316,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
                         <></>
                     ) : (
                         <div className="admin_panel_content_edit_categories_page_settings app-transition">
-                            <Field
-                                error={errors?.categoryName}
-                                title={'Name'}
-                            >
+                            <Field error={errors?.categoryName} title={'Name'}>
                                 <InputField
                                     placeholder={'Enter a category name'}
                                     value={fields?.categoryName}
@@ -542,7 +539,10 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
 
                     <Popup body={popupColorBody}>
                         <div className="admin_panel_content_edit_categories_page_settings_color">
-                            <Field error={errors?.categoryColor} title={'Color'}>
+                            <Field
+                                error={errors?.categoryColor}
+                                title={'Color'}
+                            >
                                 <div className="admin_panel_content_edit_categories_page_settings_color_content app-transition">
                                     <div
                                         className={`admin_panel_content_edit_categories_page_settings_color_content_rect ${CATEGORY_COLORS[fields.categoryColor]?.className ?? ''}`}

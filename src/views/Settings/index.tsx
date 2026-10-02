@@ -224,7 +224,8 @@ const Settings = () => {
             !is_error &&
             passwordFields.currentPassword === passwordFields.newPassword
         ) {
-            next.newPassword = 'The new password must be different from the current one';
+            next.newPassword =
+                'The new password must be different from the current one';
             is_error = true;
         }
 
@@ -566,17 +567,15 @@ const Settings = () => {
                                         </Field>
                                     </div>
                                     <div className="settings_group">
-                                        <p className="kicker">
-                                            Privacy
-                                        </p>
+                                        <p className="kicker">Privacy</p>
                                         <div className="settings_switch">
                                             <div className="settings_switch_copy">
                                                 <p className="settings_switch_title">
                                                     Show email
                                                 </p>
                                                 <p className="settings_switch_hint">
-                                                    The address will be visible on
-                                                    the profile page
+                                                    The address will be visible
+                                                    on the profile page
                                                 </p>
                                             </div>
                                             <Toggle
@@ -590,8 +589,8 @@ const Settings = () => {
                                                     Public saved posts
                                                 </p>
                                                 <p className="settings_switch_hint">
-                                                    Visitors of the
-                                                    profile will see saved posts
+                                                    Visitors of the profile will
+                                                    see saved posts
                                                 </p>
                                             </div>
                                             <Toggle
@@ -606,12 +605,11 @@ const Settings = () => {
                                         <div className="settings_switch">
                                             <div className="settings_switch_copy">
                                                 <p className="settings_switch_title">
-                                                    Show last
-                                                    activity
+                                                    Show last activity
                                                 </p>
                                                 <p className="settings_switch_hint">
-                                                    The date and time will be visible on
-                                                    the profile page
+                                                    The date and time will be
+                                                    visible on the profile page
                                                 </p>
                                             </div>
                                             <Toggle

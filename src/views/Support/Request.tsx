@@ -137,7 +137,10 @@ const SupportRequestPage = () => {
             setItem(result.data);
             showToast({ type: 'success', message: 'Status updated' });
         } catch {
-            showToast({ type: 'error', message: 'Could not update the status' });
+            showToast({
+                type: 'error',
+                message: 'Could not update the status',
+            });
         } finally {
             setStatusSaving(false);
         }

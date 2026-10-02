@@ -225,9 +225,7 @@ const Profile = ({
         if (!ids.length) {
             showModalWindow({
                 title: 'Following',
-                content: (
-                    <p className="profile_follow_empty">No one yet</p>
-                ),
+                content: <p className="profile_follow_empty">No one yet</p>,
             });
             return;
         }
@@ -263,9 +261,7 @@ const Profile = ({
         if (!ids.length) {
             showModalWindow({
                 title: 'Followers',
-                content: (
-                    <p className="profile_follow_empty">No one yet</p>
-                ),
+                content: <p className="profile_follow_empty">No one yet</p>,
             });
             return;
         }

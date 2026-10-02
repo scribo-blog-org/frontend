@@ -175,21 +175,22 @@ const RestoreDialog = ({ item, info, onCancel, onStarted, showToast }: any) => {
             <ul className="backup_restore_dialog_warnings">
                 <li>
                     The database and uploaded files will be replaced completely.
-                    Users, posts, comments, and images created
-                    after this backup will be gone.
+                    Users, posts, comments, and images created after this backup
+                    will be gone.
                 </li>
                 <li>
-                    Before the replacement, a safety snapshot of the
-                    current state is taken automatically. If the restore fails, the system returns
-                    to it on its own. After a successful restore the snapshot is deleted.
+                    Before the replacement, a safety snapshot of the current
+                    state is taken automatically. If the restore fails, the
+                    system returns to it on its own. After a successful restore
+                    the snapshot is deleted.
                 </li>
                 <li>
-                    During a restore the site is read-only, usually for
-                    about a minute.
+                    During a restore the site is read-only, usually for about a
+                    minute.
                 </li>
                 <li>
-                    Sessions roll back with the database, so you and other
-                    users may need to log in again.
+                    Sessions roll back with the database, so you and other users
+                    may need to log in again.
                 </li>
             </ul>
             <p className="backup_restore_dialog_label">
@@ -440,8 +441,8 @@ const BackupsPage = () => {
                         {PHASE_LABELS[job?.phase] || 'Preparing'}…
                     </p>
                     <p className="admin_panel_content_backups_page_hint">
-                        The site is read-only right now. Do not close
-                        the page; it will refresh on its own.
+                        The site is read-only right now. Do not close the page;
+                        it will refresh on its own.
                     </p>
                 </div>
             ) : null}
@@ -453,9 +454,9 @@ const BackupsPage = () => {
                         {format_date_time(info.current.taken_at)}
                     </p>
                     <p className="admin_panel_content_backups_page_hint">
-                        Restored{' '}
-                        {format_date_time(info.current.restored_at)}. Anything that
-                        changed after that is already new data on top of the backup.
+                        Restored {format_date_time(info.current.restored_at)}.
+                        Anything that changed after that is already new data on
+                        top of the backup.
                     </p>
                 </div>
             ) : null}

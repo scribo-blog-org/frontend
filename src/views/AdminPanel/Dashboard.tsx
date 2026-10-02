@@ -308,7 +308,9 @@ const RankedBars = ({ items, empty, wideLabel }: any) => {
 
     if (!items.length) {
         return (
-            <p className="analytics_empty">{empty || 'No data for this period'}</p>
+            <p className="analytics_empty">
+                {empty || 'No data for this period'}
+            </p>
         );
     }
 
@@ -525,8 +527,7 @@ const DashboardPage = () => {
             if (!result?.status) {
                 showToast({
                     type: 'error',
-                    message:
-                        result?.message || 'Could not load analytics',
+                    message: result?.message || 'Could not load analytics',
                 });
                 setData(null);
                 setIsLoading(false);
@@ -599,9 +600,7 @@ const DashboardPage = () => {
                     </div>
                 </div>
                 <p className="analytics_period_bounds">
-                    <span className="analytics_period_bounds_label">
-                        Range
-                    </span>
+                    <span className="analytics_period_bounds_label">Range</span>
                     {formatRange(range)}
                 </p>
             </div>

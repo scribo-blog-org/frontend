@@ -5,8 +5,7 @@ export const SITE_NAME = 'Scribo';
 export const SITE_DESCRIPTION =
     'Scribo is a blogging platform: write posts, keep a personal blog, talk in comments, and send direct messages.';
 
-export const HOME_TITLE =
-    'Scribo — posts, personal blogs, and conversation';
+export const HOME_TITLE = 'Scribo — posts, personal blogs, and conversation';
 
 export const SITE_ALTERNATE_NAMES = [
     'Scribo Blog',

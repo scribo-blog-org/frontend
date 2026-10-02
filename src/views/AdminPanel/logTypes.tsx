@@ -166,7 +166,7 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
         title: 'Role change',
         tone: 'update',
         icon: EditIcon,
-        text: () => 'Changed a user\'s role',
+        text: () => "Changed a user's role",
         object: 'user',
     },
     create_conversation: {

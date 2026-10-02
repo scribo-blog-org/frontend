@@ -130,8 +130,7 @@ const PostActions = ({
                         ),
                     }));
                     showToast({
-                        message:
-                            'Could not like this. Please try again',
+                        message: 'Could not like this. Please try again',
                         type: 'error',
                     });
                 }
@@ -203,9 +202,7 @@ const PostActions = ({
                             : withoutId(prev.saved_posts, article._id),
                     }));
                     showToast({
-                        message: wantSaved
-                            ? 'Saved!'
-                            : 'Removed from saved!',
+                        message: wantSaved ? 'Saved!' : 'Removed from saved!',
                         type: 'success',
                     });
                 } else if (result.statusCode === 409) {

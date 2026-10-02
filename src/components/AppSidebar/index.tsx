@@ -214,7 +214,9 @@ function AppSidebar() {
                         }
                     >
                         <RedirectIcon className="app-sidebar_item_icon" />
-                        <span>{onAdminPanel ? 'Home' : 'To the admin panel'}</span>
+                        <span>
+                            {onAdminPanel ? 'Home' : 'To the admin panel'}
+                        </span>
                     </button>
                 ) : null}
 

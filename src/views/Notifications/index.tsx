@@ -140,8 +140,7 @@ const Notifications = () => {
             <div className="notifications_page_intro">
                 <h1>Notifications</h1>
                 <p>
-                    Likes, comments, mentions, follows, and replies to
-                    requests.
+                    Likes, comments, mentions, follows, and replies to requests.
                 </p>
             </div>
 

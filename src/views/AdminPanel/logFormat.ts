@@ -1,4 +1,3 @@
-
 import { kindLabel, statusLabel } from '../Support/constants';
 
 export const formatSize = (bytes: any) => {
@@ -286,7 +285,10 @@ export function describeDetails(
     add('Backup ID in the manifest', data.source_backup, true);
     add('File size', data.size_bytes ? formatSize(data.size_bytes) : null);
     add('Deleted by rotation', data.removed_files);
-    add('Restore rolled back to the previous state', data.rolled_back ? 'yes' : null);
+    add(
+        'Restore rolled back to the previous state',
+        data.rolled_back ? 'yes' : null,
+    );
     add('Safety snapshot', data.safety_backup, true);
     if (data.safety_removed) {
         add('Snapshot after restore', 'deleted');

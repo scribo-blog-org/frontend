@@ -117,8 +117,8 @@ const Support = () => {
             <div className="support_page_intro">
                 <h1>Support</h1>
                 <p>
-                    Leave an email and a message. The reply will come by email. You cannot reply from
-                    this page.
+                    Leave an email and a message. The reply will come by email.
+                    You cannot reply from this page.
                 </p>
             </div>
             <form
@@ -178,8 +178,9 @@ const Support = () => {
                     Send
                 </PrimaryButton>
                 <p className="support_page_note">
-                    If you <Link href="/auth/login">log in</Link>, replies
-                    will arrive on the site, and you will be able to write in the thread yourself.
+                    If you <Link href="/auth/login">log in</Link>, replies will
+                    arrive on the site, and you will be able to write in the
+                    thread yourself.
                 </p>
             </form>
         </div>

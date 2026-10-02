@@ -197,8 +197,8 @@ const SharePostModal = ({
                     </div>
                 ) : (
                     <p className="share_post_modal_hint">
-                        No chats yet. Write to someone from their profile —
-                        the conversation will show up here.
+                        No chats yet. Write to someone from their profile — the
+                        conversation will show up here.
                     </p>
                 )}
             </div>

@@ -23,7 +23,6 @@ import { kindLabel, statusLabel } from '../Support/constants';
 
 import './Requests.scss';
 
-
 const GLYPHS: any = {
     post: PostIcon,
     category: TagIcon,
