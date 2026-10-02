@@ -30,6 +30,16 @@ const runBackup = async () => {
     return await response.json();
 };
 
+const restoreBackup = async (id: string) => {
+    const response = await apiFetch(`${API()}/${id}/restore`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: true }),
+    });
+
+    return await response.json();
+};
+
 /** Архив нельзя отдать ссылкой: эндпоинт требует токен, поэтому качаем через fetch. */
 const downloadBackup = async (id: string) => {
     const response = await apiFetch(`${API()}/${id}/download`, {
@@ -59,4 +69,4 @@ const downloadBackup = async (id: string) => {
     return { status: true };
 };
 
-export { getBackups, runBackup, downloadBackup };
+export { getBackups, runBackup, restoreBackup, downloadBackup };
