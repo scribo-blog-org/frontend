@@ -103,14 +103,20 @@ const objectOf = (log: any, config: any, ctx: any) => {
             return data.file_name ? (
                 <TextEntity>{data.file_name}</TextEntity>
             ) : null;
+        case 'upload':
+            return data.original_name ? (
+                <TextEntity>{data.original_name}</TextEntity>
+            ) : null;
         case 'system':
             return (
                 <TextEntity>
                     {log.type === 'server_start'
                         ? `v${data.version ?? '?'} · ${data.env ?? ''}`
-                        : log.type === 'server_error'
-                          ? `${data.method ?? ''} ${data.path ?? ''}`
-                          : (data.trigger ?? '')}
+                        : log.type === 'db_version_sync'
+                          ? `v${data.app_version ?? '?'} · данные ${data.to_version ?? '?'}`
+                          : log.type === 'server_error'
+                            ? `${data.method ?? ''} ${data.path ?? ''}`
+                            : (data.trigger ?? '')}
                 </TextEntity>
             );
         default:
@@ -181,6 +187,7 @@ const detailsOf = (log: any) => {
                 title: data.stack || data.error,
             };
         case 'backup_failed':
+        case 'backup_upload_failed':
         case 'backup_restore_result':
             return { node: <ErrorText text={data.error} /> };
         default:
@@ -243,6 +250,7 @@ const LogRow = ({
             id={data.user}
             data={users.find((user: any) => user._id === String(data.user))}
             fallbackNick={data.user_nick}
+            fallbackAvatar={data.user_avatar}
             setFilter={setFilter}
         />
     ) : (

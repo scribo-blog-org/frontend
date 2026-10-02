@@ -82,7 +82,13 @@ export const EntityView = ({
     );
 };
 
-export const UserEntity = ({ id, data, fallbackNick, setFilter }: any) => {
+export const UserEntity = ({
+    id,
+    data,
+    fallbackNick,
+    fallbackAvatar,
+    setFilter,
+}: any) => {
     const navigate = useNavigate();
     const { showToast } = useContext(AppContext);
 
@@ -111,7 +117,7 @@ export const UserEntity = ({ id, data, fallbackNick, setFilter }: any) => {
                 <EntityView
                     kind="user"
                     name={data?.nick_name ?? (fallbackNick || '—')}
-                    avatar={data?.avatar}
+                    avatar={data?.avatar ?? fallbackAvatar}
                     verified={data?.is_verified}
                     deleted={!data}
                 />

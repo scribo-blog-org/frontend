@@ -40,6 +40,40 @@ const restoreBackup = async (id: string) => {
     return await response.json();
 };
 
+/**
+ * Загрузка своего архива. Сервер проверяет его целиком и добавляет в список,
+ * ставится он потом обычным откатом. Тело multipart, заголовок Content-Type
+ * ставит браузер сам, иначе потеряется boundary.
+ */
+const uploadBackup = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await apiFetch(`${API()}/upload`, {
+            method: 'POST',
+            body: formData,
+            // Обрыв большой загрузки не значит, что сайт лежит.
+            reportOutage: false,
+        });
+
+        try {
+            return await response.json();
+        } catch {
+            // Прокси отвечает не JSON-ом, например когда файл больше его лимита.
+            return {
+                status: false,
+                message:
+                    response.status === 413
+                        ? 'Файл больше допустимого размера'
+                        : 'Не удалось загрузить архив',
+            };
+        }
+    } catch {
+        return { status: false, message: 'Не удалось загрузить архив' };
+    }
+};
+
 /** Архив нельзя отдать ссылкой: эндпоинт требует токен, поэтому качаем через fetch. */
 const downloadBackup = async (id: string) => {
     const response = await apiFetch(`${API()}/${id}/download`, {
@@ -69,4 +103,4 @@ const downloadBackup = async (id: string) => {
     return { status: true };
 };
 
-export { getBackups, runBackup, restoreBackup, downloadBackup };
+export { getBackups, runBackup, restoreBackup, downloadBackup, uploadBackup };
