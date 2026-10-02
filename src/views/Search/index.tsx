@@ -253,7 +253,9 @@ const SearchPage = () => {
                                             {post.featured_image ? (
                                                 <img
                                                     className="search_page_post_thumb"
-                                                    src={mediaUrl(post.featured_image)}
+                                                    src={mediaUrl(
+                                                        post.featured_image,
+                                                    )}
                                                     alt=""
                                                 />
                                             ) : null}
