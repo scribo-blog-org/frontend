@@ -15,6 +15,10 @@ import { format_back, format_date_time } from '../../utils/format';
 import Pagination from '../../components/Ui/Pagination';
 import Loading from '../../components/Ui/Loading';
 import Tooltip from '../../components/Ui/Tooltip';
+import BackupIcon from '../../assets/svg/backup.svg';
+import DownloadIcon from '../../assets/svg/document-download.svg';
+import UploadIcon from '../../assets/svg/document-upload.svg';
+import RestoreIcon from '../../assets/svg/restore.svg';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
 import ActionButton from '../../components/Ui/ActionButton';
 import DangerButton from '../../components/Ui/DangerButton/index';
@@ -143,6 +147,7 @@ const UploadedDialog = ({ item, info, duplicate, onClose, onRestore }: any) => (
         <div className="backup_restore_dialog_bottom">
             <ActionButton onClick={onClose}>Close</ActionButton>
             <DangerButton onClick={onRestore} isActive={true}>
+                <RestoreIcon />
                 Restore…
             </DangerButton>
         </div>
@@ -211,6 +216,7 @@ const RestoreDialog = ({ item, info, onCancel, onStarted, showToast }: any) => {
                     isLoading={isStarting}
                     disabled={word.trim().toUpperCase() !== CONFIRM_WORD}
                 >
+                    <RestoreIcon />
                     Restore
                 </DangerButton>
             </div>
@@ -418,6 +424,7 @@ const BackupsPage = () => {
                                 isLoading={uploading}
                                 disabled={busy}
                             >
+                                <UploadIcon />
                                 {uploading
                                     ? 'Uploading and checking…'
                                     : 'Upload a backup'}
@@ -429,6 +436,7 @@ const BackupsPage = () => {
                         isLoading={starting}
                         disabled={!info?.enabled || busy}
                     >
+                        <BackupIcon />
                         {running ? 'Backup in progress…' : 'Run a backup'}
                     </PrimaryButton>
                 </div>
@@ -537,6 +545,7 @@ const BackupsPage = () => {
                                                 downloadingId === item._id
                                             }
                                         >
+                                            <DownloadIcon />
                                             Download
                                         </ActionButton>
                                     ) : item.file_removed_at ? (
@@ -561,6 +570,7 @@ const BackupsPage = () => {
                                             onClick={() => askRestore(item)}
                                             disabled={busy}
                                         >
+                                            <RestoreIcon />
                                             Restore
                                         </DangerButton>
                                     ) : null}

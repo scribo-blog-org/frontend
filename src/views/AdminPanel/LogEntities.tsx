@@ -8,6 +8,9 @@ import { AppContext } from '@/providers/AppProviders';
 import RedirectIcon from '../../assets/svg/redirect.svg';
 import FilterIcon from '../../assets/svg/filter.svg';
 import CommentIcon from '../../assets/svg/comment.svg';
+import SupportIcon from '../../assets/svg/support.svg';
+import BackupIcon from '../../assets/svg/backup.svg';
+import GlobalIcon from '../../assets/svg/global.svg';
 
 import ArrowIcon from '../../assets/svg/arrow-left.svg';
 import PostIcon from '../../assets/svg/post.svg';
@@ -27,7 +30,9 @@ const GLYPHS: any = {
     post: PostIcon,
     category: TagIcon,
     comment: CommentIcon,
-    support: CommentIcon,
+    support: SupportIcon,
+    backup: BackupIcon,
+    deploy: GlobalIcon,
 };
 
 export const EntityView = ({
@@ -278,6 +283,18 @@ export const SystemEntity = () => (
 export const TextEntity = ({ children }: any) => (
     <span className="log_entity">
         <EntityView kind="text" name={children} />
+    </span>
+);
+
+export const BackupEntity = ({ name }: any) => (
+    <span className="log_entity log_entity_muted">
+        <EntityView kind="backup" name={name} />
+    </span>
+);
+
+export const DeployEntity = ({ name }: any) => (
+    <span className="log_entity log_entity_muted">
+        <EntityView kind="deploy" name={name} />
     </span>
 );
 

@@ -8,6 +8,8 @@ import {
     Arrow,
     CategoryEntity,
     CommentEntity,
+    BackupEntity,
+    DeployEntity,
     GuestEntity,
     PostEntity,
     RoleChange,
@@ -101,22 +103,28 @@ const objectOf = (log: any, config: any, ctx: any) => {
             );
         case 'backup':
             return data.file_name ? (
-                <TextEntity>{data.file_name}</TextEntity>
+                <BackupEntity name={data.file_name} />
             ) : null;
         case 'upload':
             return data.original_name ? (
                 <TextEntity>{data.original_name}</TextEntity>
             ) : null;
         case 'system':
+            if (log.type === 'server_start') {
+                return (
+                    <DeployEntity
+                        name={`v${data.version ?? '?'} · ${data.env ?? ''}`}
+                    />
+                );
+            }
+
             return (
                 <TextEntity>
-                    {log.type === 'server_start'
-                        ? `v${data.version ?? '?'} · ${data.env ?? ''}`
-                        : log.type === 'db_version_sync'
-                          ? `v${data.app_version ?? '?'} · data ${data.to_version ?? '?'}`
-                          : log.type === 'server_error'
-                            ? `${data.method ?? ''} ${data.path ?? ''}`
-                            : (data.trigger ?? '')}
+                    {log.type === 'db_version_sync'
+                        ? `v${data.app_version ?? '?'} · data ${data.to_version ?? '?'}`
+                        : log.type === 'server_error'
+                          ? `${data.method ?? ''} ${data.path ?? ''}`
+                          : (data.trigger ?? '')}
                 </TextEntity>
             );
         default:

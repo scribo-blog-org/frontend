@@ -3,11 +3,14 @@ import EditIcon from '../../assets/svg/edit.svg';
 import DeleteIcon from '../../assets/svg/delete.svg';
 import NewUserIcon from '../../assets/svg/new-user.svg';
 import CommentIcon from '../../assets/svg/comment.svg';
+import MessageIcon from '../../assets/svg/message.svg';
+import SupportIcon from '../../assets/svg/support.svg';
+import BackupIcon from '../../assets/svg/backup.svg';
 import LikeIcon from '../../assets/svg/like-filled.svg';
 import BookmarkIcon from '../../assets/svg/bookmark-filled.svg';
 import WarningIcon from '../../assets/svg/warning-icon.svg';
 import InfoIcon from '../../assets/svg/info.svg';
-import ShieldIcon from '../../assets/svg/shield-security.svg';
+import GlobalIcon from '../../assets/svg/global.svg';
 import SettingsIcon from '../../assets/svg/settings.svg';
 import PeoplesIcon from '../../assets/svg/peoples.svg';
 
@@ -172,7 +175,7 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
     create_conversation: {
         title: 'Chat started',
         tone: 'create',
-        icon: CommentIcon,
+        icon: MessageIcon,
         text: () => 'Started a chat with',
         object: 'user',
     },
@@ -214,7 +217,7 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
     reply_support_request: {
         title: 'Reply to a request',
         tone: 'update',
-        icon: CommentIcon,
+        icon: SupportIcon,
         text: (log) =>
             log.data?.author_type === 'requester'
                 ? 'Added to a request'
@@ -231,21 +234,21 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
     backup_run: {
         title: 'Backup started',
         tone: 'info',
-        icon: ShieldIcon,
+        icon: BackupIcon,
         text: () => 'Started a backup manually',
         object: null,
     },
     backup_done: {
         title: 'Backup ready',
         tone: 'create',
-        icon: ShieldIcon,
+        icon: BackupIcon,
         text: () => 'Backup created',
         object: 'backup',
     },
     backup_upload: {
         title: 'Backup upload',
         tone: 'create',
-        icon: ShieldIcon,
+        icon: BackupIcon,
         text: () => 'Uploaded a backup file',
         object: 'backup',
     },
@@ -259,28 +262,28 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
     backup_download: {
         title: 'Backup download',
         tone: 'info',
-        icon: ShieldIcon,
+        icon: BackupIcon,
         text: () => 'Downloaded a backup',
         object: 'backup',
     },
     backup_rotated: {
         title: 'Backup rotation',
         tone: 'delete',
-        icon: ShieldIcon,
+        icon: BackupIcon,
         text: () => 'Old backups deleted',
         object: 'system',
     },
     backup_restore: {
         title: 'Restore started',
         tone: 'delete',
-        icon: ShieldIcon,
+        icon: BackupIcon,
         text: () => 'Started a restore from a backup',
         object: 'backup',
     },
     backup_restore_result: {
         title: 'Restore result',
         tone: 'update',
-        icon: ShieldIcon,
+        icon: BackupIcon,
         text: (log) =>
             log.data?.status === 'success'
                 ? 'Restore finished'
@@ -306,7 +309,7 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
     server_start: {
         title: 'Server start',
         tone: 'register',
-        icon: InfoIcon,
+        icon: GlobalIcon,
         text: () => 'Server started',
         object: 'system',
     },

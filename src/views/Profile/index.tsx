@@ -23,7 +23,7 @@ import Calendar from '../../assets/svg/calendar-icon.svg';
 import PostIcon from '../../assets/svg/post.svg';
 import BookmarkOutline from '../../assets/svg/bookmark-outline.svg';
 import SettingsIcon from '../../assets/svg/settings.svg';
-import CommentIcon from '../../assets/svg/comment.svg';
+import MessageIcon from '../../assets/svg/message.svg';
 import { startConversationWithUser } from '../Messages/index';
 
 import Sceleton from '../../components/Ui/Sceleton/Sceleton';
@@ -481,7 +481,7 @@ const Profile = ({
                                             )
                                         }
                                     >
-                                        <CommentIcon className="profile_info_action_icon" />
+                                        <MessageIcon className="profile_info_action_icon" />
                                         Start a conversation
                                     </ActionButton>
                                 ) : null}

@@ -4,10 +4,10 @@ import './AdminPanel.scss';
 
 import TagIcon from '../../assets/svg/tag.svg';
 import PeoplesIcon from '../../assets/svg/peoples.svg';
-import LogIcon from '../../assets/svg/post.svg';
-import CommentIcon from '../../assets/svg/comment.svg';
+import LogsIcon from '../../assets/svg/logs.svg';
+import SupportIcon from '../../assets/svg/support.svg';
 import ChartIcon from '../../assets/svg/chart.svg';
-import ShieldIcon from '../../assets/svg/shield-security.svg';
+import BackupIcon from '../../assets/svg/backup.svg';
 
 import { useNavigate } from '@/navigation';
 import { useContext, useEffect } from 'react';
@@ -56,23 +56,23 @@ const AdminPanel = () => {
             content: <AdminsPage />,
         },
         {
-            title: 'Logs',
-            key: 'logs',
-            icon: <LogIcon />,
-            content: <LogsPage />,
+            title: 'Support',
+            key: 'requests',
+            icon: <SupportIcon />,
+            content: <RequestsPage />,
         },
         {
-            title: 'Requests',
-            key: 'requests',
-            icon: <CommentIcon />,
-            content: <RequestsPage />,
+            title: 'Logs',
+            key: 'logs',
+            icon: <LogsIcon />,
+            content: <LogsPage />,
         },
         ...(profile?.role === 'tech_admin'
             ? [
                   {
                       title: 'Backups',
                       key: 'backups',
-                      icon: <ShieldIcon />,
+                      icon: <BackupIcon />,
                       content: <BackupsPage />,
                   },
               ]

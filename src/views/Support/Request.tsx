@@ -175,7 +175,7 @@ const SupportRequestPage = () => {
                         }
                     >
                         <ArrowLeftIcon />
-                        {isStaff ? 'To requests' : 'Support'}
+                        Support
                     </ActionButton>
                     <div className="support_request_detail_tags">
                         {showStatus ? (
