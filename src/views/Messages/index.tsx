@@ -2225,9 +2225,9 @@ const MessagesPage = () => {
                                                                         }`}
                                                                         style={
                                                                             isLeaving
-                                                                                ? {
+                                                                                ? ({
                                                                                       '--leave-height': `${leavingHeights[message._id]}px`,
-                                                                                  }
+                                                                                  } as React.CSSProperties)
                                                                                 : undefined
                                                                         }
                                                                         onAnimationEnd={(
