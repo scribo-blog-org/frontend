@@ -1,14 +1,5 @@
 @use '../../styles/helpers' as *;
 
-@include screen() {
-    html:has(input:focus, textarea:focus, [contenteditable='true']:focus):not(
-            :has(.search_page :is(input, textarea):focus)
-        )
-        .navigation_bar {
-        display: none;
-    }
-}
-
 .navigation_bar {
     display: none;
     flex-shrink: 0;
