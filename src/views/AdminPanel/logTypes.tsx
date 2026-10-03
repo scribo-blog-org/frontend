@@ -10,6 +10,7 @@ import LikeIcon from '../../assets/svg/like-filled.svg';
 import BookmarkIcon from '../../assets/svg/bookmark-filled.svg';
 import WarningIcon from '../../assets/svg/warning-icon.svg';
 import InfoIcon from '../../assets/svg/info.svg';
+import GlobalIcon from '../../assets/svg/global.svg';
 import SettingsIcon from '../../assets/svg/settings.svg';
 import PeoplesIcon from '../../assets/svg/peoples.svg';
 
@@ -308,7 +309,7 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
     server_start: {
         title: 'Server start',
         tone: 'register',
-        icon: InfoIcon,
+        icon: GlobalIcon,
         text: () => 'Server started',
         object: 'system',
     },
