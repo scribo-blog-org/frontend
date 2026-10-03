@@ -55,7 +55,18 @@ const MessageContextMenu = ({ x, y, items, onClose }: any) => {
         };
 
         const onPointerDown = (event: any) => {
-            if (event.target.closest('.popup_menu')) {
+            if (
+                event.pointerType === 'mouse' &&
+                event.sourceCapabilities?.firesTouchEvents
+            ) {
+                return;
+            }
+
+            if (
+                event.target.closest(
+                    '.popup_menu, .messages_text, .messages_bubble',
+                )
+            ) {
                 return;
             }
 
@@ -63,11 +74,11 @@ const MessageContextMenu = ({ x, y, items, onClose }: any) => {
         };
 
         window.addEventListener('keydown', onKeyDown);
-        window.addEventListener('mousedown', onPointerDown);
+        window.addEventListener('pointerdown', onPointerDown, true);
 
         return () => {
             window.removeEventListener('keydown', onKeyDown);
-            window.removeEventListener('mousedown', onPointerDown);
+            window.removeEventListener('pointerdown', onPointerDown, true);
         };
     }, [onClose]);
 

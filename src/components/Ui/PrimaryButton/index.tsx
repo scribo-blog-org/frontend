@@ -18,6 +18,9 @@ export default function PrimaryButton({
     isLoading = false,
     disabled = false,
     id,
+    onMouseDown,
+    onTouchStart,
+    onTouchEnd,
     'aria-label': ariaLabel,
 }: any) {
     const isDisabled = disabled || isLoading;
@@ -28,6 +31,9 @@ export default function PrimaryButton({
             id={id}
             className={`primary_button ui_button_${resolvedSize} app-transition app-transition-color ${className} ${isLoading ? 'primary_button_loading' : ''} ${isDisabled && !isLoading ? 'primary_button_disabled' : ''}`}
             onClick={isDisabled ? undefined : onClick}
+            onMouseDown={onMouseDown}
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
             type={type}
             disabled={isDisabled}
             aria-label={ariaLabel}
