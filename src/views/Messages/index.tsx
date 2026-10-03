@@ -351,6 +351,8 @@ const MessagesPage = () => {
     const [isChatLoading, setIsChatLoading] = useState<any>(false);
     const [isSending, setIsSending] = useState<any>(false);
     const [messageMenu, setMessageMenu] = useState<any>(null);
+    const messageMenuRef = useRef<any>(null);
+    messageMenuRef.current = messageMenu;
     const [onlineByUserId, setOnlineByUserId] = useState<any>({});
     const [activityAtByUserId, setActivityAtByUserId] = useState<any>({});
     const [typingByConversationId, setTypingByConversationId] = useState<any>(
@@ -1385,7 +1387,13 @@ const MessagesPage = () => {
             return;
         }
 
-        const closeMenu = () => setMessageMenu(null);
+        const closeMenu = () => {
+            if (messageMenuRef.current?.source === 'touch') {
+                return;
+            }
+
+            setMessageMenu(null);
+        };
         el.addEventListener('scroll', closeMenu, { passive: true });
 
         return () => el.removeEventListener('scroll', closeMenu);
@@ -1464,24 +1472,54 @@ const MessagesPage = () => {
         };
     }, [isSelecting]);
 
-    const openMessageMenu = (event: any, items: any) => {
+    const openMessageMenu = (event: any, items: any, message: any) => {
         if (isSelecting) {
             event.preventDefault();
             event.stopPropagation();
             return;
         }
 
-        if (!items.length) {
+        if (!items.length || !message) {
             return;
         }
 
         event.preventDefault();
         event.stopPropagation();
-        setMessageMenu({
+        const touch =
+            event.source === 'touch' ||
+            event.pointerType === 'touch' ||
+            window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        const article = document.getElementById(`message_${message._id}`);
+        const wrap = article?.querySelector('.messages_bubble_wrap');
+        const rect = wrap?.getBoundingClientRect();
+        const anchor =
+            article && rect
+                ? {
+                      top: rect.top,
+                      left: rect.left,
+                      width: rect.width,
+                      height: rect.height,
+                      own: article.classList.contains('messages_item_own'),
+                  }
+                : null;
+
+        if (
+            messageMenuRef.current &&
+            String(messageMenuRef.current.messageId) === String(message._id)
+        ) {
+            return;
+        }
+
+        const nextMenu = {
             x: event.clientX,
             y: event.clientY,
             items,
-        });
+            messageId: message._id,
+            source: touch && anchor ? 'touch' : 'mouse',
+            anchor,
+        };
+        messageMenuRef.current = nextMenu;
+        setMessageMenu(nextMenu);
     };
 
     useLayoutEffect(() => {
@@ -1830,7 +1868,11 @@ const MessagesPage = () => {
         longPressRef.current = null;
     };
 
-    const handleMessageTouchStart = (event: any, actionItems: any) => {
+    const handleMessageTouchStart = (
+        event: any,
+        actionItems: any,
+        message: any,
+    ) => {
         if (isSelecting || messageMenu || event.touches?.length !== 1) {
             return;
         }
@@ -1852,8 +1894,10 @@ const MessagesPage = () => {
                     stopPropagation() {},
                     clientX: startX,
                     clientY: startY,
+                    source: 'touch',
                 },
                 actionItems,
+                message,
             );
         }, 480);
 
@@ -2595,6 +2639,10 @@ const MessagesPage = () => {
                                             messageMenu
                                                 ? ' messages_list_menu_open'
                                                 : ''
+                                        }${
+                                            messageMenu?.source === 'touch'
+                                                ? ' messages_list_menu_touch'
+                                                : ''
                                         }`}
                                         ref={listRef}
                                         onScroll={handleListScroll}
@@ -2735,6 +2783,17 @@ const MessagesPage = () => {
                                                                             'to'
                                                                                 ? ' messages_item_enter_open'
                                                                                 : ''
+                                                                        }${
+                                                                            messageMenu?.source !==
+                                                                                'touch' &&
+                                                                            String(
+                                                                                messageMenu?.messageId,
+                                                                            ) ===
+                                                                                String(
+                                                                                    message._id,
+                                                                                )
+                                                                                ? ' messages_item_menu_target'
+                                                                                : ''
                                                                         }`}
                                                                         style={
                                                                             isLeaving
@@ -2789,6 +2848,7 @@ const MessagesPage = () => {
                                                                             handleMessageTouchStart(
                                                                                 event,
                                                                                 actionItems,
+                                                                                message,
                                                                             )
                                                                         }
                                                                         onTouchMove={
@@ -2870,6 +2930,7 @@ const MessagesPage = () => {
                                                                             openMessageMenu(
                                                                                 event,
                                                                                 actionItems,
+                                                                                message,
                                                                             );
                                                                         }}
                                                                     >
@@ -3233,14 +3294,10 @@ const MessagesPage = () => {
                     )}
                 </section>
             </div>
-            {messageMenu ? (
-                <MessageContextMenu
-                    x={messageMenu.x}
-                    y={messageMenu.y}
-                    items={messageMenu.items}
-                    onClose={() => setMessageMenu(null)}
-                />
-            ) : null}
+            <MessageContextMenu
+                menu={messageMenu}
+                onClose={() => setMessageMenu(null)}
+            />
         </div>
     );
 };

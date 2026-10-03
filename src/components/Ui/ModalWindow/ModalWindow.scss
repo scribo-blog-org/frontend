@@ -16,8 +16,8 @@
     transition:
         opacity 0.3s ease,
         visibility 0.3s ease;
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: var(--modal-window-backdrop-filter);
+    backdrop-filter: var(--modal-window-backdrop-filter);
 
     &_background {
         cursor: default;
