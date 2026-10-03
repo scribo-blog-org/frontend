@@ -30,8 +30,12 @@ body {
     flex-direction: column;
     flex: 1;
     min-height: 0;
-    height: 100%;
-    max-height: 100dvh;
+    position: fixed;
+    top: var(--visual-viewport-offset, 0px);
+    left: 0;
+    width: 100%;
+    height: var(--visual-viewport-height, 100%);
+    max-height: var(--visual-viewport-height, 100dvh);
     overflow: hidden;
 }
 
@@ -222,7 +226,7 @@ button {
     flex: 1;
     min-height: 0;
     height: 100%;
-    max-height: 100dvh;
+    max-height: 100%;
     overflow: hidden;
     color: var(--text-color);
 }
