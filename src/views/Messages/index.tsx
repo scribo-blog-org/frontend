@@ -58,6 +58,7 @@ import ArrowLeftIcon from '../../assets/svg/arrow-left.svg';
 import SendIcon from '../../assets/svg/send.svg';
 import ThreeDotsIcon from '../../assets/svg/three-dots.svg';
 import TickIcon from '../../assets/svg/tick.svg';
+import TickCircleIcon from '../../assets/svg/tick-circle.svg';
 import ChevronDownIcon from '../../assets/svg/chevron-down.svg';
 import NewMessageIllustration from '../../assets/svg/illustrations/new-message.svg';
 
@@ -66,7 +67,7 @@ import { getMessageActions } from './messageActions';
 import './Messages.scss';
 
 const COMPOSER_LINE_HEIGHT = 20;
-const COMPOSER_PAD_Y = 9;
+const COMPOSER_PAD_Y = 5;
 const COMPOSER_MAX_LINES = 5;
 const COMPOSER_MAX_HEIGHT =
     COMPOSER_LINE_HEIGHT * COMPOSER_MAX_LINES + COMPOSER_PAD_Y * 2;
@@ -303,6 +304,7 @@ const MessagesPage = () => {
     const [onlineByUserId, setOnlineByUserId] = useState<any>({});
     const [leavingHeights, setLeavingHeights] = useState<any>({});
     const [isAwayFromBottom, setIsAwayFromBottom] = useState(false);
+    const [selectionIds, setSelectionIds] = useState<any>(null);
 
     const listRef = useRef<any>(null);
     const composerDockRef = useRef<any>(null);
@@ -311,6 +313,7 @@ const MessagesPage = () => {
     const jumpingToBottomRef = useRef(false);
     const leavingIdsRef = useRef<any>(new Set());
     const beginMessageLeaveRef = useRef<any>(() => {});
+    const lastReplyGestureRef = useRef(0);
 
     const scrollMessagesToBottom = useCallback(() => {
         const el = listRef.current;
@@ -660,7 +663,46 @@ const MessagesPage = () => {
     useEffect(() => {
         stickToBottomRef.current = true;
         setMessageMenu(null);
+        setSelectionIds(null);
     }, [conversationId]);
+
+    useEffect(() => {
+        if (!Array.isArray(selectionIds)) {
+            return;
+        }
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setSelectionIds(null);
+            }
+        };
+
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [selectionIds]);
+
+    useEffect(() => {
+        if (!replyTo && !editingMessage) {
+            return;
+        }
+
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') {
+                return;
+            }
+
+            if (editingMessage) {
+                setEditingMessage(null);
+                setDraft('');
+                return;
+            }
+
+            setReplyTo(null);
+        };
+
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [replyTo, editingMessage]);
 
     useEffect(() => {
         const el = listRef.current;
@@ -674,7 +716,15 @@ const MessagesPage = () => {
         return () => el.removeEventListener('scroll', closeMenu);
     }, [conversationId]);
 
+    const isSelecting = Array.isArray(selectionIds);
+
     const openMessageMenu = (event: any, items: any) => {
+        if (isSelecting) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
         if (!items.length) {
             return;
         }
@@ -724,8 +774,49 @@ const MessagesPage = () => {
         return () => cancelAnimationFrame(frame);
     }, [replyTo, isChatLoading]);
 
+    const clearSelection = () => {
+        setSelectionIds(null);
+    };
+
+    const startSelection = (message: any) => {
+        if (!message || message.deleted_at) {
+            return;
+        }
+
+        setMessageMenu(null);
+        setSelectionIds([String(message._id)]);
+    };
+
+    const toggleMessageSelection = (message: any) => {
+        if (!message || message.deleted_at) {
+            return;
+        }
+
+        const id = String(message._id);
+        setSelectionIds((current: any) => {
+            if (!Array.isArray(current)) {
+                return current;
+            }
+
+            if (current.includes(id)) {
+                return current.filter((item: any) => item !== id);
+            }
+
+            return [...current, id];
+        });
+    };
+
+    const preventRepeatedClickSelection = (event: any) => {
+        if (event.detail > 1) {
+            event.preventDefault();
+        }
+    };
+
     const handleMessageDoubleClick = (event: any, message: any) => {
-        if (!message || message.deleted_at || isChatLoading) {
+        event.preventDefault();
+        window.getSelection()?.removeAllRanges();
+
+        if (isSelecting || !message || message.deleted_at || isChatLoading) {
             return;
         }
 
@@ -737,6 +828,12 @@ const MessagesPage = () => {
             return;
         }
 
+        const stamp = event.timeStamp;
+        if (stamp - lastReplyGestureRef.current < 500) {
+            return;
+        }
+
+        lastReplyGestureRef.current = stamp;
         handleStartReply(message);
     };
 
@@ -750,6 +847,52 @@ const MessagesPage = () => {
         setEditingMessage(null);
         setDraft('');
     };
+
+    const composerContext = editingMessage
+        ? {
+              message: editingMessage,
+              title: 'Editing',
+              ...getQuoteContent(editingMessage),
+              onClose: handleCancelEdit,
+              closeLabel: 'Cancel editing',
+          }
+        : replyTo
+          ? {
+                message: replyTo,
+                title: `Reply to ${getQuoteContent(replyTo).author}`,
+                ...getQuoteContent(replyTo),
+                onClose: () => setReplyTo(null),
+                closeLabel: 'Cancel reply',
+            }
+          : null;
+    const composerContextRef = useRef<any>(null);
+    composerContextRef.current = composerContext;
+    const contextSignature = editingMessage
+        ? `edit:${editingMessage._id}:${editingMessage.text || ''}`
+        : replyTo
+          ? `reply:${replyTo._id}:${replyTo.text || ''}:${replyTo.deleted_at || ''}`
+          : '';
+    const [contextFrame, setContextFrame] = useState<any>(null);
+    const [contextOpen, setContextOpen] = useState(false);
+
+    useLayoutEffect(() => {
+        if (contextSignature) {
+            setContextFrame(composerContextRef.current);
+            return;
+        }
+
+        setContextOpen(false);
+    }, [contextSignature]);
+
+    useEffect(() => {
+        if (!contextSignature) {
+            const timer = window.setTimeout(() => setContextFrame(null), 320);
+            return () => window.clearTimeout(timer);
+        }
+
+        const frame = window.requestAnimationFrame(() => setContextOpen(true));
+        return () => window.cancelAnimationFrame(frame);
+    }, [contextSignature]);
 
     const handleReplyPreviewClick = (preview: any) => {
         if (!preview || preview.deleted || preview.deleted_at) {
@@ -904,7 +1047,8 @@ const MessagesPage = () => {
             Math.max(
                 1,
                 Math.ceil(
-                    (contentHeight - COMPOSER_PAD_Y * 2) / COMPOSER_LINE_HEIGHT -
+                    (contentHeight - COMPOSER_PAD_Y * 2) /
+                        COMPOSER_LINE_HEIGHT -
                         0.15,
                 ),
             ),
@@ -921,6 +1065,17 @@ const MessagesPage = () => {
     }, [draft, resizeComposerInput, conversationId]);
 
     const handleComposerKeyDown = (event: any) => {
+        if (event.key === 'Escape') {
+            if (editingMessage) {
+                event.preventDefault();
+                handleCancelEdit();
+            } else if (replyTo) {
+                event.preventDefault();
+                setReplyTo(null);
+            }
+            return;
+        }
+
         if (
             event.key !== 'Enter' ||
             event.shiftKey ||
@@ -936,6 +1091,13 @@ const MessagesPage = () => {
     const finishMessageLeave = (messageId: any) => {
         const id = String(messageId);
         leavingIdsRef.current.delete(id);
+        setSelectionIds((current: any) => {
+            if (!Array.isArray(current) || !current.includes(id)) {
+                return current;
+            }
+
+            return current.filter((item: any) => item !== id);
+        });
         setLeavingHeights((current: any) => {
             if (!(id in current)) {
                 return current;
@@ -1003,10 +1165,12 @@ const MessagesPage = () => {
         onReply: handleStartReply,
         onEdit: handleStartEdit,
         onDelete: handleDelete,
+        onSelect: startSelection,
         icons: {
             reply: ReplyIcon,
             edit: EditIcon,
             delete: DeleteIcon,
+            select: TickCircleIcon,
         },
     };
 
@@ -1266,378 +1430,478 @@ const MessagesPage = () => {
                                 </Popup>
                             </header>
 
-                            <div
-                                className="messages_list"
-                                ref={listRef}
-                                onScroll={handleListScroll}
-                            >
-                                {isChatLoading ? (
-                                    <div className="messages_list_loader">
-                                        <Loading size={36} />
-                                    </div>
-                                ) : (
-                                    messageDayGroups.map(
-                                        (group: any, groupIndex: any) => (
-                                            <section
-                                                key={group.key}
-                                                id={`messages_day_${group.key}`}
-                                                className="messages_day_group"
-                                            >
-                                                <div
-                                                    className="messages_date_divider"
-                                                    style={{
-                                                        zIndex:
-                                                            messageDayGroups.length -
-                                                            groupIndex,
-                                                    }}
-                                                >
-                                                    <button
-                                                        type="button"
-                                                        className="messages_date_label app-transition"
-                                                        onClick={() =>
-                                                            scrollToMessageDay(
-                                                                group.key,
-                                                            )
-                                                        }
+                            <div className="messages_thread">
+                                <div className="messages_thread_inner">
+                                    <div
+                                        className={`messages_list${
+                                            isSelecting
+                                                ? ' messages_list_selecting'
+                                                : ''
+                                        }`}
+                                        ref={listRef}
+                                        onScroll={handleListScroll}
+                                    >
+                                        {isChatLoading ? (
+                                            <div className="messages_list_loader">
+                                                <Loading size={36} />
+                                            </div>
+                                        ) : (
+                                            messageDayGroups.map(
+                                                (
+                                                    group: any,
+                                                    groupIndex: any,
+                                                ) => (
+                                                    <section
+                                                        key={group.key}
+                                                        id={`messages_day_${group.key}`}
+                                                        className="messages_day_group"
                                                     >
-                                                        {group.label}
-                                                    </button>
-                                                </div>
-
-                                                {group.messages.map(
-                                                    (message: any) => {
-                                                        const isLeaving =
-                                                            message._id in
-                                                            leavingHeights;
-                                                        const isOwn =
-                                                            message.is_own;
-                                                        const isDeleted =
-                                                            Boolean(
-                                                                message.deleted_at,
-                                                            );
-
-                                                        if (
-                                                            isDeleted &&
-                                                            !isLeaving
-                                                        ) {
-                                                            return null;
-                                                        }
-                                                        const hasEmbeds =
-                                                            !isDeleted &&
-                                                            /https?:\/\//.test(
-                                                                message.text ||
-                                                                    '',
-                                                            );
-                                                        const replyQuote =
-                                                            resolveReplyQuote(
-                                                                message,
-                                                                messageById,
-                                                            );
-                                                        const replyTargetId =
-                                                            message.reply_to ||
-                                                            message
-                                                                .reply_preview
-                                                                ?._id;
-
-                                                        const actionItems =
-                                                            getMessageActions({
-                                                                message,
-                                                                isOwn,
-                                                                isChatLoading,
-                                                                editingMessage,
-                                                                handlers:
-                                                                    messageActionHandlers,
-                                                            });
-
-                                                        return (
-                                                            <article
-                                                                key={
-                                                                    message._id
-                                                                }
-                                                                id={`message_${message._id}`}
-                                                                className={`messages_item app-transition${
-                                                                    isOwn
-                                                                        ? ' messages_item_own'
-                                                                        : ''
-                                                                }${
-                                                                    isLeaving
-                                                                        ? ' messages_item_leaving'
-                                                                        : ''
-                                                                }`}
-                                                                style={
-                                                                    isLeaving
-                                                                        ? {
-                                                                              '--leave-height': `${leavingHeights[message._id]}px`,
-                                                                          }
-                                                                        : undefined
-                                                                }
-                                                                onAnimationEnd={(
-                                                                    event: any,
-                                                                ) => {
-                                                                    if (
-                                                                        event.target !==
-                                                                            event.currentTarget ||
-                                                                        event.animationName !==
-                                                                            'messages_item_leave'
-                                                                    ) {
-                                                                        return;
-                                                                    }
-
-                                                                    finishMessageLeave(
-                                                                        message._id,
-                                                                    );
-                                                                }}
-                                                                onDoubleClick={(
-                                                                    event: any,
-                                                                ) =>
-                                                                    handleMessageDoubleClick(
-                                                                        event,
-                                                                        message,
-                                                                    )
-                                                                }
-                                                                onContextMenu={(
-                                                                    event: any,
-                                                                ) =>
-                                                                    openMessageMenu(
-                                                                        event,
-                                                                        actionItems,
+                                                        <div
+                                                            className="messages_date_divider"
+                                                            style={{
+                                                                zIndex:
+                                                                    messageDayGroups.length -
+                                                                    groupIndex,
+                                                            }}
+                                                        >
+                                                            <button
+                                                                type="button"
+                                                                className="messages_date_label app-transition"
+                                                                onClick={() =>
+                                                                    scrollToMessageDay(
+                                                                        group.key,
                                                                     )
                                                                 }
                                                             >
-                                                                <div className="messages_bubble_wrap">
-                                                                    <div className="messages_bubble">
-                                                                        {replyQuote
-                                                                            ? (() => {
-                                                                                  if (
-                                                                                      replyQuote.deleted
-                                                                                  ) {
-                                                                                      return (
-                                                                                          <div className="messages_quote messages_quote_deleted app-transition">
-                                                                                              <span className="messages_quote_author">
-                                                                                                  {
-                                                                                                      replyQuote.author
-                                                                                                  }
-                                                                                              </span>
-                                                                                              <span className="messages_quote_text">
-                                                                                                  {
-                                                                                                      replyQuote.text
-                                                                                                  }
-                                                                                              </span>
-                                                                                          </div>
-                                                                                      );
+                                                                {group.label}
+                                                            </button>
+                                                        </div>
+
+                                                        {group.messages.map(
+                                                            (message: any) => {
+                                                                const isLeaving =
+                                                                    message._id in
+                                                                    leavingHeights;
+                                                                const isOwn =
+                                                                    message.is_own;
+                                                                const isDeleted =
+                                                                    Boolean(
+                                                                        message.deleted_at,
+                                                                    );
+
+                                                                if (
+                                                                    isDeleted &&
+                                                                    !isLeaving
+                                                                ) {
+                                                                    return null;
+                                                                }
+                                                                const hasEmbeds =
+                                                                    !isDeleted &&
+                                                                    /https?:\/\//.test(
+                                                                        message.text ||
+                                                                            '',
+                                                                    );
+                                                                const replyQuote =
+                                                                    resolveReplyQuote(
+                                                                        message,
+                                                                        messageById,
+                                                                    );
+                                                                const replyTargetId =
+                                                                    message.reply_to ||
+                                                                    message
+                                                                        .reply_preview
+                                                                        ?._id;
+
+                                                                const isSelected =
+                                                                    isSelecting &&
+                                                                    selectionIds.includes(
+                                                                        String(
+                                                                            message._id,
+                                                                        ),
+                                                                    );
+
+                                                                const actionItems =
+                                                                    getMessageActions(
+                                                                        {
+                                                                            message,
+                                                                            isOwn,
+                                                                            isChatLoading,
+                                                                            editingMessage,
+                                                                            handlers:
+                                                                                messageActionHandlers,
+                                                                        },
+                                                                    );
+
+                                                                return (
+                                                                    <article
+                                                                        key={
+                                                                            message._id
+                                                                        }
+                                                                        id={`message_${message._id}`}
+                                                                        className={`messages_item app-transition${
+                                                                            isOwn
+                                                                                ? ' messages_item_own'
+                                                                                : ''
+                                                                        }${
+                                                                            isLeaving
+                                                                                ? ' messages_item_leaving'
+                                                                                : ''
+                                                                        }`}
+                                                                        style={
+                                                                            isLeaving
+                                                                                ? {
+                                                                                      '--leave-height': `${leavingHeights[message._id]}px`,
                                                                                   }
+                                                                                : undefined
+                                                                        }
+                                                                        onAnimationEnd={(
+                                                                            event: any,
+                                                                        ) => {
+                                                                            if (
+                                                                                event.target !==
+                                                                                    event.currentTarget ||
+                                                                                event.animationName !==
+                                                                                    'messages_item_leave'
+                                                                            ) {
+                                                                                return;
+                                                                            }
 
-                                                                                  return (
-                                                                                      <button
-                                                                                          type="button"
-                                                                                          className="messages_quote app-transition"
-                                                                                          onClick={() =>
-                                                                                              handleReplyPreviewClick(
-                                                                                                  {
-                                                                                                      _id: replyTargetId,
-                                                                                                      deleted:
-                                                                                                          replyQuote.deleted,
-                                                                                                  },
-                                                                                              )
+                                                                            finishMessageLeave(
+                                                                                message._id,
+                                                                            );
+                                                                        }}
+                                                                        onMouseDown={
+                                                                            preventRepeatedClickSelection
+                                                                        }
+                                                                        onMouseUp={(
+                                                                            event: any,
+                                                                        ) => {
+                                                                            if (
+                                                                                event.detail >
+                                                                                1
+                                                                            ) {
+                                                                                handleMessageDoubleClick(
+                                                                                    event,
+                                                                                    message,
+                                                                                );
+                                                                            }
+                                                                        }}
+                                                                        onClick={(
+                                                                            event: any,
+                                                                        ) => {
+                                                                            if (
+                                                                                !isSelecting ||
+                                                                                event.detail >
+                                                                                    1
+                                                                            ) {
+                                                                                return;
+                                                                            }
+
+                                                                            toggleMessageSelection(
+                                                                                message,
+                                                                            );
+                                                                        }}
+                                                                        onDoubleClick={(
+                                                                            event: any,
+                                                                        ) =>
+                                                                            handleMessageDoubleClick(
+                                                                                event,
+                                                                                message,
+                                                                            )
+                                                                        }
+                                                                        onContextMenu={(
+                                                                            event: any,
+                                                                        ) =>
+                                                                            openMessageMenu(
+                                                                                event,
+                                                                                actionItems,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {!isDeleted ? (
+                                                                            <span
+                                                                                className={`messages_select${
+                                                                                    isSelected
+                                                                                        ? ' messages_select_on'
+                                                                                        : ''
+                                                                                }`}
+                                                                                aria-hidden="true"
+                                                                            >
+                                                                                <TickIcon />
+                                                                            </span>
+                                                                        ) : null}
+                                                                        <div className="messages_bubble_wrap">
+                                                                            <div className="messages_bubble">
+                                                                                {replyQuote
+                                                                                    ? (() => {
+                                                                                          if (
+                                                                                              replyQuote.deleted
+                                                                                          ) {
+                                                                                              return (
+                                                                                                  <div className="messages_quote messages_quote_deleted app-transition">
+                                                                                                      <span className="messages_quote_author">
+                                                                                                          {
+                                                                                                              replyQuote.author
+                                                                                                          }
+                                                                                                      </span>
+                                                                                                      <span className="messages_quote_text">
+                                                                                                          {
+                                                                                                              replyQuote.text
+                                                                                                          }
+                                                                                                      </span>
+                                                                                                  </div>
+                                                                                              );
                                                                                           }
-                                                                                      >
-                                                                                          <span className="messages_quote_author">
-                                                                                              {
-                                                                                                  replyQuote.author
-                                                                                              }
-                                                                                          </span>
-                                                                                          <span className="messages_quote_text">
-                                                                                              {
-                                                                                                  replyQuote.text
-                                                                                              }
-                                                                                          </span>
-                                                                                      </button>
-                                                                                  );
-                                                                              })()
-                                                                            : null}
 
-                                                                        <div
-                                                                            className={`messages_body${
-                                                                                hasEmbeds
-                                                                                    ? ' messages_body_with_post'
-                                                                                    : ''
-                                                                            }`}
-                                                                        >
-                                                                            <MessageContent
-                                                                                text={
-                                                                                    message.text
-                                                                                }
-                                                                                className="messages_text"
-                                                                                deleted={
-                                                                                    isDeleted
-                                                                                }
-                                                                                onLayoutChange={
-                                                                                    scrollIfPinned
-                                                                                }
-                                                                            />
+                                                                                          return (
+                                                                                              <button
+                                                                                                  type="button"
+                                                                                                  className="messages_quote app-transition"
+                                                                                                  onClick={() =>
+                                                                                                      handleReplyPreviewClick(
+                                                                                                          {
+                                                                                                              _id: replyTargetId,
+                                                                                                              deleted:
+                                                                                                                  replyQuote.deleted,
+                                                                                                          },
+                                                                                                      )
+                                                                                                  }
+                                                                                              >
+                                                                                                  <span className="messages_quote_author">
+                                                                                                      {
+                                                                                                          replyQuote.author
+                                                                                                      }
+                                                                                                  </span>
+                                                                                                  <span className="messages_quote_text">
+                                                                                                      {
+                                                                                                          replyQuote.text
+                                                                                                      }
+                                                                                                  </span>
+                                                                                              </button>
+                                                                                          );
+                                                                                      })()
+                                                                                    : null}
 
-                                                                            <div className="messages_meta">
-                                                                                <span className="messages_time">
-                                                                                    {format_time(
-                                                                                        message.created_at,
-                                                                                    )}
-                                                                                </span>
-                                                                                {message.edited_at ? (
-                                                                                    <span className="messages_edited">
-                                                                                        updated
-                                                                                    </span>
-                                                                                ) : null}
-                                                                                {isOwn ? (
-                                                                                    <MessageStatus
-                                                                                        status={
-                                                                                            message.status
+                                                                                <div
+                                                                                    className={`messages_body${
+                                                                                        hasEmbeds
+                                                                                            ? ' messages_body_with_post'
+                                                                                            : ''
+                                                                                    }`}
+                                                                                >
+                                                                                    <MessageContent
+                                                                                        text={
+                                                                                            message.text
+                                                                                        }
+                                                                                        className="messages_text"
+                                                                                        deleted={
+                                                                                            isDeleted
+                                                                                        }
+                                                                                        onLayoutChange={
+                                                                                            scrollIfPinned
                                                                                         }
                                                                                     />
-                                                                                ) : null}
+
+                                                                                    <div className="messages_meta">
+                                                                                        <span className="messages_time">
+                                                                                            {format_time(
+                                                                                                message.created_at,
+                                                                                            )}
+                                                                                        </span>
+                                                                                        {message.edited_at ? (
+                                                                                            <span className="messages_edited">
+                                                                                                updated
+                                                                                            </span>
+                                                                                        ) : null}
+                                                                                        {isOwn ? (
+                                                                                            <MessageStatus
+                                                                                                status={
+                                                                                                    message.status
+                                                                                                }
+                                                                                            />
+                                                                                        ) : null}
+                                                                                    </div>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
-                                                                </div>
-                                                            </article>
-                                                        );
-                                                    },
-                                                )}
-                                            </section>
-                                        ),
-                                    )
-                                )}
-                            </div>
-
-                            {isAwayFromBottom ? (
-                                <button
-                                    type="button"
-                                    className="messages_jump app-transition"
-                                    onClick={jumpToBottom}
-                                    aria-label="Scroll to latest messages"
-                                >
-                                    <ChevronDownIcon />
-                                </button>
-                            ) : null}
-
-                            <div
-                                className="messages_composer_dock"
-                                ref={composerDockRef}
-                            >
-                            <form
-                                className={`messages_composer${
-                                    replyTo ? ' messages_composer_replying' : ''
-                                }${
-                                    editingMessage
-                                        ? ' messages_composer_editing'
-                                        : ''
-                                }${isChatLoading ? ' messages_composer_loading' : ''}`}
-                                onSubmit={(event: any) => {
-                                    event.preventDefault();
-                                    handleSend();
-                                }}
-                            >
-                                {(() => {
-                                    const context = editingMessage
-                                        ? {
-                                              message: editingMessage,
-                                              title: 'Editing',
-                                              ...getQuoteContent(
-                                                  editingMessage,
-                                              ),
-                                              onClose: handleCancelEdit,
-                                              closeLabel: 'Cancel editing',
-                                          }
-                                        : replyTo
-                                          ? {
-                                                message: replyTo,
-                                                title: `Reply to ${
-                                                    getQuoteContent(replyTo)
-                                                        .author
-                                                }`,
-                                                ...getQuoteContent(replyTo),
-                                                onClose: () =>
-                                                    setReplyTo(null),
-                                                closeLabel: 'Cancel reply',
-                                            }
-                                          : null;
-
-                                    if (!context) {
-                                        return null;
-                                    }
-
-                                    return (
-                                        <div
-                                            className={`messages_composer_context app-transition${
-                                                context.deleted
-                                                    ? ' messages_composer_context_deleted'
-                                                    : ''
-                                            }`}
-                                            onClick={() =>
-                                                handleReplyPreviewClick(
-                                                    context.message,
-                                                )
-                                            }
-                                            role="button"
-                                            tabIndex={context.deleted ? -1 : 0}
-                                        >
-                                            <div className="messages_composer_context_body">
-                                                <span className="messages_composer_context_title">
-                                                    {context.title}
-                                                </span>
-                                                <span className="messages_composer_context_text">
-                                                    {context.text}
-                                                </span>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                className="messages_composer_reply_close app-transition"
-                                                onClick={(event: any) => {
-                                                    event.stopPropagation();
-                                                    context.onClose();
-                                                }}
-                                                aria-label={context.closeLabel}
-                                                disabled={isChatLoading}
-                                            >
-                                                <CrossIcon />
-                                            </button>
-                                        </div>
-                                    );
-                                })()}
-                                <div className="messages_composer_body">
-                                    <RichInputField
-                                        preset="social"
-                                        isMultiline
-                                        multilineRows={1}
-                                        length={FIELD_LIMITS.chatMessage.max}
-                                        className="messages_composer_input"
-                                        inputRef={composerInputRef}
-                                        value={draft}
-                                        onChange={(event: any) =>
-                                            setDraft(event.target.value)
-                                        }
-                                        onKeyDown={handleComposerKeyDown}
-                                        placeholder="Message"
-                                        blocked={isChatLoading}
-                                    />
-                                    <PrimaryButton
-                                        type="submit"
-                                        className="messages_composer_send"
-                                        aria-label={
-                                            editingMessage ? 'Save' : 'Send'
-                                        }
-                                        disabled={
-                                            !draft.trim() || isChatLoading
-                                        }
-                                        isLoading={isSending}
-                                    >
-                                        {editingMessage ? (
-                                            <TickIcon />
-                                        ) : (
-                                            <SendIcon />
+                                                                    </article>
+                                                                );
+                                                            },
+                                                        )}
+                                                    </section>
+                                                ),
+                                            )
                                         )}
-                                    </PrimaryButton>
+                                    </div>
+
+                                    {isAwayFromBottom ? (
+                                        <button
+                                            type="button"
+                                            className="messages_jump app-transition"
+                                            onClick={jumpToBottom}
+                                            aria-label="Scroll to latest messages"
+                                        >
+                                            <ChevronDownIcon />
+                                        </button>
+                                    ) : null}
+
+                                    <div
+                                        className="messages_composer_dock"
+                                        ref={composerDockRef}
+                                    >
+                                        {isSelecting ? (
+                                            <div
+                                                className="messages_selection_bar app-transition"
+                                                role="status"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    className="messages_selection_close app-transition"
+                                                    onClick={clearSelection}
+                                                    aria-label="Cancel selection"
+                                                >
+                                                    <CrossIcon />
+                                                </button>
+                                                <p className="messages_selection_count">
+                                                    {selectionIds.length === 1
+                                                        ? '1 message selected'
+                                                        : `${selectionIds.length} messages selected`}
+                                                </p>
+                                                <span
+                                                    className="messages_selection_balance"
+                                                    aria-hidden="true"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <form
+                                                className={`messages_composer${
+                                                    replyTo
+                                                        ? ' messages_composer_replying'
+                                                        : ''
+                                                }${
+                                                    editingMessage
+                                                        ? ' messages_composer_editing'
+                                                        : ''
+                                                }${isChatLoading ? ' messages_composer_loading' : ''}`}
+                                                onSubmit={(event: any) => {
+                                                    event.preventDefault();
+                                                    handleSend();
+                                                }}
+                                            >
+                                                <div
+                                                    className={`messages_composer_context_slot${
+                                                        contextOpen
+                                                            ? ' messages_composer_context_slot_open'
+                                                            : ''
+                                                    }`}
+                                                >
+                                                    <div className="messages_composer_context_clip">
+                                                        {contextFrame ? (
+                                                            <div
+                                                                className={`messages_composer_context${
+                                                                    contextFrame.deleted
+                                                                        ? ' messages_composer_context_deleted'
+                                                                        : ''
+                                                                }`}
+                                                                onClick={() =>
+                                                                    handleReplyPreviewClick(
+                                                                        contextFrame.message,
+                                                                    )
+                                                                }
+                                                                role="button"
+                                                                tabIndex={
+                                                                    contextFrame.deleted
+                                                                        ? -1
+                                                                        : 0
+                                                                }
+                                                            >
+                                                                <div className="messages_composer_context_body">
+                                                                    <span className="messages_composer_context_title">
+                                                                        {
+                                                                            contextFrame.title
+                                                                        }
+                                                                    </span>
+                                                                    <span className="messages_composer_context_text">
+                                                                        {
+                                                                            contextFrame.text
+                                                                        }
+                                                                    </span>
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    className="messages_composer_reply_close app-transition"
+                                                                    onClick={(
+                                                                        event: any,
+                                                                    ) => {
+                                                                        event.stopPropagation();
+                                                                        contextFrame.onClose();
+                                                                    }}
+                                                                    aria-label={
+                                                                        contextFrame.closeLabel
+                                                                    }
+                                                                    disabled={
+                                                                        isChatLoading
+                                                                    }
+                                                                >
+                                                                    <CrossIcon />
+                                                                </button>
+                                                            </div>
+                                                        ) : null}
+                                                    </div>
+                                                </div>
+                                                <div className="messages_composer_body">
+                                                    <RichInputField
+                                                        preset="social"
+                                                        isMultiline
+                                                        multilineRows={1}
+                                                        length={
+                                                            FIELD_LIMITS
+                                                                .chatMessage.max
+                                                        }
+                                                        className="messages_composer_input"
+                                                        inputRef={
+                                                            composerInputRef
+                                                        }
+                                                        value={draft}
+                                                        onChange={(
+                                                            event: any,
+                                                        ) =>
+                                                            setDraft(
+                                                                event.target
+                                                                    .value,
+                                                            )
+                                                        }
+                                                        onKeyDown={
+                                                            handleComposerKeyDown
+                                                        }
+                                                        placeholder="Message"
+                                                        blocked={isChatLoading}
+                                                    />
+                                                    <PrimaryButton
+                                                        type="submit"
+                                                        className="messages_composer_send"
+                                                        aria-label={
+                                                            editingMessage
+                                                                ? 'Save'
+                                                                : 'Send'
+                                                        }
+                                                        disabled={
+                                                            !draft.trim() ||
+                                                            isChatLoading
+                                                        }
+                                                        isLoading={isSending}
+                                                    >
+                                                        {editingMessage ? (
+                                                            <TickIcon />
+                                                        ) : (
+                                                            <SendIcon />
+                                                        )}
+                                                    </PrimaryButton>
+                                                </div>
+                                            </form>
+                                        )}
+                                    </div>
                                 </div>
-                            </form>
                             </div>
                         </>
                     )}

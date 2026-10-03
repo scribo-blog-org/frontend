@@ -1,3 +1,12 @@
+@mixin menu-surface {
+    background: var(--menu-surface-background);
+    border: 1px solid var(--menu-surface-border);
+    border-radius: 12px;
+    box-shadow: var(--menu-shadow);
+    -webkit-backdrop-filter: blur(48px) saturate(180%);
+    backdrop-filter: blur(48px) saturate(180%);
+}
+
 @mixin overlay-surface-enter(
     $visible-class: 'is-visible',
     $origin: top center,
