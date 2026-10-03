@@ -38,6 +38,11 @@ import {
     loadOnlineStatusForUsers,
     subscribePresenceChanges,
 } from '../../sockets/presence';
+import {
+    loadTyping,
+    notifyTyping,
+    notifyTypingStop,
+} from '../../sockets/typing';
 import MessageStatus from '../../components/MessageStatus';
 import ActionButton from '../../components/Ui/ActionButton';
 import DangerButton from '../../components/Ui/DangerButton';
@@ -347,6 +352,9 @@ const MessagesPage = () => {
     const [isSending, setIsSending] = useState<any>(false);
     const [messageMenu, setMessageMenu] = useState<any>(null);
     const [onlineByUserId, setOnlineByUserId] = useState<any>({});
+    const [typingByConversationId, setTypingByConversationId] = useState<any>(
+        {},
+    );
     const [leavingHeights, setLeavingHeights] = useState<any>({});
     const [isAwayFromBottom, setIsAwayFromBottom] = useState(false);
     const [selectionIds, setSelectionIds] = useState<any>(null);
@@ -380,6 +388,7 @@ const MessagesPage = () => {
     const beginMessageLeaveRef = useRef<any>(() => {});
     const lastReplyGestureRef = useRef(0);
     const sendLockRef = useRef(false);
+    const typingConversationRef = useRef<any>(null);
     const longPressRef = useRef<any>(null);
     const suppressMessageClickRef = useRef(false);
     const enterFollowRef = useRef(false);
@@ -825,6 +834,94 @@ const MessagesPage = () => {
 
         return unsubscribe;
     }, [profile, removeConversationFromState]);
+
+    useEffect(() => {
+        if (!profile?._id) {
+            return;
+        }
+
+        let cancelled = false;
+        const timers: Record<string, number> = {};
+
+        const clearTyping = (conversationId: string) => {
+            if (timers[conversationId]) {
+                clearTimeout(timers[conversationId]);
+                delete timers[conversationId];
+            }
+            setTypingByConversationId((current: any) => {
+                if (!current[conversationId]) {
+                    return current;
+                }
+                const next = { ...current };
+                delete next[conversationId];
+                return next;
+            });
+        };
+
+        const showTyping = (conversationId: string) => {
+            if (timers[conversationId]) {
+                clearTimeout(timers[conversationId]);
+            }
+            setTypingByConversationId((current: any) =>
+                current[conversationId]
+                    ? current
+                    : { ...current, [conversationId]: true },
+            );
+            timers[conversationId] = window.setTimeout(() => {
+                delete timers[conversationId];
+                setTypingByConversationId((current: any) => {
+                    if (!current[conversationId]) {
+                        return current;
+                    }
+                    const next = { ...current };
+                    delete next[conversationId];
+                    return next;
+                });
+            }, 2500);
+        };
+
+        const applyTyping = (payload: any) => {
+            if (cancelled || !payload?.conversation_id || !payload?.user_id) {
+                return;
+            }
+            if (String(payload.user_id) === String(profile._id)) {
+                return;
+            }
+            const id = String(payload.conversation_id);
+            if (payload.typing === false) {
+                clearTyping(id);
+                return;
+            }
+            showTyping(id);
+        };
+
+        const unsubscribe = socketService.on('chat:typing', applyTyping);
+        void loadTyping().then((items: any) => {
+            if (cancelled || !Array.isArray(items)) {
+                return;
+            }
+            items.forEach((item: any) =>
+                applyTyping({ ...item, typing: true }),
+            );
+        });
+
+        return () => {
+            cancelled = true;
+            unsubscribe();
+            Object.values(timers).forEach((timer) => clearTimeout(timer));
+        };
+    }, [profile?._id]);
+
+    useEffect(() => {
+        return () => {
+            const id = typingConversationRef.current;
+            if (!id) {
+                return;
+            }
+            typingConversationRef.current = null;
+            notifyTypingStop(id);
+        };
+    }, [conversationId]);
 
     useEffect(() => {
         if (!conversationId || !profile) {
@@ -1817,6 +1914,10 @@ const MessagesPage = () => {
 
         sendLockRef.current = true;
         holdComposerFocus();
+        if (typingConversationRef.current === conversationId) {
+            typingConversationRef.current = null;
+        }
+        notifyTypingStop(conversationId);
 
         try {
             if (editingMessage) {
@@ -2338,6 +2439,11 @@ const MessagesPage = () => {
                                                         )
                                                     ] ?? false
                                                 }
+                                                isTyping={Boolean(
+                                                    typingByConversationId[
+                                                        String(item._id)
+                                                    ],
+                                                )}
                                                 className="messages_activity_status"
                                             />
                                         </div>
@@ -2413,6 +2519,11 @@ const MessagesPage = () => {
                                                         String(participant._id)
                                                     ] ?? false
                                                 }
+                                                isTyping={Boolean(
+                                                    typingByConversationId[
+                                                        String(conversationId)
+                                                    ],
+                                                )}
                                                 className="messages_activity_status"
                                             />
                                         </div>
@@ -3018,12 +3129,37 @@ const MessagesPage = () => {
                                                         value={draft}
                                                         onChange={(
                                                             event: any,
-                                                        ) =>
-                                                            setDraft(
+                                                        ) => {
+                                                            const value =
                                                                 event.target
-                                                                    .value,
-                                                            )
-                                                        }
+                                                                    .value;
+                                                            setDraft(value);
+                                                            if (
+                                                                !conversationId
+                                                            ) {
+                                                                return;
+                                                            }
+                                                            if (
+                                                                value.length > 0
+                                                            ) {
+                                                                typingConversationRef.current =
+                                                                    conversationId;
+                                                                notifyTyping(
+                                                                    conversationId,
+                                                                );
+                                                                return;
+                                                            }
+                                                            if (
+                                                                typingConversationRef.current ===
+                                                                conversationId
+                                                            ) {
+                                                                typingConversationRef.current =
+                                                                    null;
+                                                            }
+                                                            notifyTypingStop(
+                                                                conversationId,
+                                                            );
+                                                        }}
                                                         onKeyDown={
                                                             handleComposerKeyDown
                                                         }

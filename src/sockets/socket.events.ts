@@ -50,6 +50,23 @@ class SocketEvents {
         );
     }
 
+    subscribeChatTyping(userId: any, callback: any) {
+        const roomName = `user:${userId}`;
+
+        socketClient.subscribe(
+            roomName,
+            'chat:typing',
+            (message: any) => {
+                const payload = message.payload;
+                if (!payload?.conversation_id || !payload?.user_id) {
+                    return;
+                }
+                callback(payload);
+            },
+            { private: true },
+        );
+    }
+
     subscribeChatConversationDeleted(userId: any, callback: any) {
         const roomName = `user:${userId}`;
 

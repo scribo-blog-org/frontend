@@ -65,6 +65,10 @@ class SocketService {
             },
         );
 
+        void socketEvents.subscribeChatTyping(user._id, (payload: any) => {
+            this.emit('chat:typing', payload);
+        });
+
         await socketClient.waitForSubscribed(this._userRoom(user._id));
 
         this.isConnected = true;
