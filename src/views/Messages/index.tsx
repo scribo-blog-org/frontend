@@ -67,7 +67,7 @@ import { getMessageActions } from './messageActions';
 import './Messages.scss';
 
 const COMPOSER_LINE_HEIGHT = 20;
-const COMPOSER_PAD_Y = 5;
+const COMPOSER_PAD_Y = 10;
 const COMPOSER_MAX_LINES = 5;
 const COMPOSER_MAX_HEIGHT =
     COMPOSER_LINE_HEIGHT * COMPOSER_MAX_LINES + COMPOSER_PAD_Y * 2;
@@ -136,8 +136,12 @@ const mergeIncomingMessage = (list: any, message: any, profileId: any) => {
         );
 
         if (pendingIndex !== -1) {
+            const pending = list[pendingIndex];
             const next = [...list];
-            next[pendingIndex] = message;
+            next[pendingIndex] = {
+                ...message,
+                local_key: pending.local_key || pending._id,
+            };
 
             return mergeMessage(next, message);
         }
@@ -347,6 +351,9 @@ const MessagesPage = () => {
     const [isAwayFromBottom, setIsAwayFromBottom] = useState(false);
     const [selectionIds, setSelectionIds] = useState<any>(null);
     const [isDeletingSelection, setIsDeletingSelection] = useState(false);
+    const [messageMotion, setMessageMotion] = useState<
+        Record<string, 'from' | 'to'>
+    >({});
 
     const listRef = useRef<any>(null);
     const composerDockRef = useRef<any>(null);
@@ -358,6 +365,12 @@ const MessagesPage = () => {
     const settlingScrollRef = useRef(true);
     const userScrollingRef = useRef(false);
     const userBrokeHoldRef = useRef(false);
+    const touchingListRef = useRef(false);
+    const userGestureRef = useRef(false);
+    const userMovedListRef = useRef(false);
+    const pendingBottomScrollRef = useRef(false);
+    const gestureStartTopRef = useRef(0);
+    const gestureEndTimerRef = useRef<any>(null);
     const messagesConversationIdRef = useRef<any>(null);
     const seenConversationIdRef = useRef<any>(conversationId);
     const leavingIdsRef = useRef<any>(new Set());
@@ -366,6 +379,10 @@ const MessagesPage = () => {
     const smoothEnterScrollRef = useRef(false);
     const beginMessageLeaveRef = useRef<any>(() => {});
     const lastReplyGestureRef = useRef(0);
+    const sendLockRef = useRef(false);
+    const longPressRef = useRef<any>(null);
+    const suppressMessageClickRef = useRef(false);
+    const enterFollowRef = useRef(false);
     const pendingScrollAnchorRef = useRef<any>(null);
     const restoringScrollRef = useRef(false);
 
@@ -398,16 +415,45 @@ const MessagesPage = () => {
         };
     }, []);
 
+    const forceBottomUntilRef = useRef(0);
+
     const scrollMessagesToBottom = useCallback(() => {
         const el = listRef.current;
         if (!el || jumpingToBottomRef.current) {
             return;
         }
 
+        const forcing = Date.now() < forceBottomUntilRef.current;
+
+        if (userGestureRef.current && !forcing) {
+            if (!userMovedListRef.current) {
+                pendingBottomScrollRef.current = true;
+            }
+            return;
+        }
+
+        pendingBottomScrollRef.current = false;
         ignoreScrollRef.current = true;
         el.scrollTop = el.scrollHeight;
         ignoreScrollRef.current = false;
     }, []);
+
+    const pinMessagesToBottom = useCallback(() => {
+        stickToBottomRef.current = true;
+        userGestureRef.current = false;
+        userMovedListRef.current = false;
+        userScrollingRef.current = false;
+        pendingBottomScrollRef.current = false;
+        forceBottomUntilRef.current = Date.now() + 500;
+        scrollMessagesToBottom();
+        requestAnimationFrame(() => {
+            scrollMessagesToBottom();
+            requestAnimationFrame(scrollMessagesToBottom);
+        });
+        window.setTimeout(scrollMessagesToBottom, 50);
+        window.setTimeout(scrollMessagesToBottom, 180);
+        window.setTimeout(scrollMessagesToBottom, 400);
+    }, [scrollMessagesToBottom]);
 
     const scrollIfPinned = useCallback(() => {
         if (!stickToBottomRef.current) {
@@ -436,7 +482,7 @@ const MessagesPage = () => {
             );
             chat.style.setProperty('--messages-composer-space', `${space}px`);
 
-            if (stickToBottomRef.current) {
+            if (stickToBottomRef.current && !userGestureRef.current) {
                 scrollMessagesToBottom();
             }
         };
@@ -460,11 +506,56 @@ const MessagesPage = () => {
         jumpScrollEndRef.current = null;
     };
 
+    const finishUserGesture = () => {
+        window.clearTimeout(gestureEndTimerRef.current);
+        gestureEndTimerRef.current = null;
+        const moved = userMovedListRef.current;
+        userGestureRef.current = false;
+        userScrollingRef.current = false;
+        userMovedListRef.current = false;
+
+        const el = listRef.current;
+        if (!el) {
+            pendingBottomScrollRef.current = false;
+            return;
+        }
+
+        if (!moved && pendingBottomScrollRef.current) {
+            pendingBottomScrollRef.current = false;
+            stickToBottomRef.current = true;
+            scrollMessagesToBottom();
+            setIsAwayFromBottom(false);
+            return;
+        }
+
+        pendingBottomScrollRef.current = false;
+        const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+        const atBottom = distance <= 2;
+        stickToBottomRef.current = atBottom;
+        setIsAwayFromBottom(distance >= 80);
+    };
+
+    const armGestureEnd = () => {
+        window.clearTimeout(gestureEndTimerRef.current);
+        gestureEndTimerRef.current = window.setTimeout(finishUserGesture, 160);
+    };
+
+    const beginUserGesture = () => {
+        const el = listRef.current;
+        window.clearTimeout(gestureEndTimerRef.current);
+        userGestureRef.current = true;
+        userScrollingRef.current = true;
+        userBrokeHoldRef.current = true;
+        settlingScrollRef.current = false;
+        if (el) {
+            gestureStartTopRef.current = el.scrollTop;
+        }
+    };
+
     const handleListScroll = () => {
         if (
             restoringScrollRef.current ||
             ignoreScrollRef.current ||
-            settlingScrollRef.current ||
             isChatLoading ||
             messagesConversationIdRef.current !== conversationId
         ) {
@@ -476,10 +567,48 @@ const MessagesPage = () => {
             return;
         }
 
+        if (Date.now() < forceBottomUntilRef.current) {
+            stickToBottomRef.current = true;
+            if (el.scrollHeight - el.scrollTop - el.clientHeight > 1) {
+                scrollMessagesToBottom();
+            }
+            setIsAwayFromBottom(false);
+            return;
+        }
+
         const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
         const away = distance >= 80;
-        const fromUser = userScrollingRef.current;
+        const fromUser = userGestureRef.current || userScrollingRef.current;
         userScrollingRef.current = false;
+
+        if (fromUser) {
+            settlingScrollRef.current = false;
+            if (el.scrollTop < gestureStartTopRef.current - 8) {
+                stickToBottomRef.current = false;
+                userMovedListRef.current = true;
+                pendingBottomScrollRef.current = false;
+            }
+            if (distance <= 2) {
+                stickToBottomRef.current = true;
+                userMovedListRef.current = false;
+                gestureStartTopRef.current = el.scrollTop;
+            }
+            if (jumpingToBottomRef.current) {
+                jumpingToBottomRef.current = false;
+                clearJumpScrollEnd();
+            }
+            setIsAwayFromBottom((current: any) =>
+                current === away ? current : away,
+            );
+            if (!touchingListRef.current) {
+                armGestureEnd();
+            }
+            return;
+        }
+
+        if (settlingScrollRef.current) {
+            return;
+        }
 
         if (jumpingToBottomRef.current) {
             if (fromUser) {
@@ -790,6 +919,21 @@ const MessagesPage = () => {
                         );
                     }
 
+                    const pending = current.find(
+                        (item: any) =>
+                            typeof item._id === 'string' &&
+                            item._id.startsWith('pending-') &&
+                            item.text === normalized.text,
+                    );
+                    if (pending) {
+                        settledMessageIdsRef.current?.add(
+                            String(normalized._id),
+                        );
+                        settledMessageIdsRef.current?.add(
+                            String(pending.local_key || pending._id),
+                        );
+                    }
+
                     return mergeIncomingMessage(
                         current,
                         normalized,
@@ -878,14 +1022,42 @@ const MessagesPage = () => {
             return;
         }
 
-        const markUserScroll = () => {
-            userScrollingRef.current = true;
-            userBrokeHoldRef.current = true;
+        const markUserScroll = (event: WheelEvent) => {
+            forceBottomUntilRef.current = 0;
+            if (!userGestureRef.current) {
+                beginUserGesture();
+            }
+            if (event.deltaY < 0) {
+                stickToBottomRef.current = false;
+                settlingScrollRef.current = false;
+                userMovedListRef.current = true;
+                pendingBottomScrollRef.current = false;
+            }
+            armGestureEnd();
+        };
+        const markTouchStart = () => {
+            forceBottomUntilRef.current = 0;
+            touchingListRef.current = true;
+            beginUserGesture();
+        };
+        const markTouchEnd = () => {
+            touchingListRef.current = false;
+            armGestureEnd();
         };
         const markScrollbar = (event: PointerEvent) => {
+            if (event.pointerType === 'touch') {
+                return;
+            }
             if (event.target === el) {
-                userScrollingRef.current = true;
-                userBrokeHoldRef.current = true;
+                beginUserGesture();
+            }
+        };
+        const markPointerUp = (event: PointerEvent) => {
+            if (event.pointerType === 'touch') {
+                return;
+            }
+            if (userGestureRef.current) {
+                armGestureEnd();
             }
         };
         const markKeyScroll = (event: KeyboardEvent) => {
@@ -904,15 +1076,24 @@ const MessagesPage = () => {
         };
 
         el.addEventListener('wheel', markUserScroll, { passive: true });
-        el.addEventListener('touchmove', markUserScroll, { passive: true });
+        el.addEventListener('touchstart', markTouchStart, { passive: true });
+        el.addEventListener('touchend', markTouchEnd, { passive: true });
+        el.addEventListener('touchcancel', markTouchEnd, { passive: true });
         el.addEventListener('pointerdown', markScrollbar);
         el.addEventListener('keydown', markKeyScroll);
+        window.addEventListener('pointerup', markPointerUp);
+        window.addEventListener('pointercancel', markPointerUp);
 
         return () => {
             el.removeEventListener('wheel', markUserScroll);
-            el.removeEventListener('touchmove', markUserScroll);
+            el.removeEventListener('touchstart', markTouchStart);
+            el.removeEventListener('touchend', markTouchEnd);
+            el.removeEventListener('touchcancel', markTouchEnd);
             el.removeEventListener('pointerdown', markScrollbar);
             el.removeEventListener('keydown', markKeyScroll);
+            window.removeEventListener('pointerup', markPointerUp);
+            window.removeEventListener('pointercancel', markPointerUp);
+            window.clearTimeout(gestureEndTimerRef.current);
         };
     }, [conversationId, isChatLoading]);
 
@@ -924,6 +1105,7 @@ const MessagesPage = () => {
         setSelectionIds(null);
         settledMessageIdsRef.current = null;
         deletedMessageIdsRef.current = new Set();
+        setMessageMotion({});
     }, [conversationId]);
 
     useLayoutEffect(() => {
@@ -934,14 +1116,16 @@ const MessagesPage = () => {
             return;
         }
 
-        const ids = messages.map((item: any) => String(item._id));
+        const motionKeyOf = (message: any) =>
+            String(message.local_key || message._id);
+        const keys = messages.map(motionKeyOf);
 
         if (!settledMessageIdsRef.current) {
-            settledMessageIdsRef.current = new Set(ids);
+            settledMessageIdsRef.current = new Set(keys);
             return;
         }
 
-        const fresh = ids.filter(
+        const fresh = keys.filter(
             (id: any) => !settledMessageIdsRef.current.has(id),
         );
 
@@ -960,70 +1144,103 @@ const MessagesPage = () => {
         }
 
         fresh.forEach((id: any) => {
-            const element = document.getElementById(`message_${id}`);
+            document
+                .querySelector(`[data-motion-key="${CSS.escape(id)}"]`)
+                ?.classList.add('messages_item_enter');
+        });
 
-            if (
-                !element ||
-                element.classList.contains('messages_item_leaving')
-            ) {
+        setMessageMotion((current) => {
+            const next = { ...current };
+            fresh.forEach((id: any) => {
+                next[id] = 'from';
+            });
+            return next;
+        });
+    }, [messages, isChatLoading, conversationId]);
+
+    useLayoutEffect(() => {
+        const fromIds = Object.keys(messageMotion).filter(
+            (id) => messageMotion[id] === 'from',
+        );
+
+        if (fromIds.length) {
+            fromIds.forEach((id) => {
+                const element = document.querySelector(
+                    `[data-motion-key="${CSS.escape(id)}"]`,
+                );
+                if (element) {
+                    void (element as HTMLElement).offsetHeight;
+                }
+            });
+
+            if (stickToBottomRef.current) {
+                enterFollowRef.current = true;
+            }
+
+            setMessageMotion((current) => {
+                const next = { ...current };
+                let changed = false;
+                fromIds.forEach((id) => {
+                    if (next[id] === 'from') {
+                        next[id] = 'to';
+                        changed = true;
+                    }
+                });
+                return changed ? next : current;
+            });
+            return;
+        }
+
+        if (!enterFollowRef.current) {
+            return;
+        }
+
+        enterFollowRef.current = false;
+        let following = true;
+        const follow = () => {
+            if (!following || !stickToBottomRef.current) {
                 return;
             }
 
-            const height = element.offsetHeight;
-            element.style.transition = 'none';
-            element.style.overflow = 'hidden';
-            element.style.maxHeight = '0px';
-            element.style.marginTop = '-12px';
-            element.style.opacity = '0';
-            element.style.transform = 'translateY(16px)';
-            void element.offsetHeight;
-            element.style.transition =
-                'max-height 0.34s ease, margin-top 0.34s ease, opacity 0.34s ease, transform 0.34s ease';
-            element.style.maxHeight = `${height}px`;
-            element.style.marginTop = '0px';
-            element.style.opacity = '1';
-            element.style.transform = 'translateY(0px)';
+            scrollMessagesToBottom();
+            requestAnimationFrame(follow);
+        };
+        const stop = window.setTimeout(() => {
+            following = false;
+        }, 420);
+        requestAnimationFrame(follow);
 
-            if (stickToBottomRef.current) {
-                smoothEnterScrollRef.current = true;
-                let following = true;
-                const follow = () => {
-                    if (!following || !stickToBottomRef.current) {
-                        return;
+        return () => {
+            following = false;
+            window.clearTimeout(stop);
+        };
+    }, [messageMotion, scrollMessagesToBottom]);
+
+    useEffect(() => {
+        const ids = Object.keys(messageMotion).filter(
+            (id) => messageMotion[id] === 'to',
+        );
+
+        if (!ids.length) {
+            return;
+        }
+
+        const timer = window.setTimeout(() => {
+            setMessageMotion((current) => {
+                const next = { ...current };
+                let changed = false;
+                ids.forEach((id) => {
+                    if (next[id] === 'to') {
+                        delete next[id];
+                        changed = true;
                     }
+                });
+                return changed ? next : current;
+            });
+        }, 420);
 
-                    scrollMessagesToBottom();
-                    requestAnimationFrame(follow);
-                };
-                const stopFollow = () => {
-                    following = false;
-                };
-
-                element.addEventListener('transitionend', stopFollow);
-                window.setTimeout(stopFollow, 400);
-                requestAnimationFrame(follow);
-            }
-
-            const clearEnter = (event: TransitionEvent) => {
-                if (
-                    event.target !== element ||
-                    event.propertyName !== 'max-height'
-                ) {
-                    return;
-                }
-
-                element.style.transition = '';
-                element.style.overflow = '';
-                element.style.maxHeight = '';
-                element.style.marginTop = '';
-                element.style.opacity = '';
-                element.style.transform = '';
-                element.removeEventListener('transitionend', clearEnter);
-            };
-
-            element.addEventListener('transitionend', clearEnter);
-        });
-    }, [messages, isChatLoading, conversationId, scrollMessagesToBottom]);
+        return () => window.clearTimeout(timer);
+    }, [messageMotion]);
 
     useEffect(() => {
         if (!Array.isArray(selectionIds)) {
@@ -1216,7 +1433,7 @@ const MessagesPage = () => {
                 }
             }
 
-            if (stickToBottomRef.current) {
+            if (stickToBottomRef.current && !userGestureRef.current) {
                 scrollMessagesToBottom();
                 return;
             }
@@ -1241,6 +1458,11 @@ const MessagesPage = () => {
         }
 
         if (messagesConversationIdRef.current !== conversationId) {
+            return;
+        }
+
+        if (userGestureRef.current) {
+            settlingScrollRef.current = false;
             return;
         }
 
@@ -1376,15 +1598,21 @@ const MessagesPage = () => {
         });
     };
 
+    const clearTextSelection = () => {
+        window.getSelection()?.removeAllRanges();
+        requestAnimationFrame(() => window.getSelection()?.removeAllRanges());
+    };
+
     const preventRepeatedClickSelection = (event: any) => {
         if (event.detail > 1) {
             event.preventDefault();
+            clearTextSelection();
         }
     };
 
     const handleMessageDoubleClick = (event: any, message: any) => {
         event.preventDefault();
-        window.getSelection()?.removeAllRanges();
+        clearTextSelection();
 
         if (isSelecting || !message || message.deleted_at || isChatLoading) {
             return;
@@ -1477,28 +1705,239 @@ const MessagesPage = () => {
         }, 1600);
     };
 
-    const handleSend = async () => {
-        const text = draft.trim();
-        if (!text || !conversationId || isSending || isChatLoading) {
+    const focusComposer = () => {
+        const field = composerInputRef.current;
+        if (!field || document.activeElement === field) {
             return;
         }
 
-        if (editingMessage) {
-            setIsSending(true);
-            const result = await editMessage(editingMessage._id, { text });
-            setIsSending(false);
+        field.focus({ preventScroll: true });
+    };
 
-            if (!result?.status) {
-                showToast?.({
-                    type: 'error',
-                    message: result?.message || 'Could not edit the message',
+    const holdComposerFocus = () => {
+        focusComposer();
+        requestAnimationFrame(() => {
+            focusComposer();
+            requestAnimationFrame(focusComposer);
+        });
+    };
+
+    const clearLongPress = () => {
+        const current = longPressRef.current;
+        if (!current) {
+            return;
+        }
+
+        window.clearTimeout(current.timer);
+        longPressRef.current = null;
+    };
+
+    const handleMessageTouchStart = (event: any, actionItems: any) => {
+        if (isSelecting || messageMenu || event.touches?.length !== 1) {
+            return;
+        }
+
+        if (event.target.closest('button, input, textarea')) {
+            return;
+        }
+
+        const touch = event.touches[0];
+        const startX = touch.clientX;
+        const startY = touch.clientY;
+        const timer = window.setTimeout(() => {
+            longPressRef.current = null;
+            suppressMessageClickRef.current = true;
+            clearTextSelection();
+            openMessageMenu(
+                {
+                    preventDefault() {},
+                    stopPropagation() {},
+                    clientX: startX,
+                    clientY: startY,
+                },
+                actionItems,
+            );
+        }, 480);
+
+        longPressRef.current = { timer, startX, startY };
+    };
+
+    const handleMessageTouchMove = (event: any) => {
+        const current = longPressRef.current;
+        const touch = event.touches?.[0];
+        if (!current || !touch) {
+            return;
+        }
+
+        if (
+            Math.hypot(
+                touch.clientX - current.startX,
+                touch.clientY - current.startY,
+            ) > 10
+        ) {
+            clearLongPress();
+        }
+    };
+
+    const handleMessageTouchEnd = (event: any) => {
+        clearLongPress();
+        if (!suppressMessageClickRef.current) {
+            return;
+        }
+
+        event.preventDefault();
+        window.setTimeout(() => {
+            suppressMessageClickRef.current = false;
+        }, 400);
+    };
+
+    const finishMessageEnter = (motionKey: string) => {
+        setMessageMotion((current) => {
+            if (!(motionKey in current)) {
+                return current;
+            }
+
+            const next = { ...current };
+            delete next[motionKey];
+            return next;
+        });
+    };
+
+    const handleSend = async () => {
+        const text = draft.trim();
+        if (
+            !text ||
+            !conversationId ||
+            isSending ||
+            isChatLoading ||
+            sendLockRef.current
+        ) {
+            return;
+        }
+
+        sendLockRef.current = true;
+        holdComposerFocus();
+
+        try {
+            if (editingMessage) {
+                setIsSending(true);
+                const result = await editMessage(editingMessage._id, { text });
+                setIsSending(false);
+
+                if (!result?.status) {
+                    showToast?.({
+                        type: 'error',
+                        message:
+                            result?.message || 'Could not edit the message',
+                    });
+                    return;
+                }
+
+                upsertMessage(result.data);
+                setEditingMessage(null);
+                setDraft('');
+                setConversations((current: any) => {
+                    const existing = current.find(
+                        (item: any) => item._id === conversationId,
+                    );
+                    if (!existing) {
+                        return current;
+                    }
+
+                    return upsertConversationInList(current, {
+                        ...existing,
+                        last_message_text: messagePreviewText(result.data),
+                        last_message_at: result.data.created_at,
+                    });
                 });
                 return;
             }
 
-            upsertMessage(result.data);
-            setEditingMessage(null);
+            const pendingId = `pending-${crypto.randomUUID()}`;
+            const optimistic = {
+                _id: pendingId,
+                local_key: pendingId,
+                conversation_id: conversationId,
+                sender: {
+                    _id: profile._id,
+                    nick_name: profile.nick_name,
+                    avatar: profile.avatar,
+                },
+                text,
+                reply_to: replyTo?._id || null,
+                reply_preview: replyTo
+                    ? {
+                          _id: replyTo._id,
+                          text: replyTo.deleted_at ? '' : replyTo.text,
+                          deleted: Boolean(replyTo.deleted_at),
+                          sender: replyTo.sender,
+                      }
+                    : null,
+                deleted_at: null,
+                created_at: new Date().toISOString(),
+                is_own: true,
+                status: 'sending',
+            };
+
+            stickToBottomRef.current = true;
+            setMessages((current: any) => [...current, optimistic]);
             setDraft('');
+            setReplyTo(null);
+            setIsSending(true);
+            pinMessagesToBottom();
+
+            const result = await sendMessage(conversationId, {
+                text,
+                replyTo: replyTo?._id,
+            });
+
+            setIsSending(false);
+
+            if (!result?.status) {
+                setMessages((current: any) =>
+                    current.filter((item: any) => item._id !== pendingId),
+                );
+                showToast?.({
+                    type: 'error',
+                    message: result?.message || 'Could not send the message',
+                });
+                return;
+            }
+
+            settledMessageIdsRef.current?.add(String(result.data._id));
+            settledMessageIdsRef.current?.add(pendingId);
+
+            setMessages((current: any) => {
+                const filtered = current.filter(
+                    (item: any) => item._id !== pendingId,
+                );
+
+                if (deletedMessageIdsRef.current.has(String(result.data._id))) {
+                    return filtered;
+                }
+                const exists = filtered.some(
+                    (item: any) => item._id === result.data._id,
+                );
+
+                if (exists) {
+                    return filtered.map((item: any) =>
+                        item._id === result.data._id
+                            ? {
+                                  ...item,
+                                  ...result.data,
+                                  status: 'sent',
+                                  local_key: item.local_key || pendingId,
+                              }
+                            : item,
+                    );
+                }
+
+                return [
+                    ...filtered,
+                    { ...result.data, status: 'sent', local_key: pendingId },
+                ];
+            });
+
             setConversations((current: any) => {
                 const existing = current.find(
                     (item: any) => item._id === conversationId,
@@ -1511,100 +1950,12 @@ const MessagesPage = () => {
                     ...existing,
                     last_message_text: messagePreviewText(result.data),
                     last_message_at: result.data.created_at,
+                    unread: 0,
                 });
             });
-            return;
+        } finally {
+            sendLockRef.current = false;
         }
-
-        const pendingId = `pending-${crypto.randomUUID()}`;
-        const optimistic = {
-            _id: pendingId,
-            conversation_id: conversationId,
-            sender: {
-                _id: profile._id,
-                nick_name: profile.nick_name,
-                avatar: profile.avatar,
-            },
-            text,
-            reply_to: replyTo?._id || null,
-            reply_preview: replyTo
-                ? {
-                      _id: replyTo._id,
-                      text: replyTo.deleted_at ? '' : replyTo.text,
-                      deleted: Boolean(replyTo.deleted_at),
-                      sender: replyTo.sender,
-                  }
-                : null,
-            deleted_at: null,
-            created_at: new Date().toISOString(),
-            is_own: true,
-            status: 'sending',
-        };
-
-        stickToBottomRef.current = true;
-        setMessages((current: any) => [...current, optimistic]);
-        setDraft('');
-        setReplyTo(null);
-        setIsSending(true);
-
-        const result = await sendMessage(conversationId, {
-            text,
-            replyTo: replyTo?._id,
-        });
-
-        setIsSending(false);
-
-        if (!result?.status) {
-            setMessages((current: any) =>
-                current.filter((item: any) => item._id !== pendingId),
-            );
-            showToast?.({
-                type: 'error',
-                message: result?.message || 'Could not send the message',
-            });
-            return;
-        }
-
-        settledMessageIdsRef.current?.add(String(result.data._id));
-
-        setMessages((current: any) => {
-            const filtered = current.filter(
-                (item: any) => item._id !== pendingId,
-            );
-
-            if (deletedMessageIdsRef.current.has(String(result.data._id))) {
-                return filtered;
-            }
-            const exists = filtered.some(
-                (item: any) => item._id === result.data._id,
-            );
-
-            if (exists) {
-                return filtered.map((item: any) =>
-                    item._id === result.data._id
-                        ? { ...item, ...result.data, status: 'sent' }
-                        : item,
-                );
-            }
-
-            return [...filtered, { ...result.data, status: 'sent' }];
-        });
-
-        setConversations((current: any) => {
-            const existing = current.find(
-                (item: any) => item._id === conversationId,
-            );
-            if (!existing) {
-                return current;
-            }
-
-            return upsertConversationInList(current, {
-                ...existing,
-                last_message_text: messagePreviewText(result.data),
-                last_message_at: result.data.created_at,
-                unread: 0,
-            });
-        });
     };
 
     const resizeComposerInput = useCallback(() => {
@@ -1637,7 +1988,12 @@ const MessagesPage = () => {
     }, []);
 
     useLayoutEffect(() => {
+        const field = composerInputRef.current;
+        const wasFocused = field != null && document.activeElement === field;
         resizeComposerInput();
+        if (wasFocused && document.activeElement !== field) {
+            field.focus({ preventScroll: true });
+        }
     }, [draft, resizeComposerInput, conversationId]);
 
     const handleComposerKeyDown = (event: any) => {
@@ -2103,6 +2459,10 @@ const MessagesPage = () => {
                                             isSelecting
                                                 ? ' messages_list_selecting'
                                                 : ''
+                                        }${
+                                            messageMenu
+                                                ? ' messages_list_menu_open'
+                                                : ''
                                         }`}
                                         ref={listRef}
                                         onScroll={handleListScroll}
@@ -2195,6 +2555,15 @@ const MessagesPage = () => {
                                                                             message._id,
                                                                         ),
                                                                     );
+                                                                const motionKey =
+                                                                    String(
+                                                                        message.local_key ||
+                                                                            message._id,
+                                                                    );
+                                                                const motion =
+                                                                    messageMotion[
+                                                                        motionKey
+                                                                    ];
 
                                                                 const actionItems =
                                                                     getMessageActions(
@@ -2211,9 +2580,12 @@ const MessagesPage = () => {
                                                                 return (
                                                                     <article
                                                                         key={
-                                                                            message._id
+                                                                            motionKey
                                                                         }
                                                                         id={`message_${message._id}`}
+                                                                        data-motion-key={
+                                                                            motionKey
+                                                                        }
                                                                         className={`messages_item app-transition${
                                                                             isOwn
                                                                                 ? ' messages_item_own'
@@ -2221,6 +2593,15 @@ const MessagesPage = () => {
                                                                         }${
                                                                             isLeaving
                                                                                 ? ' messages_item_leaving'
+                                                                                : ''
+                                                                        }${
+                                                                            motion
+                                                                                ? ' messages_item_enter'
+                                                                                : ''
+                                                                        }${
+                                                                            motion ===
+                                                                            'to'
+                                                                                ? ' messages_item_enter_open'
                                                                                 : ''
                                                                         }`}
                                                                         style={
@@ -2251,8 +2632,41 @@ const MessagesPage = () => {
                                                                                 message._id,
                                                                             );
                                                                         }}
+                                                                        onTransitionEnd={(
+                                                                            event: any,
+                                                                        ) => {
+                                                                            if (
+                                                                                event.target !==
+                                                                                    event.currentTarget ||
+                                                                                event.propertyName !==
+                                                                                    'grid-template-rows'
+                                                                            ) {
+                                                                                return;
+                                                                            }
+
+                                                                            finishMessageEnter(
+                                                                                motionKey,
+                                                                            );
+                                                                        }}
                                                                         onMouseDown={
                                                                             preventRepeatedClickSelection
+                                                                        }
+                                                                        onTouchStart={(
+                                                                            event: any,
+                                                                        ) =>
+                                                                            handleMessageTouchStart(
+                                                                                event,
+                                                                                actionItems,
+                                                                            )
+                                                                        }
+                                                                        onTouchMove={
+                                                                            handleMessageTouchMove
+                                                                        }
+                                                                        onTouchEnd={
+                                                                            handleMessageTouchEnd
+                                                                        }
+                                                                        onTouchCancel={
+                                                                            clearLongPress
                                                                         }
                                                                         onMouseUp={(
                                                                             event: any,
@@ -2267,9 +2681,30 @@ const MessagesPage = () => {
                                                                                 );
                                                                             }
                                                                         }}
+                                                                        onClickCapture={(
+                                                                            event: any,
+                                                                        ) => {
+                                                                            if (
+                                                                                !suppressMessageClickRef.current
+                                                                            ) {
+                                                                                return;
+                                                                            }
+
+                                                                            event.preventDefault();
+                                                                            event.stopPropagation();
+                                                                        }}
                                                                         onClick={(
                                                                             event: any,
                                                                         ) => {
+                                                                            if (
+                                                                                suppressMessageClickRef.current
+                                                                            ) {
+                                                                                suppressMessageClickRef.current = false;
+                                                                                event.preventDefault();
+                                                                                event.stopPropagation();
+                                                                                return;
+                                                                            }
+
                                                                             if (
                                                                                 !isSelecting ||
                                                                                 event.detail >
@@ -2292,38 +2727,74 @@ const MessagesPage = () => {
                                                                         }
                                                                         onContextMenu={(
                                                                             event: any,
-                                                                        ) =>
+                                                                        ) => {
+                                                                            if (
+                                                                                messageMenu
+                                                                            ) {
+                                                                                event.preventDefault();
+                                                                                return;
+                                                                            }
+
                                                                             openMessageMenu(
                                                                                 event,
                                                                                 actionItems,
-                                                                            )
-                                                                        }
+                                                                            );
+                                                                        }}
                                                                     >
-                                                                        {!isDeleted ? (
-                                                                            <span
-                                                                                className="messages_select_slot"
-                                                                                aria-hidden="true"
-                                                                            >
+                                                                        <div className="messages_item_motion">
+                                                                            {!isDeleted ? (
                                                                                 <span
-                                                                                    className={`messages_select${
-                                                                                        isSelected
-                                                                                            ? ' messages_select_on'
-                                                                                            : ''
-                                                                                    }`}
+                                                                                    className="messages_select_slot"
+                                                                                    aria-hidden="true"
                                                                                 >
-                                                                                    <TickIcon />
+                                                                                    <span
+                                                                                        className={`messages_select${
+                                                                                            isSelected
+                                                                                                ? ' messages_select_on'
+                                                                                                : ''
+                                                                                        }`}
+                                                                                    >
+                                                                                        <TickIcon />
+                                                                                    </span>
                                                                                 </span>
-                                                                            </span>
-                                                                        ) : null}
-                                                                        <div className="messages_bubble_wrap">
-                                                                            <div className="messages_bubble">
-                                                                                {replyQuote
-                                                                                    ? (() => {
-                                                                                          if (
-                                                                                              replyQuote.deleted
-                                                                                          ) {
+                                                                            ) : null}
+                                                                            <div className="messages_bubble_wrap">
+                                                                                <div className="messages_bubble">
+                                                                                    {replyQuote
+                                                                                        ? (() => {
+                                                                                              if (
+                                                                                                  replyQuote.deleted
+                                                                                              ) {
+                                                                                                  return (
+                                                                                                      <div className="messages_quote messages_quote_deleted app-transition">
+                                                                                                          <span className="messages_quote_author">
+                                                                                                              {
+                                                                                                                  replyQuote.author
+                                                                                                              }
+                                                                                                          </span>
+                                                                                                          <span className="messages_quote_text">
+                                                                                                              {
+                                                                                                                  replyQuote.text
+                                                                                                              }
+                                                                                                          </span>
+                                                                                                      </div>
+                                                                                                  );
+                                                                                              }
+
                                                                                               return (
-                                                                                                  <div className="messages_quote messages_quote_deleted app-transition">
+                                                                                                  <button
+                                                                                                      type="button"
+                                                                                                      className="messages_quote app-transition"
+                                                                                                      onClick={() =>
+                                                                                                          handleReplyPreviewClick(
+                                                                                                              {
+                                                                                                                  _id: replyTargetId,
+                                                                                                                  deleted:
+                                                                                                                      replyQuote.deleted,
+                                                                                                              },
+                                                                                                          )
+                                                                                                      }
+                                                                                                  >
                                                                                                       <span className="messages_quote_author">
                                                                                                           {
                                                                                                               replyQuote.author
@@ -2334,77 +2805,50 @@ const MessagesPage = () => {
                                                                                                               replyQuote.text
                                                                                                           }
                                                                                                       </span>
-                                                                                                  </div>
+                                                                                                  </button>
                                                                                               );
-                                                                                          }
+                                                                                          })()
+                                                                                        : null}
 
-                                                                                          return (
-                                                                                              <button
-                                                                                                  type="button"
-                                                                                                  className="messages_quote app-transition"
-                                                                                                  onClick={() =>
-                                                                                                      handleReplyPreviewClick(
-                                                                                                          {
-                                                                                                              _id: replyTargetId,
-                                                                                                              deleted:
-                                                                                                                  replyQuote.deleted,
-                                                                                                          },
-                                                                                                      )
-                                                                                                  }
-                                                                                              >
-                                                                                                  <span className="messages_quote_author">
-                                                                                                      {
-                                                                                                          replyQuote.author
-                                                                                                      }
-                                                                                                  </span>
-                                                                                                  <span className="messages_quote_text">
-                                                                                                      {
-                                                                                                          replyQuote.text
-                                                                                                      }
-                                                                                                  </span>
-                                                                                              </button>
-                                                                                          );
-                                                                                      })()
-                                                                                    : null}
+                                                                                    <div
+                                                                                        className={`messages_body${
+                                                                                            hasEmbeds
+                                                                                                ? ' messages_body_with_post'
+                                                                                                : ''
+                                                                                        }`}
+                                                                                    >
+                                                                                        <MessageContent
+                                                                                            text={
+                                                                                                message.text
+                                                                                            }
+                                                                                            className="messages_text"
+                                                                                            deleted={
+                                                                                                isDeleted
+                                                                                            }
+                                                                                            onLayoutChange={
+                                                                                                scrollIfPinned
+                                                                                            }
+                                                                                        />
 
-                                                                                <div
-                                                                                    className={`messages_body${
-                                                                                        hasEmbeds
-                                                                                            ? ' messages_body_with_post'
-                                                                                            : ''
-                                                                                    }`}
-                                                                                >
-                                                                                    <MessageContent
-                                                                                        text={
-                                                                                            message.text
-                                                                                        }
-                                                                                        className="messages_text"
-                                                                                        deleted={
-                                                                                            isDeleted
-                                                                                        }
-                                                                                        onLayoutChange={
-                                                                                            scrollIfPinned
-                                                                                        }
-                                                                                    />
-
-                                                                                    <div className="messages_meta">
-                                                                                        <span className="messages_time">
-                                                                                            {format_time(
-                                                                                                message.created_at,
-                                                                                            )}
-                                                                                        </span>
-                                                                                        {message.edited_at ? (
-                                                                                            <span className="messages_edited">
-                                                                                                updated
+                                                                                        <div className="messages_meta">
+                                                                                            <span className="messages_time">
+                                                                                                {format_time(
+                                                                                                    message.created_at,
+                                                                                                )}
                                                                                             </span>
-                                                                                        ) : null}
-                                                                                        {isOwn ? (
-                                                                                            <MessageStatus
-                                                                                                status={
-                                                                                                    message.status
-                                                                                                }
-                                                                                            />
-                                                                                        ) : null}
+                                                                                            {message.edited_at ? (
+                                                                                                <span className="messages_edited">
+                                                                                                    updated
+                                                                                                </span>
+                                                                                            ) : null}
+                                                                                            {isOwn ? (
+                                                                                                <MessageStatus
+                                                                                                    status={
+                                                                                                        message.status
+                                                                                                    }
+                                                                                                />
+                                                                                            ) : null}
+                                                                                        </div>
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
@@ -2599,6 +3043,22 @@ const MessagesPage = () => {
                                                             isChatLoading
                                                         }
                                                         isLoading={isSending}
+                                                        onMouseDown={(
+                                                            event: any,
+                                                        ) => {
+                                                            event.preventDefault();
+                                                        }}
+                                                        onTouchStart={(
+                                                            event: any,
+                                                        ) => {
+                                                            event.preventDefault();
+                                                        }}
+                                                        onTouchEnd={(
+                                                            event: any,
+                                                        ) => {
+                                                            event.preventDefault();
+                                                            handleSend();
+                                                        }}
                                                     >
                                                         {editingMessage ? (
                                                             <TickIcon />

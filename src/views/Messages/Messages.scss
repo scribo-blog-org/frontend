@@ -414,6 +414,27 @@
     justify-content: flex-start;
     gap: 0;
     max-width: 100%;
+    min-height: 0;
+
+    &_enter {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: 0fr;
+        width: 100%;
+        margin-top: -12px;
+        opacity: 0;
+        overflow: hidden;
+    }
+
+    &_enter#{&}_enter_open {
+        grid-template-rows: 1fr;
+        margin-top: 0;
+        opacity: 1;
+        transition:
+            grid-template-rows 0.28s ease,
+            margin-top 0.28s ease,
+            opacity 0.22s ease;
+    }
 
     &_own {
         align-self: stretch;
@@ -453,6 +474,18 @@
     .messages_text a {
         pointer-events: none;
     }
+}
+
+.messages_item_motion {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    align-items: center;
+}
+
+.messages_item_enter > .messages_item_motion {
+    overflow: hidden;
 }
 
 .messages_select_slot {
@@ -518,16 +551,16 @@
 
 .messages_selection_bar {
     display: grid;
-    grid-template-columns: 30px minmax(0, 1fr) auto;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
     align-items: center;
     gap: 8px;
     margin: 0;
     box-sizing: border-box;
-    height: var(--control-height);
-    min-height: var(--control-height);
-    padding: 0 4px;
+    height: 48px;
+    min-height: 48px;
+    padding: 3px;
     border: 1px solid var(--input-outline-color);
-    border-radius: 20px;
+    border-radius: 24px;
     background: var(--main-background);
     pointer-events: auto;
     @include use-transition();
@@ -554,19 +587,19 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     padding: 0;
     border: 0;
-    border-radius: 15px;
+    border-radius: 20px;
     background: transparent;
     color: var(--text-color);
     cursor: pointer;
     @include use-transition();
 
     svg {
-        width: 16px;
-        height: 16px;
+        width: 18px;
+        height: 18px;
     }
 
     @include hover {
@@ -684,6 +717,9 @@
     background: var(--section-background-color);
     color: var(--text-color);
     min-width: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     @include use-transition-surface();
 }
 
@@ -772,6 +808,14 @@
     color: var(--text-color);
     min-width: 0;
     flex: 1;
+    user-select: text;
+    -webkit-user-select: text;
+
+    @media (hover: none) and (pointer: coarse) {
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+    }
 
     &_deleted {
         color: var(--light-text-color);
@@ -829,10 +873,21 @@
     line-height: 1.2;
     color: var(--light-text-color);
     white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.messages_list_menu_open .messages_text {
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
 }
 
 .messages_time,
 .messages_edited {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     color: var(--light-text-color);
 }
 
@@ -860,10 +915,12 @@
     flex-direction: column;
     gap: 0;
     flex-shrink: 0;
+    box-sizing: border-box;
     width: 100%;
+    min-height: 48px;
     padding: 0;
     border: 1px solid var(--input-outline-color);
-    border-radius: 20px;
+    border-radius: 24px;
     background: var(--main-background);
     pointer-events: auto;
     overflow: hidden;
@@ -991,19 +1048,25 @@
     &_body {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        gap: 4px;
+        gap: 0;
         align-items: end;
+        box-sizing: border-box;
+        min-height: 48px;
         padding: 4px;
         border: 0;
         border-radius: 0;
         background: transparent;
 
         .messages_composer_send {
-            border-radius: 15px;
-            width: calc(var(--control-height) - 10px);
-            min-width: calc(var(--control-height) - 10px);
-            height: calc(var(--control-height) - 10px);
+            border-radius: 20px;
+            height: 40px;
+            width: 40px;
             padding: 0;
+
+            svg {
+                width: 18px;
+                height: 18px;
+            }
         }
     }
 
@@ -1015,12 +1078,12 @@
     textarea.input_field.messages_composer_input {
         box-sizing: border-box;
         @include use-transition();
-        height: calc(var(--control-height) - 10px);
-        min-height: calc(var(--control-height) - 10px);
-        max-height: 110px;
-        padding: 5px 8px;
+        height: 40px;
+        min-height: 40px;
+        max-height: 120px;
+        padding: 10px 13px;
         border: 0;
-        border-radius: 0;
+        border-radius: 20px;
         background: transparent;
         line-height: 20px;
         overflow-y: hidden;
@@ -1035,7 +1098,7 @@
         overflow: hidden;
         min-height: 0;
         max-height: none;
-        padding: 5px 8px;
+        padding: 10px 13px;
         line-height: 20px;
     }
 }
