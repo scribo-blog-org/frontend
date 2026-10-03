@@ -403,10 +403,10 @@ class SocketClient {
         if (message.type === 'presence' && message.user) {
             for (const listener of this.presenceListeners) {
                 listener(
-                String(message.user),
-                Boolean(message.online),
-                typeof message.at === 'string' ? message.at : undefined,
-            );
+                    String(message.user),
+                    Boolean(message.online),
+                    typeof message.at === 'string' ? message.at : undefined,
+                );
             }
             return;
         }
