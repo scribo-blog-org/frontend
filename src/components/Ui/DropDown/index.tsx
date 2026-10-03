@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import './DropDown.scss';
-import { useOverlayEnter } from '../useOverlayEnter';
+import { useOverlayPresence } from '../useOverlayEnter';
 
 import ChevronDownIcon from '../../../assets/svg/chevron-down.svg';
 
@@ -19,7 +19,8 @@ const DropDown = ({
 }: any) => {
     const [isOpen, setIsOpen] = useState<any>(false);
     const wrapperRef = useRef<any>(null);
-    const listVisible = useOverlayEnter(isOpen);
+    const { mounted: listMounted, visible: listVisible } =
+        useOverlayPresence(isOpen);
 
     const selectedOption = useMemo(
         () => options.find((option: any) => option.value === value),
@@ -79,7 +80,7 @@ const DropDown = ({
                 <ChevronDownIcon className="dropdown_chevron" />
             </button>
 
-            {isOpen ? (
+            {listMounted ? (
                 <div
                     className={`dropdown_list blurred float_section${listVisible ? ' dropdown_list_visible' : ''}`}
                 >

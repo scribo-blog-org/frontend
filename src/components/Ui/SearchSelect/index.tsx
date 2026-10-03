@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import './SearchSelect.scss';
-import { useOverlayEnter } from '../useOverlayEnter';
+import { useOverlayPresence } from '../useOverlayEnter';
 
 import InputField from '../InputField';
 
@@ -44,7 +44,8 @@ const SearchSelect = ({
     const wrapperRef = useRef<any>(null);
     const optionRefs = useRef<any[]>([]);
     const inputRef = useRef<any>(null);
-    const listVisible = useOverlayEnter(isOpen);
+    const { mounted: listMounted, visible: listVisible } =
+        useOverlayPresence(isOpen);
 
     const selectedOption = useMemo(() => {
         return options.find((option: any) => option.value === value);
@@ -266,7 +267,7 @@ const SearchSelect = ({
                 </button>
             </div>
 
-            {isOpen && (
+            {listMounted && (
                 <div
                     className={`search_select_list blurred float_section${listVisible ? ' search_select_list_visible' : ''}`}
                     onScroll={(e: any) => {

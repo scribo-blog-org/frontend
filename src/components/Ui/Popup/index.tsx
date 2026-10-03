@@ -18,7 +18,7 @@ import {
 import './Popup.scss';
 
 import ChevronRightIcon from '../../../assets/svg/chevron-right.svg';
-import { useOverlayEnter } from '../useOverlayEnter';
+import { useOverlayPresence } from '../useOverlayEnter';
 
 const MENU_ROOT_DEFAULT = 'app-layout';
 
@@ -158,7 +158,7 @@ function FlyoutItem({
 }: any) {
     const nodeId = useFloatingNodeId();
     const [open, setOpen] = useState<any>(false);
-    const visible = useOverlayEnter(open);
+    const { mounted, visible } = useOverlayPresence(open);
     const sections = normalizeSections(item.items);
     const isDropdown = item.type === 'dropdown';
     const valueLabel = item.valueLabel ?? findActiveItem(sections)?.title;
@@ -216,7 +216,7 @@ function FlyoutItem({
                 <ChevronRightIcon className="popup_menu_item_chevron" />
             </button>
 
-            {open && (
+            {mounted && (
                 <FloatingPortal root={document.getElementById(portalRootId)}>
                     <div
                         {...getFloatingProps({
@@ -255,8 +255,15 @@ function setPopupPosition(node: any, x: any, y: any) {
     node.style.setProperty('--popup-y', `${Math.round(y ?? 0)}px`);
 }
 
-function PopupMenu({ anchorRef, children, onClose, portalRootId, layer }: any) {
-    const visible = useOverlayEnter(true);
+function PopupMenu({
+    anchorRef,
+    children,
+    onClose,
+    portalRootId,
+    layer,
+    open,
+}: any) {
+    const { mounted, visible } = useOverlayPresence(open);
     const { refs, x, y, placement } = useFloating({
         elements: {
             reference: anchorRef.current,
@@ -270,6 +277,10 @@ function PopupMenu({ anchorRef, children, onClose, portalRootId, layer }: any) {
     useFloatingPosition(refs, x, y);
 
     useEffect(() => {
+        if (!mounted) {
+            return;
+        }
+
         function handleClick(event: any) {
             if (
                 event.target.closest('.popup_menu') ||
@@ -282,7 +293,11 @@ function PopupMenu({ anchorRef, children, onClose, portalRootId, layer }: any) {
 
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
-    }, [onClose, anchorRef]);
+    }, [mounted, onClose, anchorRef]);
+
+    if (!mounted) {
+        return null;
+    }
 
     return (
         <FloatingPortal root={document.getElementById(portalRootId)}>
@@ -333,9 +348,10 @@ function Popup({
                 {children}
             </div>
 
-            {open && sections.length > 0 && (
+            {sections.length > 0 && (
                 <FloatingTree>
                     <PopupMenu
+                        open={open}
                         anchorRef={buttonRef}
                         onClose={() => setOpen(false)}
                         portalRootId={portalRootId}

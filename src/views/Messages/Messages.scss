@@ -444,7 +444,8 @@
         }
     }
 
-    &_highlight {
+    &_highlight,
+    &_menu_target {
         .messages_bubble {
             box-shadow: 0 0 0 2px var(--text-color);
         }
@@ -881,6 +882,92 @@
     user-select: text;
     -webkit-user-select: text;
     -webkit-touch-callout: default;
+}
+
+.messages_list_menu_touch {
+    overflow: hidden;
+    touch-action: none;
+}
+
+.messages_menu_layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    pointer-events: none;
+
+    .popup_menu {
+        z-index: 2;
+        animation: messages_menu_lift_in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+}
+
+.messages_menu_scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    outline: none;
+    appearance: none;
+    cursor: default;
+    background: var(--modal-window-background-color);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &_visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+.messages_menu_lift {
+    position: fixed;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+    animation: messages_menu_lift_in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &_visible {
+        opacity: 1;
+    }
+
+    .messages_bubble_wrap {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+    }
+
+    .messages_bubble {
+        box-shadow: 0 10px 32px rgba(0, 0, 0, 0.38);
+    }
+}
+
+@keyframes messages_menu_lift_in {
+    from {
+        transform: translateY(var(--lift-from, 0px));
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .messages_menu_lift,
+    .messages_menu_layer .popup_menu {
+        animation: none;
+    }
+
+    .messages_menu_scrim,
+    .messages_menu_lift {
+        transition: none;
+    }
 }
 
 .messages_time,
