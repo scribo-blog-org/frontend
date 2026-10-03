@@ -41,13 +41,10 @@ const MessageContextMenu = ({ x, y, items, onClose }: any) => {
         strategy: 'fixed',
         middleware: [offset(4), flip(), shift({ padding: 8 })],
         whileElementsMounted: autoUpdate,
-        elements: {
-            reference: virtualAnchor as unknown as Element,
-        },
     });
 
     useEffect(() => {
-        refs.setReference(virtualAnchor);
+        refs.setPositionReference(virtualAnchor);
     }, [refs, virtualAnchor]);
 
     useEffect(() => {

@@ -63,15 +63,12 @@
     display: flex;
     flex-direction: column;
     flex: 1;
+    align-items: stretch;
     min-width: 0;
     min-height: 0;
-    padding: 0 0 0 var(--space-6);
+    padding: 0;
     --messages-composer-gap: 20px;
     overflow: hidden;
-
-    @include screen() {
-        padding: 0;
-    }
 }
 
 .messages_title {
@@ -219,9 +216,13 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    width: 100%;
     padding-bottom: var(--space-3);
     border-bottom: 1px solid var(--line-color);
+    background: var(--main-background);
+    position: relative;
+    z-index: 3;
     @include use-transition();
 
     &_main {
@@ -239,9 +240,10 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    border-radius: 8px;
+    border-radius: 999px;
     color: var(--text-color);
     flex-shrink: 0;
+    @include use-transition();
 
     svg {
         width: 16px;
@@ -281,11 +283,12 @@
     height: 32px;
     padding: 0;
     border: 0;
-    border-radius: 8px;
+    border-radius: 999px;
     background: transparent;
     color: var(--text-color);
     cursor: pointer;
     flex-shrink: 0;
+    @include use-transition();
 
     svg {
         width: 18px;
@@ -297,15 +300,24 @@
     }
 }
 
+.messages_chat_head .messages_back,
+.messages_chat_head .messages_chat_menu,
+.messages_date_divider .messages_date_label {
+    @include use-transition();
+}
+
 .messages_list {
-    flex: 1;
+    flex: 1 1 auto;
+    align-self: stretch;
+    width: 100%;
     min-height: 0;
     overflow: auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 8px 4px 0;
+    padding: 8px 16px 0;
     padding-bottom: calc(var(--messages-composer-space, 56px) + 12px);
+    scrollbar-gutter: stable;
 
     &_loader {
         display: flex;
@@ -344,10 +356,9 @@
     border-radius: 999px;
     background: color-mix(
         in srgb,
-        var(--main-background) 82%,
-        var(--text-color) 18%
+        var(--main-background) 94%,
+        var(--text-color) 6%
     );
-    box-shadow: 0 1px 4px color-mix(in srgb, var(--text-color) 10%, transparent);
     font-size: 12px;
     line-height: 1.2;
     font-weight: 500;
@@ -356,6 +367,7 @@
     pointer-events: auto;
     cursor: pointer;
     font-family: inherit;
+    @include use-transition();
 
     @include hover {
         color: var(--text-color);
@@ -378,6 +390,56 @@
         .messages_bubble {
             box-shadow: 0 0 0 2px var(--text-color);
         }
+    }
+
+    &_leaving {
+        overflow: hidden;
+        pointer-events: none;
+        animation: messages_item_leave 0.34s ease forwards;
+    }
+}
+
+@keyframes messages_item_leave {
+    from {
+        max-height: var(--leave-height);
+        opacity: 1;
+        margin-top: 0;
+        transform: translateY(0);
+    }
+
+    to {
+        max-height: 0;
+        opacity: 0;
+        margin-top: -12px;
+        transform: translateY(6px);
+    }
+}
+
+.messages_jump {
+    position: absolute;
+    z-index: 5;
+    right: 16px;
+    bottom: calc(var(--messages-composer-space, 56px) + 12px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: var(--submit-button-primary-color);
+    color: var(--submit-button-secondary-color);
+    @include use-transition();
+
+    svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    @include hover {
+        background: var(--submit-button-primary-hover-color);
+        color: var(--submit-button-secondary-color);
     }
 }
 

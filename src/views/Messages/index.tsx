@@ -58,6 +58,7 @@ import ArrowLeftIcon from '../../assets/svg/arrow-left.svg';
 import SendIcon from '../../assets/svg/send.svg';
 import ThreeDotsIcon from '../../assets/svg/three-dots.svg';
 import TickIcon from '../../assets/svg/tick.svg';
+import ChevronDownIcon from '../../assets/svg/chevron-down.svg';
 import NewMessageIllustration from '../../assets/svg/illustrations/new-message.svg';
 
 import MessageContextMenu from './MessageContextMenu';
@@ -300,11 +301,16 @@ const MessagesPage = () => {
     const [isSending, setIsSending] = useState<any>(false);
     const [messageMenu, setMessageMenu] = useState<any>(null);
     const [onlineByUserId, setOnlineByUserId] = useState<any>({});
+    const [leavingHeights, setLeavingHeights] = useState<any>({});
+    const [isAwayFromBottom, setIsAwayFromBottom] = useState(false);
 
     const listRef = useRef<any>(null);
     const composerDockRef = useRef<any>(null);
     const composerInputRef = useRef<any>(null);
     const stickToBottomRef = useRef(true);
+    const jumpingToBottomRef = useRef(false);
+    const leavingIdsRef = useRef<any>(new Set());
+    const beginMessageLeaveRef = useRef<any>(() => {});
 
     const scrollMessagesToBottom = useCallback(() => {
         const el = listRef.current;
@@ -365,7 +371,36 @@ const MessagesPage = () => {
         }
 
         const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
-        stickToBottomRef.current = distance < 80;
+        const away = distance >= 80;
+
+        if (jumpingToBottomRef.current) {
+            stickToBottomRef.current = true;
+
+            if (!away) {
+                jumpingToBottomRef.current = false;
+            }
+
+            setIsAwayFromBottom(false);
+            return;
+        }
+
+        stickToBottomRef.current = !away;
+        setIsAwayFromBottom((current: any) =>
+            current === away ? current : away,
+        );
+    };
+
+    const jumpToBottom = () => {
+        const el = listRef.current;
+        jumpingToBottomRef.current = true;
+        stickToBottomRef.current = true;
+        setIsAwayFromBottom(false);
+
+        if (!el) {
+            return;
+        }
+
+        el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     };
 
     const upsertMessage = useCallback(
@@ -526,8 +561,15 @@ const MessagesPage = () => {
             }
 
             stickToBottomRef.current = true;
+            setIsAwayFromBottom(false);
+            leavingIdsRef.current = new Set();
+            setLeavingHeights({});
             setActiveConversation(conversationResult.data);
-            setMessages(messagesResult?.data?.items || []);
+            setMessages(
+                (messagesResult?.data?.items || []).filter(
+                    (item: any) => !item.deleted_at,
+                ),
+            );
             clearConversationUnread(conversationId);
             await markChatAsRead(conversationId);
             setIsChatLoading(false);
@@ -537,6 +579,21 @@ const MessagesPage = () => {
 
         socketEvents.subscribeConversation(profile._id, conversationId, {
             onMessage: (message: any) => {
+                if (message.deleted_at) {
+                    beginMessageLeaveRef.current(message._id);
+                    setReplyTo((current: any) => {
+                        if (
+                            !current ||
+                            String(current._id) !== String(message._id)
+                        ) {
+                            return current;
+                        }
+
+                        return null;
+                    });
+                    return;
+                }
+
                 const normalized = normalizeIncomingMessage(
                     message,
                     profile._id,
@@ -876,6 +933,59 @@ const MessagesPage = () => {
         handleSend();
     };
 
+    const finishMessageLeave = (messageId: any) => {
+        const id = String(messageId);
+        leavingIdsRef.current.delete(id);
+        setLeavingHeights((current: any) => {
+            if (!(id in current)) {
+                return current;
+            }
+
+            const next = { ...current };
+            delete next[id];
+            return next;
+        });
+        setMessages((current: any) =>
+            current.filter((item: any) => String(item._id) !== id),
+        );
+    };
+
+    const beginMessageLeave = (messageId: any) => {
+        const id = String(messageId);
+
+        if (leavingIdsRef.current.has(id)) {
+            return;
+        }
+
+        const element = document.getElementById(`message_${id}`);
+
+        if (!element) {
+            finishMessageLeave(id);
+            return;
+        }
+
+        leavingIdsRef.current.add(id);
+        setLeavingHeights((current: any) => ({
+            ...current,
+            [id]: element.offsetHeight,
+        }));
+        window.setTimeout(() => {
+            if (leavingIdsRef.current.has(id)) {
+                finishMessageLeave(id);
+            }
+        }, 420);
+        setReplyTo((current: any) =>
+            current && String(current._id) === id ? null : current,
+        );
+
+        if (editingMessage && String(editingMessage._id) === id) {
+            setEditingMessage(null);
+            setDraft('');
+        }
+    };
+
+    beginMessageLeaveRef.current = beginMessageLeave;
+
     const handleDelete = async (messageId: any) => {
         const result = await deleteMessage(messageId);
         if (!result?.status) {
@@ -886,10 +996,7 @@ const MessagesPage = () => {
             return;
         }
 
-        upsertMessage(result.data);
-        setReplyTo((current: any) =>
-            current?._id === messageId ? null : current,
-        );
+        beginMessageLeave(messageId);
     };
 
     const messageActionHandlers = {
@@ -1199,12 +1306,22 @@ const MessagesPage = () => {
 
                                                 {group.messages.map(
                                                     (message: any) => {
+                                                        const isLeaving =
+                                                            message._id in
+                                                            leavingHeights;
                                                         const isOwn =
                                                             message.is_own;
                                                         const isDeleted =
                                                             Boolean(
                                                                 message.deleted_at,
                                                             );
+
+                                                        if (
+                                                            isDeleted &&
+                                                            !isLeaving
+                                                        ) {
+                                                            return null;
+                                                        }
                                                         const hasEmbeds =
                                                             !isDeleted &&
                                                             /https?:\/\//.test(
@@ -1242,7 +1359,34 @@ const MessagesPage = () => {
                                                                     isOwn
                                                                         ? ' messages_item_own'
                                                                         : ''
+                                                                }${
+                                                                    isLeaving
+                                                                        ? ' messages_item_leaving'
+                                                                        : ''
                                                                 }`}
+                                                                style={
+                                                                    isLeaving
+                                                                        ? {
+                                                                              '--leave-height': `${leavingHeights[message._id]}px`,
+                                                                          }
+                                                                        : undefined
+                                                                }
+                                                                onAnimationEnd={(
+                                                                    event: any,
+                                                                ) => {
+                                                                    if (
+                                                                        event.target !==
+                                                                            event.currentTarget ||
+                                                                        event.animationName !==
+                                                                            'messages_item_leave'
+                                                                    ) {
+                                                                        return;
+                                                                    }
+
+                                                                    finishMessageLeave(
+                                                                        message._id,
+                                                                    );
+                                                                }}
                                                                 onDoubleClick={(
                                                                     event: any,
                                                                 ) =>
@@ -1363,6 +1507,17 @@ const MessagesPage = () => {
                                     )
                                 )}
                             </div>
+
+                            {isAwayFromBottom ? (
+                                <button
+                                    type="button"
+                                    className="messages_jump app-transition"
+                                    onClick={jumpToBottom}
+                                    aria-label="Scroll to latest messages"
+                                >
+                                    <ChevronDownIcon />
+                                </button>
+                            ) : null}
 
                             <div
                                 className="messages_composer_dock"
