@@ -30,50 +30,13 @@
                 }
             }
 
-            .rich_input_field .input_field {
-                padding: 10px;
-                font-size: 14px;
+            .rich_input_field .input_field,
+            .input_field_label .input_field {
+                width: 100%;
             }
 
-            .rich_input_field .input_field::placeholder {
-                font-size: 14px;
-            }
-
-            .input_field_label {
-                .input span {
-                    margin-bottom: 0;
-                }
-
-                .input_field {
-                    padding: 10px;
-                    font-size: 14px;
-                }
-
-                .input_field::placeholder {
-                    font-size: 14px;
-                }
-            }
-
-            @include screen() {
-                .rich_input_field .input_field {
-                    padding: 8px;
-                    font-size: 12px;
-                }
-
-                .rich_input_field .input_field::placeholder {
-                    font-size: 12px;
-                }
-
-                .input_field_label {
-                    .input_field {
-                        padding: 8px;
-                        font-size: 12px;
-                    }
-
-                    .input_field::placeholder {
-                        font-size: 12px;
-                    }
-                }
+            .input_field_label .input span {
+                margin-bottom: 0;
             }
         }
 
@@ -82,22 +45,6 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-
-            .primary_button,
-            .cancel_button {
-                padding: 10px 12px;
-
-                p {
-                    font-size: 12px;
-                }
-            }
-
-            @include screen() {
-                .primary_button,
-                .cancel_button {
-                    padding: 8px;
-                }
-            }
         }
     }
 

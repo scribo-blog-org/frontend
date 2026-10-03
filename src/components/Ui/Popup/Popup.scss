@@ -1,4 +1,5 @@
 @use '../../../styles/helpers' as *;
+@use '../../../styles/overlaySurface.scss' as *;
 
 .popup {
     display: flex;
@@ -29,16 +30,17 @@
 }
 
 .popup_menu_surface {
-    min-width: 204px;
-    max-width: min(320px, calc(100vw - 16px));
+    min-width: 188px;
+    max-width: min(280px, calc(100vw - 16px));
     padding: 4px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 2px;
     overflow: visible;
-    box-shadow:
-        0 10px 28px rgba(0, 0, 0, 0.1),
-        0 2px 8px rgba(0, 0, 0, 0.04);
+
+    &.float_section {
+        @include menu-surface;
+    }
     opacity: 0;
     pointer-events: none;
     will-change: opacity, transform;
@@ -90,12 +92,12 @@
         align-items: center;
         white-space: nowrap;
         gap: 10px;
-        min-height: 36px;
-        padding: 8px 12px;
-        border-radius: var(--radius-sm);
+        min-height: 34px;
+        padding: 6px 10px;
+        border-radius: 8px;
         width: 100%;
         color: var(--text-color);
-        font-size: var(--text-sm);
+        font-size: 13px;
         font-weight: 500;
         line-height: 1.2;
         transition:
@@ -128,8 +130,8 @@
 
     .popup_menu_item_chevron {
         flex-shrink: 0;
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
         opacity: 0.45;
         transition:
             opacity 0.15s ease,
@@ -147,8 +149,8 @@
 
     .popup_menu_item_check {
         flex-shrink: 0;
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
     }
 
     .popup_menu_item svg {
@@ -158,8 +160,8 @@
         height: 16px;
 
         &.popup_menu_item_chevron {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
         }
     }
 

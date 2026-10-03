@@ -10,7 +10,12 @@ import './FollowButton.scss';
 
 import ActionButton from '../Ui/ActionButton';
 
-const FollowButton = ({ setNewData, authorId, className }: any) => {
+const FollowButton = ({
+    setNewData,
+    authorId,
+    className,
+    size = 'md',
+}: any) => {
     const { profile, showToast } = useContext(AppContext);
     const [isLoading, setIsLoading] = useState<any>(false);
 
@@ -68,6 +73,7 @@ const FollowButton = ({ setNewData, authorId, className }: any) => {
     return profile?.follows?.some((item: any) => hasId([item], authorId)) ? (
         <ActionButton
             isLoading={isLoading}
+            size={size}
             onClick={() => unfollowUser()}
             className={`follow_button app-transition ${className ?? ''} ${sameId(profile?._id, authorId) ? 'non_visible' : ''}`}
         >
@@ -76,6 +82,7 @@ const FollowButton = ({ setNewData, authorId, className }: any) => {
     ) : (
         <ActionButton
             isLoading={isLoading}
+            size={size}
             onClick={() => followUser()}
             className={`follow_button app-transition ${className ?? ''} ${sameId(profile?._id, authorId) ? 'non_visible' : ''}`}
         >

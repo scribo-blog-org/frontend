@@ -12,6 +12,7 @@
     overflow: hidden;
 
     &_main {
+        position: relative;
         display: flex;
         flex-direction: column;
         flex: 1;
@@ -45,24 +46,52 @@
         scroll-behavior: smooth;
         -webkit-overflow-scrolling: touch;
 
-        > *:first-child {
+        .app-shell_body {
+            display: flex;
+            flex-direction: column;
             flex: 1 0 auto;
             min-width: 0;
+            min-height: 100%;
         }
+    }
 
+    &_main:has(> .navigation_bar) &_content .app-shell_body {
         @include screen() {
-            padding-bottom: 70px;
+            padding-bottom: var(--mobile-nav-height);
+        }
+    }
+
+    &_content:has(.messages_page),
+    &_content:has(.tabs_page) {
+        overflow: hidden;
+
+        .app-shell_body {
+            flex: 1 1 0%;
+            min-height: 0;
+            height: 100%;
         }
 
-        &:has(.messages_page),
-        &:has(.tabs_page) {
-            overflow: hidden;
+        .page-layout {
+            min-height: 0;
+        }
+    }
 
-            > *:first-child {
-                display: flex;
-                flex-direction: column;
-                flex: 1 1 0%;
-                min-height: 0;
+    &_content:has(.messages_page) .page-layout {
+        padding-bottom: 0;
+    }
+
+    &_main:has(> .navigation_bar) &_content:has(.tabs_page),
+    &_main:has(> .navigation_bar) &_content:has(.messages_page) {
+        @include screen() {
+            .app-shell_body,
+            .page-layout {
+                padding-bottom: 0;
+            }
+
+            .tabs_page_content,
+            .messages_conversation_list,
+            .messages_list {
+                padding-bottom: var(--mobile-nav-height);
             }
         }
     }

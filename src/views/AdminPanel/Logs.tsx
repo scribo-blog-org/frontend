@@ -332,6 +332,7 @@ const LogsPage = () => {
                             />
                         )}
                         <CancelButton
+                            size="sm"
                             onClick={() =>
                                 applyFilter({ type: null, id: null })
                             }

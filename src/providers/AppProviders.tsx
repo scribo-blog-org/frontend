@@ -115,8 +115,10 @@ function AppChrome({
                     <AppShell>
                         <Header />
                         <div className="app-shell_content">
-                            <PageLayout>{children}</PageLayout>
-                            <AppFooter />
+                            <div className="app-shell_body">
+                                <PageLayout>{children}</PageLayout>
+                                <AppFooter />
+                            </div>
                         </div>
                         <MobileNavigationBar />
                         <Toast toast={toast} showToast={showToast} />

@@ -31,6 +31,22 @@
             margin: 0;
         }
     }
+
+    &_reveal {
+        display: grid;
+        grid-template-rows: 0fr;
+        min-height: 0;
+        transition: grid-template-rows 0.34s ease;
+
+        &_open {
+            grid-template-rows: 1fr;
+        }
+
+        &_clip {
+            min-height: 0;
+            overflow: hidden;
+        }
+    }
 }
 
 .messages_post_share,

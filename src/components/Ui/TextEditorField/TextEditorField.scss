@@ -59,6 +59,16 @@
             padding: 18px;
             line-height: 1.12;
             min-height: calc(1.12em * 12);
+            @include field-font;
+
+            @include screen() {
+                p,
+                span,
+                li,
+                strong {
+                    font-size: 16px;
+                }
+            }
 
             p,
             span,
@@ -96,8 +106,6 @@
 
             &_input {
                 width: 100%;
-                min-height: 36px;
-                padding: 8px 12px;
             }
 
             &_list {
