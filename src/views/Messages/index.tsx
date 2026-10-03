@@ -1620,14 +1620,18 @@ const MessagesPage = () => {
                                                                     >
                                                                         {!isDeleted ? (
                                                                             <span
-                                                                                className={`messages_select${
-                                                                                    isSelected
-                                                                                        ? ' messages_select_on'
-                                                                                        : ''
-                                                                                }`}
+                                                                                className="messages_select_slot"
                                                                                 aria-hidden="true"
                                                                             >
-                                                                                <TickIcon />
+                                                                                <span
+                                                                                    className={`messages_select${
+                                                                                        isSelected
+                                                                                            ? ' messages_select_on'
+                                                                                            : ''
+                                                                                    }`}
+                                                                                >
+                                                                                    <TickIcon />
+                                                                                </span>
                                                                             </span>
                                                                         ) : null}
                                                                         <div className="messages_bubble_wrap">

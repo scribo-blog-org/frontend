@@ -395,18 +395,21 @@
 }
 
 .messages_item {
+    position: relative;
     display: flex;
     width: 100%;
     flex-direction: row;
     align-items: center;
     justify-content: flex-start;
     gap: 0;
-    max-width: min(100%, 640px);
-    transition: gap 0.28s ease;
+    max-width: 100%;
 
     &_own {
-        align-self: flex-end;
-        justify-content: flex-end;
+        align-self: stretch;
+
+        .messages_bubble_wrap {
+            margin-left: auto;
+        }
     }
 
     &_highlight {
@@ -430,7 +433,7 @@
         align-self: stretch;
         justify-content: flex-start;
         max-width: 100%;
-        gap: 10px;
+        gap: 0;
         cursor: pointer;
         user-select: none;
     }
@@ -457,6 +460,16 @@
     }
 }
 
+.messages_select_slot {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 22px;
+    height: 22px;
+    margin-top: -11px;
+    pointer-events: none;
+}
+
 .messages_select {
     display: inline-flex;
     align-items: center;
@@ -468,16 +481,13 @@
     border-radius: 11px;
     background: transparent;
     color: #fff;
-    overflow: hidden;
-    opacity: 1;
-    transform: scale(1);
+    opacity: 0;
+    visibility: hidden;
     transition:
-        width 0.28s ease,
-        opacity 0.28s ease,
-        transform 0.28s ease,
+        opacity 0.2s ease,
+        visibility 0.2s ease,
         background-color 0.2s ease,
-        border-color 0.2s ease,
-        border-width 0.28s ease;
+        border-color 0.2s ease;
 
     svg {
         width: 14px;
@@ -500,13 +510,15 @@
     }
 }
 
-.messages_list:not(.messages_list_selecting) .messages_select {
-    width: 0;
-    min-width: 0;
-    border-width: 0;
-    opacity: 0;
-    transform: scale(0.6);
-    pointer-events: none;
+.messages_list_selecting .messages_select {
+    opacity: 1;
+    visibility: visible;
+}
+
+.messages_list_selecting
+    .messages_item:not(.messages_item_own)
+    .messages_bubble_wrap {
+    transform: translateX(32px);
 }
 
 .messages_selection_bar {
@@ -610,6 +622,7 @@
     align-items: center;
     gap: 6px;
     max-width: 100%;
+    transition: transform 0.28s ease;
 }
 
 .messages_item_own .messages_bubble_wrap {
@@ -900,9 +913,9 @@
         border-color: var(--text-color);
     }
 
-    &:has(.messages_composer_context_slot_open) {
-        border-radius: 14px;
-    }
+    // &:has(.messages_composer_context_slot_open) {
+    //     border-radius: 14px;
+    // }
 
     &_context_slot {
         display: grid;
@@ -913,17 +926,12 @@
 
     &_context_slot_open {
         grid-template-rows: 1fr;
-
-        .messages_composer_context {
-            opacity: 1;
-            transform: translateY(0);
-        }
     }
 
     &_context_clip {
         display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
+        flex-direction: column-reverse;
+        justify-content: flex-start;
         min-height: 0;
         overflow: hidden;
     }
@@ -943,16 +951,11 @@
             var(--text-color) 7%,
             var(--main-background)
         );
+        flex-shrink: 0;
         text-align: left;
         cursor: pointer;
         color: inherit;
-        opacity: 0;
-        transform: translateY(8px);
-        transition:
-            opacity 0.32s ease,
-            transform 0.32s ease,
-            background-color 0.3s ease,
-            color 0.3s ease;
+        @include use-transition();
 
         &_deleted {
             cursor: default;
