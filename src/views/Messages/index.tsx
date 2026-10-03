@@ -352,6 +352,7 @@ const MessagesPage = () => {
     const [isSending, setIsSending] = useState<any>(false);
     const [messageMenu, setMessageMenu] = useState<any>(null);
     const [onlineByUserId, setOnlineByUserId] = useState<any>({});
+    const [activityAtByUserId, setActivityAtByUserId] = useState<any>({});
     const [typingByConversationId, setTypingByConversationId] = useState<any>(
         {},
     );
@@ -2332,11 +2333,18 @@ const MessagesPage = () => {
         });
 
         const unsubscribe = subscribePresenceChanges(
-            (userId: any, online: any) => {
-                if (!cancelled) {
-                    setOnlineByUserId((current: any) => ({
+            (userId: any, online: any, at: any) => {
+                if (cancelled) {
+                    return;
+                }
+                setOnlineByUserId((current: any) => ({
+                    ...current,
+                    [userId]: online,
+                }));
+                if (at) {
+                    setActivityAtByUserId((current: any) => ({
                         ...current,
-                        [userId]: online,
+                        [userId]: at,
                     }));
                 }
             },
@@ -2439,6 +2447,14 @@ const MessagesPage = () => {
                                                         )
                                                     ] ?? false
                                                 }
+                                                activityAt={
+                                                    activityAtByUserId[
+                                                        String(
+                                                            item.participant
+                                                                ?._id,
+                                                        )
+                                                    ]
+                                                }
                                                 isTyping={Boolean(
                                                     typingByConversationId[
                                                         String(item._id)
@@ -2518,6 +2534,11 @@ const MessagesPage = () => {
                                                     onlineByUserId[
                                                         String(participant._id)
                                                     ] ?? false
+                                                }
+                                                activityAt={
+                                                    activityAtByUserId[
+                                                        String(participant._id)
+                                                    ]
                                                 }
                                                 isTyping={Boolean(
                                                     typingByConversationId[
