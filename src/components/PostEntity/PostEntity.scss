@@ -100,6 +100,8 @@
         img {
             display: block;
             width: 100%;
+            max-width: 100%;
+            min-width: 0;
             height: 100%;
             object-fit: cover;
         }
@@ -162,6 +164,8 @@
         img {
             display: block;
             width: 100%;
+            max-width: 100%;
+            min-width: 0;
             height: 100%;
             object-fit: cover;
         }
@@ -201,6 +205,25 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+    }
+}
+
+.link_preview_card.messages_link_preview,
+.post_message_card.messages_post_share {
+    width: 100%;
+    max-width: 100%;
+
+    .link_preview_card_media,
+    .post_message_card_media {
+        height: 180px;
+        aspect-ratio: auto;
+    }
+
+    @include screen() {
+        .link_preview_card_media,
+        .post_message_card_media {
+            height: 140px;
+        }
     }
 }
 

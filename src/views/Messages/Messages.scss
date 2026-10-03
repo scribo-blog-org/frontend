@@ -331,7 +331,9 @@
     left: -3px;
     width: calc(100% + var(--messages-inline) + 3px);
     min-height: 0;
-    overflow: auto;
+    overflow-x: clip;
+    overflow-y: auto;
+    overflow-anchor: none;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -358,6 +360,7 @@
     position: sticky;
     top: 0;
     z-index: 2;
+    overflow-anchor: none;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -452,6 +455,12 @@
     .messages_bubble {
         width: fit-content;
         max-width: min(100%, 640px);
+        min-width: 0;
+    }
+
+    .messages_bubble:has(.messages_body_with_post) {
+        width: 360px;
+        max-width: 100%;
     }
 
     .messages_quote,
@@ -518,7 +527,8 @@
 .messages_list_selecting
     .messages_item:not(.messages_item_own)
     .messages_bubble_wrap {
-    transform: translateX(32px);
+    margin-left: 32px;
+    max-width: calc(100% - 32px);
 }
 
 .messages_selection_bar {
@@ -622,7 +632,11 @@
     align-items: center;
     gap: 6px;
     max-width: 100%;
-    transition: transform 0.28s ease;
+    margin-left: 0;
+    transition:
+        transform 0.28s ease,
+        margin-left 0.28s ease,
+        max-width 0.28s ease;
 }
 
 .messages_item_own .messages_bubble_wrap {
@@ -770,6 +784,11 @@
             align-self: flex-end;
         }
     }
+}
+
+.messages_bubble:has(.messages_body_with_post) {
+    width: 360px;
+    max-width: 100%;
 }
 
 .messages_caption {

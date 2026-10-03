@@ -314,6 +314,31 @@ const MessagesPage = () => {
     const leavingIdsRef = useRef<any>(new Set());
     const beginMessageLeaveRef = useRef<any>(() => {});
     const lastReplyGestureRef = useRef(0);
+    const pendingScrollAnchorRef = useRef<any>(null);
+    const restoringScrollRef = useRef(false);
+
+    const captureListAnchor = useCallback(() => {
+        const el = listRef.current;
+        if (!el) {
+            return;
+        }
+
+        const listTop = el.getBoundingClientRect().top;
+        let anchor = null;
+
+        for (const node of el.querySelectorAll('[id^="message_"]')) {
+            const rect = node.getBoundingClientRect();
+            if (rect.bottom > listTop + 1) {
+                anchor = { id: node.id, offset: rect.top - listTop };
+                break;
+            }
+        }
+
+        pendingScrollAnchorRef.current = {
+            anchor,
+            stick: stickToBottomRef.current,
+        };
+    }, []);
 
     const scrollMessagesToBottom = useCallback(() => {
         const el = listRef.current;
@@ -368,6 +393,10 @@ const MessagesPage = () => {
     }, [conversationId, scrollMessagesToBottom]);
 
     const handleListScroll = () => {
+        if (restoringScrollRef.current) {
+            return;
+        }
+
         const el = listRef.current;
         if (!el) {
             return;
@@ -673,13 +702,14 @@ const MessagesPage = () => {
 
         const onKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
+                captureListAnchor();
                 setSelectionIds(null);
             }
         };
 
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [selectionIds]);
+    }, [selectionIds, captureListAnchor]);
 
     useEffect(() => {
         if (!replyTo && !editingMessage) {
@@ -717,6 +747,44 @@ const MessagesPage = () => {
     }, [conversationId]);
 
     const isSelecting = Array.isArray(selectionIds);
+
+    useLayoutEffect(() => {
+        const pending = pendingScrollAnchorRef.current;
+        if (!pending) {
+            return;
+        }
+
+        pendingScrollAnchorRef.current = null;
+        const el = listRef.current;
+        if (!el) {
+            return;
+        }
+
+        const node = pending.anchor
+            ? document.getElementById(pending.anchor.id)
+            : null;
+
+        restoringScrollRef.current = true;
+
+        if (node) {
+            const delta =
+                node.getBoundingClientRect().top -
+                el.getBoundingClientRect().top -
+                pending.anchor.offset;
+            if (delta) {
+                el.scrollTop += delta;
+            }
+        }
+
+        stickToBottomRef.current = pending.stick;
+        if (pending.stick) {
+            setIsAwayFromBottom(false);
+        }
+
+        requestAnimationFrame(() => {
+            restoringScrollRef.current = false;
+        });
+    }, [isSelecting]);
 
     const openMessageMenu = (event: any, items: any) => {
         if (isSelecting) {
@@ -775,6 +843,14 @@ const MessagesPage = () => {
     }, [replyTo, isChatLoading]);
 
     const clearSelection = () => {
+        captureListAnchor();
+        const active = document.activeElement;
+        if (
+            active instanceof HTMLElement &&
+            active.closest('.messages_selection_bar')
+        ) {
+            active.blur();
+        }
         setSelectionIds(null);
     };
 
@@ -783,6 +859,7 @@ const MessagesPage = () => {
             return;
         }
 
+        captureListAnchor();
         setMessageMenu(null);
         setSelectionIds([String(message._id)]);
     };
