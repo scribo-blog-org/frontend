@@ -34,7 +34,10 @@ const placeTouchMenu = (anchor: any, menuWidth: number, menuHeight: number) => {
         menuHeight +
         VIEWPORT_PAD -
         window.innerHeight;
-    const maxShift = Math.max(0, anchor.top + anchor.height - 72 - VIEWPORT_PAD);
+    const maxShift = Math.max(
+        0,
+        anchor.top + anchor.height - 72 - VIEWPORT_PAD,
+    );
     const lift = Math.max(0, Math.min(overflow, maxShift));
     const rawLeft = anchor.own
         ? anchor.left + anchor.width - menuWidth
