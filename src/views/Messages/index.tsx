@@ -1489,23 +1489,19 @@ const MessagesPage = () => {
             event.source === 'touch' ||
             event.pointerType === 'touch' ||
             window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-        let anchor = null;
-
-        if (touch) {
-            const article = document.getElementById(`message_${message._id}`);
-            const wrap = article?.querySelector('.messages_bubble_wrap');
-            const rect = wrap?.getBoundingClientRect();
-
-            if (article && rect) {
-                anchor = {
-                    top: rect.top,
-                    left: rect.left,
-                    width: rect.width,
-                    height: rect.height,
-                    own: article.classList.contains('messages_item_own'),
-                };
-            }
-        }
+        const article = document.getElementById(`message_${message._id}`);
+        const wrap = article?.querySelector('.messages_bubble_wrap');
+        const rect = wrap?.getBoundingClientRect();
+        const anchor =
+            article && rect
+                ? {
+                      top: rect.top,
+                      left: rect.left,
+                      width: rect.width,
+                      height: rect.height,
+                      own: article.classList.contains('messages_item_own'),
+                  }
+                : null;
 
         if (
             messageMenuRef.current &&

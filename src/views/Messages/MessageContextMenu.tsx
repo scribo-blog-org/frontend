@@ -103,7 +103,7 @@ const MessageContextMenu = ({
     }, [refs, virtualAnchor, isTouch]);
 
     useLayoutEffect(() => {
-        if (!isTouch) {
+        if (!anchor || !messageId) {
             return;
         }
 
@@ -111,6 +111,10 @@ const MessageContextMenu = ({
         const wrap = article?.querySelector('.messages_bubble_wrap');
         if (wrap) {
             setBubbleHtml(wrap.outerHTML);
+        }
+
+        if (!isTouch) {
+            return;
         }
 
         const menuEl = refs.floating.current;
@@ -247,39 +251,43 @@ const MessageContextMenu = ({
 
     return (
         <FloatingPortal root={portalRoot || undefined}>
-            {touchLayout ? (
-                <div className="messages_menu_layer">
-                    <button
-                        type="button"
-                        className={`messages_menu_scrim${
-                            visible ? ' messages_menu_scrim_visible' : ''
-                        }`}
-                        aria-label="Close message menu"
-                        onClick={() => {
-                            if (Date.now() - openedAtRef.current < 450) {
-                                return;
-                            }
+            <div
+                className={`messages_menu_layer${
+                    isTouch ? ' messages_menu_layer_touch' : ''
+                }`}
+            >
+                <button
+                    type="button"
+                    className={`messages_menu_scrim${
+                        visible ? ' messages_menu_scrim_visible' : ''
+                    }`}
+                    aria-label="Close message menu"
+                    onClick={() => {
+                        if (isTouch && Date.now() - openedAtRef.current < 450) {
+                            return;
+                        }
 
-                            onClose();
-                        }}
-                    />
+                        onClose();
+                    }}
+                />
+                {anchor && bubbleHtml ? (
                     <div
                         className={`messages_menu_lift messages_item${
                             anchor.own ? ' messages_item_own' : ''
+                        }${
+                            isTouch ? '' : ' messages_item_menu_target'
                         }${visible ? ' messages_menu_lift_visible' : ''}`}
                         style={{
-                            top: anchor.top - touchLayout.lift,
+                            top: anchor.top - (touchLayout?.lift || 0),
                             left: anchor.left,
                             width: anchor.width,
-                            ['--lift-from' as any]: `${touchLayout.lift}px`,
+                            ['--lift-from' as any]: `${touchLayout?.lift || 0}px`,
                         }}
                         dangerouslySetInnerHTML={{ __html: bubbleHtml }}
                     />
-                    {menu}
-                </div>
-            ) : (
-                menu
-            )}
+                ) : null}
+                {menu}
+            </div>
         </FloatingPortal>
     );
 };

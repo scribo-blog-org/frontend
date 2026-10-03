@@ -897,6 +897,9 @@
 
     .popup_menu {
         z-index: 2;
+    }
+
+    &_touch .popup_menu {
         animation: messages_menu_lift_in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
 }
@@ -913,8 +916,8 @@
     appearance: none;
     cursor: default;
     background: var(--modal-window-background-color);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: var(--modal-window-backdrop-filter);
+    backdrop-filter: var(--modal-window-backdrop-filter);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1);
@@ -946,6 +949,12 @@
     .messages_bubble {
         box-shadow: 0 10px 32px rgba(0, 0, 0, 0.38);
     }
+
+    &.messages_item_menu_target .messages_bubble {
+        box-shadow:
+            0 0 0 2px var(--text-color),
+            0 10px 32px rgba(0, 0, 0, 0.38);
+    }
 }
 
 @keyframes messages_menu_lift_in {
@@ -960,7 +969,7 @@
 
 @media (prefers-reduced-motion: reduce) {
     .messages_menu_lift,
-    .messages_menu_layer .popup_menu {
+    .messages_menu_layer_touch .popup_menu {
         animation: none;
     }
 
