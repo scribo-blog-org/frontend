@@ -48,18 +48,21 @@
         align-items: center;
         gap: 8px;
         width: 100%;
+        height: var(--control-height);
+        min-height: var(--control-height);
+        box-sizing: border-box;
         border: 1px solid var(--input-outline-color);
         border-radius: 8px;
-        padding: 8px 12px;
+        padding: 0 12px;
 
-        .input_field {
+        input.input_field {
+            height: auto;
+            min-height: 0;
             border: none;
             padding: 0;
             border-radius: 0;
-
-            @include screen() {
-                padding: 0;
-            }
+            line-height: 1.2;
+            background: transparent;
         }
 
         &:focus-within {

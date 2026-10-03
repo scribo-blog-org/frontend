@@ -27,12 +27,7 @@
         flex-wrap: wrap;
 
         .action_button {
-            gap: 8px;
-
-            svg {
-                width: 16px;
-                height: 16px;
-            }
+            width: fit-content;
         }
     }
 

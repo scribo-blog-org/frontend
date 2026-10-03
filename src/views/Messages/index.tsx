@@ -4,6 +4,7 @@ import {
     useCallback,
     useContext,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
@@ -41,6 +42,7 @@ import {
 import MessageStatus from '../../components/MessageStatus';
 import ActionButton from '../../components/Ui/ActionButton';
 import DangerButton from '../../components/Ui/DangerButton';
+import Popup from '../../components/Ui/Popup';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
 import RichInputField from '../../components/RichInputField';
 import MessageContent from '../../components/MessageContent';
@@ -54,12 +56,19 @@ import EditIcon from '../../assets/svg/edit.svg';
 import CrossIcon from '../../assets/svg/cross-icon.svg';
 import ArrowLeftIcon from '../../assets/svg/arrow-left.svg';
 import SendIcon from '../../assets/svg/send.svg';
+import ThreeDotsIcon from '../../assets/svg/three-dots.svg';
 import TickIcon from '../../assets/svg/tick.svg';
 import NewMessageIllustration from '../../assets/svg/illustrations/new-message.svg';
 
 import MessageContextMenu from './MessageContextMenu';
 import { getMessageActions } from './messageActions';
 import './Messages.scss';
+
+const COMPOSER_LINE_HEIGHT = 20;
+const COMPOSER_PAD_Y = 9;
+const COMPOSER_MAX_LINES = 5;
+const COMPOSER_MAX_HEIGHT =
+    COMPOSER_LINE_HEIGHT * COMPOSER_MAX_LINES + COMPOSER_PAD_Y * 2;
 
 const getQuoteContent = (preview: any) => {
     const deleted = Boolean(preview?.deleted || preview?.deleted_at);
@@ -293,6 +302,7 @@ const MessagesPage = () => {
     const [onlineByUserId, setOnlineByUserId] = useState<any>({});
 
     const listRef = useRef<any>(null);
+    const composerDockRef = useRef<any>(null);
     const composerInputRef = useRef<any>(null);
     const stickToBottomRef = useRef(true);
 
@@ -315,6 +325,38 @@ const MessagesPage = () => {
             requestAnimationFrame(scrollMessagesToBottom);
         });
     }, [scrollMessagesToBottom]);
+
+    useLayoutEffect(() => {
+        const dock = composerDockRef.current;
+        const chat = dock?.parentElement;
+
+        if (!dock || !chat) {
+            return;
+        }
+
+        const applySpace = () => {
+            const marginBottom =
+                parseFloat(getComputedStyle(dock).marginBottom) || 0;
+            const space = Math.ceil(
+                dock.getBoundingClientRect().height + marginBottom,
+            );
+            chat.style.setProperty('--messages-composer-space', `${space}px`);
+
+            if (stickToBottomRef.current) {
+                scrollMessagesToBottom();
+            }
+        };
+
+        applySpace();
+
+        const observer = new ResizeObserver(applySpace);
+        observer.observe(dock);
+
+        return () => {
+            observer.disconnect();
+            chat.style.removeProperty('--messages-composer-space');
+        };
+    }, [conversationId, scrollMessagesToBottom]);
 
     const handleListScroll = () => {
         const el = listRef.current;
@@ -653,7 +695,7 @@ const MessagesPage = () => {
     };
 
     const handleReplyPreviewClick = (preview: any) => {
-        if (!preview || preview.deleted) {
+        if (!preview || preview.deleted || preview.deleted_at) {
             return;
         }
 
@@ -788,6 +830,38 @@ const MessagesPage = () => {
             });
         });
     };
+
+    const resizeComposerInput = useCallback(() => {
+        const field = composerInputRef.current;
+
+        if (!field) {
+            return;
+        }
+
+        field.style.maxHeight = 'none';
+        field.style.minHeight = '0px';
+        field.style.height = '0px';
+        const contentHeight = field.scrollHeight;
+        const lines = Math.min(
+            COMPOSER_MAX_LINES,
+            Math.max(
+                1,
+                Math.ceil(
+                    (contentHeight - COMPOSER_PAD_Y * 2) / COMPOSER_LINE_HEIGHT -
+                        0.15,
+                ),
+            ),
+        );
+        field.style.maxHeight = '';
+        field.style.minHeight = '';
+        field.style.height = `${lines * COMPOSER_LINE_HEIGHT + COMPOSER_PAD_Y * 2}px`;
+        field.style.overflowY =
+            contentHeight > COMPOSER_MAX_HEIGHT ? 'auto' : 'hidden';
+    }, []);
+
+    useLayoutEffect(() => {
+        resizeComposerInput();
+    }, [draft, resizeComposerInput, conversationId]);
 
     const handleComposerKeyDown = (event: any) => {
         if (
@@ -1026,14 +1100,15 @@ const MessagesPage = () => {
                     ) : (
                         <>
                             <header className="messages_chat_head">
-                                <ActionButton
-                                    className="messages_back"
-                                    onClick={() => navigate('/messages')}
-                                >
-                                    <ArrowLeftIcon className="app-transition" />
-                                    Back
-                                </ActionButton>
-                                <div className="messages_chat_head_row">
+                                <div className="messages_chat_head_main">
+                                    <button
+                                        type="button"
+                                        className="messages_back app-transition"
+                                        onClick={() => navigate('/messages')}
+                                        aria-label="Back"
+                                    >
+                                        <ArrowLeftIcon />
+                                    </button>
                                     {participant ? (
                                         <div className="messages_chat_head_user">
                                             <UserBadge data={participant} />
@@ -1053,14 +1128,35 @@ const MessagesPage = () => {
                                             Messages
                                         </h1>
                                     )}
-                                    <ActionButton
-                                        type="button"
-                                        disabled={isChatLoading}
-                                        onClick={openDeleteChatModal}
-                                    >
-                                        Delete chat
-                                    </ActionButton>
                                 </div>
+                                <Popup
+                                    body={[
+                                        [
+                                            {
+                                                title: 'Delete chat',
+                                                icon: <DeleteIcon />,
+                                                type: 'danger',
+                                                onClick: openDeleteChatModal,
+                                            },
+                                        ],
+                                    ]}
+                                >
+                                    <div
+                                        className={`messages_chat_menu app-transition${
+                                            isChatLoading
+                                                ? ' messages_chat_menu_disabled'
+                                                : ''
+                                        }`}
+                                        aria-label="Chat actions"
+                                        onClick={(event: any) => {
+                                            if (isChatLoading) {
+                                                event.stopPropagation();
+                                            }
+                                        }}
+                                    >
+                                        <ThreeDotsIcon />
+                                    </div>
+                                </Popup>
                             </header>
 
                             <div
@@ -1268,6 +1364,10 @@ const MessagesPage = () => {
                                 )}
                             </div>
 
+                            <div
+                                className="messages_composer_dock"
+                                ref={composerDockRef}
+                            >
                             <form
                                 className={`messages_composer${
                                     replyTo ? ' messages_composer_replying' : ''
@@ -1281,67 +1381,78 @@ const MessagesPage = () => {
                                     handleSend();
                                 }}
                             >
-                                {editingMessage ? (
-                                    <div className="messages_composer_edit app-transition">
-                                        <span className="messages_composer_edit_label">
-                                            Editing
-                                        </span>
-                                        <button
-                                            type="button"
-                                            className="messages_composer_reply_close app-transition"
-                                            onClick={handleCancelEdit}
-                                            aria-label="Cancel editing"
-                                            disabled={isChatLoading}
-                                        >
-                                            <CrossIcon />
-                                        </button>
-                                    </div>
-                                ) : null}
-                                {replyTo
-                                    ? (() => {
-                                          const quote =
-                                              getQuoteContent(replyTo);
+                                {(() => {
+                                    const context = editingMessage
+                                        ? {
+                                              message: editingMessage,
+                                              title: 'Editing',
+                                              ...getQuoteContent(
+                                                  editingMessage,
+                                              ),
+                                              onClose: handleCancelEdit,
+                                              closeLabel: 'Cancel editing',
+                                          }
+                                        : replyTo
+                                          ? {
+                                                message: replyTo,
+                                                title: `Reply to ${
+                                                    getQuoteContent(replyTo)
+                                                        .author
+                                                }`,
+                                                ...getQuoteContent(replyTo),
+                                                onClose: () =>
+                                                    setReplyTo(null),
+                                                closeLabel: 'Cancel reply',
+                                            }
+                                          : null;
 
-                                          return (
-                                              <div className="messages_composer_reply app-transition">
-                                                  <ReplyIcon
-                                                      className="messages_composer_reply_icon"
-                                                      aria-hidden
-                                                  />
-                                                  <div
-                                                      className={`messages_composer_reply_quote${
-                                                          quote.deleted
-                                                              ? ' messages_composer_reply_quote_deleted'
-                                                              : ''
-                                                      }`}
-                                                  >
-                                                      <span className="messages_quote_author">
-                                                          {quote.author}
-                                                      </span>
-                                                      <span className="messages_quote_text">
-                                                          {quote.text}
-                                                      </span>
-                                                  </div>
-                                                  <button
-                                                      type="button"
-                                                      className="messages_composer_reply_close app-transition"
-                                                      onClick={() =>
-                                                          setReplyTo(null)
-                                                      }
-                                                      aria-label="Cancel reply"
-                                                      disabled={isChatLoading}
-                                                  >
-                                                      <CrossIcon />
-                                                  </button>
-                                              </div>
-                                          );
-                                      })()
-                                    : null}
+                                    if (!context) {
+                                        return null;
+                                    }
+
+                                    return (
+                                        <div
+                                            className={`messages_composer_context app-transition${
+                                                context.deleted
+                                                    ? ' messages_composer_context_deleted'
+                                                    : ''
+                                            }`}
+                                            onClick={() =>
+                                                handleReplyPreviewClick(
+                                                    context.message,
+                                                )
+                                            }
+                                            role="button"
+                                            tabIndex={context.deleted ? -1 : 0}
+                                        >
+                                            <div className="messages_composer_context_body">
+                                                <span className="messages_composer_context_title">
+                                                    {context.title}
+                                                </span>
+                                                <span className="messages_composer_context_text">
+                                                    {context.text}
+                                                </span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                className="messages_composer_reply_close app-transition"
+                                                onClick={(event: any) => {
+                                                    event.stopPropagation();
+                                                    context.onClose();
+                                                }}
+                                                aria-label={context.closeLabel}
+                                                disabled={isChatLoading}
+                                            >
+                                                <CrossIcon />
+                                            </button>
+                                        </div>
+                                    );
+                                })()}
                                 <div className="messages_composer_body">
                                     <RichInputField
                                         preset="social"
                                         isMultiline
-                                        multilineRows={2}
+                                        multilineRows={1}
                                         length={FIELD_LIMITS.chatMessage.max}
                                         className="messages_composer_input"
                                         inputRef={composerInputRef}
@@ -1355,6 +1466,10 @@ const MessagesPage = () => {
                                     />
                                     <PrimaryButton
                                         type="submit"
+                                        className="messages_composer_send"
+                                        aria-label={
+                                            editingMessage ? 'Save' : 'Send'
+                                        }
                                         disabled={
                                             !draft.trim() || isChatLoading
                                         }
@@ -1365,10 +1480,10 @@ const MessagesPage = () => {
                                         ) : (
                                             <SendIcon />
                                         )}
-                                        {editingMessage ? 'Save' : 'Send'}
                                     </PrimaryButton>
                                 </div>
                             </form>
+                            </div>
                         </>
                     )}
                 </section>

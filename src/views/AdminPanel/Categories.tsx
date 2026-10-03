@@ -290,6 +290,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
         <>
             <ActionButton
                 disabled={fetching}
+                size="sm"
                 className="admin_panel_content_categories_page_back"
                 onClick={() => setActivePage('')}
             >
@@ -506,6 +507,7 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
         <>
             <ActionButton
                 disabled={fetching}
+                size="sm"
                 className="admin_panel_content_categories_page_back"
                 onClick={() => setActivePage('')}
             >
@@ -674,6 +676,7 @@ const HomeCategoryPage = ({ setActivePage, setActiveCategory }: any) => {
         <>
             <div className="admin_panel_content_categories_page">
                 <PrimaryButton
+                    size="sm"
                     className="admin_panel_content_categories_page_create"
                     onClick={() => setActivePage('create')}
                 >

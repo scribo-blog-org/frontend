@@ -244,6 +244,7 @@ const Profile = ({
                         <></>
                     ) : (
                         <FollowButton
+                            size="sm"
                             setNewData={setFollowAnotherUser}
                             authorId={authorData._id}
                         />
@@ -280,6 +281,7 @@ const Profile = ({
                         <></>
                     ) : (
                         <FollowButton
+                            size="sm"
                             setNewData={setFollowAnotherUser}
                             authorId={authorData._id}
                         />

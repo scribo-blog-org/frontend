@@ -59,12 +59,14 @@
 }
 
 .messages_chat {
+    position: relative;
     display: flex;
     flex-direction: column;
     flex: 1;
     min-width: 0;
     min-height: 0;
     padding: 0 0 0 var(--space-6);
+    --messages-composer-gap: 20px;
     overflow: hidden;
 
     @include screen() {
@@ -144,10 +146,20 @@
 
 .messages_chat_head_user {
     display: flex;
-    align-items: flex-start;
     align-items: center;
     gap: 4px;
     min-width: 0;
+    flex: 1;
+
+    .user_badge {
+        min-width: 0;
+
+        .user_badge_info_name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
 }
 
 .messages_conversation_data {
@@ -204,29 +216,45 @@
 
 .messages_chat_head {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: space-between;
     gap: var(--space-2);
     flex-shrink: 0;
     padding-bottom: var(--space-3);
     border-bottom: 1px solid var(--line-color);
     @include use-transition();
 
-    .action_button {
-        svg {
-            width: 14px;
-            height: 14px;
-        }
+    &_main {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        min-width: 0;
+        flex: 1;
+    }
+}
+
+.messages_chat_menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    color: var(--text-color);
+    flex-shrink: 0;
+
+    svg {
+        width: 16px;
+        height: 16px;
     }
 
-    &_row {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        align-items: center;
-        gap: var(--space-3);
-        width: 100%;
-        min-width: 0;
+    @include hover {
+        background: var(--section-item-hover-background-color);
+    }
+
+    &_disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
     }
 }
 
@@ -248,12 +276,24 @@
 .messages_back {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-color);
+    cursor: pointer;
     flex-shrink: 0;
 
     svg {
-        width: 16px;
-        height: 16px;
+        width: 18px;
+        height: 18px;
+    }
+
+    @include hover {
+        background: var(--section-item-hover-background-color);
     }
 }
 
@@ -264,8 +304,8 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 8px 4px;
-    padding-top: 0;
+    padding: 8px 4px 0;
+    padding-bottom: calc(var(--messages-composer-space, 56px) + 12px);
 
     &_loader {
         display: flex;
@@ -602,92 +642,87 @@
     }
 }
 
+.messages_composer_dock {
+    position: absolute;
+    z-index: 4;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    margin-bottom: 10px;
+    flex-direction: column;
+    pointer-events: none;
+
+}
+
 .messages_composer {
     display: flex;
     flex-direction: column;
+    gap: 4px;
     flex-shrink: 0;
-    border: 1px solid var(--input-outline-color);
-    border-radius: 8px;
+    border: 0;
+    border-radius: 0;
     background: transparent;
+    pointer-events: auto;
     overflow: visible;
     @include use-transition();
 
-    &:focus-within {
-        border-color: var(--text-color);
-    }
+    &_context {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+        padding: 6px 4px 6px 10px;
+        border: 0;
+        border-radius: 14px;
+        background: color-mix(
+            in srgb,
+            var(--text-color) 7%,
+            var(--main-background)
+        );
+        text-align: left;
+        cursor: pointer;
+        color: inherit;
+        @include use-transition();
 
-    &_loading {
-        border-color: var(--input-outline-color);
-
-        &:focus-within {
-            border-color: var(--input-outline-color);
+        &_deleted {
+            cursor: default;
         }
     }
 
-    &_replying {
-        border-color: var(--input-outline-color);
-    }
-
-    &_editing {
-        border-color: var(--input-outline-color);
-    }
-
-    &_edit {
+    &_context_body {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 10px 12px;
-        border-bottom: 1px solid var(--line-color);
-        background: color-mix(
-            in srgb,
-            var(--text-color) 4%,
-            var(--main-background)
-        );
-        @include use-transition();
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+        padding-left: 8px;
+        border-left: 2px solid var(--accent-color);
     }
 
-    &_edit_label {
+    &_context_title,
+    &_context_text {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        @include use-transition-text();
+    }
+
+    &_context_title {
         font-size: 13px;
-        font-weight: 500;
-        color: var(--text-color);
-    }
-
-    &_reply {
-        display: grid;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        align-items: center;
-        border-top-right-radius: 8px;
-        border-top-left-radius: 8px;
-        gap: 10px;
-        padding: 10px 12px;
-        border-bottom: 1px solid var(--line-color);
-        background: color-mix(
-            in srgb,
-            var(--text-color) 4%,
-            var(--main-background)
-        );
-        @include use-transition();
-    }
-
-    &_reply_icon {
-        width: 18px;
-        height: 18px;
-        flex-shrink: 0;
+        font-weight: 600;
+        line-height: 1.25;
         color: var(--accent-color);
     }
 
-    &_reply_quote {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        min-width: 0;
-        padding-left: 10px;
-        border-left: 2px solid var(--accent-color);
+    &_context_text {
+        font-size: 13px;
+        line-height: 1.3;
+        color: var(--text-color);
+    }
 
-        &_deleted .messages_quote_text {
-            color: var(--light-text-color);
-        }
+    &_context_deleted &_context_text {
+        color: var(--light-text-color);
     }
 
     &_reply_close {
@@ -721,13 +756,28 @@
     &_body {
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        gap: 10px;
+        gap: 4px;
         align-items: end;
-        padding: 8px;
+        padding: 4px;
+        border: 1px solid var(--input-outline-color);
+        border-radius: 999px;
+        background: var(--main-background);
+        @include use-transition();
 
-        .primary_button svg {
-            width: 16px;
-            height: 16px;
+        .messages_composer:focus-within & {
+            border-color: var(--text-color);
+        }
+
+        .messages_composer_loading & {
+            border-color: var(--input-outline-color);
+        }
+
+        .messages_composer_send {
+            border-radius: 999px;
+            width: calc(var(--control-height) - 2px);
+            min-width: calc(var(--control-height) - 2px);
+            height: calc(var(--control-height) - 2px);
+            padding: 0;
         }
     }
 
@@ -736,15 +786,18 @@
         min-width: 0;
     }
 
-    .messages_composer_input {
-        min-height: 72px;
-        max-height: 72px;
-        padding: 4px 4px 4px 8px;
+    textarea.input_field.messages_composer_input {
+        box-sizing: border-box;
+        @include use-transition();
+        height: calc(var(--control-height) - 2px);
+        min-height: calc(var(--control-height) - 2px);
+        max-height: 118px;
+        padding: 9px 12px;
         border: 0;
         border-radius: 0;
         background: transparent;
-        line-height: 1.5;
-        overflow-y: auto;
+        line-height: 20px;
+        overflow-y: hidden;
         resize: none;
 
         &:focus {
@@ -754,8 +807,10 @@
 
     .rich_input_field_mirror.messages_composer_input {
         overflow: hidden;
-        min-height: 72px;
-        max-height: 72px;
+        min-height: 0;
+        max-height: none;
+        padding: 9px 12px;
+        line-height: 20px;
     }
 }
 

@@ -58,6 +58,7 @@ const MobileNavigationBar = () => {
     const canCreate = Boolean(profile?.permissions?.includes('create_post'));
     const isAdmin = isAdminRole(profile?.role);
     const onAdminPanel = location.pathname.startsWith('/admin-panel');
+    const isOpenChat = /^\/messages\/[^/]+/.test(location.pathname);
 
     const slots = useMemo(() => {
         const home = {
@@ -199,6 +200,10 @@ const MobileNavigationBar = () => {
     };
 
     const activeIndex = slots.findIndex((item: any) => isSlotActive(item));
+
+    if (isOpenChat) {
+        return null;
+    }
 
     return (
         <nav

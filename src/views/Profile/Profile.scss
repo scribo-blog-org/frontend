@@ -55,6 +55,18 @@
             flex-wrap: wrap;
             gap: 8px;
             align-items: center;
+
+            @include screen() {
+                flex: 1 0 100%;
+                width: 100%;
+                margin-left: 0;
+
+                .profile_info_action {
+                    width: auto;
+                    flex-basis: auto;
+                    max-width: 100%;
+                }
+            }
         }
 
         &_nick {
@@ -120,6 +132,7 @@
         &_description {
             font-size: var(--text-md);
             min-height: 16px;
+            overflow-wrap: anywhere;
         }
 
         &_email {
@@ -161,6 +174,7 @@
             @include screen() {
                 margin-left: 0;
                 width: 100%;
+                flex-basis: 100%;
             }
         }
 
@@ -298,9 +312,7 @@
                 justify-content: space-between;
 
                 .follow_button {
-                    padding: 6px 12px;
-                    font-size: 12px;
-                    border-radius: 8px;
+                    flex-shrink: 0;
                 }
             }
         }

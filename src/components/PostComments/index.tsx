@@ -58,6 +58,7 @@ const CommentForm = ({
                             navigate('/auth/login');
                         }}
                         className="modal_login_link"
+                        size="sm"
                     >
                         <RedirectIcon />
                         Log in
@@ -103,6 +104,7 @@ const CommentForm = ({
                     {onCancel && (
                         <CancelButton
                             type="button"
+                            size="sm"
                             disabled={isLoading}
                             onClick={onCancel}
                         >
@@ -112,6 +114,7 @@ const CommentForm = ({
 
                     <PrimaryButton
                         type="submit"
+                        size="sm"
                         disabled={!value.trim()}
                         isLoading={isLoading}
                     >

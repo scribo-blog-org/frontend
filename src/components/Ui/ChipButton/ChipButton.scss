@@ -9,11 +9,6 @@
     color: var(--chip-button-text-color);
     border: 1px solid var(--line-color);
 
-    @include screen() {
-        padding: 6px 12px;
-        font-size: 10px;
-    }
-
     @include hover {
         background-color: var(--chip-button-hover-background-color);
     }
