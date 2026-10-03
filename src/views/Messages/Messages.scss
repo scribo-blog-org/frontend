@@ -336,7 +336,7 @@
     overflow-anchor: none;
     display: flex;
     flex-direction: column;
-    justify-content: safe flex-end;
+    justify-content: flex-start;
     gap: 12px;
     box-sizing: border-box;
     padding: 8px var(--messages-inline) 0 3px;
@@ -348,6 +348,13 @@
         align-items: center;
         justify-content: center;
         min-height: 120px;
+    }
+
+    &_spacer {
+        flex: 1 1 auto;
+        width: 100%;
+        min-height: 0;
+        overflow-anchor: none;
     }
 }
 
@@ -442,23 +449,6 @@
         user-select: none;
     }
 
-    .messages_item:not(.messages_item_own) .messages_bubble_wrap {
-        flex: 1 1 auto;
-        min-width: 0;
-        justify-content: flex-start;
-    }
-
-    .messages_item:not(.messages_item_own) .messages_bubble {
-        width: fit-content;
-        max-width: min(100%, 640px);
-        min-width: 0;
-    }
-
-    .messages_bubble:has(.messages_body_with_post) {
-        width: 360px;
-        max-width: 100%;
-    }
-
     .messages_quote,
     .messages_text a {
         pointer-events: none;
@@ -524,7 +514,6 @@
     .messages_item:not(.messages_item_own)
     .messages_bubble_wrap {
     margin-left: 32px;
-    max-width: calc(100% - 32px);
 }
 
 .messages_selection_bar {
@@ -644,8 +633,7 @@
     margin-left: 0;
     transition:
         transform 0.28s ease,
-        margin-left 0.28s ease,
-        max-width 0.28s ease;
+        margin-left 0.28s ease;
 }
 
 .messages_item_own .messages_bubble_wrap {

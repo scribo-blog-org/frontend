@@ -356,6 +356,7 @@ const MessagesPage = () => {
     const ignoreScrollRef = useRef(false);
     const settlingScrollRef = useRef(true);
     const userScrollingRef = useRef(false);
+    const userBrokeHoldRef = useRef(false);
     const messagesConversationIdRef = useRef<any>(null);
     const seenConversationIdRef = useRef<any>(conversationId);
     const leavingIdsRef = useRef<any>(new Set());
@@ -370,20 +371,26 @@ const MessagesPage = () => {
             return;
         }
 
+        userBrokeHoldRef.current = false;
+
         const listTop = el.getBoundingClientRect().top;
         let anchor = null;
 
-        for (const node of el.querySelectorAll('[id^="message_"]')) {
+        for (const node of el.querySelectorAll('article[id^="message_"]')) {
             const rect = node.getBoundingClientRect();
             if (rect.bottom > listTop + 1) {
-                anchor = { id: node.id, offset: rect.top - listTop };
+                anchor = {
+                    id: node.id,
+                    offset: rect.top - listTop,
+                };
                 break;
             }
         }
 
         pendingScrollAnchorRef.current = {
-            anchor,
             stick: stickToBottomRef.current,
+            scrollTop: el.scrollTop,
+            anchor,
         };
     }, []);
 
@@ -841,10 +848,12 @@ const MessagesPage = () => {
 
         const markUserScroll = () => {
             userScrollingRef.current = true;
+            userBrokeHoldRef.current = true;
         };
         const markScrollbar = (event: PointerEvent) => {
             if (event.target === el) {
                 userScrollingRef.current = true;
+                userBrokeHoldRef.current = true;
             }
         };
         const markKeyScroll = (event: KeyboardEvent) => {
@@ -858,6 +867,7 @@ const MessagesPage = () => {
                 event.key === ' '
             ) {
                 userScrollingRef.current = true;
+                userBrokeHoldRef.current = true;
             }
         };
 
@@ -947,30 +957,63 @@ const MessagesPage = () => {
             return;
         }
 
-        const node = pending.anchor
-            ? document.getElementById(pending.anchor.id)
-            : null;
-
+        const hold = pending;
         restoringScrollRef.current = true;
-
-        if (node) {
-            const delta =
-                node.getBoundingClientRect().top -
-                el.getBoundingClientRect().top -
-                pending.anchor.offset;
-            if (delta) {
-                el.scrollTop += delta;
-            }
-        }
-
-        stickToBottomRef.current = pending.stick;
-        if (pending.stick) {
+        stickToBottomRef.current = hold.stick;
+        if (hold.stick) {
             setIsAwayFromBottom(false);
         }
 
-        requestAnimationFrame(() => {
+        const apply = () => {
+            if (userBrokeHoldRef.current || jumpingToBottomRef.current) {
+                restoringScrollRef.current = false;
+                return;
+            }
+
+            const max = Math.max(0, el.scrollHeight - el.clientHeight);
+            let next = hold.stick ? max : Math.min(hold.scrollTop, max);
+
+            if (!hold.stick && hold.anchor) {
+                const node = document.getElementById(hold.anchor.id);
+                if (node) {
+                    const delta =
+                        node.getBoundingClientRect().top -
+                        el.getBoundingClientRect().top -
+                        hold.anchor.offset;
+                    next = Math.min(max, Math.max(0, el.scrollTop + delta));
+                }
+            }
+
+            if (Math.abs(el.scrollTop - next) <= 1) {
+                return;
+            }
+
+            ignoreScrollRef.current = true;
+            el.scrollTop = next;
+            ignoreScrollRef.current = false;
+        };
+
+        const observer = new ResizeObserver(() => apply());
+        observer.observe(el);
+        for (const node of el.querySelectorAll('article[id^="message_"]')) {
+            observer.observe(node);
+        }
+
+        apply();
+        el.addEventListener('scroll', apply);
+
+        const timer = window.setTimeout(() => {
+            observer.disconnect();
+            el.removeEventListener('scroll', apply);
             restoringScrollRef.current = false;
-        });
+        }, 400);
+
+        return () => {
+            observer.disconnect();
+            window.clearTimeout(timer);
+            el.removeEventListener('scroll', apply);
+            restoringScrollRef.current = false;
+        };
     }, [isSelecting]);
 
     const openMessageMenu = (event: any, items: any) => {
@@ -1005,6 +1048,16 @@ const MessagesPage = () => {
 
         const heights = new Map<Element, number>();
         const observer = new ResizeObserver((entries) => {
+            if (restoringScrollRef.current) {
+                for (const entry of entries) {
+                    const next =
+                        entry.borderBoxSize?.[0]?.blockSize ??
+                        entry.contentRect.height;
+                    heights.set(entry.target, next);
+                }
+                return;
+            }
+
             let deltaAbove = 0;
 
             for (const entry of entries) {
@@ -1024,7 +1077,8 @@ const MessagesPage = () => {
                 }
 
                 const listTop = el.getBoundingClientRect().top;
-                if (entry.target.getBoundingClientRect().top < listTop + 1) {
+                const bottom = entry.target.getBoundingClientRect().bottom;
+                if (bottom - delta <= listTop + 1) {
                     deltaAbove += delta;
                 }
             }
@@ -1041,7 +1095,7 @@ const MessagesPage = () => {
             }
         });
 
-        for (const child of el.children) {
+        for (const child of el.querySelectorAll('article[id^="message_"]')) {
             observer.observe(child);
         }
 
@@ -1771,6 +1825,14 @@ const MessagesPage = () => {
                                         ref={listRef}
                                         onScroll={handleListScroll}
                                     >
+                                        {isChatLoading ||
+                                        messagesConversationIdRef.current !==
+                                            conversationId ? null : (
+                                            <div
+                                                className="messages_list_spacer"
+                                                aria-hidden="true"
+                                            />
+                                        )}
                                         {isChatLoading ||
                                         messagesConversationIdRef.current !==
                                             conversationId ? (
