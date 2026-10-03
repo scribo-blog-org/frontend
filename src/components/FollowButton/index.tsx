@@ -10,7 +10,12 @@ import './FollowButton.scss';
 
 import ActionButton from '../Ui/ActionButton';
 
-const FollowButton = ({ setNewData, authorId, className, size = 'md' }: any) => {
+const FollowButton = ({
+    setNewData,
+    authorId,
+    className,
+    size = 'md',
+}: any) => {
     const { profile, showToast } = useContext(AppContext);
     const [isLoading, setIsLoading] = useState<any>(false);
 

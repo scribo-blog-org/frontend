@@ -577,9 +577,7 @@ const MessagesPage = () => {
 
             const normalized = normalizeIncomingMessage(message, profile._id);
             setMessages((current: any) => {
-                if (
-                    deletedMessageIdsRef.current.has(String(normalized._id))
-                ) {
+                if (deletedMessageIdsRef.current.has(String(normalized._id))) {
                     return current.filter(
                         (item: any) =>
                             String(item._id) !== String(normalized._id),
@@ -784,9 +782,7 @@ const MessagesPage = () => {
                 );
                 setMessages((current: any) => {
                     if (
-                        deletedMessageIdsRef.current.has(
-                            String(normalized._id),
-                        )
+                        deletedMessageIdsRef.current.has(String(normalized._id))
                     ) {
                         return current.filter(
                             (item: any) =>
@@ -966,7 +962,10 @@ const MessagesPage = () => {
         fresh.forEach((id: any) => {
             const element = document.getElementById(`message_${id}`);
 
-            if (!element || element.classList.contains('messages_item_leaving')) {
+            if (
+                !element ||
+                element.classList.contains('messages_item_leaving')
+            ) {
                 return;
             }
 
@@ -1270,7 +1269,10 @@ const MessagesPage = () => {
         setReplyTo(message);
     };
 
-    const scrollListToNode = (node: HTMLElement | null, block: 'center' | 'start') => {
+    const scrollListToNode = (
+        node: HTMLElement | null,
+        block: 'center' | 'start',
+    ) => {
         const el = listRef.current;
 
         if (!el || !node) {
