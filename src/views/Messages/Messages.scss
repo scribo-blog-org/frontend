@@ -518,7 +518,7 @@
 
 .messages_selection_bar {
     display: grid;
-    grid-template-columns: 30px minmax(0, 1fr) 30px;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
     align-items: center;
     gap: 8px;
     margin: 0;
@@ -537,13 +537,20 @@
     margin: 0;
     text-align: center;
     font-size: 15px;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.2;
-    color: var(--text-color);
+    color: var(--light-text-color);
     @include use-transition-text();
 }
 
-.messages_selection_close {
+.messages_selection_actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.messages_selection_close,
+.messages_selection_action {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -564,6 +571,20 @@
 
     @include hover {
         background: var(--section-item-hover-background-color);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+.messages_selection_action_danger {
+    color: var(--red-f5);
+
+    @include hover {
+        background-color: var(--cancel-button-hover-background-color);
+        color: var(--red-f5);
     }
 }
 
@@ -819,79 +840,6 @@
     content: '·';
     margin-right: 6px;
     color: var(--light-text-color);
-}
-
-.messages_actions {
-    display: flex;
-    gap: 4px;
-    flex-shrink: 0;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s ease;
-
-    @media (hover: hover) and (pointer: fine) {
-        .messages_item:hover &,
-        .messages_item:focus-within & {
-            opacity: 1;
-            pointer-events: auto;
-        }
-    }
-}
-
-.messages_actions_menu {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--light-text-color);
-    cursor: pointer;
-    flex-shrink: 0;
-
-    svg {
-        width: 14px;
-        height: 14px;
-    }
-
-    @include hover {
-        background: var(--section-item-hover-background-color);
-        color: var(--text-color);
-    }
-
-    @media (hover: none), (pointer: coarse) {
-        display: inline-flex;
-    }
-}
-
-.messages_action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--light-text-color);
-    cursor: pointer;
-
-    svg {
-        width: 14px;
-        height: 14px;
-    }
-
-    @include hover {
-        background: var(--section-item-hover-background-color);
-        color: var(--text-color);
-    }
-
-    &:disabled {
-        opacity: 0.45;
-        cursor: not-allowed;
-    }
 }
 
 .messages_composer_dock {

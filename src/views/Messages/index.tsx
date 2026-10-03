@@ -16,6 +16,7 @@ import {
     createConversation,
     deleteConversation,
     deleteMessage,
+    deleteMessages,
     editMessage,
     getConversation,
     getConversations,
@@ -31,8 +32,6 @@ import {
     format_time,
     is_same_calendar_day,
 } from '../../utils/format';
-import { scrollTo } from '../../utils/navigation';
-
 import UserBadge from '../../components/UserBadge';
 import UserActivityStatus from '../../components/UserActivityStatus';
 import {
@@ -50,6 +49,7 @@ import Loading from '../../components/Ui/Loading';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import { messagePreviewText, quotePreviewText } from '../../utils/chatMessage';
 
+import CopyIcon from '../../assets/svg/copy.svg';
 import ReplyIcon from '../../assets/svg/reply.svg';
 import DeleteIcon from '../../assets/svg/delete.svg';
 import EditIcon from '../../assets/svg/edit.svg';
@@ -346,6 +346,7 @@ const MessagesPage = () => {
     const [leavingHeights, setLeavingHeights] = useState<any>({});
     const [isAwayFromBottom, setIsAwayFromBottom] = useState(false);
     const [selectionIds, setSelectionIds] = useState<any>(null);
+    const [isDeletingSelection, setIsDeletingSelection] = useState(false);
 
     const listRef = useRef<any>(null);
     const composerDockRef = useRef<any>(null);
@@ -360,6 +361,9 @@ const MessagesPage = () => {
     const messagesConversationIdRef = useRef<any>(null);
     const seenConversationIdRef = useRef<any>(conversationId);
     const leavingIdsRef = useRef<any>(new Set());
+    const deletedMessageIdsRef = useRef<any>(new Set());
+    const settledMessageIdsRef = useRef<any>(null);
+    const smoothEnterScrollRef = useRef(false);
     const beginMessageLeaveRef = useRef<any>(() => {});
     const lastReplyGestureRef = useRef(0);
     const pendingScrollAnchorRef = useRef<any>(null);
@@ -572,7 +576,18 @@ const MessagesPage = () => {
             }
 
             const normalized = normalizeIncomingMessage(message, profile._id);
-            setMessages((current: any) => mergeMessage(current, normalized));
+            setMessages((current: any) => {
+                if (
+                    deletedMessageIdsRef.current.has(String(normalized._id))
+                ) {
+                    return current.filter(
+                        (item: any) =>
+                            String(item._id) !== String(normalized._id),
+                    );
+                }
+
+                return mergeMessage(current, normalized);
+            });
         },
         [profile],
     );
@@ -745,7 +760,10 @@ const MessagesPage = () => {
 
         socketEvents.subscribeConversation(profile._id, conversationId, {
             onMessage: (message: any) => {
-                if (message.deleted_at) {
+                if (
+                    message.deleted_at ||
+                    deletedMessageIdsRef.current.has(String(message._id))
+                ) {
                     beginMessageLeaveRef.current(message._id);
                     setReplyTo((current: any) => {
                         if (
@@ -764,9 +782,24 @@ const MessagesPage = () => {
                     message,
                     profile._id,
                 );
-                setMessages((current: any) =>
-                    mergeIncomingMessage(current, normalized, profile._id),
-                );
+                setMessages((current: any) => {
+                    if (
+                        deletedMessageIdsRef.current.has(
+                            String(normalized._id),
+                        )
+                    ) {
+                        return current.filter(
+                            (item: any) =>
+                                String(item._id) !== String(normalized._id),
+                        );
+                    }
+
+                    return mergeIncomingMessage(
+                        current,
+                        normalized,
+                        profile._id,
+                    );
+                });
 
                 setReplyTo((current: any) => {
                     if (
@@ -793,6 +826,9 @@ const MessagesPage = () => {
                 ) {
                     markChatAsRead(conversationId);
                 }
+            },
+            onMessagesDeleted: (ids: any) => {
+                ids.forEach((id: any) => beginMessageLeaveRef.current(id));
             },
             onRead: (payload: any) => {
                 if (
@@ -890,7 +926,105 @@ const MessagesPage = () => {
         clearJumpScrollEnd();
         setMessageMenu(null);
         setSelectionIds(null);
+        settledMessageIdsRef.current = null;
+        deletedMessageIdsRef.current = new Set();
     }, [conversationId]);
+
+    useLayoutEffect(() => {
+        if (
+            isChatLoading ||
+            messagesConversationIdRef.current !== conversationId
+        ) {
+            return;
+        }
+
+        const ids = messages.map((item: any) => String(item._id));
+
+        if (!settledMessageIdsRef.current) {
+            settledMessageIdsRef.current = new Set(ids);
+            return;
+        }
+
+        const fresh = ids.filter(
+            (id: any) => !settledMessageIdsRef.current.has(id),
+        );
+
+        if (!fresh.length) {
+            return;
+        }
+
+        fresh.forEach((id: any) => settledMessageIdsRef.current.add(id));
+
+        const reduceMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+
+        if (reduceMotion) {
+            return;
+        }
+
+        fresh.forEach((id: any) => {
+            const element = document.getElementById(`message_${id}`);
+
+            if (!element || element.classList.contains('messages_item_leaving')) {
+                return;
+            }
+
+            const height = element.offsetHeight;
+            element.style.transition = 'none';
+            element.style.overflow = 'hidden';
+            element.style.maxHeight = '0px';
+            element.style.marginTop = '-12px';
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(16px)';
+            void element.offsetHeight;
+            element.style.transition =
+                'max-height 0.34s ease, margin-top 0.34s ease, opacity 0.34s ease, transform 0.34s ease';
+            element.style.maxHeight = `${height}px`;
+            element.style.marginTop = '0px';
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0px)';
+
+            if (stickToBottomRef.current) {
+                smoothEnterScrollRef.current = true;
+                let following = true;
+                const follow = () => {
+                    if (!following || !stickToBottomRef.current) {
+                        return;
+                    }
+
+                    scrollMessagesToBottom();
+                    requestAnimationFrame(follow);
+                };
+                const stopFollow = () => {
+                    following = false;
+                };
+
+                element.addEventListener('transitionend', stopFollow);
+                window.setTimeout(stopFollow, 400);
+                requestAnimationFrame(follow);
+            }
+
+            const clearEnter = (event: TransitionEvent) => {
+                if (
+                    event.target !== element ||
+                    event.propertyName !== 'max-height'
+                ) {
+                    return;
+                }
+
+                element.style.transition = '';
+                element.style.overflow = '';
+                element.style.maxHeight = '';
+                element.style.marginTop = '';
+                element.style.opacity = '';
+                element.style.transform = '';
+                element.removeEventListener('transitionend', clearEnter);
+            };
+
+            element.addEventListener('transitionend', clearEnter);
+        });
+    }, [messages, isChatLoading, conversationId, scrollMessagesToBottom]);
 
     useEffect(() => {
         if (!Array.isArray(selectionIds)) {
@@ -1116,6 +1250,12 @@ const MessagesPage = () => {
             return;
         }
 
+        if (smoothEnterScrollRef.current) {
+            smoothEnterScrollRef.current = false;
+            settlingScrollRef.current = false;
+            return;
+        }
+
         scrollMessagesToBottom();
         setIsAwayFromBottom(false);
         const frame = requestAnimationFrame(() => {
@@ -1130,12 +1270,56 @@ const MessagesPage = () => {
         setReplyTo(message);
     };
 
-    const scrollToMessageDay = useCallback((groupKey: any) => {
-        document.getElementById(`messages_day_${groupKey}`)?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-        });
-    }, []);
+    const scrollListToNode = (node: HTMLElement | null, block: 'center' | 'start') => {
+        const el = listRef.current;
+
+        if (!el || !node) {
+            return;
+        }
+
+        const listRect = el.getBoundingClientRect();
+        const nodeRect = node.getBoundingClientRect();
+        let top = el.scrollTop + (nodeRect.top - listRect.top);
+
+        if (block === 'center') {
+            top -= (el.clientHeight - nodeRect.height) / 2;
+        }
+
+        const max = Math.max(0, el.scrollHeight - el.clientHeight);
+        top = Math.min(max, Math.max(0, top));
+        stickToBottomRef.current = false;
+        jumpingToBottomRef.current = false;
+        clearJumpScrollEnd();
+        setIsAwayFromBottom(true);
+        ignoreScrollRef.current = true;
+
+        let finished = false;
+        const finish = () => {
+            if (finished) {
+                return;
+            }
+
+            finished = true;
+            window.clearTimeout(timer);
+            el.removeEventListener('scrollend', finish);
+            ignoreScrollRef.current = false;
+            const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+            const away = distance >= 80;
+            stickToBottomRef.current = !away;
+            setIsAwayFromBottom(away);
+        };
+
+        el.addEventListener('scrollend', finish);
+        const timer = window.setTimeout(finish, 800);
+        el.scrollTo({ top, behavior: 'smooth' });
+    };
+
+    const scrollToMessageDay = (groupKey: any) => {
+        scrollListToNode(
+            document.getElementById(`messages_day_${groupKey}`),
+            'start',
+        );
+    };
 
     useEffect(() => {
         if (!replyTo || isChatLoading) {
@@ -1283,8 +1467,8 @@ const MessagesPage = () => {
             return;
         }
 
-        scrollTo(`message_${preview._id}`, 'center');
         const element = document.getElementById(`message_${preview._id}`);
+        scrollListToNode(element, 'center');
         element?.classList.add('messages_item_highlight');
         setTimeout(() => {
             element?.classList.remove('messages_item_highlight');
@@ -1379,10 +1563,16 @@ const MessagesPage = () => {
             return;
         }
 
+        settledMessageIdsRef.current?.add(String(result.data._id));
+
         setMessages((current: any) => {
             const filtered = current.filter(
                 (item: any) => item._id !== pendingId,
             );
+
+            if (deletedMessageIdsRef.current.has(String(result.data._id))) {
+                return filtered;
+            }
             const exists = filtered.some(
                 (item: any) => item._id === result.data._id,
             );
@@ -1498,6 +1688,7 @@ const MessagesPage = () => {
 
     const beginMessageLeave = (messageId: any) => {
         const id = String(messageId);
+        deletedMessageIdsRef.current.add(id);
 
         if (leavingIdsRef.current.has(id)) {
             return;
@@ -1545,13 +1736,102 @@ const MessagesPage = () => {
         beginMessageLeave(messageId);
     };
 
+    const copyText = async (text: any) => {
+        try {
+            await navigator.clipboard.writeText(String(text ?? ''));
+            showToast?.({ type: 'success', message: 'Copied' });
+        } catch {
+            showToast?.({ type: 'error', message: 'Could not copy' });
+        }
+    };
+
+    const messageAuthorName = (message: any) =>
+        message?.is_own
+            ? profile?.nick_name || 'You'
+            : message?.sender?.nick_name || 'User';
+
+    const handleCopyMessage = (message: any) => {
+        if (!message || message.deleted_at) {
+            return;
+        }
+
+        void copyText(message.text || '');
+    };
+
+    const selectedMessages = isSelecting
+        ? messages
+              .filter(
+                  (item: any) =>
+                      selectionIds.includes(String(item._id)) &&
+                      !item.deleted_at,
+              )
+              .sort(
+                  (a: any, b: any) =>
+                      new Date(a.created_at).getTime() -
+                      new Date(b.created_at).getTime(),
+              )
+        : [];
+
+    const handleCopySelection = () => {
+        if (!selectedMessages.length) {
+            return;
+        }
+
+        const text = selectedMessages
+            .map(
+                (item: any) =>
+                    `${messageAuthorName(item)}:\n${item.text || ''}`,
+            )
+            .join('\n\n');
+
+        void copyText(text);
+        clearSelection();
+    };
+
+    const handleDeleteSelection = async () => {
+        if (!selectedMessages.length || isDeletingSelection) {
+            return;
+        }
+
+        const pendingIds = selectedMessages
+            .map((item: any) => String(item._id))
+            .filter((id: any) => id.startsWith('pending-'));
+        const ids = selectedMessages
+            .map((item: any) => String(item._id))
+            .filter((id: any) => !id.startsWith('pending-'));
+
+        pendingIds.forEach((id: any) => beginMessageLeave(id));
+
+        if (!ids.length) {
+            clearSelection();
+            return;
+        }
+
+        setIsDeletingSelection(true);
+        const result = await deleteMessages(ids);
+        setIsDeletingSelection(false);
+
+        if (!result?.status) {
+            showToast?.({
+                type: 'error',
+                message: result?.message || 'Could not delete the messages',
+            });
+            return;
+        }
+
+        ids.forEach((id: any) => beginMessageLeave(id));
+        clearSelection();
+    };
+
     const messageActionHandlers = {
         onReply: handleStartReply,
         onEdit: handleStartEdit,
         onDelete: handleDelete,
+        onCopy: handleCopyMessage,
         onSelect: startSelection,
         icons: {
             reply: ReplyIcon,
+            copy: CopyIcon,
             edit: EditIcon,
             delete: DeleteIcon,
             select: TickCircleIcon,
@@ -1953,9 +2233,14 @@ const MessagesPage = () => {
                                                                         ) => {
                                                                             if (
                                                                                 event.target !==
-                                                                                    event.currentTarget ||
+                                                                                event.currentTarget
+                                                                            ) {
+                                                                                return;
+                                                                            }
+
+                                                                            if (
                                                                                 event.animationName !==
-                                                                                    'messages_item_leave'
+                                                                                'messages_item_leave'
                                                                             ) {
                                                                                 return;
                                                                             }
@@ -2153,7 +2438,7 @@ const MessagesPage = () => {
                                             >
                                                 <button
                                                     type="button"
-                                                    className="messages_selection_close app-transition"
+                                                    className="messages_selection_close app-transition app-transition-color"
                                                     onClick={clearSelection}
                                                     aria-label="Cancel selection"
                                                 >
@@ -2164,10 +2449,35 @@ const MessagesPage = () => {
                                                         ? '1 message selected'
                                                         : `${selectionIds.length} messages selected`}
                                                 </p>
-                                                <span
-                                                    className="messages_selection_balance"
-                                                    aria-hidden="true"
-                                                />
+                                                <div className="messages_selection_actions">
+                                                    <button
+                                                        type="button"
+                                                        className="messages_selection_action app-transition app-transition-color"
+                                                        aria-label="Copy selected messages"
+                                                        disabled={
+                                                            !selectedMessages.length
+                                                        }
+                                                        onClick={
+                                                            handleCopySelection
+                                                        }
+                                                    >
+                                                        <CopyIcon />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="messages_selection_action messages_selection_action_danger app-transition"
+                                                        aria-label="Delete selected messages"
+                                                        disabled={
+                                                            !selectedMessages.length ||
+                                                            isDeletingSelection
+                                                        }
+                                                        onClick={
+                                                            handleDeleteSelection
+                                                        }
+                                                    >
+                                                        <DeleteIcon />
+                                                    </button>
+                                                </div>
                                             </div>
                                         ) : (
                                             <form

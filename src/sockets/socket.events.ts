@@ -91,6 +91,21 @@ class SocketEvents {
             );
         }
 
+        if (handlers.onMessagesDeleted) {
+            socketClient.subscribe(
+                roomName,
+                'chat:messages-deleted',
+                (message: any) => {
+                    if (!Array.isArray(message.payload?.ids)) {
+                        return;
+                    }
+
+                    handlers.onMessagesDeleted(message.payload.ids);
+                },
+                { private: true },
+            );
+        }
+
         if (handlers.onRead) {
             socketClient.subscribe(
                 roomName,

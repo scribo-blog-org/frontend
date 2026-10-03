@@ -86,6 +86,18 @@ const markConversationRead = async (conversationId: any) => {
     return parse(response);
 };
 
+const deleteMessages = async (ids: any) => {
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/messages/bulk-delete`,
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids }),
+        },
+    );
+    return parse(response);
+};
+
 const deleteMessage = async (messageId: any) => {
     const response = await apiFetch(
         `${apiUrl()}/api/chat/messages/${messageId}`,
@@ -118,5 +130,6 @@ export {
     sendMessage,
     markConversationRead,
     deleteMessage,
+    deleteMessages,
     editMessage,
 };

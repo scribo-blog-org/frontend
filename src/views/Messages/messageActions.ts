@@ -18,6 +18,13 @@ export function getMessageActions({
             disabled: isChatLoading,
         },
         {
+            id: 'copy',
+            title: 'Copy',
+            icon: handlers.icons.copy,
+            onClick: () => handlers.onCopy(message),
+            disabled: isChatLoading,
+        },
+        {
             id: 'select',
             title: 'Select',
             icon: handlers.icons.select,
