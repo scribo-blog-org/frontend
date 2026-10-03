@@ -23,8 +23,6 @@ import '@/styles/common.scss';
 
 const THEME_BOOT_SCRIPT = `(function(){var isDark=true;try{var stored=localStorage.getItem("theme");if(stored!==null)isDark=JSON.parse(stored);}catch(e){}var html=document.documentElement;html.style.backgroundColor=isDark?"#161616":"#f1f1f1";var apply=function(){var body=document.body;if(!body)return;body.style.transition="none";body.classList.toggle("dark-theme",isDark);requestAnimationFrame(function(){body.style.transition="";});};if(document.body){apply();return;}new MutationObserver(function(_,obs){if(!document.body)return;apply();obs.disconnect();}).observe(html,{childList:true});})();`;
 
-const VIEWPORT_BOOT_SCRIPT = `(function(){var vv=window.visualViewport;if(!vv)return;var root=document.documentElement;var apply=function(){var layoutHeight=window.innerHeight;var visibleHeight=vv.height;var overlay=layoutHeight-visibleHeight>80;var offset=overlay?vv.offsetTop:0;var height=overlay?visibleHeight:layoutHeight;root.style.setProperty("--visual-viewport-height",height+"px");root.style.setProperty("--visual-viewport-offset",offset+"px");root.classList.toggle("keyboard-open",overlay);if(!overlay&&(vv.offsetTop>1||window.scrollY>1))window.scrollTo(0,0);};apply();vv.addEventListener("resize",apply);vv.addEventListener("scroll",apply);window.addEventListener("orientationchange",apply);})();`;
-
 export async function generateMetadata(): Promise<Metadata> {
     await connection();
     const origin = getSiteOrigin();
@@ -99,9 +97,6 @@ export default async function RootLayout({
             <head>
                 <script
                     dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }}
-                />
-                <script
-                    dangerouslySetInnerHTML={{ __html: VIEWPORT_BOOT_SCRIPT }}
                 />
             </head>
             <body suppressHydrationWarning>

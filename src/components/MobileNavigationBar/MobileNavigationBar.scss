@@ -1,7 +1,10 @@
 @use '../../styles/helpers' as *;
 
-html.keyboard-open .navigation_bar {
-    display: none;
+@include screen() {
+    html:has(input:focus, textarea:focus, [contenteditable='true']:focus)
+        .navigation_bar {
+        display: none;
+    }
 }
 
 .navigation_bar {
