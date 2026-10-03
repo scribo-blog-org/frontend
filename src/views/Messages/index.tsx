@@ -352,6 +352,7 @@ const MessagesPage = () => {
     const composerInputRef = useRef<any>(null);
     const stickToBottomRef = useRef(true);
     const jumpingToBottomRef = useRef(false);
+    const jumpScrollEndRef = useRef<any>(null);
     const ignoreScrollRef = useRef(false);
     const settlingScrollRef = useRef(true);
     const userScrollingRef = useRef(false);
@@ -388,7 +389,7 @@ const MessagesPage = () => {
 
     const scrollMessagesToBottom = useCallback(() => {
         const el = listRef.current;
-        if (!el) {
+        if (!el || jumpingToBottomRef.current) {
             return;
         }
 
@@ -440,6 +441,14 @@ const MessagesPage = () => {
         };
     }, [conversationId, scrollMessagesToBottom]);
 
+    const clearJumpScrollEnd = () => {
+        const el = listRef.current;
+        if (el && jumpScrollEndRef.current) {
+            el.removeEventListener('scrollend', jumpScrollEndRef.current);
+        }
+        jumpScrollEndRef.current = null;
+    };
+
     const handleListScroll = () => {
         if (
             restoringScrollRef.current ||
@@ -461,21 +470,30 @@ const MessagesPage = () => {
         const fromUser = userScrollingRef.current;
         userScrollingRef.current = false;
 
+        if (jumpingToBottomRef.current) {
+            if (fromUser) {
+                jumpingToBottomRef.current = false;
+                clearJumpScrollEnd();
+                stickToBottomRef.current = !away;
+                setIsAwayFromBottom((current: any) =>
+                    current === away ? current : away,
+                );
+                return;
+            }
+
+            if (distance <= 1) {
+                jumpingToBottomRef.current = false;
+                stickToBottomRef.current = true;
+            }
+
+            setIsAwayFromBottom((current: any) => (current ? false : current));
+            return;
+        }
+
         if (stickToBottomRef.current && !fromUser) {
             if (away) {
                 scrollMessagesToBottom();
             }
-            setIsAwayFromBottom(false);
-            return;
-        }
-
-        if (jumpingToBottomRef.current) {
-            stickToBottomRef.current = true;
-
-            if (!away) {
-                jumpingToBottomRef.current = false;
-            }
-
             setIsAwayFromBottom(false);
             return;
         }
@@ -488,14 +506,55 @@ const MessagesPage = () => {
 
     const jumpToBottom = () => {
         const el = listRef.current;
+        clearJumpScrollEnd();
         jumpingToBottomRef.current = true;
         stickToBottomRef.current = true;
         setIsAwayFromBottom(false);
 
         if (!el) {
+            jumpingToBottomRef.current = false;
             return;
         }
 
+        const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+        const reduceMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+
+        if (distance <= 1 || reduceMotion) {
+            jumpingToBottomRef.current = false;
+            scrollMessagesToBottom();
+            return;
+        }
+
+        let passes = 0;
+        const onScrollEnd = () => {
+            const node = listRef.current;
+            if (!node || !jumpingToBottomRef.current) {
+                clearJumpScrollEnd();
+                return;
+            }
+
+            const left = node.scrollHeight - node.scrollTop - node.clientHeight;
+            if (left > 1 && passes < 4) {
+                passes += 1;
+                node.scrollTo({ top: node.scrollHeight, behavior: 'smooth' });
+                return;
+            }
+
+            jumpingToBottomRef.current = false;
+            stickToBottomRef.current = true;
+            clearJumpScrollEnd();
+
+            if (left > 1) {
+                ignoreScrollRef.current = true;
+                node.scrollTop = node.scrollHeight;
+                ignoreScrollRef.current = false;
+            }
+        };
+
+        jumpScrollEndRef.current = onScrollEnd;
+        el.addEventListener('scrollend', onScrollEnd);
         el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
     };
 
@@ -817,6 +876,8 @@ const MessagesPage = () => {
 
     useEffect(() => {
         stickToBottomRef.current = true;
+        jumpingToBottomRef.current = false;
+        clearJumpScrollEnd();
         setMessageMenu(null);
         setSelectionIds(null);
     }, [conversationId]);

@@ -228,67 +228,14 @@
         gap: 0;
     }
 
-    &_tab_list {
-        display: flex;
-        justify-content: flex-start;
+    &_tabs {
         align-self: stretch;
         width: 100%;
-        border-radius: 0;
-        min-height: 0;
-        border-bottom: 1px solid var(--line-color);
-
-        .switcher_bar {
-            width: 100%;
-            padding: 0;
-            border: 0;
-            border-radius: 0;
-            gap: var(--space-6);
-            overflow: hidden;
-        }
-
-        .switcher_bar_indicator {
-            display: block;
-            top: auto;
-            bottom: 0;
-            height: 2px;
-            border-radius: 0;
-            background: var(--text-color);
-            transition:
-                transform 0.3s ease,
-                width 0.3s ease,
-                background-color 0.3s ease,
-                background 0.3s ease,
-                color 0.3s ease,
-                border-color 0.3s ease,
-                box-shadow 0.3s ease;
-        }
-
-        .switcher_bar_item {
-            flex: 0 0 auto;
-            padding: 10px 0 12px;
-            border-radius: 0;
-            border-bottom: 0;
-            margin-bottom: 0;
-            font-size: var(--text-sm);
-            color: var(--light-text-color);
-            box-shadow: none;
-        }
-
-        .switcher_bar_item_active {
-            color: var(--text-color);
-            box-shadow: none;
-            border-bottom-color: transparent;
-        }
+        min-height: 41px;
     }
 
     &_posts {
         padding-top: var(--space-5);
-    }
-
-    .profile_tab_list > div {
-        flex: 1;
-        display: flex;
-        justify-content: flex-start;
     }
 }
 
