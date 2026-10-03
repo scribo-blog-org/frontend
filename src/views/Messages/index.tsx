@@ -67,7 +67,7 @@ import { getMessageActions } from './messageActions';
 import './Messages.scss';
 
 const COMPOSER_LINE_HEIGHT = 20;
-const COMPOSER_PAD_Y = 5;
+const COMPOSER_PAD_Y = 10;
 const COMPOSER_MAX_LINES = 5;
 const COMPOSER_MAX_HEIGHT =
     COMPOSER_LINE_HEIGHT * COMPOSER_MAX_LINES + COMPOSER_PAD_Y * 2;
@@ -415,13 +415,17 @@ const MessagesPage = () => {
         };
     }, []);
 
+    const forceBottomUntilRef = useRef(0);
+
     const scrollMessagesToBottom = useCallback(() => {
         const el = listRef.current;
         if (!el || jumpingToBottomRef.current) {
             return;
         }
 
-        if (userGestureRef.current) {
+        const forcing = Date.now() < forceBottomUntilRef.current;
+
+        if (userGestureRef.current && !forcing) {
             if (!userMovedListRef.current) {
                 pendingBottomScrollRef.current = true;
             }
@@ -433,6 +437,23 @@ const MessagesPage = () => {
         el.scrollTop = el.scrollHeight;
         ignoreScrollRef.current = false;
     }, []);
+
+    const pinMessagesToBottom = useCallback(() => {
+        stickToBottomRef.current = true;
+        userGestureRef.current = false;
+        userMovedListRef.current = false;
+        userScrollingRef.current = false;
+        pendingBottomScrollRef.current = false;
+        forceBottomUntilRef.current = Date.now() + 500;
+        scrollMessagesToBottom();
+        requestAnimationFrame(() => {
+            scrollMessagesToBottom();
+            requestAnimationFrame(scrollMessagesToBottom);
+        });
+        window.setTimeout(scrollMessagesToBottom, 50);
+        window.setTimeout(scrollMessagesToBottom, 180);
+        window.setTimeout(scrollMessagesToBottom, 400);
+    }, [scrollMessagesToBottom]);
 
     const scrollIfPinned = useCallback(() => {
         if (!stickToBottomRef.current) {
@@ -543,6 +564,15 @@ const MessagesPage = () => {
 
         const el = listRef.current;
         if (!el) {
+            return;
+        }
+
+        if (Date.now() < forceBottomUntilRef.current) {
+            stickToBottomRef.current = true;
+            if (el.scrollHeight - el.scrollTop - el.clientHeight > 1) {
+                scrollMessagesToBottom();
+            }
+            setIsAwayFromBottom(false);
             return;
         }
 
@@ -993,6 +1023,7 @@ const MessagesPage = () => {
         }
 
         const markUserScroll = (event: WheelEvent) => {
+            forceBottomUntilRef.current = 0;
             if (!userGestureRef.current) {
                 beginUserGesture();
             }
@@ -1005,6 +1036,7 @@ const MessagesPage = () => {
             armGestureEnd();
         };
         const markTouchStart = () => {
+            forceBottomUntilRef.current = 0;
             touchingListRef.current = true;
             beginUserGesture();
         };
@@ -1852,6 +1884,7 @@ const MessagesPage = () => {
             setDraft('');
             setReplyTo(null);
             setIsSending(true);
+            pinMessagesToBottom();
 
             const result = await sendMessage(conversationId, {
                 text,
