@@ -336,6 +336,7 @@
     overflow-anchor: none;
     display: flex;
     flex-direction: column;
+    justify-content: safe flex-end;
     gap: 12px;
     box-sizing: border-box;
     padding: 8px var(--messages-inline) 0 3px;
@@ -441,18 +442,13 @@
         user-select: none;
     }
 
-    .messages_bubble_wrap {
+    .messages_item:not(.messages_item_own) .messages_bubble_wrap {
         flex: 1 1 auto;
         min-width: 0;
         justify-content: flex-start;
     }
 
-    .messages_item_own .messages_bubble_wrap {
-        flex-direction: row;
-        justify-content: flex-end;
-    }
-
-    .messages_bubble {
+    .messages_item:not(.messages_item_own) .messages_bubble {
         width: fit-content;
         max-width: min(100%, 640px);
         min-width: 0;
@@ -600,7 +596,7 @@
 
 .messages_jump {
     position: absolute;
-    z-index: 5;
+    z-index: 3;
     right: 0;
     bottom: calc(var(--messages-composer-space, 56px) + 12px);
     display: inline-flex;
@@ -613,7 +609,20 @@
     border-radius: 999px;
     background: var(--submit-button-primary-color);
     color: var(--submit-button-secondary-color);
-    @include use-transition();
+    opacity: 0;
+    transform: translateY(calc(100% + 18px));
+    pointer-events: none;
+    transition:
+        transform 0.32s ease,
+        opacity 0.32s ease,
+        background-color 0.3s ease,
+        color 0.3s ease;
+
+    &_visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
 
     svg {
         width: 18px;
@@ -631,7 +640,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    max-width: 100%;
+    max-width: 75%;
     margin-left: 0;
     transition:
         transform 0.28s ease,

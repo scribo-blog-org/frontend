@@ -260,6 +260,47 @@ const DeleteChatModalActions = ({
     );
 };
 
+const JUMP_MOTION_MS = 320;
+
+function JumpToLatestButton({ visible, onClick }: any) {
+    const [present, setPresent] = useState(visible);
+    const [shown, setShown] = useState(false);
+
+    if (visible && !present) {
+        setPresent(true);
+    }
+
+    useEffect(() => {
+        if (!visible) {
+            setShown(false);
+            const timeout = window.setTimeout(
+                () => setPresent(false),
+                JUMP_MOTION_MS,
+            );
+            return () => window.clearTimeout(timeout);
+        }
+
+        const frame = requestAnimationFrame(() => setShown(true));
+        return () => cancelAnimationFrame(frame);
+    }, [visible]);
+
+    if (!present) {
+        return null;
+    }
+
+    return (
+        <button
+            type="button"
+            className={`messages_jump${shown ? ' messages_jump_visible' : ''}`}
+            onClick={onClick}
+            aria-label="Scroll to latest messages"
+            tabIndex={shown ? 0 : -1}
+        >
+            <ChevronDownIcon />
+        </button>
+    );
+}
+
 const getDeleteChatModalContent = ({
     participant,
     conversationId,
@@ -311,6 +352,11 @@ const MessagesPage = () => {
     const composerInputRef = useRef<any>(null);
     const stickToBottomRef = useRef(true);
     const jumpingToBottomRef = useRef(false);
+    const ignoreScrollRef = useRef(false);
+    const settlingScrollRef = useRef(true);
+    const userScrollingRef = useRef(false);
+    const messagesConversationIdRef = useRef<any>(null);
+    const seenConversationIdRef = useRef<any>(conversationId);
     const leavingIdsRef = useRef<any>(new Set());
     const beginMessageLeaveRef = useRef<any>(() => {});
     const lastReplyGestureRef = useRef(0);
@@ -346,7 +392,9 @@ const MessagesPage = () => {
             return;
         }
 
+        ignoreScrollRef.current = true;
         el.scrollTop = el.scrollHeight;
+        ignoreScrollRef.current = false;
     }, []);
 
     const scrollIfPinned = useCallback(() => {
@@ -393,7 +441,13 @@ const MessagesPage = () => {
     }, [conversationId, scrollMessagesToBottom]);
 
     const handleListScroll = () => {
-        if (restoringScrollRef.current) {
+        if (
+            restoringScrollRef.current ||
+            ignoreScrollRef.current ||
+            settlingScrollRef.current ||
+            isChatLoading ||
+            messagesConversationIdRef.current !== conversationId
+        ) {
             return;
         }
 
@@ -404,6 +458,16 @@ const MessagesPage = () => {
 
         const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
         const away = distance >= 80;
+        const fromUser = userScrollingRef.current;
+        userScrollingRef.current = false;
+
+        if (stickToBottomRef.current && !fromUser) {
+            if (away) {
+                scrollMessagesToBottom();
+            }
+            setIsAwayFromBottom(false);
+            return;
+        }
 
         if (jumpingToBottomRef.current) {
             stickToBottomRef.current = true;
@@ -604,6 +668,10 @@ const MessagesPage = () => {
             );
             clearConversationUnread(conversationId);
             await markChatAsRead(conversationId);
+            if (cancelled) {
+                return;
+            }
+            messagesConversationIdRef.current = conversationId;
             setIsChatLoading(false);
         };
 
@@ -688,6 +756,64 @@ const MessagesPage = () => {
         markChatAsRead,
         clearConversationUnread,
     ]);
+
+    if (seenConversationIdRef.current !== conversationId) {
+        seenConversationIdRef.current = conversationId;
+        stickToBottomRef.current = true;
+        settlingScrollRef.current = true;
+        if (isAwayFromBottom) {
+            setIsAwayFromBottom(false);
+        }
+    }
+
+    useEffect(() => {
+        const previous = history.scrollRestoration;
+        history.scrollRestoration = 'manual';
+        return () => {
+            history.scrollRestoration = previous;
+        };
+    }, []);
+
+    useEffect(() => {
+        const el = listRef.current;
+        if (!el) {
+            return;
+        }
+
+        const markUserScroll = () => {
+            userScrollingRef.current = true;
+        };
+        const markScrollbar = (event: PointerEvent) => {
+            if (event.target === el) {
+                userScrollingRef.current = true;
+            }
+        };
+        const markKeyScroll = (event: KeyboardEvent) => {
+            if (
+                event.key === 'ArrowUp' ||
+                event.key === 'ArrowDown' ||
+                event.key === 'PageUp' ||
+                event.key === 'PageDown' ||
+                event.key === 'Home' ||
+                event.key === 'End' ||
+                event.key === ' '
+            ) {
+                userScrollingRef.current = true;
+            }
+        };
+
+        el.addEventListener('wheel', markUserScroll, { passive: true });
+        el.addEventListener('touchmove', markUserScroll, { passive: true });
+        el.addEventListener('pointerdown', markScrollbar);
+        el.addEventListener('keydown', markKeyScroll);
+
+        return () => {
+            el.removeEventListener('wheel', markUserScroll);
+            el.removeEventListener('touchmove', markUserScroll);
+            el.removeEventListener('pointerdown', markScrollbar);
+            el.removeEventListener('keydown', markKeyScroll);
+        };
+    }, [conversationId, isChatLoading]);
 
     useEffect(() => {
         stickToBottomRef.current = true;
@@ -806,17 +932,83 @@ const MessagesPage = () => {
         });
     };
 
-    useEffect(() => {
+    useLayoutEffect(() => {
+        const el = listRef.current;
+        if (!el || isChatLoading) {
+            return;
+        }
+
+        if (messagesConversationIdRef.current !== conversationId) {
+            return;
+        }
+
+        const heights = new Map<Element, number>();
+        const observer = new ResizeObserver((entries) => {
+            let deltaAbove = 0;
+
+            for (const entry of entries) {
+                const next =
+                    entry.borderBoxSize?.[0]?.blockSize ??
+                    entry.contentRect.height;
+                const prev = heights.get(entry.target);
+                heights.set(entry.target, next);
+
+                if (prev == null) {
+                    continue;
+                }
+
+                const delta = next - prev;
+                if (!delta) {
+                    continue;
+                }
+
+                const listTop = el.getBoundingClientRect().top;
+                if (entry.target.getBoundingClientRect().top < listTop + 1) {
+                    deltaAbove += delta;
+                }
+            }
+
+            if (stickToBottomRef.current) {
+                scrollMessagesToBottom();
+                return;
+            }
+
+            if (deltaAbove) {
+                ignoreScrollRef.current = true;
+                el.scrollTop += deltaAbove;
+                ignoreScrollRef.current = false;
+            }
+        });
+
+        for (const child of el.children) {
+            observer.observe(child);
+        }
+
+        return () => observer.disconnect();
+    }, [conversationId, isChatLoading, messages, scrollMessagesToBottom]);
+
+    useLayoutEffect(() => {
         if (isChatLoading) {
             return;
         }
 
+        if (messagesConversationIdRef.current !== conversationId) {
+            return;
+        }
+
         if (!stickToBottomRef.current) {
+            settlingScrollRef.current = false;
             return;
         }
 
         scrollMessagesToBottom();
-    }, [messages, isChatLoading, scrollMessagesToBottom]);
+        setIsAwayFromBottom(false);
+        const frame = requestAnimationFrame(() => {
+            scrollMessagesToBottom();
+            settlingScrollRef.current = false;
+        });
+        return () => cancelAnimationFrame(frame);
+    }, [messages, isChatLoading, conversationId, scrollMessagesToBottom]);
 
     const handleStartReply = (message: any) => {
         setEditingMessage(null);
@@ -1518,7 +1710,9 @@ const MessagesPage = () => {
                                         ref={listRef}
                                         onScroll={handleListScroll}
                                     >
-                                        {isChatLoading ? (
+                                        {isChatLoading ||
+                                        messagesConversationIdRef.current !==
+                                            conversationId ? (
                                             <div className="messages_list_loader">
                                                 <Loading size={36} />
                                             </div>
@@ -1815,16 +2009,15 @@ const MessagesPage = () => {
                                         )}
                                     </div>
 
-                                    {isAwayFromBottom ? (
-                                        <button
-                                            type="button"
-                                            className="messages_jump app-transition"
-                                            onClick={jumpToBottom}
-                                            aria-label="Scroll to latest messages"
-                                        >
-                                            <ChevronDownIcon />
-                                        </button>
-                                    ) : null}
+                                    <JumpToLatestButton
+                                        visible={
+                                            isAwayFromBottom &&
+                                            !isChatLoading &&
+                                            messagesConversationIdRef.current ===
+                                                conversationId
+                                        }
+                                        onClick={jumpToBottom}
+                                    />
 
                                     <div
                                         className="messages_composer_dock"
