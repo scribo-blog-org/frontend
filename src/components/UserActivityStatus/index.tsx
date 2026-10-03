@@ -14,6 +14,7 @@ const UserActivityStatus = ({
     user,
     viewerId,
     isOnline: isOnlineProp,
+    isTyping = false,
     className = '',
 }: any) => {
     const userId = user?._id;
@@ -43,6 +44,26 @@ const UserActivityStatus = ({
             void unsubscribe();
         };
     }, [userId, canShow, isOnlineProp]);
+
+    if (isTyping) {
+        return (
+            <div
+                className={`user_activity_status user_activity_status--typing ${className}`.trim()}
+            >
+                <p>
+                    Typing
+                    <span
+                        className="user_activity_status_dots"
+                        aria-hidden="true"
+                    >
+                        <span />
+                        <span />
+                        <span />
+                    </span>
+                </p>
+            </div>
+        );
+    }
 
     if (!canShow) {
         return null;
