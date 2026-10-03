@@ -50,10 +50,6 @@
         padding: 12px 0;
         border-radius: 8px;
 
-        @include hover {
-            background: var(--section-item-hover-background-color);
-        }
-
         &_unread {
             background: var(--section-item-hover-background-color);
         }
@@ -83,11 +79,25 @@
         }
 
         &_message {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
             font-size: 14px;
             line-height: 1.4;
             color: var(--light-text-color);
-            overflow-wrap: anywhere;
             padding-left: 6px;
+
+            svg {
+                width: 16px;
+                height: 16px;
+                flex-shrink: 0;
+                margin-top: 2px;
+            }
+
+            span {
+                min-width: 0;
+                overflow-wrap: anywhere;
+            }
         }
 
         &_time {
@@ -108,6 +118,7 @@
         font-weight: 500;
         text-decoration: underline;
         text-underline-offset: 2px;
+        @include use-transition-text();
 
         @include hover() {
             color: var(--text-color);

@@ -8,6 +8,7 @@ import { AppContext } from '@/providers/AppProviders';
 import RedirectIcon from '../../assets/svg/redirect.svg';
 import FilterIcon from '../../assets/svg/filter.svg';
 import CommentIcon from '../../assets/svg/comment.svg';
+import SupportIcon from '../../assets/svg/support.svg';
 
 import ArrowIcon from '../../assets/svg/arrow-left.svg';
 import PostIcon from '../../assets/svg/post.svg';
@@ -27,7 +28,7 @@ const GLYPHS: any = {
     post: PostIcon,
     category: TagIcon,
     comment: CommentIcon,
-    support: CommentIcon,
+    support: SupportIcon,
 };
 
 export const EntityView = ({

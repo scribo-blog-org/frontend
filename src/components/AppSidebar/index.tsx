@@ -15,12 +15,13 @@ import MainLogo from '../../assets/svg/full-logo-icon.svg';
 import HomeIcon from '../../assets/svg/home-icon.svg';
 import SearchIcon from '../../assets/svg/search.svg';
 import ProfileIcon from '../../assets/svg/profile.svg';
-import CommentIcon from '../../assets/svg/comment.svg';
+import MessageIcon from '../../assets/svg/message.svg';
 import NotificationIcon from '../../assets/svg/notification.svg';
 import PlusIcon from '../../assets/svg/plus-icon.svg';
-import RedirectIcon from '../../assets/svg/redirect.svg';
+import DashboardIcon from '../../assets/svg/dashboard.svg';
 import SettingsIcon from '../../assets/svg/settings.svg';
-import InfoIcon from '../../assets/svg/info.svg';
+import SupportIcon from '../../assets/svg/support.svg';
+import LoginIcon from '../../assets/svg/login.svg';
 
 import './AppSidebar.scss';
 
@@ -145,7 +146,7 @@ function AppSidebar() {
                                         : unreadMessages}
                                 </span>
                             ) : null}
-                            <CommentIcon className="app-sidebar_item_icon" />
+                            <MessageIcon className="app-sidebar_item_icon" />
                             <span>Messages</span>
                         </Link>
 
@@ -181,7 +182,7 @@ function AppSidebar() {
                                 )
                             }
                         >
-                            <InfoIcon className="app-sidebar_item_icon" />
+                            <SupportIcon className="app-sidebar_item_icon" />
                             <span>Support</span>
                         </Link>
                     </>
@@ -213,7 +214,11 @@ function AppSidebar() {
                             )
                         }
                     >
-                        <RedirectIcon className="app-sidebar_item_icon" />
+                        {onAdminPanel ? (
+                            <HomeIcon className="app-sidebar_item_icon" />
+                        ) : (
+                            <DashboardIcon className="app-sidebar_item_icon" />
+                        )}
                         <span>
                             {onAdminPanel ? 'Home' : 'To the admin panel'}
                         </span>
@@ -240,6 +245,7 @@ function AppSidebar() {
                         className="app-sidebar_login"
                         onClick={() => navigate('/auth/login')}
                     >
+                        <LoginIcon />
                         Log in
                     </PrimaryButton>
                 )}
