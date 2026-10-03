@@ -17,6 +17,8 @@ import {
 } from '../../utils/share';
 
 import RedirectIcon from '../../assets/svg/redirect.svg';
+import CopyIcon from '../../assets/svg/copy.svg';
+import ShareIcon from '../../assets/svg/share.svg';
 
 import './SharePostModal.scss';
 
@@ -145,6 +147,7 @@ const SharePostModal = ({
                         onClick={(event: any) => event.target.select()}
                     />
                     <PrimaryButton type="button" onClick={handleCopy}>
+                        <CopyIcon />
                         {copied ? 'Copied' : 'Copy'}
                     </PrimaryButton>
                 </div>
@@ -209,7 +212,8 @@ const SharePostModal = ({
                     className="share_post_modal_native"
                     onClick={handleNativeShare}
                 >
-                    Share…
+                    <ShareIcon />
+                    Share
                 </ActionButton>
             ) : null}
         </div>
