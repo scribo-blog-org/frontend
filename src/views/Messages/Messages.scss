@@ -328,15 +328,15 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 0;
-    width: calc(100% + var(--messages-inline));
+    left: -3px;
+    width: calc(100% + var(--messages-inline) + 3px);
     min-height: 0;
     overflow: auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
     box-sizing: border-box;
-    padding: 8px var(--messages-inline) 0 0;
+    padding: 8px var(--messages-inline) 0 3px;
     padding-bottom: calc(var(--messages-composer-space, 56px) + 12px);
 
     &_loader {
@@ -930,8 +930,8 @@
 
     &_context_clip {
         display: flex;
-        flex-direction: column-reverse;
-        justify-content: flex-start;
+        flex-direction: column;
+        justify-content: unsafe flex-end;
         min-height: 0;
         overflow: hidden;
     }
