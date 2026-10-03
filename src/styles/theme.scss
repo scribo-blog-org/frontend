@@ -96,7 +96,8 @@ body {
     --post-title-color: var(--gray-25);
 
     --modal-window-body-background-color: white;
-    --modal-window-background-color: rgb(0, 0, 0, 0.2);
+    --modal-window-background-color: rgba(0, 0, 0, 0.46);
+    --modal-window-backdrop-filter: blur(22px) saturate(140%);
     --modal-window-button-color: var(--gray-63);
     --modal-window-button-hover-color: var(--gray-1e);
     --modal-window-title-text-color: var(--gray-1e);
@@ -282,7 +283,8 @@ body.dark-theme {
     --post-title-color: var(--gray-e7);
 
     --modal-window-body-background-color: var(--gray-1e);
-    --modal-window-background-color: rgb(0, 0, 0, 0.2);
+    --modal-window-background-color: rgba(0, 0, 0, 0.46);
+    --modal-window-backdrop-filter: blur(22px) saturate(140%);
     --modal-window-button-color: var(--gray-b5);
     --modal-window-button-hover-color: var(--gray-1e);
     --modal-window-title-text-color: var(--gray-d7);

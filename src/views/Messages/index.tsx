@@ -38,6 +38,11 @@ import {
     loadOnlineStatusForUsers,
     subscribePresenceChanges,
 } from '../../sockets/presence';
+import {
+    loadTyping,
+    notifyTyping,
+    notifyTypingStop,
+} from '../../sockets/typing';
 import MessageStatus from '../../components/MessageStatus';
 import ActionButton from '../../components/Ui/ActionButton';
 import DangerButton from '../../components/Ui/DangerButton';
@@ -346,7 +351,13 @@ const MessagesPage = () => {
     const [isChatLoading, setIsChatLoading] = useState<any>(false);
     const [isSending, setIsSending] = useState<any>(false);
     const [messageMenu, setMessageMenu] = useState<any>(null);
+    const messageMenuRef = useRef<any>(null);
+    messageMenuRef.current = messageMenu;
     const [onlineByUserId, setOnlineByUserId] = useState<any>({});
+    const [activityAtByUserId, setActivityAtByUserId] = useState<any>({});
+    const [typingByConversationId, setTypingByConversationId] = useState<any>(
+        {},
+    );
     const [leavingHeights, setLeavingHeights] = useState<any>({});
     const [isAwayFromBottom, setIsAwayFromBottom] = useState(false);
     const [selectionIds, setSelectionIds] = useState<any>(null);
@@ -380,6 +391,7 @@ const MessagesPage = () => {
     const beginMessageLeaveRef = useRef<any>(() => {});
     const lastReplyGestureRef = useRef(0);
     const sendLockRef = useRef(false);
+    const typingConversationRef = useRef<any>(null);
     const longPressRef = useRef<any>(null);
     const suppressMessageClickRef = useRef(false);
     const enterFollowRef = useRef(false);
@@ -825,6 +837,94 @@ const MessagesPage = () => {
 
         return unsubscribe;
     }, [profile, removeConversationFromState]);
+
+    useEffect(() => {
+        if (!profile?._id) {
+            return;
+        }
+
+        let cancelled = false;
+        const timers: Record<string, number> = {};
+
+        const clearTyping = (conversationId: string) => {
+            if (timers[conversationId]) {
+                clearTimeout(timers[conversationId]);
+                delete timers[conversationId];
+            }
+            setTypingByConversationId((current: any) => {
+                if (!current[conversationId]) {
+                    return current;
+                }
+                const next = { ...current };
+                delete next[conversationId];
+                return next;
+            });
+        };
+
+        const showTyping = (conversationId: string) => {
+            if (timers[conversationId]) {
+                clearTimeout(timers[conversationId]);
+            }
+            setTypingByConversationId((current: any) =>
+                current[conversationId]
+                    ? current
+                    : { ...current, [conversationId]: true },
+            );
+            timers[conversationId] = window.setTimeout(() => {
+                delete timers[conversationId];
+                setTypingByConversationId((current: any) => {
+                    if (!current[conversationId]) {
+                        return current;
+                    }
+                    const next = { ...current };
+                    delete next[conversationId];
+                    return next;
+                });
+            }, 2500);
+        };
+
+        const applyTyping = (payload: any) => {
+            if (cancelled || !payload?.conversation_id || !payload?.user_id) {
+                return;
+            }
+            if (String(payload.user_id) === String(profile._id)) {
+                return;
+            }
+            const id = String(payload.conversation_id);
+            if (payload.typing === false) {
+                clearTyping(id);
+                return;
+            }
+            showTyping(id);
+        };
+
+        const unsubscribe = socketService.on('chat:typing', applyTyping);
+        void loadTyping().then((items: any) => {
+            if (cancelled || !Array.isArray(items)) {
+                return;
+            }
+            items.forEach((item: any) =>
+                applyTyping({ ...item, typing: true }),
+            );
+        });
+
+        return () => {
+            cancelled = true;
+            unsubscribe();
+            Object.values(timers).forEach((timer) => clearTimeout(timer));
+        };
+    }, [profile?._id]);
+
+    useEffect(() => {
+        return () => {
+            const id = typingConversationRef.current;
+            if (!id) {
+                return;
+            }
+            typingConversationRef.current = null;
+            notifyTypingStop(id);
+        };
+    }, [conversationId]);
 
     useEffect(() => {
         if (!conversationId || !profile) {
@@ -1287,7 +1387,13 @@ const MessagesPage = () => {
             return;
         }
 
-        const closeMenu = () => setMessageMenu(null);
+        const closeMenu = () => {
+            if (messageMenuRef.current?.source === 'touch') {
+                return;
+            }
+
+            setMessageMenu(null);
+        };
         el.addEventListener('scroll', closeMenu, { passive: true });
 
         return () => el.removeEventListener('scroll', closeMenu);
@@ -1366,24 +1472,54 @@ const MessagesPage = () => {
         };
     }, [isSelecting]);
 
-    const openMessageMenu = (event: any, items: any) => {
+    const openMessageMenu = (event: any, items: any, message: any) => {
         if (isSelecting) {
             event.preventDefault();
             event.stopPropagation();
             return;
         }
 
-        if (!items.length) {
+        if (!items.length || !message) {
             return;
         }
 
         event.preventDefault();
         event.stopPropagation();
-        setMessageMenu({
+        const touch =
+            event.source === 'touch' ||
+            event.pointerType === 'touch' ||
+            window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+        const article = document.getElementById(`message_${message._id}`);
+        const wrap = article?.querySelector('.messages_bubble_wrap');
+        const rect = wrap?.getBoundingClientRect();
+        const anchor =
+            article && rect
+                ? {
+                      top: rect.top,
+                      left: rect.left,
+                      width: rect.width,
+                      height: rect.height,
+                      own: article.classList.contains('messages_item_own'),
+                  }
+                : null;
+
+        if (
+            messageMenuRef.current &&
+            String(messageMenuRef.current.messageId) === String(message._id)
+        ) {
+            return;
+        }
+
+        const nextMenu = {
             x: event.clientX,
             y: event.clientY,
             items,
-        });
+            messageId: message._id,
+            source: touch && anchor ? 'touch' : 'mouse',
+            anchor,
+        };
+        messageMenuRef.current = nextMenu;
+        setMessageMenu(nextMenu);
     };
 
     useLayoutEffect(() => {
@@ -1732,7 +1868,11 @@ const MessagesPage = () => {
         longPressRef.current = null;
     };
 
-    const handleMessageTouchStart = (event: any, actionItems: any) => {
+    const handleMessageTouchStart = (
+        event: any,
+        actionItems: any,
+        message: any,
+    ) => {
         if (isSelecting || messageMenu || event.touches?.length !== 1) {
             return;
         }
@@ -1754,8 +1894,10 @@ const MessagesPage = () => {
                     stopPropagation() {},
                     clientX: startX,
                     clientY: startY,
+                    source: 'touch',
                 },
                 actionItems,
+                message,
             );
         }, 480);
 
@@ -1817,6 +1959,10 @@ const MessagesPage = () => {
 
         sendLockRef.current = true;
         holdComposerFocus();
+        if (typingConversationRef.current === conversationId) {
+            typingConversationRef.current = null;
+        }
+        notifyTypingStop(conversationId);
 
         try {
             if (editingMessage) {
@@ -2231,11 +2377,18 @@ const MessagesPage = () => {
         });
 
         const unsubscribe = subscribePresenceChanges(
-            (userId: any, online: any) => {
-                if (!cancelled) {
-                    setOnlineByUserId((current: any) => ({
+            (userId: any, online: any, at: any) => {
+                if (cancelled) {
+                    return;
+                }
+                setOnlineByUserId((current: any) => ({
+                    ...current,
+                    [userId]: online,
+                }));
+                if (at) {
+                    setActivityAtByUserId((current: any) => ({
                         ...current,
-                        [userId]: online,
+                        [userId]: at,
                     }));
                 }
             },
@@ -2338,6 +2491,19 @@ const MessagesPage = () => {
                                                         )
                                                     ] ?? false
                                                 }
+                                                activityAt={
+                                                    activityAtByUserId[
+                                                        String(
+                                                            item.participant
+                                                                ?._id,
+                                                        )
+                                                    ]
+                                                }
+                                                isTyping={Boolean(
+                                                    typingByConversationId[
+                                                        String(item._id)
+                                                    ],
+                                                )}
                                                 className="messages_activity_status"
                                             />
                                         </div>
@@ -2413,6 +2579,16 @@ const MessagesPage = () => {
                                                         String(participant._id)
                                                     ] ?? false
                                                 }
+                                                activityAt={
+                                                    activityAtByUserId[
+                                                        String(participant._id)
+                                                    ]
+                                                }
+                                                isTyping={Boolean(
+                                                    typingByConversationId[
+                                                        String(conversationId)
+                                                    ],
+                                                )}
                                                 className="messages_activity_status"
                                             />
                                         </div>
@@ -2462,6 +2638,10 @@ const MessagesPage = () => {
                                         }${
                                             messageMenu
                                                 ? ' messages_list_menu_open'
+                                                : ''
+                                        }${
+                                            messageMenu?.source === 'touch'
+                                                ? ' messages_list_menu_touch'
                                                 : ''
                                         }`}
                                         ref={listRef}
@@ -2603,6 +2783,17 @@ const MessagesPage = () => {
                                                                             'to'
                                                                                 ? ' messages_item_enter_open'
                                                                                 : ''
+                                                                        }${
+                                                                            messageMenu?.source !==
+                                                                                'touch' &&
+                                                                            String(
+                                                                                messageMenu?.messageId,
+                                                                            ) ===
+                                                                                String(
+                                                                                    message._id,
+                                                                                )
+                                                                                ? ' messages_item_menu_target'
+                                                                                : ''
                                                                         }`}
                                                                         style={
                                                                             isLeaving
@@ -2657,6 +2848,7 @@ const MessagesPage = () => {
                                                                             handleMessageTouchStart(
                                                                                 event,
                                                                                 actionItems,
+                                                                                message,
                                                                             )
                                                                         }
                                                                         onTouchMove={
@@ -2738,6 +2930,7 @@ const MessagesPage = () => {
                                                                             openMessageMenu(
                                                                                 event,
                                                                                 actionItems,
+                                                                                message,
                                                                             );
                                                                         }}
                                                                     >
@@ -3018,12 +3211,37 @@ const MessagesPage = () => {
                                                         value={draft}
                                                         onChange={(
                                                             event: any,
-                                                        ) =>
-                                                            setDraft(
+                                                        ) => {
+                                                            const value =
                                                                 event.target
-                                                                    .value,
-                                                            )
-                                                        }
+                                                                    .value;
+                                                            setDraft(value);
+                                                            if (
+                                                                !conversationId
+                                                            ) {
+                                                                return;
+                                                            }
+                                                            if (
+                                                                value.length > 0
+                                                            ) {
+                                                                typingConversationRef.current =
+                                                                    conversationId;
+                                                                notifyTyping(
+                                                                    conversationId,
+                                                                );
+                                                                return;
+                                                            }
+                                                            if (
+                                                                typingConversationRef.current ===
+                                                                conversationId
+                                                            ) {
+                                                                typingConversationRef.current =
+                                                                    null;
+                                                            }
+                                                            notifyTypingStop(
+                                                                conversationId,
+                                                            );
+                                                        }}
                                                         onKeyDown={
                                                             handleComposerKeyDown
                                                         }
@@ -3076,14 +3294,10 @@ const MessagesPage = () => {
                     )}
                 </section>
             </div>
-            {messageMenu ? (
-                <MessageContextMenu
-                    x={messageMenu.x}
-                    y={messageMenu.y}
-                    items={messageMenu.items}
-                    onClose={() => setMessageMenu(null)}
-                />
-            ) : null}
+            <MessageContextMenu
+                menu={messageMenu}
+                onClose={() => setMessageMenu(null)}
+            />
         </div>
     );
 };

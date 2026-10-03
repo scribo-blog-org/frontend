@@ -17,6 +17,7 @@ class SocketClient {
     statusListeners: any;
     presenceListeners: any;
     presenceQueries: any;
+    typingQueries: any;
     constructor() {
         this.socket = null;
         this.token = null;
@@ -29,6 +30,7 @@ class SocketClient {
         this.statusListeners = new Map();
         this.presenceListeners = new Set();
         this.presenceQueries = new Map();
+        this.typingQueries = new Map();
     }
 
     async setAuth(accessToken: any) {
@@ -149,6 +151,41 @@ class SocketClient {
         return () => {
             this.presenceListeners.delete(callback);
         };
+    }
+
+    typing(conversationId: any, active: any) {
+        this._send({
+            type: 'typing',
+            conversation: conversationId,
+            typing: Boolean(active),
+            at: Date.now(),
+        });
+    }
+
+    queryTyping() {
+        return new Promise((resolve: any) => {
+            const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            const timer = setTimeout(() => {
+                this.typingQueries.delete(id);
+                resolve([]);
+            }, AUTH_TIMEOUT_MS);
+
+            this.typingQueries.set(id, (items: any) => {
+                clearTimeout(timer);
+                this.typingQueries.delete(id);
+                resolve(items);
+            });
+
+            void this.setAuth(this.token)
+                .then(() => {
+                    this._send({ type: 'typing:query', id });
+                })
+                .catch(() => {
+                    clearTimeout(timer);
+                    this.typingQueries.delete(id);
+                    resolve([]);
+                });
+        });
     }
 
     queryPresence(userIds: any) {
@@ -354,9 +391,22 @@ class SocketClient {
             return;
         }
 
+        if (
+            message.type === 'typing' &&
+            message.id &&
+            this.typingQueries.has(message.id)
+        ) {
+            this.typingQueries.get(message.id)(message.items || []);
+            return;
+        }
+
         if (message.type === 'presence' && message.user) {
             for (const listener of this.presenceListeners) {
-                listener(String(message.user), Boolean(message.online));
+                listener(
+                    String(message.user),
+                    Boolean(message.online),
+                    typeof message.at === 'string' ? message.at : undefined,
+                );
             }
             return;
         }
