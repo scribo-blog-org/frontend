@@ -24,6 +24,11 @@ body {
     scrollbar-color: var(--gray-4f) transparent;
 }
 
+body {
+    position: fixed;
+    inset: 0;
+}
+
 #root,
 #app-root {
     display: flex;
@@ -31,12 +36,17 @@ body {
     flex: 1;
     min-height: 0;
     position: fixed;
-    top: var(--visual-viewport-offset, 0px);
+    top: 0;
     left: 0;
     width: 100%;
     height: var(--visual-viewport-height, 100%);
     max-height: var(--visual-viewport-height, 100dvh);
     overflow: hidden;
+}
+
+html.keyboard-open #root,
+html.keyboard-open #app-root {
+    transform: translate3d(0, var(--visual-viewport-offset, 0px), 0);
 }
 
 body {
