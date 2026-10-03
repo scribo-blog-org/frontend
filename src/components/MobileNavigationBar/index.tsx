@@ -12,9 +12,9 @@ import { socketService } from '../../sockets/socket.service';
 import HomeIcon from '../../assets/svg/home-icon.svg';
 import SearchIcon from '../../assets/svg/search.svg';
 import NotificationsIcon from '../../assets/svg/notification.svg';
-import CommentIcon from '../../assets/svg/comment.svg';
+import MessageIcon from '../../assets/svg/message.svg';
 import PlusIcon from '../../assets/svg/plus-icon.svg';
-import RedirectIcon from '../../assets/svg/redirect.svg';
+import DashboardIcon from '../../assets/svg/dashboard.svg';
 
 import SwitchBar from '../Ui/SwitchBar';
 import CurrentUserBadge from '../CurrentUserBadge/index';
@@ -107,7 +107,7 @@ const MobileNavigationBar = () => {
                             {unreadMessages > 99 ? '99+' : unreadMessages}
                         </span>
                     ) : null}
-                    <CommentIcon />
+                    <MessageIcon />
                 </>
             ),
             onClick: () =>
@@ -124,7 +124,7 @@ const MobileNavigationBar = () => {
         const admin = {
             id: 'admin',
             path: '/admin-panel',
-            node: <RedirectIcon />,
+            node: onAdminPanel ? <HomeIcon /> : <DashboardIcon />,
             onClick: () => {
                 if (onAdminPanel) {
                     navigateOrScrollTop(navigate, location.pathname, '/');

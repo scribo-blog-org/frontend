@@ -297,7 +297,7 @@ const PostActions = ({
                     >
                         <button
                             type="button"
-                            className="post_actions_button app-transition"
+                            className="post_actions_button app-transition app-transition-color"
                             onClick={doLike}
                         >
                             {hasId(article.likes, profile?._id) ? (
@@ -318,7 +318,7 @@ const PostActions = ({
                         clickable={true}
                     >
                         <Link
-                            className="post_actions_button post_actions_comment app-transition"
+                            className="post_actions_button post_actions_comment app-transition app-transition-color"
                             href={`/posts/${article._id}${firstCommentId ? `?comment=${firstCommentId}` : ''}`}
                         >
                             <CommentIcon />
@@ -331,7 +331,7 @@ const PostActions = ({
                     >
                         <button
                             type="button"
-                            className="post_actions_button app-transition"
+                            className="post_actions_button app-transition app-transition-color"
                             onClick={doSave}
                         >
                             {isSaved ? <BookMarkFilled /> : <BookMarkBorder />}
@@ -346,7 +346,7 @@ const PostActions = ({
                     <Tooltip text="Share" clickable={true}>
                         <button
                             type="button"
-                            className="post_actions_button app-transition"
+                            className="post_actions_button app-transition app-transition-color"
                             onClick={openShareModal}
                         >
                             <ShareIcon />

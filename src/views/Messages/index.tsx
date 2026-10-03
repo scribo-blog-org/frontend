@@ -53,6 +53,8 @@ import DeleteIcon from '../../assets/svg/delete.svg';
 import EditIcon from '../../assets/svg/edit.svg';
 import CrossIcon from '../../assets/svg/cross-icon.svg';
 import ArrowLeftIcon from '../../assets/svg/arrow-left.svg';
+import SendIcon from '../../assets/svg/send.svg';
+import TickIcon from '../../assets/svg/tick.svg';
 import NewMessageIllustration from '../../assets/svg/illustrations/new-message.svg';
 
 import MessageContextMenu from './MessageContextMenu';
@@ -1358,6 +1360,11 @@ const MessagesPage = () => {
                                         }
                                         isLoading={isSending}
                                     >
+                                        {editingMessage ? (
+                                            <TickIcon />
+                                        ) : (
+                                            <SendIcon />
+                                        )}
                                         {editingMessage ? 'Save' : 'Send'}
                                     </PrimaryButton>
                                 </div>

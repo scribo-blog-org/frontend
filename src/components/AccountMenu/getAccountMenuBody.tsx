@@ -2,8 +2,9 @@
 
 import DefaultProfileIcon from '../../assets/svg/profile.svg';
 import SettingsIcon from '../../assets/svg/settings.svg';
-import CommentIcon from '../../assets/svg/comment.svg';
-import RedirectIcon from '../../assets/svg/redirect.svg';
+import SupportIcon from '../../assets/svg/support.svg';
+import HomeIcon from '../../assets/svg/home-icon.svg';
+import DashboardIcon from '../../assets/svg/dashboard.svg';
 import LogoutIcon from '../../assets/svg/logout.svg';
 
 export const isAdminRole = (role: any) =>
@@ -35,7 +36,7 @@ export function getAccountMenuBody({
             },
             {
                 title: 'Support',
-                icon: <CommentIcon />,
+                icon: <SupportIcon />,
                 onClick: () => {
                     navigate('/support/mine');
                 },
@@ -47,7 +48,11 @@ export function getAccountMenuBody({
                       title: location.pathname.startsWith('/admin-panel')
                           ? 'Home'
                           : 'To the admin panel',
-                      icon: <RedirectIcon />,
+                      icon: location.pathname.startsWith('/admin-panel') ? (
+                          <HomeIcon />
+                      ) : (
+                          <DashboardIcon />
+                      ),
                       onClick: () =>
                           navigate(
                               location.pathname.startsWith('/admin-panel')

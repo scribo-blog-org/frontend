@@ -27,7 +27,8 @@ import './Settings.scss';
 
 import AvatarIcon from '../../assets/svg/avatar-icon.svg';
 import ProfileIcon from '../../assets/svg/profile-icon.svg';
-import ShieldIcon from '../../assets/svg/shield-security.svg';
+import SecurityIcon from '../../assets/svg/security.svg';
+import LogoutIcon from '../../assets/svg/logout.svg';
 
 const Settings = () => {
     const { profile, setProfile, profileLoading, showToast } =
@@ -638,7 +639,7 @@ const Settings = () => {
                         title: 'Security',
                         key: 'security',
                         aliases: ['sessions', 'password'],
-                        icon: <ShieldIcon />,
+                        icon: <SecurityIcon />,
                         content: (
                             <div className="settings_panel">
                                 <div className="settings_stack">
@@ -893,6 +894,7 @@ const Settings = () => {
                                             disabled={Boolean(endingSessionId)}
                                             onClick={handleLogout}
                                         >
+                                            <LogoutIcon />
                                             Log out
                                         </DangerButton>
                                     </div>

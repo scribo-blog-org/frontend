@@ -5,6 +5,7 @@ import { useContext, useState } from 'react';
 import { AppContext } from '@/providers/AppProviders';
 
 import ChevronDownIcon from '../../assets/svg/chevron-down.svg';
+import CopyIcon from '../../assets/svg/copy.svg';
 
 import { Arrow, RoleChange, StatusChange } from './LogEntities';
 import { describeDetails, type DetailRow } from './logFormat';
@@ -131,6 +132,7 @@ const LogDetails = ({ log, config, names, onPrev, onNext }: any) => {
                         className="log_text_button"
                         onClick={copy}
                     >
+                        <CopyIcon />
                         Copy
                     </button>
                 </span>
