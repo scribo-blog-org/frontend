@@ -12,9 +12,9 @@ const loadOnlineStatusForUsers = async (userIds: any) => {
 const subscribeUserActivity = (userId: any, onChange: any) => {
     let active = true;
     const unsubscribe = socketClient.onPresence(
-        (changedUserId: any, online: any) => {
+        (changedUserId: any, online: any, at: any) => {
             if (String(changedUserId) === String(userId)) {
-                onChange(online);
+                onChange(online, at);
             }
         },
     );

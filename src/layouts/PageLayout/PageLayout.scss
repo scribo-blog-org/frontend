@@ -7,13 +7,17 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-height: calc(100vh - var(--header-height));
+    min-height: calc(
+        var(--visual-viewport-height, 100dvh) - var(--header-height)
+    );
     padding-top: 20px;
     padding-bottom: 20px;
 
     @include screen() {
         padding-top: 20px;
         padding-bottom: 20px;
-        min-height: calc(100vh - var(--header-height-mobile));
+        min-height: calc(
+            var(--visual-viewport-height, 100dvh) - var(--header-height-mobile)
+        );
     }
 }

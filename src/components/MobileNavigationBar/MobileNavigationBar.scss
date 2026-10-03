@@ -1,5 +1,9 @@
 @use '../../styles/helpers' as *;
 
+html.keyboard-open .navigation_bar {
+    display: none;
+}
+
 .navigation_bar {
     display: none;
     flex-shrink: 0;
