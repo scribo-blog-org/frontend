@@ -23,6 +23,7 @@ const svgrLoader = {
 };
 
 const nextConfig = {
+    agentRules: false,
     async redirects() {
         return [
             {

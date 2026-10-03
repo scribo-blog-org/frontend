@@ -3,11 +3,14 @@
 .navigation_bar {
     display: none;
     flex-shrink: 0;
+    box-sizing: border-box;
     width: 100%;
-    padding: 8px 10px 12px;
+    height: var(--mobile-nav-height);
+    padding: 0 10px 10px;
     z-index: 100;
     position: absolute;
     bottom: 0;
+    pointer-events: none;
 
     @include screen() {
         display: block;
@@ -18,6 +21,7 @@
         border-radius: 999px;
         background: var(--float-section-background-color);
         border-color: var(--float-section-line-color);
+        pointer-events: auto;
     }
 
     .switcher_bar_item {

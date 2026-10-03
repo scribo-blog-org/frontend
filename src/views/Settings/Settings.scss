@@ -300,12 +300,7 @@
         padding-top: var(--space-2);
 
         .danger_button {
-            gap: 8px;
-
-            svg {
-                width: 16px;
-                height: 16px;
-            }
+            width: fit-content;
         }
     }
 }

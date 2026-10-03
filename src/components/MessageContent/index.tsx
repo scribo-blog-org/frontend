@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useMemo } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Link } from '@/navigation';
 
 import RichText from '../RichText';
@@ -85,6 +85,25 @@ function renderInlinePart(part: any, key: any) {
         ));
 }
 
+function RevealBlock({ children }: any) {
+    const [open, setOpen] = useState(false);
+
+    useLayoutEffect(() => {
+        const frame = requestAnimationFrame(() => setOpen(true));
+        return () => cancelAnimationFrame(frame);
+    }, []);
+
+    return (
+        <div
+            className={`message_content_reveal${
+                open ? ' message_content_reveal_open' : ''
+            }`}
+        >
+            <div className="message_content_reveal_clip">{children}</div>
+        </div>
+    );
+}
+
 const MessageRichContent = ({
     text,
     className,
@@ -126,18 +145,22 @@ const MessageRichContent = ({
                                 </a>
                             </p>
                             {embed?.type === 'post' ? (
-                                <PostMessageCard
-                                    post={embed.post}
-                                    className="messages_post_share"
-                                    onMediaLoad={onLayoutChange}
-                                />
+                                <RevealBlock>
+                                    <PostMessageCard
+                                        post={embed.post}
+                                        className="messages_post_share"
+                                        onMediaLoad={onLayoutChange}
+                                    />
+                                </RevealBlock>
                             ) : null}
                             {embed?.type === 'link' ? (
-                                <LinkPreviewCard
-                                    preview={embed.preview}
-                                    className="messages_link_preview"
-                                    onMediaLoad={onLayoutChange}
-                                />
+                                <RevealBlock>
+                                    <LinkPreviewCard
+                                        preview={embed.preview}
+                                        className="messages_link_preview"
+                                        onMediaLoad={onLayoutChange}
+                                    />
+                                </RevealBlock>
                             ) : null}
                         </div>
                     );

@@ -242,7 +242,8 @@
 
             .input_field,
             .incorrect_field {
-                padding: 12px;
+                width: var(--control-height);
+                padding: 0;
                 text-align: center;
             }
         }

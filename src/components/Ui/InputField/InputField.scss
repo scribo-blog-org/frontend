@@ -6,26 +6,21 @@
 }
 
 .input_field {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    font-size: var(--text-md);
-    padding: 8px 12px;
+    display: block;
     width: 100%;
+    padding: 10px 12px;
     background-color: transparent;
     border: 1px solid var(--input-outline-color);
     border-radius: 8px;
     color: var(--input-text-color);
     outline: none;
+    line-height: 1.5;
     font-family:
         -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
         Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
     resize: none;
-
-    @include screen() {
-        font-size: var(--text-lg);
-    }
+    @include field-font;
 
     &.confirmed {
         &:focus {
@@ -63,10 +58,20 @@
     }
 
     &::placeholder {
-        font-size: var(--text-md);
+        font-size: inherit;
         color: var(--input-placeholder-color);
         transition: 0.3s;
     }
+}
+
+input.input_field,
+textarea.input_field[rows='1'] {
+    height: var(--control-height);
+    min-height: var(--control-height);
+    padding: 0 12px;
+    line-height: calc(var(--control-height) - 2px);
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 .input_field_wrapper_blocked {

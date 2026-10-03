@@ -34,7 +34,7 @@ import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png
 import { imageSrc } from '../../utils/image';
 import FollowButton from '../../components/FollowButton';
 import ActionButton from '../../components/Ui/ActionButton';
-import SwitchBar from '../../components/Ui/SwitchBar';
+import Tabs from '../../components/Ui/Tabs';
 import Tooltip from '../../components/Ui/Tooltip/index';
 import RoleBadge from '../../components/RoleBadge/index';
 import PageSeo from '../../components/Seo/index';
@@ -244,6 +244,7 @@ const Profile = ({
                         <></>
                     ) : (
                         <FollowButton
+                            size="sm"
                             setNewData={setFollowAnotherUser}
                             authorId={authorData._id}
                         />
@@ -280,6 +281,7 @@ const Profile = ({
                         <></>
                     ) : (
                         <FollowButton
+                            size="sm"
                             setNewData={setFollowAnotherUser}
                             authorId={authorData._id}
                         />
@@ -496,24 +498,28 @@ const Profile = ({
                     isLoading={isProfileLoading}
                     rounded={true}
                     section={false}
-                    className="profile_tab_list"
+                    className="profile_tabs"
                 >
-                    <div className="profile_tab_list app-transition">
-                        <SwitchBar
-                            items={[
-                                <>
-                                    <PostIcon />
-                                    Posts
-                                </>,
-                                <>
-                                    <BookmarkOutline />
-                                    Saved
-                                </>,
-                            ]}
-                            activeIndex={activeTab}
-                            setActiveIndex={setActiveTab}
-                        />
-                    </div>
+                    <Tabs
+                        className="profile_tabs"
+                        label="Profile"
+                        items={[
+                            {
+                                key: 'posts',
+                                title: 'Posts',
+                                icon: <PostIcon />,
+                            },
+                            {
+                                key: 'saved',
+                                title: 'Saved',
+                                icon: <BookmarkOutline />,
+                            },
+                        ]}
+                        activeKey={activeTab === 1 ? 'saved' : 'posts'}
+                        onChange={(key: string) =>
+                            setActiveTab(key === 'saved' ? 1 : 0)
+                        }
+                    />
                 </Sceleton>
                 <div className="profile_posts">
                     <Posts

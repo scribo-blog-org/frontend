@@ -16,6 +16,7 @@ export { default as PrimaryButton } from './PrimaryButton';
 export { default as SearchSelect } from './SearchSelect';
 export { default as Skeleton } from './Sceleton/Sceleton';
 export { default as SwitchBar } from './SwitchBar';
+export { default as Tabs } from './Tabs';
 export { default as TextEditorField } from './TextEditorField';
 export { default as Toast } from './Toast';
 export { default as Toggle } from './Toggle';
