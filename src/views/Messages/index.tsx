@@ -25,6 +25,7 @@ import {
     markConversationRead,
     sendMessage,
 } from '../../api/chat.api';
+import { getUsersByIds } from '../../api/users.api';
 import { socketEvents } from '../../sockets/socket.events';
 import { socketService } from '../../sockets/socket.service';
 import {
@@ -196,7 +197,9 @@ const conversationStamp = (date: any) => {
     if (!date) {
         return '';
     }
-    return format_list_date(date);
+    return is_same_calendar_day(date, new Date())
+        ? format_time(date)
+        : format_list_date(date);
 };
 
 const sortConversations = (list: any) =>
@@ -403,6 +406,7 @@ const MessagesPage = () => {
     const [typingByConversationId, setTypingByConversationId] = useState<any>(
         {},
     );
+    const [fetchedNickByUserId, setFetchedNickByUserId] = useState<any>({});
     const [leavingHeights, setLeavingHeights] = useState<any>({});
     const [isAwayFromBottom, setIsAwayFromBottom] = useState(false);
     const [selectionIds, setSelectionIds] = useState<any>(null);
@@ -2442,15 +2446,81 @@ const MessagesPage = () => {
     const groupOnline = groupMembers.filter(
         (member: any) => onlineByUserId[String(member._id)],
     ).length;
-    const groupTypingNames = Object.keys(
-        typingByConversationId[String(conversationId)] || {},
-    )
-        .map(
-            (id) =>
-                groupMembers.find((member: any) => String(member._id) === id)
-                    ?.nick_name || 'Someone',
-        )
-        .join(', ');
+    const knownNickByUserId = useMemo(() => {
+        const map: Record<string, string> = {};
+
+        conversations.forEach((item: any) => {
+            const other = item.participant;
+            if (other?._id && other?.nick_name) {
+                map[String(other._id)] = other.nick_name;
+            }
+        });
+
+        (activeConversation?.members || []).forEach((member: any) => {
+            if (member?._id && member?.nick_name) {
+                map[String(member._id)] = member.nick_name;
+            }
+        });
+
+        return map;
+    }, [conversations, activeConversation]);
+
+    const typingUserIds = useMemo(() => {
+        const ids = new Set<string>();
+
+        Object.values(typingByConversationId).forEach((users: any) =>
+            Object.keys(users || {}).forEach((id) => ids.add(id)),
+        );
+
+        return [...ids];
+    }, [typingByConversationId]);
+
+    useEffect(() => {
+        const missing = typingUserIds.filter(
+            (id) => !knownNickByUserId[id] && !fetchedNickByUserId[id],
+        );
+
+        if (!missing.length) {
+            return;
+        }
+
+        let cancelled = false;
+
+        void getUsersByIds(missing).then((users: any) => {
+            if (cancelled || !Array.isArray(users) || !users.length) {
+                return;
+            }
+
+            setFetchedNickByUserId((current: any) => {
+                const next = { ...current };
+                users.forEach((user: any) => {
+                    if (user?._id) {
+                        next[String(user._id)] = user.nick_name || 'Someone';
+                    }
+                });
+                return next;
+            });
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [typingUserIds, knownNickByUserId, fetchedNickByUserId]);
+
+    const typingNamesFor = useCallback(
+        (id: any) =>
+            Object.keys(typingByConversationId[String(id)] || {})
+                .map(
+                    (userId) =>
+                        knownNickByUserId[userId] ||
+                        fetchedNickByUserId[userId] ||
+                        'Someone',
+                )
+                .join(', '),
+        [typingByConversationId, knownNickByUserId, fetchedNickByUserId],
+    );
+
+    const groupTypingNames = typingNamesFor(conversationId);
 
     const groupMemberIds = (activeConversation?.members || [])
         .map((member: any) => String(member._id))
@@ -2685,13 +2755,10 @@ const MessagesPage = () => {
                                             {isGroupChat(item) ? (
                                                 <GroupFace
                                                     item={item}
-                                                    subtitle={
-                                                        typingByConversationId[
-                                                            String(item._id)
-                                                        ]
-                                                            ? 'typing…'
-                                                            : ''
-                                                    }
+                                                    typing={typingNamesFor(
+                                                        item._id,
+                                                    )}
+                                                    typingInline
                                                 />
                                             ) : (
                                                 <UserBadge
@@ -2723,6 +2790,9 @@ const MessagesPage = () => {
                                                         typingByConversationId[
                                                             String(item._id)
                                                         ],
+                                                    )}
+                                                    typingNames={typingNamesFor(
+                                                        item._id,
                                                     )}
                                                     className="messages_activity_status"
                                                 />
@@ -2821,6 +2891,7 @@ const MessagesPage = () => {
                                                         String(conversationId)
                                                     ],
                                                 )}
+                                                typingNames={groupTypingNames}
                                                 className="messages_activity_status"
                                             />
                                         </div>

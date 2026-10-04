@@ -46,7 +46,15 @@ export function groupListPatch(detail: any, previous: any = {}) {
     };
 }
 
-export function GroupFace({ item, subtitle, stats, typing }: any) {
+const TypingDots = () => (
+    <span className="user_activity_status_dots" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+    </span>
+);
+
+export function GroupFace({ item, stats, typing, typingInline }: any) {
     return (
         <div className="user_badge messages_group_face">
             <div className="user_badge_avatar">
@@ -60,24 +68,24 @@ export function GroupFace({ item, subtitle, stats, typing }: any) {
                     {stats ? (
                         <p className="messages_group_subtitle">{stats}</p>
                     ) : null}
+                    {typing && typingInline ? (
+                        <p className="messages_group_typing messages_group_typing_inline">
+                            <TypingDots />
+                            <span className="messages_group_typing_names">
+                                {typing}
+                            </span>
+                        </p>
+                    ) : null}
                 </div>
-                {subtitle ? (
-                    <p className="messages_group_subtitle">{subtitle}</p>
-                ) : null}
-                {typing ? (
+                {typing && !typingInline ? (
                     <p className="messages_group_typing">
-                        <span>Typing</span>
-                        <span
-                            className="user_activity_status_dots"
-                            aria-hidden="true"
-                        >
-                            <span />
-                            <span />
-                            <span />
-                        </span>
                         <span className="messages_group_typing_names">
                             {typing}
                         </span>
+                        <span className="messages_group_typing_label">
+                            Typing
+                        </span>
+                        <TypingDots />
                     </p>
                 ) : null}
             </div>
