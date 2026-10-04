@@ -21,13 +21,14 @@ import {
     getConversation,
     getConversations,
     getMessages,
+    removeGroupMember,
     markConversationRead,
     sendMessage,
 } from '../../api/chat.api';
 import { socketEvents } from '../../sockets/socket.events';
 import { socketService } from '../../sockets/socket.service';
 import {
-    format_date_time,
+    format_list_date,
     format_message_date_label,
     format_time,
     is_same_calendar_day,
@@ -69,6 +70,14 @@ import NewMessageIllustration from '../../assets/svg/illustrations/new-message.s
 
 import MessageContextMenu from './MessageContextMenu';
 import { getMessageActions } from './messageActions';
+import {
+    CreateGroupForm,
+    GroupFace,
+    GroupSettings,
+    UserSearchSelect,
+    groupListPatch,
+    isGroupChat,
+} from './groupChat';
 import './Messages.scss';
 
 const COMPOSER_LINE_HEIGHT = 20;
@@ -153,6 +162,41 @@ const mergeIncomingMessage = (list: any, message: any, profileId: any) => {
     }
 
     return mergeMessage(list, message);
+};
+
+const SENDER_COLORS = [
+    '#e36a6a',
+    '#6aa6e3',
+    '#5cbf8a',
+    '#e3a15a',
+    '#b07ae0',
+    '#e07ab0',
+    '#6ec4c4',
+];
+
+const senderColor = (id: any) => {
+    const value = String(id || '');
+    let hash = 0;
+    for (let index = 0; index < value.length; index += 1) {
+        hash = (hash + value.charCodeAt(index)) % SENDER_COLORS.length;
+    }
+    return SENDER_COLORS[hash];
+};
+
+const conversationPreview = (item: any) => {
+    const text = String(item?.last_message_text || '').trim();
+    if (!text) {
+        return 'No messages';
+    }
+    const name = String(item?.last_message_sender_name || '').trim();
+    return name ? `${name}: ${text}` : text;
+};
+
+const conversationStamp = (date: any) => {
+    if (!date) {
+        return '';
+    }
+    return format_list_date(date);
 };
 
 const sortConversations = (list: any) =>
@@ -321,8 +365,9 @@ const getDeleteChatModalContent = ({
 }: any) => (
     <div className="messages_delete_modal">
         <p className="messages_delete_modal_text">
-            Conversation with {participant?.nick_name || 'user'} and all
-            messages will be deleted permanently. This cannot be undone.
+            {participant
+                ? `Conversation with ${participant.nick_name || 'user'} and all messages will be deleted permanently. This cannot be undone.`
+                : 'This group and all messages will be deleted permanently. This cannot be undone.'}
         </p>
         <DeleteChatModalActions
             conversationId={conversationId}
@@ -366,6 +411,7 @@ const MessagesPage = () => {
         Record<string, 'from' | 'to'>
     >({});
 
+    const conversationIdRef = useRef(conversationId);
     const listRef = useRef<any>(null);
     const composerDockRef = useRef<any>(null);
     const composerInputRef = useRef<any>(null);
@@ -804,17 +850,35 @@ const MessagesPage = () => {
             return;
         }
 
+        conversationIdRef.current = conversationId;
+
         const unsubscribe = socketService.on(
             'chat:conversation',
             (conversation: any) => {
                 setConversations((current: any) =>
                     upsertConversationInList(current, conversation),
                 );
+                if (
+                    isGroupChat(conversation) &&
+                    String(conversation._id) ===
+                        String(conversationIdRef.current)
+                ) {
+                    void getConversation(conversation._id).then(
+                        (result: any) => {
+                            if (
+                                result?.status &&
+                                result.data?.kind === 'group'
+                            ) {
+                                setActiveConversation(result.data);
+                            }
+                        },
+                    );
+                }
             },
         );
 
         return unsubscribe;
-    }, [profile?._id]);
+    }, [profile?._id, conversationId]);
 
     useEffect(() => {
         if (!profile) {
@@ -846,40 +910,47 @@ const MessagesPage = () => {
         let cancelled = false;
         const timers: Record<string, number> = {};
 
-        const clearTyping = (conversationId: string) => {
-            if (timers[conversationId]) {
-                clearTimeout(timers[conversationId]);
-                delete timers[conversationId];
+        const clearTyping = (conversationId: string, userId: string) => {
+            const timerKey = `${conversationId}:${userId}`;
+            if (timers[timerKey]) {
+                clearTimeout(timers[timerKey]);
+                delete timers[timerKey];
             }
             setTypingByConversationId((current: any) => {
-                if (!current[conversationId]) {
+                const users = current[conversationId];
+                if (!users?.[userId]) {
                     return current;
                 }
+                const nextUsers = { ...users };
+                delete nextUsers[userId];
                 const next = { ...current };
-                delete next[conversationId];
+                if (Object.keys(nextUsers).length) {
+                    next[conversationId] = nextUsers;
+                } else {
+                    delete next[conversationId];
+                }
                 return next;
             });
         };
 
-        const showTyping = (conversationId: string) => {
-            if (timers[conversationId]) {
-                clearTimeout(timers[conversationId]);
+        const showTyping = (conversationId: string, userId: string) => {
+            const timerKey = `${conversationId}:${userId}`;
+            if (timers[timerKey]) {
+                clearTimeout(timers[timerKey]);
             }
-            setTypingByConversationId((current: any) =>
-                current[conversationId]
-                    ? current
-                    : { ...current, [conversationId]: true },
-            );
-            timers[conversationId] = window.setTimeout(() => {
-                delete timers[conversationId];
-                setTypingByConversationId((current: any) => {
-                    if (!current[conversationId]) {
-                        return current;
-                    }
-                    const next = { ...current };
-                    delete next[conversationId];
-                    return next;
-                });
+            setTypingByConversationId((current: any) => {
+                const users = current[conversationId] || {};
+                if (users[userId]) {
+                    return current;
+                }
+                return {
+                    ...current,
+                    [conversationId]: { ...users, [userId]: true },
+                };
+            });
+            timers[timerKey] = window.setTimeout(() => {
+                delete timers[timerKey];
+                clearTyping(conversationId, userId);
             }, 2500);
         };
 
@@ -891,11 +962,12 @@ const MessagesPage = () => {
                 return;
             }
             const id = String(payload.conversation_id);
+            const userId = String(payload.user_id);
             if (payload.typing === false) {
-                clearTyping(id);
+                clearTyping(id, userId);
                 return;
             }
-            showTyping(id);
+            showTyping(id, userId);
         };
 
         const unsubscribe = socketService.on('chat:typing', applyTyping);
@@ -1490,8 +1562,8 @@ const MessagesPage = () => {
             event.pointerType === 'touch' ||
             window.matchMedia('(hover: none) and (pointer: coarse)').matches;
         const article = document.getElementById(`message_${message._id}`);
-        const wrap = article?.querySelector('.messages_bubble_wrap');
-        const rect = wrap?.getBoundingClientRect();
+        const bubble = article?.querySelector('.messages_bubble');
+        const rect = bubble?.getBoundingClientRect();
         const anchor =
             article && rect
                 ? {
@@ -1993,6 +2065,10 @@ const MessagesPage = () => {
                     return upsertConversationInList(current, {
                         ...existing,
                         last_message_text: messagePreviewText(result.data),
+                        last_message_sender_name:
+                            result.data?.sender?.nick_name ||
+                            profile.nick_name ||
+                            '',
                         last_message_at: result.data.created_at,
                     });
                 });
@@ -2095,6 +2171,10 @@ const MessagesPage = () => {
                 return upsertConversationInList(current, {
                     ...existing,
                     last_message_text: messagePreviewText(result.data),
+                    last_message_sender_name:
+                        result.data?.sender?.nick_name ||
+                        profile.nick_name ||
+                        '',
                     last_message_at: result.data.created_at,
                     unread: 0,
                 });
@@ -2349,6 +2429,32 @@ const MessagesPage = () => {
 
     const participant =
         activeConversation?.participant || activeListItem?.participant;
+    const groupChat =
+        isGroupChat(activeConversation) || isGroupChat(activeListItem);
+    const groupItem = isGroupChat(activeConversation)
+        ? activeConversation
+        : activeListItem;
+    const isGroupAdmin = groupItem?.my_role === 'admin';
+    const groupMembers = Array.isArray(groupItem?.members)
+        ? groupItem.members
+        : [];
+    const groupCount = groupMembers.length || groupItem?.member_count || 0;
+    const groupOnline = groupMembers.filter(
+        (member: any) => onlineByUserId[String(member._id)],
+    ).length;
+    const groupTypingNames = Object.keys(
+        typingByConversationId[String(conversationId)] || {},
+    )
+        .map(
+            (id) =>
+                groupMembers.find((member: any) => String(member._id) === id)
+                    ?.nick_name || 'Someone',
+        )
+        .join(', ');
+
+    const groupMemberIds = (activeConversation?.members || [])
+        .map((member: any) => String(member._id))
+        .join(',');
 
     const watchedUserIds = useMemo(() => {
         const ids = conversations
@@ -2360,8 +2466,13 @@ const MessagesPage = () => {
             ids.push(String(participant._id));
         }
 
+        groupMemberIds
+            .split(',')
+            .filter(Boolean)
+            .forEach((id: string) => ids.push(id));
+
         return [...new Set(ids)];
-    }, [conversations, participant?._id]);
+    }, [conversations, participant?._id, groupMemberIds]);
 
     useEffect(() => {
         if (!watchedUserIds.length) {
@@ -2409,6 +2520,78 @@ const MessagesPage = () => {
         () => new Map(messages.map((item: any) => [String(item._id), item])),
         [messages],
     );
+
+    const applyGroupUpdate = useCallback((detail: any) => {
+        setActiveConversation(detail);
+        setConversations((current: any) =>
+            upsertConversationInList(
+                current,
+                groupListPatch(
+                    detail,
+                    current.find((item: any) => item._id === detail._id),
+                ),
+            ),
+        );
+    }, []);
+
+    const openCreateGroup = useCallback(() => {
+        showModalWindow({
+            title: 'New group',
+            size: 'small',
+            showCloseButton: true,
+            closeFunc: () => {},
+            content: (
+                <CreateGroupForm
+                    profileId={profile?._id}
+                    showToast={showToast}
+                    onClose={requestCloseModal}
+                    onCreated={(detail: any) => {
+                        applyGroupUpdate(detail);
+                        navigate(`/messages/${detail._id}`);
+                    }}
+                />
+            ),
+        });
+    }, [
+        showModalWindow,
+        profile?._id,
+        showToast,
+        requestCloseModal,
+        applyGroupUpdate,
+        navigate,
+    ]);
+
+    const openGroupSettings = useCallback(() => {
+        const group = activeConversation;
+        if (!isGroupChat(group)) {
+            return;
+        }
+
+        showModalWindow({
+            title: group.title || 'Group',
+            size: 'small',
+            showCloseButton: true,
+            closeFunc: () => {},
+            content: (
+                <GroupSettings
+                    conversation={group}
+                    profileId={profile?._id}
+                    showToast={showToast}
+                    onClose={requestCloseModal}
+                    onUpdated={applyGroupUpdate}
+                    onLeft={removeConversationFromState}
+                />
+            ),
+        });
+    }, [
+        activeConversation,
+        showModalWindow,
+        profile?._id,
+        showToast,
+        requestCloseModal,
+        applyGroupUpdate,
+        removeConversationFromState,
+    ]);
 
     const openDeleteChatModal = useCallback(() => {
         if (!conversationId || !profile) {
@@ -2461,6 +2644,28 @@ const MessagesPage = () => {
                 className={`messages_layout${conversationId ? ' messages_layout_chat' : ''}`}
             >
                 <aside className="messages_sidebar">
+                    <div className="messages_sidebar_head">
+                        <h1 className="messages_title">Messages</h1>
+                        <button
+                            type="button"
+                            className="messages_new_group_text app-transition"
+                            onClick={openCreateGroup}
+                        >
+                            New group
+                        </button>
+                    </div>
+                    <UserSearchSelect
+                        className="messages_sidebar_search"
+                        excludeIds={[profile._id]}
+                        placeholder="Search"
+                        onPick={(user: any) =>
+                            startConversationWithUser(
+                                user._id,
+                                navigate,
+                                showToast,
+                            )
+                        }
+                    />
                     {isListLoading ? (
                         <Loading size={32} />
                     ) : conversations.length ? (
@@ -2476,46 +2681,60 @@ const MessagesPage = () => {
                                         }`}
                                     >
                                         <div className="messages_conversation_data">
-                                            <UserBadge
-                                                data={item.participant}
-                                                asLink={false}
-                                            />
-                                            <UserActivityStatus
-                                                user={item.participant}
-                                                viewerId={profile._id}
-                                                isOnline={
-                                                    onlineByUserId[
-                                                        String(
-                                                            item.participant
-                                                                ?._id,
-                                                        )
-                                                    ] ?? false
-                                                }
-                                                activityAt={
-                                                    activityAtByUserId[
-                                                        String(
-                                                            item.participant
-                                                                ?._id,
-                                                        )
-                                                    ]
-                                                }
-                                                isTyping={Boolean(
-                                                    typingByConversationId[
-                                                        String(item._id)
-                                                    ],
-                                                )}
-                                                className="messages_activity_status"
-                                            />
+                                            {isGroupChat(item) ? (
+                                                <GroupFace
+                                                    item={item}
+                                                    subtitle={
+                                                        typingByConversationId[
+                                                            String(item._id)
+                                                        ]
+                                                            ? 'typing…'
+                                                            : ''
+                                                    }
+                                                />
+                                            ) : (
+                                                <UserBadge
+                                                    data={item.participant}
+                                                    asLink={false}
+                                                />
+                                            )}
+                                            {isGroupChat(item) ? null : (
+                                                <UserActivityStatus
+                                                    user={item.participant}
+                                                    viewerId={profile._id}
+                                                    isOnline={
+                                                        onlineByUserId[
+                                                            String(
+                                                                item.participant
+                                                                    ?._id,
+                                                            )
+                                                        ] ?? false
+                                                    }
+                                                    activityAt={
+                                                        activityAtByUserId[
+                                                            String(
+                                                                item.participant
+                                                                    ?._id,
+                                                            )
+                                                        ]
+                                                    }
+                                                    isTyping={Boolean(
+                                                        typingByConversationId[
+                                                            String(item._id)
+                                                        ],
+                                                    )}
+                                                    className="messages_activity_status"
+                                                />
+                                            )}
                                         </div>
                                         <div className="messages_conversation_copy">
                                             <p className="messages_conversation_preview">
-                                                {item.last_message_text ||
-                                                    'No messages'}
+                                                {conversationPreview(item)}
                                             </p>
                                             <div className="messages_conversation_row">
                                                 {item.last_message_at ? (
                                                     <span className="messages_conversation_time">
-                                                        {format_date_time(
+                                                        {conversationStamp(
                                                             item.last_message_at,
                                                         )}
                                                     </span>
@@ -2568,7 +2787,19 @@ const MessagesPage = () => {
                                     >
                                         <ArrowLeftIcon />
                                     </button>
-                                    {participant ? (
+                                    {groupChat ? (
+                                        <button
+                                            type="button"
+                                            className="messages_chat_head_user messages_group_open"
+                                            onClick={openGroupSettings}
+                                        >
+                                            <GroupFace
+                                                item={groupItem}
+                                                subtitle={`${groupCount} people, ${groupOnline} online`}
+                                                typing={groupTypingNames}
+                                            />
+                                        </button>
+                                    ) : participant ? (
                                         <div className="messages_chat_head_user">
                                             <UserBadge data={participant} />
                                             <UserActivityStatus
@@ -2599,16 +2830,73 @@ const MessagesPage = () => {
                                     )}
                                 </div>
                                 <Popup
-                                    body={[
-                                        [
-                                            {
-                                                title: 'Delete chat',
-                                                icon: <DeleteIcon />,
-                                                type: 'danger',
-                                                onClick: openDeleteChatModal,
-                                            },
-                                        ],
-                                    ]}
+                                    body={
+                                        groupChat
+                                            ? [
+                                                  [
+                                                      {
+                                                          title: 'Group info',
+                                                          onClick:
+                                                              openGroupSettings,
+                                                      },
+                                                  ],
+                                                  [
+                                                      {
+                                                          title: 'Leave group',
+                                                          type: 'danger',
+                                                          onClick: () => {
+                                                              void (async () => {
+                                                                  const result =
+                                                                      await removeGroupMember(
+                                                                          conversationId,
+                                                                          profile._id,
+                                                                      );
+                                                                  if (
+                                                                      !result?.status
+                                                                  ) {
+                                                                      showToast?.(
+                                                                          {
+                                                                              type: 'error',
+                                                                              message:
+                                                                                  result?.message ||
+                                                                                  'Could not leave the group',
+                                                                          },
+                                                                      );
+                                                                      return;
+                                                                  }
+                                                                  removeConversationFromState(
+                                                                      conversationId,
+                                                                  );
+                                                              })();
+                                                          },
+                                                      },
+                                                      ...(isGroupAdmin
+                                                          ? [
+                                                                {
+                                                                    title: 'Delete group',
+                                                                    icon: (
+                                                                        <DeleteIcon />
+                                                                    ),
+                                                                    type: 'danger',
+                                                                    onClick:
+                                                                        openDeleteChatModal,
+                                                                },
+                                                            ]
+                                                          : []),
+                                                  ],
+                                              ]
+                                            : [
+                                                  [
+                                                      {
+                                                          title: 'Delete chat',
+                                                          icon: <DeleteIcon />,
+                                                          type: 'danger',
+                                                          onClick:
+                                                              openDeleteChatModal,
+                                                      },
+                                                  ],
+                                              ]
+                                    }
                                 >
                                     <div
                                         className={`messages_chat_menu app-transition${
@@ -2951,15 +3239,84 @@ const MessagesPage = () => {
                                                                                     </span>
                                                                                 </span>
                                                                             ) : null}
-                                                                            <div className="messages_bubble_wrap">
-                                                                                <div className="messages_bubble">
-                                                                                    {replyQuote
-                                                                                        ? (() => {
-                                                                                              if (
-                                                                                                  replyQuote.deleted
-                                                                                              ) {
+                                                                            <div
+                                                                                className={`messages_bubble_wrap${
+                                                                                    groupChat &&
+                                                                                    !isOwn
+                                                                                        ? ' messages_bubble_wrap_incoming'
+                                                                                        : ''
+                                                                                }`}
+                                                                            >
+                                                                                {groupChat &&
+                                                                                !isOwn &&
+                                                                                !isDeleted ? (
+                                                                                    <UserBadge
+                                                                                        data={
+                                                                                            message.sender
+                                                                                        }
+                                                                                        avatarOnly
+                                                                                        asLink={
+                                                                                            false
+                                                                                        }
+                                                                                        className="messages_group_avatar"
+                                                                                    />
+                                                                                ) : null}
+                                                                                <div className="messages_bubble_column">
+                                                                                    {groupChat &&
+                                                                                    !isOwn &&
+                                                                                    !isDeleted ? (
+                                                                                        <span
+                                                                                            className="messages_sender"
+                                                                                            style={{
+                                                                                                color: senderColor(
+                                                                                                    message
+                                                                                                        .sender
+                                                                                                        ?._id,
+                                                                                                ),
+                                                                                            }}
+                                                                                        >
+                                                                                            {message
+                                                                                                .sender
+                                                                                                ?.nick_name ||
+                                                                                                'User'}
+                                                                                        </span>
+                                                                                    ) : null}
+                                                                                    <div className="messages_bubble">
+                                                                                        {replyQuote
+                                                                                            ? (() => {
+                                                                                                  if (
+                                                                                                      replyQuote.deleted
+                                                                                                  ) {
+                                                                                                      return (
+                                                                                                          <div className="messages_quote messages_quote_deleted app-transition">
+                                                                                                              <span className="messages_quote_author">
+                                                                                                                  {
+                                                                                                                      replyQuote.author
+                                                                                                                  }
+                                                                                                              </span>
+                                                                                                              <span className="messages_quote_text">
+                                                                                                                  {
+                                                                                                                      replyQuote.text
+                                                                                                                  }
+                                                                                                              </span>
+                                                                                                          </div>
+                                                                                                      );
+                                                                                                  }
+
                                                                                                   return (
-                                                                                                      <div className="messages_quote messages_quote_deleted app-transition">
+                                                                                                      <button
+                                                                                                          type="button"
+                                                                                                          className="messages_quote app-transition"
+                                                                                                          onClick={() =>
+                                                                                                              handleReplyPreviewClick(
+                                                                                                                  {
+                                                                                                                      _id: replyTargetId,
+                                                                                                                      deleted:
+                                                                                                                          replyQuote.deleted,
+                                                                                                                  },
+                                                                                                              )
+                                                                                                          }
+                                                                                                      >
                                                                                                           <span className="messages_quote_author">
                                                                                                               {
                                                                                                                   replyQuote.author
@@ -2970,77 +3327,50 @@ const MessagesPage = () => {
                                                                                                                   replyQuote.text
                                                                                                               }
                                                                                                           </span>
-                                                                                                      </div>
+                                                                                                      </button>
                                                                                                   );
-                                                                                              }
+                                                                                              })()
+                                                                                            : null}
 
-                                                                                              return (
-                                                                                                  <button
-                                                                                                      type="button"
-                                                                                                      className="messages_quote app-transition"
-                                                                                                      onClick={() =>
-                                                                                                          handleReplyPreviewClick(
-                                                                                                              {
-                                                                                                                  _id: replyTargetId,
-                                                                                                                  deleted:
-                                                                                                                      replyQuote.deleted,
-                                                                                                              },
-                                                                                                          )
-                                                                                                      }
-                                                                                                  >
-                                                                                                      <span className="messages_quote_author">
-                                                                                                          {
-                                                                                                              replyQuote.author
-                                                                                                          }
-                                                                                                      </span>
-                                                                                                      <span className="messages_quote_text">
-                                                                                                          {
-                                                                                                              replyQuote.text
-                                                                                                          }
-                                                                                                      </span>
-                                                                                                  </button>
-                                                                                              );
-                                                                                          })()
-                                                                                        : null}
+                                                                                        <div
+                                                                                            className={`messages_body${
+                                                                                                hasEmbeds
+                                                                                                    ? ' messages_body_with_post'
+                                                                                                    : ''
+                                                                                            }`}
+                                                                                        >
+                                                                                            <MessageContent
+                                                                                                text={
+                                                                                                    message.text
+                                                                                                }
+                                                                                                className="messages_text"
+                                                                                                deleted={
+                                                                                                    isDeleted
+                                                                                                }
+                                                                                                onLayoutChange={
+                                                                                                    scrollIfPinned
+                                                                                                }
+                                                                                            />
 
-                                                                                    <div
-                                                                                        className={`messages_body${
-                                                                                            hasEmbeds
-                                                                                                ? ' messages_body_with_post'
-                                                                                                : ''
-                                                                                        }`}
-                                                                                    >
-                                                                                        <MessageContent
-                                                                                            text={
-                                                                                                message.text
-                                                                                            }
-                                                                                            className="messages_text"
-                                                                                            deleted={
-                                                                                                isDeleted
-                                                                                            }
-                                                                                            onLayoutChange={
-                                                                                                scrollIfPinned
-                                                                                            }
-                                                                                        />
-
-                                                                                        <div className="messages_meta">
-                                                                                            <span className="messages_time">
-                                                                                                {format_time(
-                                                                                                    message.created_at,
-                                                                                                )}
-                                                                                            </span>
-                                                                                            {message.edited_at ? (
-                                                                                                <span className="messages_edited">
-                                                                                                    updated
+                                                                                            <div className="messages_meta">
+                                                                                                <span className="messages_time">
+                                                                                                    {format_time(
+                                                                                                        message.created_at,
+                                                                                                    )}
                                                                                                 </span>
-                                                                                            ) : null}
-                                                                                            {isOwn ? (
-                                                                                                <MessageStatus
-                                                                                                    status={
-                                                                                                        message.status
-                                                                                                    }
-                                                                                                />
-                                                                                            ) : null}
+                                                                                                {message.edited_at ? (
+                                                                                                    <span className="messages_edited">
+                                                                                                        updated
+                                                                                                    </span>
+                                                                                                ) : null}
+                                                                                                {isOwn ? (
+                                                                                                    <MessageStatus
+                                                                                                        status={
+                                                                                                            message.status
+                                                                                                        }
+                                                                                                    />
+                                                                                                ) : null}
+                                                                                            </div>
                                                                                         </div>
                                                                                     </div>
                                                                                 </div>

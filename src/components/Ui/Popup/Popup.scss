@@ -24,6 +24,14 @@
         z-index: var(--z-popup-header);
     }
 
+    &_modal {
+        z-index: 2100;
+
+        &.popup_menu_nested {
+            z-index: 2110;
+        }
+    }
+
     &_nested {
         z-index: calc(var(--z-popup-content) + 10);
     }
