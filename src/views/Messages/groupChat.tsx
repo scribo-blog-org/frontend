@@ -92,32 +92,47 @@ export function UserSearchSelect({
 }: any) {
     const [options, setOptions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [value, setValue] = useState('');
-    const [fieldKey, setFieldKey] = useState(0);
     const excludeKey = excludeIds.map(String).join(',');
     const timerRef = useRef<number | null>(null);
     const requestRef = useRef(0);
+    const lastNeedleRef = useRef('');
 
-    const handleInput = (raw: string) => {
+    const reset = () => {
         if (timerRef.current) {
             window.clearTimeout(timerRef.current);
+            timerRef.current = null;
         }
+        requestRef.current += 1;
+        lastNeedleRef.current = '';
+        setLoading(false);
+        setOptions([]);
+    };
 
+    const handleInput = (raw: string) => {
         const needle = String(raw || '')
             .trim()
             .replace(/^@/, '');
+
         if (needle.length < 2) {
-            requestRef.current += 1;
-            setLoading(false);
-            setOptions([]);
+            reset();
             return;
         }
 
-        const requestId = requestRef.current + 1;
-        requestRef.current = requestId;
+        if (needle === lastNeedleRef.current) {
+            return;
+        }
+
+        if (timerRef.current) {
+            window.clearTimeout(timerRef.current);
+        }
         setLoading(true);
 
         timerRef.current = window.setTimeout(async () => {
+            timerRef.current = null;
+            const requestId = requestRef.current + 1;
+            requestRef.current = requestId;
+            lastNeedleRef.current = needle;
+
             const users = await searchUsers(needle);
             if (requestId !== requestRef.current) {
                 return;
@@ -137,7 +152,7 @@ export function UserSearchSelect({
 
             setOptions(next);
             setLoading(false);
-        }, 250);
+        }, 300);
     };
 
     useEffect(
@@ -151,24 +166,18 @@ export function UserSearchSelect({
 
     return (
         <SearchSelect
-            key={fieldKey}
             className={className}
             options={options}
-            value={value}
             placeholder={placeholder}
             emptyLabel="Nothing found"
             loading={loading}
             minSearchLength={2}
+            clearOnSelect
             onInput={handleInput}
-            onChange={(next: any) => {
-                const picked = options.find(
-                    (option) => option.value === String(next),
-                );
-                setValue('');
-                setOptions([]);
-                setFieldKey((current) => current + 1);
-                if (picked?.user) {
-                    onPick(picked.user);
+            onSelect={(option: any) => {
+                reset();
+                if (option?.user) {
+                    onPick(option.user);
                 }
             }}
         />
@@ -378,7 +387,7 @@ export function GroupSettings({
     };
 
     const handleSave = async () => {
-        if (!isAdmin || isSaving) {
+        if (isSaving) {
             return;
         }
         setIsSaving(true);
@@ -456,60 +465,52 @@ export function GroupSettings({
 
     return (
         <div className="messages_group_form">
-            {isAdmin ? (
-                <>
-                    <DropFile
-                        value={
-                            photo instanceof File
-                                ? photo
-                                : removePhoto
-                                  ? null
-                                  : group?.photo
-                        }
-                        previewUrl={removePhoto ? null : group?.photo}
-                        setValue={(file: any) => {
-                            setPhoto(file instanceof File ? file : null);
-                            setRemovePhoto(!(file instanceof File));
-                        }}
-                        onRemove={() => {
-                            setPhoto(null);
-                            setRemovePhoto(true);
-                        }}
-                        {...imageDropProps}
-                    />
-                    <InputField
-                        value={name}
-                        placeholder="Group name"
-                        length={FIELD_LIMITS.groupName.max}
-                        onChange={(event: any) => setName(event.target.value)}
-                    />
-                    <InputField
-                        value={description}
-                        placeholder="Description (optional)"
-                        isMultiline
-                        multilineRows={3}
-                        length={FIELD_LIMITS.groupDescription.max}
-                        onChange={(event: any) =>
-                            setDescription(event.target.value)
-                        }
-                    />
-                    <PrimaryButton isLoading={isSaving} onClick={handleSave}>
-                        Save
-                    </PrimaryButton>
-                </>
-            ) : null}
+            <DropFile
+                value={
+                    photo instanceof File
+                        ? photo
+                        : removePhoto
+                          ? null
+                          : group?.photo
+                }
+                previewUrl={removePhoto ? null : group?.photo}
+                setValue={(file: any) => {
+                    setPhoto(file instanceof File ? file : null);
+                    setRemovePhoto(!(file instanceof File));
+                }}
+                onRemove={() => {
+                    setPhoto(null);
+                    setRemovePhoto(true);
+                }}
+                {...imageDropProps}
+            />
+            <InputField
+                value={name}
+                placeholder="Group name"
+                length={FIELD_LIMITS.groupName.max}
+                onChange={(event: any) => setName(event.target.value)}
+            />
+            <InputField
+                value={description}
+                placeholder="Description (optional)"
+                isMultiline
+                multilineRows={3}
+                length={FIELD_LIMITS.groupDescription.max}
+                onChange={(event: any) => setDescription(event.target.value)}
+            />
+            <PrimaryButton isLoading={isSaving} onClick={handleSave}>
+                Save
+            </PrimaryButton>
             <div className="messages_group_members_head">
                 <p>Participants</p>
             </div>
             <div className="messages_group_add_row">
-                {isAdmin ? (
-                    <UserSearchSelect
-                        className="messages_group_add_search"
-                        excludeIds={excludeIds}
-                        placeholder="Add people"
-                        onPick={handleAdd}
-                    />
-                ) : null}
+                <UserSearchSelect
+                    className="messages_group_add_search"
+                    excludeIds={excludeIds}
+                    placeholder="Add people"
+                    onPick={handleAdd}
+                />
                 <button
                     type="button"
                     className="messages_group_share app-transition app-transition-color"
