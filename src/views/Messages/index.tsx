@@ -2468,7 +2468,10 @@ const MessagesPage = () => {
         (member: any) => onlineByUserId[String(member._id)],
     ).length;
     const visibleConversations = useMemo(() => {
-        const needle = conversationFilter.trim().replace(/^@/, '').toLowerCase();
+        const needle = conversationFilter
+            .trim()
+            .replace(/^@/, '')
+            .toLowerCase();
 
         if (!needle) {
             return conversations;

@@ -125,7 +125,9 @@ export function UserSearchSelect({
 
             const excluded = new Set(excludeKey.split(',').filter(Boolean));
             const next = (Array.isArray(users) ? users : [])
-                .filter((user: any) => user?._id && !excluded.has(String(user._id)))
+                .filter(
+                    (user: any) => user?._id && !excluded.has(String(user._id)),
+                )
                 .map((user: any) => ({
                     value: String(user._id),
                     name: user.nick_name || 'User',
