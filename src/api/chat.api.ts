@@ -19,6 +19,99 @@ const getConversations = async () => {
     return parse(response);
 };
 
+const groupForm = (fields: any, photo?: File | null) => {
+    const body = new FormData();
+    body.set('name', fields.name);
+    body.set('description', fields.description || '');
+    if (fields.memberIds) {
+        body.set('memberIds', JSON.stringify(fields.memberIds));
+    }
+    if (fields.removePhoto) {
+        body.set('removePhoto', 'true');
+    }
+    if (photo) {
+        body.set('groupPhoto', photo);
+    }
+    return body;
+};
+
+const createGroup = async (fields: any, photo?: File | null) => {
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/group`,
+        {
+            method: 'POST',
+            body: groupForm(fields, photo),
+        },
+    );
+    return parse(response);
+};
+
+const updateGroup = async (
+    conversationId: any,
+    fields: any,
+    photo?: File | null,
+) => {
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/${conversationId}/group`,
+        {
+            method: 'PATCH',
+            body: groupForm(fields, photo),
+        },
+    );
+    return parse(response);
+};
+
+const getGroupInvite = async (conversationId: any) => {
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/${conversationId}/invite`,
+    );
+    return parse(response);
+};
+
+const joinGroup = async (conversationId: any) => {
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/${conversationId}/join`,
+        { method: 'POST' },
+    );
+    return parse(response);
+};
+
+const addGroupMember = async (conversationId: any, userId: any) => {
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/${conversationId}/members`,
+        {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId }),
+        },
+    );
+    return parse(response);
+};
+
+const removeGroupMember = async (conversationId: any, userId: any) => {
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/${conversationId}/members/${userId}`,
+        { method: 'DELETE' },
+    );
+    return parse(response);
+};
+
+const updateGroupMemberRole = async (
+    conversationId: any,
+    userId: any,
+    role: any,
+) => {
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/${conversationId}/members/${userId}`,
+        {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role }),
+        },
+    );
+    return parse(response);
+};
+
 const createConversation = async (userId: any) => {
     const response = await apiFetch(`${apiUrl()}/api/chat/conversations`, {
         method: 'POST',
@@ -124,6 +217,13 @@ export {
     getUnreadCount,
     getConversations,
     createConversation,
+    createGroup,
+    updateGroup,
+    getGroupInvite,
+    joinGroup,
+    addGroupMember,
+    removeGroupMember,
+    updateGroupMemberRole,
     deleteConversation,
     getConversation,
     getMessages,

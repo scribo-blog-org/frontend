@@ -16,6 +16,7 @@ const UserActivityStatus = ({
     isOnline: isOnlineProp,
     activityAt: activityAtProp,
     isTyping = false,
+    typingNames = '',
     className = '',
 }: any) => {
     const userId = user?._id;
@@ -67,7 +68,6 @@ const UserActivityStatus = ({
                 className={`user_activity_status user_activity_status--typing ${className}`.trim()}
             >
                 <p>
-                    Typing
                     <span
                         className="user_activity_status_dots"
                         aria-hidden="true"
@@ -75,6 +75,9 @@ const UserActivityStatus = ({
                         <span />
                         <span />
                         <span />
+                    </span>
+                    <span className="user_activity_status_typing_names">
+                        {typingNames || 'Typing'}
                     </span>
                 </p>
             </div>

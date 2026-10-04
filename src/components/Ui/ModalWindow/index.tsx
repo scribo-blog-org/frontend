@@ -1,10 +1,18 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react';
 
 import CrossIcon from '../../../assets/svg/cross-icon.svg';
 
 import './ModalWindow.scss';
+
+const SWAP_MS = 180;
 
 const ModalWindow = ({
     modalWindow,
@@ -13,7 +21,11 @@ const ModalWindow = ({
     dismissKey,
 }: any) => {
     const [isVisible, setIsVisible] = useState<any>(false);
+    const [activeModal, setActiveModal] = useState<any>(modalWindow || null);
+    const [isSwapping, setIsSwapping] = useState<any>(false);
+    const [contentHeight, setContentHeight] = useState<any>(null);
     const closeTimeoutRef = useRef<any>(null);
+    const contentRef = useRef<any>(null);
 
     const closeModalWindow = useCallback(() => {
         if (closeTimeoutRef.current) {
@@ -37,6 +49,9 @@ const ModalWindow = ({
             }
 
             showModalWindow(false);
+            setActiveModal(null);
+            setIsSwapping(false);
+            setContentHeight(null);
             closeTimeoutRef.current = null;
         }, 300);
     }, [modalWindow, showModalWindow]);
@@ -87,8 +102,48 @@ const ModalWindow = ({
         };
     }, []);
 
+    useEffect(() => {
+        if (!modalWindow || modalWindow === activeModal) {
+            return;
+        }
+
+        if (!activeModal) {
+            setActiveModal(modalWindow);
+            return;
+        }
+
+        setIsSwapping(true);
+
+        const timer = setTimeout(() => {
+            setActiveModal(modalWindow);
+            setIsSwapping(false);
+        }, SWAP_MS);
+
+        return () => clearTimeout(timer);
+    }, [modalWindow, activeModal]);
+
+    useLayoutEffect(() => {
+        const node = contentRef.current;
+
+        if (!activeModal || !node || typeof ResizeObserver === 'undefined') {
+            setContentHeight(null);
+            return;
+        }
+
+        const measure = () => setContentHeight(node.scrollHeight);
+
+        measure();
+
+        const observer = new ResizeObserver(measure);
+        observer.observe(node);
+
+        return () => observer.disconnect();
+    }, [activeModal]);
+
     return (
-        <div className={`modal_window ${isVisible ? 'visible' : ''}`}>
+        <div
+            className={`modal_window ${isVisible && activeModal ? 'visible' : ''}`}
+        >
             <button
                 type="button"
                 onClick={closeModalWindow}
@@ -97,19 +152,19 @@ const ModalWindow = ({
 
             <div
                 className={`modal_window_body blurred ${
-                    modalWindow?.size === 'small'
+                    activeModal?.size === 'small'
                         ? 'modal_window_body_small'
-                        : modalWindow?.size === 'large'
+                        : activeModal?.size === 'large'
                           ? 'modal_window_body_large'
                           : ''
-                }`}
+                }${isSwapping ? ' modal_window_body_swapping' : ''}`}
             >
                 <div className="modal_window_body_title">
                     <p className="modal_window_body_title_text">
-                        {modalWindow?.title ?? ''}
+                        {activeModal?.title ?? ''}
                     </p>
 
-                    {modalWindow?.showCloseButton === false ? null : (
+                    {activeModal?.showCloseButton === false ? null : (
                         <button
                             type="button"
                             onClick={closeModalWindow}
@@ -120,8 +175,20 @@ const ModalWindow = ({
                     )}
                 </div>
 
-                <div className="modal_window_body_content">
-                    {modalWindow?.content ?? null}
+                <div
+                    className="modal_window_body_content"
+                    style={
+                        contentHeight == null
+                            ? undefined
+                            : { height: `${contentHeight}px` }
+                    }
+                >
+                    <div
+                        className="modal_window_body_content_inner"
+                        ref={contentRef}
+                    >
+                        {activeModal?.content ?? null}
+                    </div>
                 </div>
             </div>
         </div>

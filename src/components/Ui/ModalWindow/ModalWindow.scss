@@ -78,19 +78,35 @@
                 color: var(--modal-window-title-text-color);
                 position: relative;
                 font-size: 24px;
+                transition: opacity 0.18s ease;
             }
         }
 
         &_content {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            padding: 20px;
             flex-grow: 1;
+            min-height: 0;
             overflow-y: auto;
+            transition: height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 
-            @include screen() {
-                padding: 10px;
+            &_inner {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                padding: 20px;
+                transition: opacity 0.18s ease;
+
+                @include screen() {
+                    padding: 10px;
+                }
+            }
+        }
+
+        &_swapping {
+            .modal_window_body_title_text,
+            .modal_window_body_content_inner {
+                opacity: 0;
             }
         }
 
