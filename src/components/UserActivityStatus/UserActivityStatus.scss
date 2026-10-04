@@ -29,10 +29,22 @@
         color: #22c55e;
     }
 
-    &--typing p {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
+    &--typing {
+        min-width: 0;
+
+        p {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+            white-space: nowrap;
+        }
+    }
+
+    &_typing_names {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
         white-space: nowrap;
     }
 

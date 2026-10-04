@@ -111,9 +111,9 @@ const MessageContextMenu = ({
         }
 
         const article = document.getElementById(`message_${messageId}`);
-        const wrap = article?.querySelector('.messages_bubble_wrap');
-        if (wrap) {
-            setBubbleHtml(wrap.outerHTML);
+        const bubble = article?.querySelector('.messages_bubble');
+        if (bubble) {
+            setBubbleHtml(bubble.outerHTML);
         }
 
         if (!isTouch) {

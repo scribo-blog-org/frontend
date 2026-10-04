@@ -40,6 +40,15 @@ function startOfDay(date: any) {
     return value;
 }
 
+function format_list_date(date: any) {
+    const value = new Date(date);
+    const day = value.getDate().toString().padStart(2, '0');
+    const month = (value.getMonth() + 1).toString().padStart(2, '0');
+    const year = value.getFullYear();
+
+    return `${day}.${month}.${year}`;
+}
+
 function format_message_date_label(date: any) {
     const target = startOfDay(date);
     const today = startOfDay(new Date());
@@ -140,6 +149,7 @@ function getCategoryColorType(categoryName: any) {
 export {
     format_date_time,
     format_time,
+    format_list_date,
     format_message_date_label,
     is_same_calendar_day,
     format_back,

@@ -23,8 +23,16 @@ import { useOverlayPresence } from '../useOverlayEnter';
 const MENU_ROOT_DEFAULT = 'app-layout';
 
 function resolveLayer(explicitLayer: any, anchorEl: any) {
-    if (explicitLayer === 'header' || explicitLayer === 'content') {
+    if (
+        explicitLayer === 'header' ||
+        explicitLayer === 'content' ||
+        explicitLayer === 'modal'
+    ) {
         return explicitLayer;
+    }
+
+    if (anchorEl?.closest('.modal_window')) {
+        return 'modal';
     }
 
     return anchorEl?.closest('.header') ? 'header' : 'content';
@@ -35,6 +43,10 @@ function popupLayerClass(layer: any, nested: any = false) {
 
     if (layer === 'header') {
         classes.push('popup_menu_header');
+    }
+
+    if (layer === 'modal') {
+        classes.push('popup_menu_modal');
     }
 
     if (nested) {

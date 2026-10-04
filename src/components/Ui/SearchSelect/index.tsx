@@ -32,6 +32,7 @@ const SearchSelect = ({
     loading = false,
     hasMore = false,
     onLoadMore,
+    minSearchLength = 0,
 }: any) => {
     const setValue = onChange ?? onSetValue;
     const external = typeof onInput === 'function';
@@ -146,10 +147,19 @@ const SearchSelect = ({
         });
     }, [highlightedIndex]);
 
+    const queryReady = (text: any) =>
+        !external || String(text || '').trim().length >= minSearchLength;
+
     const handleChange = (e: any) => {
-        setInputValue(e.target.value);
+        const next = e.target.value;
+        setInputValue(next);
         setIsSearching(true);
-        onInput?.(e.target.value);
+        onInput?.(next);
+
+        if (!queryReady(next)) {
+            setIsOpen(false);
+            return;
+        }
 
         if (!isOpen) setIsOpen(true);
     };
@@ -168,7 +178,9 @@ const SearchSelect = ({
                 e.preventDefault();
 
                 if (!isOpen) {
-                    setIsOpen(true);
+                    if (queryReady(inputValue)) {
+                        setIsOpen(true);
+                    }
                     return;
                 }
 
@@ -182,7 +194,9 @@ const SearchSelect = ({
                 e.preventDefault();
 
                 if (!isOpen) {
-                    setIsOpen(true);
+                    if (queryReady(inputValue)) {
+                        setIsOpen(true);
+                    }
                     return;
                 }
 
@@ -241,7 +255,9 @@ const SearchSelect = ({
                     value={inputValue}
                     placeholder={placeholder}
                     onFocus={() => {
-                        setIsOpen(true);
+                        if (queryReady(inputValue)) {
+                            setIsOpen(true);
+                        }
                         onFocus?.();
                     }}
                     onChange={handleChange}
