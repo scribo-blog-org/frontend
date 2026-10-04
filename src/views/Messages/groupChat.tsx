@@ -46,7 +46,7 @@ export function groupListPatch(detail: any, previous: any = {}) {
     };
 }
 
-const TypingDots = () => (
+export const TypingDots = () => (
     <span className="user_activity_status_dots" aria-hidden="true">
         <span />
         <span />
@@ -54,7 +54,7 @@ const TypingDots = () => (
     </span>
 );
 
-export function GroupFace({ item, stats, typing, typingInline }: any) {
+export function GroupFace({ item, stats, typing }: any) {
     return (
         <div className="user_badge messages_group_face">
             <div className="user_badge_avatar">
@@ -65,29 +65,20 @@ export function GroupFace({ item, stats, typing, typingInline }: any) {
                     <p className="user_badge_info_name">
                         {item?.title || 'Group'}
                     </p>
-                    {stats ? (
-                        <p className="messages_group_subtitle">{stats}</p>
-                    ) : null}
-                    {typing && typingInline ? (
-                        <p className="messages_group_typing messages_group_typing_inline">
-                            <TypingDots />
+                    {typing ? (
+                        <p className="messages_group_typing">
                             <span className="messages_group_typing_names">
                                 {typing}
                             </span>
+                            <span className="messages_group_typing_label">
+                                Typing
+                            </span>
+                            <TypingDots />
                         </p>
+                    ) : stats ? (
+                        <p className="messages_group_subtitle">{stats}</p>
                     ) : null}
                 </div>
-                {typing && !typingInline ? (
-                    <p className="messages_group_typing">
-                        <span className="messages_group_typing_names">
-                            {typing}
-                        </span>
-                        <span className="messages_group_typing_label">
-                            Typing
-                        </span>
-                        <TypingDots />
-                    </p>
-                ) : null}
             </div>
         </div>
     );
@@ -186,6 +177,47 @@ const imageDropProps = {
     dropFileType: 'image/*',
     fileTypes: 'SVG, PNG, JPEG, JPG, and others',
 };
+
+export function JoinGroupPrompt({ invite, onAccept, onDecline }: any) {
+    const [isJoining, setIsJoining] = useState(false);
+    const count = Number(invite?.member_count) || 0;
+
+    return (
+        <div className="messages_join_prompt">
+            <img
+                className="messages_join_prompt_photo"
+                src={imageSrc(invite?.photo, DefaultProfileAvatar)}
+                alt=""
+            />
+            <p className="messages_join_prompt_title">
+                {invite?.title || 'Group'}
+            </p>
+            <p className="messages_join_prompt_muted">
+                {`${count} ${count === 1 ? 'person' : 'people'}`}
+            </p>
+            {invite?.description ? (
+                <p className="messages_join_prompt_description">
+                    {invite.description}
+                </p>
+            ) : null}
+            <div className="messages_join_prompt_actions">
+                <ActionButton onClick={onDecline} disabled={isJoining}>
+                    Decline
+                </ActionButton>
+                <PrimaryButton
+                    isLoading={isJoining}
+                    onClick={async () => {
+                        setIsJoining(true);
+                        await onAccept();
+                        setIsJoining(false);
+                    }}
+                >
+                    Join chat
+                </PrimaryButton>
+            </div>
+        </div>
+    );
+}
 
 export function CreateGroupForm({
     profileId,
@@ -310,6 +342,7 @@ export function GroupSettings({
     onClose,
     onUpdated,
     onLeft,
+    onBackToInfo,
 }: any) {
     const [group, setGroup] = useState(conversation);
     const [name, setName] = useState(conversation?.title || '');
@@ -363,6 +396,7 @@ export function GroupSettings({
         }
         apply(result.data);
         showToast?.({ type: 'success', message: 'Group updated' });
+        onClose();
     };
 
     const handleAdd = async (user: any) => {
@@ -403,7 +437,7 @@ export function GroupSettings({
             closeFunc: () => {},
             content: (
                 <SharePostModal
-                    sharePath={`/chats/${group._id}`}
+                    sharePath={`/messages/${group._id}`}
                     postTitle={group.title || 'Group'}
                     linkLabel="Link to the chat"
                     excludeConversationId={group._id}
@@ -412,6 +446,7 @@ export function GroupSettings({
                     loginHint="Log in to send this chat as a message."
                     showToast={showToast}
                     requestCloseModal={onClose}
+                    onBack={onBackToInfo}
                 />
             ),
         });

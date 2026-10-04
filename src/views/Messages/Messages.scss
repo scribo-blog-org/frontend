@@ -48,36 +48,23 @@
 }
 
 .messages_sidebar_search {
-    position: relative;
-    z-index: 3;
     width: 100%;
     margin: var(--space-2) 0 var(--space-3);
-}
-
-.messages_new_group_text {
-    border: 0;
-    background: transparent;
-    padding: 0;
-    color: var(--light-text-color);
-    font-size: 13px;
-    cursor: pointer;
-
-    @include hover {
-        color: var(--text-color);
-    }
+    box-sizing: border-box;
 }
 
 .messages_new_group {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
     width: 32px;
     height: 32px;
     padding: 0;
     border: 0;
-    border-radius: var(--radius-sm);
+    border-radius: 999px;
     background: transparent;
-    color: var(--text-color);
+    color: var(--light-text-color);
     cursor: pointer;
 
     svg {
@@ -87,6 +74,7 @@
 
     @include hover {
         background: var(--section-item-hover-background-color);
+        color: var(--text-color);
     }
 }
 
@@ -247,6 +235,25 @@
 }
 
 .messages_conversation_preview {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.messages_conversation_typing {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow: visible;
+
+    .user_activity_status_dots {
+        flex-shrink: 0;
+    }
+}
+
+.messages_conversation_typing_names {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1494,7 +1501,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    width: 100%;
+    flex: 0 1 auto;
     max-width: 100%;
     min-width: 0;
     margin: 0;
@@ -1506,11 +1513,6 @@
         flex-shrink: 0;
         color: var(--light-text-color);
     }
-}
-
-.messages_group_typing_inline {
-    width: auto;
-    flex: 0 1 auto;
 }
 
 .messages_group_typing_label {
@@ -1597,6 +1599,54 @@
                     height: 14px;
                 }
             }
+        }
+    }
+}
+
+.messages_join_prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+
+    &_photo {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    &_title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.2;
+        color: var(--text-color);
+    }
+
+    &_muted {
+        margin: 0;
+        font-size: 13px;
+        color: var(--light-text-color);
+    }
+
+    &_description {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.4;
+        color: var(--text-color);
+        white-space: pre-wrap;
+    }
+
+    &_actions {
+        display: flex;
+        gap: var(--space-2);
+        margin-top: var(--space-2);
+
+        @include screen() {
+            width: 100%;
+            flex-direction: column-reverse;
         }
     }
 }

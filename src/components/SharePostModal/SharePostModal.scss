@@ -142,4 +142,27 @@
     &_native {
         width: 100%;
     }
+
+    &_back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        margin-bottom: calc(var(--space-6) * -1 + var(--space-2));
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--light-text-color);
+        font-size: 13px;
+        cursor: pointer;
+
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        @include hover() {
+            color: var(--text-color);
+        }
+    }
 }

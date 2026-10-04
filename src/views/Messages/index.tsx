@@ -20,7 +20,9 @@ import {
     editMessage,
     getConversation,
     getConversations,
+    getGroupInvite,
     getMessages,
+    joinGroup,
     removeGroupMember,
     markConversationRead,
     sendMessage,
@@ -50,6 +52,7 @@ import ActionButton from '../../components/Ui/ActionButton';
 import DangerButton from '../../components/Ui/DangerButton';
 import Popup from '../../components/Ui/Popup';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
+import InputField from '../../components/Ui/InputField';
 import RichInputField from '../../components/RichInputField';
 import MessageContent from '../../components/MessageContent';
 import Loading from '../../components/Ui/Loading';
@@ -62,6 +65,7 @@ import DeleteIcon from '../../assets/svg/delete.svg';
 import EditIcon from '../../assets/svg/edit.svg';
 import CrossIcon from '../../assets/svg/cross-icon.svg';
 import ArrowLeftIcon from '../../assets/svg/arrow-left.svg';
+import PlusIcon from '../../assets/svg/plus-icon.svg';
 import SendIcon from '../../assets/svg/send.svg';
 import ThreeDotsIcon from '../../assets/svg/three-dots.svg';
 import TickIcon from '../../assets/svg/tick.svg';
@@ -75,7 +79,8 @@ import {
     CreateGroupForm,
     GroupFace,
     GroupSettings,
-    UserSearchSelect,
+    JoinGroupPrompt,
+    TypingDots,
     groupListPatch,
     isGroupChat,
 } from './groupChat';
@@ -407,6 +412,8 @@ const MessagesPage = () => {
         {},
     );
     const [fetchedNickByUserId, setFetchedNickByUserId] = useState<any>({});
+    const [conversationFilter, setConversationFilter] = useState('');
+    const [chatReloadKey, setChatReloadKey] = useState(0);
     const [leavingHeights, setLeavingHeights] = useState<any>({});
     const [isAwayFromBottom, setIsAwayFromBottom] = useState(false);
     const [selectionIds, setSelectionIds] = useState<any>(null);
@@ -442,6 +449,7 @@ const MessagesPage = () => {
     const lastReplyGestureRef = useRef(0);
     const sendLockRef = useRef(false);
     const typingConversationRef = useRef<any>(null);
+    const openJoinPromptRef = useRef<any>(() => {});
     const longPressRef = useRef<any>(null);
     const suppressMessageClickRef = useRef(false);
     const enterFollowRef = useRef(false);
@@ -1030,13 +1038,25 @@ const MessagesPage = () => {
             }
 
             if (!conversationResult?.status) {
+                const inviteResult = await getGroupInvite(conversationId);
+
+                if (cancelled) {
+                    return;
+                }
+
+                setIsChatLoading(false);
+
+                if (inviteResult?.status && inviteResult.data) {
+                    openJoinPromptRef.current(inviteResult.data);
+                    return;
+                }
+
                 showToast?.({
                     type: 'error',
                     message:
                         conversationResult?.message || 'Conversation not found',
                 });
                 navigate('/messages');
-                setIsChatLoading(false);
                 return;
             }
 
@@ -1173,6 +1193,7 @@ const MessagesPage = () => {
         showToast,
         markChatAsRead,
         clearConversationUnread,
+        chatReloadKey,
     ]);
 
     if (seenConversationIdRef.current !== conversationId) {
@@ -2446,6 +2467,23 @@ const MessagesPage = () => {
     const groupOnline = groupMembers.filter(
         (member: any) => onlineByUserId[String(member._id)],
     ).length;
+    const visibleConversations = useMemo(() => {
+        const needle = conversationFilter.trim().replace(/^@/, '').toLowerCase();
+
+        if (!needle) {
+            return conversations;
+        }
+
+        return conversations.filter((item: any) =>
+            (isGroupChat(item)
+                ? item.title || 'Group'
+                : item.participant?.nick_name || ''
+            )
+                .toLowerCase()
+                .includes(needle),
+        );
+    }, [conversations, conversationFilter]);
+
     const knownNickByUserId = useMemo(() => {
         const map: Record<string, string> = {};
 
@@ -2631,6 +2669,8 @@ const MessagesPage = () => {
         navigate,
     ]);
 
+    const openGroupSettingsRef = useRef<any>(() => {});
+
     const openGroupSettings = useCallback(() => {
         const group = activeConversation;
         if (!isGroupChat(group)) {
@@ -2651,6 +2691,7 @@ const MessagesPage = () => {
                     onClose={requestCloseModal}
                     onUpdated={applyGroupUpdate}
                     onLeft={removeConversationFromState}
+                    onBackToInfo={() => openGroupSettingsRef.current?.()}
                 />
             ),
         });
@@ -2663,6 +2704,62 @@ const MessagesPage = () => {
         applyGroupUpdate,
         removeConversationFromState,
     ]);
+
+    useEffect(() => {
+        openGroupSettingsRef.current = openGroupSettings;
+    }, [openGroupSettings]);
+
+    const openJoinPrompt = useCallback(
+        (invite: any) => {
+            let accepted = false;
+
+            showModalWindow({
+                title: 'Join this chat?',
+                size: 'small',
+                showCloseButton: false,
+                closeFunc: () => {
+                    if (!accepted) {
+                        navigate('/messages');
+                    }
+                },
+                content: (
+                    <JoinGroupPrompt
+                        invite={invite}
+                        onDecline={requestCloseModal}
+                        onAccept={async () => {
+                            const result = await joinGroup(invite._id);
+
+                            if (!result?.status) {
+                                showToast?.({
+                                    type: 'error',
+                                    message:
+                                        result?.message ||
+                                        'Could not join the chat',
+                                });
+                                return;
+                            }
+
+                            accepted = true;
+                            requestCloseModal();
+                            applyGroupUpdate(result.data);
+                            setChatReloadKey((current) => current + 1);
+                        }}
+                    />
+                ),
+            });
+        },
+        [
+            showModalWindow,
+            requestCloseModal,
+            navigate,
+            showToast,
+            applyGroupUpdate,
+        ],
+    );
+
+    useEffect(() => {
+        openJoinPromptRef.current = openJoinPrompt;
+    }, [openJoinPrompt]);
 
     const openDeleteChatModal = useCallback(() => {
         if (!conversationId || !profile) {
@@ -2719,29 +2816,27 @@ const MessagesPage = () => {
                         <h1 className="messages_title">Messages</h1>
                         <button
                             type="button"
-                            className="messages_new_group_text app-transition"
+                            className="messages_new_group app-transition app-transition-color"
                             onClick={openCreateGroup}
+                            aria-label="New group"
                         >
-                            New group
+                            <PlusIcon />
                         </button>
                     </div>
-                    <UserSearchSelect
+                    <InputField
                         className="messages_sidebar_search"
-                        excludeIds={[profile._id]}
+                        type="text"
                         placeholder="Search"
-                        onPick={(user: any) =>
-                            startConversationWithUser(
-                                user._id,
-                                navigate,
-                                showToast,
-                            )
+                        value={conversationFilter}
+                        onChange={(event: any) =>
+                            setConversationFilter(event.target.value)
                         }
                     />
                     {isListLoading ? (
                         <Loading size={32} />
-                    ) : conversations.length ? (
+                    ) : visibleConversations.length ? (
                         <ul className="messages_conversation_list">
-                            {conversations.map((item: any) => (
+                            {visibleConversations.map((item: any) => (
                                 <li key={item._id}>
                                     <Link
                                         href={`/messages/${item._id}`}
@@ -2753,13 +2848,7 @@ const MessagesPage = () => {
                                     >
                                         <div className="messages_conversation_data">
                                             {isGroupChat(item) ? (
-                                                <GroupFace
-                                                    item={item}
-                                                    typing={typingNamesFor(
-                                                        item._id,
-                                                    )}
-                                                    typingInline
-                                                />
+                                                <GroupFace item={item} />
                                             ) : (
                                                 <UserBadge
                                                     data={item.participant}
@@ -2799,9 +2888,23 @@ const MessagesPage = () => {
                                             )}
                                         </div>
                                         <div className="messages_conversation_copy">
-                                            <p className="messages_conversation_preview">
-                                                {conversationPreview(item)}
-                                            </p>
+                                            {isGroupChat(item) &&
+                                            typingByConversationId[
+                                                String(item._id)
+                                            ] ? (
+                                                <p className="messages_conversation_preview messages_conversation_typing">
+                                                    <TypingDots />
+                                                    <span className="messages_conversation_typing_names">
+                                                        {typingNamesFor(
+                                                            item._id,
+                                                        )}
+                                                    </span>
+                                                </p>
+                                            ) : (
+                                                <p className="messages_conversation_preview">
+                                                    {conversationPreview(item)}
+                                                </p>
+                                            )}
                                             <div className="messages_conversation_row">
                                                 {item.last_message_at ? (
                                                     <span className="messages_conversation_time">
@@ -2823,8 +2926,9 @@ const MessagesPage = () => {
                         </ul>
                     ) : (
                         <p className="messages_empty_hint">
-                            No conversations yet. Start one from a the user
-                            profile.
+                            {conversationFilter.trim()
+                                ? 'No chats match this search.'
+                                : 'No conversations yet. Start one from a the user profile.'}
                         </p>
                     )}
                 </aside>

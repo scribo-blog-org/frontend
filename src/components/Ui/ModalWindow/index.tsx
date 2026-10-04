@@ -141,7 +141,9 @@ const ModalWindow = ({
     }, [activeModal]);
 
     return (
-        <div className={`modal_window ${isVisible ? 'visible' : ''}`}>
+        <div
+            className={`modal_window ${isVisible && activeModal ? 'visible' : ''}`}
+        >
             <button
                 type="button"
                 onClick={closeModalWindow}

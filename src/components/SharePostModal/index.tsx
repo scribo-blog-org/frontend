@@ -18,6 +18,7 @@ import {
     sharePostNative,
 } from '../../utils/share';
 
+import ArrowLeftIcon from '../../assets/svg/arrow-left.svg';
 import RedirectIcon from '../../assets/svg/redirect.svg';
 import CopyIcon from '../../assets/svg/copy.svg';
 import ShareIcon from '../../assets/svg/share.svg';
@@ -35,6 +36,7 @@ const SharePostModal = ({
     loginHint = 'Log in to send this post as a direct message.',
     showToast,
     requestCloseModal,
+    onBack,
 }: any) => {
     const { profile } = useContext(AppContext);
     const navigate = useNavigate();
@@ -140,6 +142,17 @@ const SharePostModal = ({
 
     return (
         <div className="share_post_modal">
+            {onBack ? (
+                <button
+                    type="button"
+                    className="share_post_modal_back app-transition app-transition-color"
+                    onClick={onBack}
+                >
+                    <ArrowLeftIcon />
+                    Back
+                </button>
+            ) : null}
+
             <div className="share_post_modal_group">
                 <label
                     className="share_post_modal_label"
