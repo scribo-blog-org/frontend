@@ -9,7 +9,9 @@ import ActionButton from '../Ui/ActionButton';
 import PrimaryButton from '../Ui/PrimaryButton';
 import Loading from '../Ui/Loading';
 import UserBadge from '../UserBadge';
+import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
 import { absoluteUrl } from '../../seo/site';
+import { imageSrc } from '../../utils/image';
 import {
     canUseNativeShare,
     copyText,
@@ -25,6 +27,12 @@ import './SharePostModal.scss';
 const SharePostModal = ({
     postId,
     postTitle,
+    sharePath,
+    linkLabel = 'Link to the post',
+    excludeConversationId,
+    sentLabel = 'Post sent to the chat',
+    failLabel = 'Could not send the post',
+    loginHint = 'Log in to send this post as a direct message.',
     showToast,
     requestCloseModal,
 }: any) => {
@@ -34,7 +42,10 @@ const SharePostModal = ({
     const [conversations, setConversations] = useState<any[]>([]);
     const [isLoadingChats, setIsLoadingChats] = useState<any>(Boolean(profile));
     const [sendingId, setSendingId] = useState<any>(null);
-    const shareUrl = absoluteUrl(`/posts/${postId}`);
+    const shareUrl = absoluteUrl(sharePath || `/posts/${postId}`);
+    const chats = conversations.filter(
+        (item) => String(item._id) !== String(excludeConversationId || ''),
+    );
     const nativeShareAvailable = canUseNativeShare();
 
     useEffect(() => {
@@ -117,12 +128,12 @@ const SharePostModal = ({
         if (!result?.status) {
             showToast?.({
                 type: 'error',
-                message: result?.message || 'Could not send the post',
+                message: result?.message || failLabel,
             });
             return;
         }
 
-        showToast?.({ type: 'success', message: 'Post sent to the chat' });
+        showToast?.({ type: 'success', message: sentLabel });
         requestCloseModal?.();
         navigate(`/messages/${conversationId}`);
     };
@@ -134,7 +145,7 @@ const SharePostModal = ({
                     className="share_post_modal_label"
                     htmlFor="share_post_modal_link"
                 >
-                    Link to the post
+                    {linkLabel}
                 </label>
                 <div className="share_post_modal_link_row">
                     <input
@@ -157,9 +168,7 @@ const SharePostModal = ({
                 <p className="share_post_modal_kicker">Send to chat</p>
                 {!profile ? (
                     <>
-                        <p className="share_post_modal_hint">
-                            Log in to send this post as a direct message.
-                        </p>
+                        <p className="share_post_modal_hint">{loginHint}</p>
                         <PrimaryButton
                             type="button"
                             className="share_post_modal_login"
@@ -176,9 +185,9 @@ const SharePostModal = ({
                     <div className="share_post_modal_loader">
                         <Loading size={24} />
                     </div>
-                ) : conversations.length ? (
+                ) : chats.length ? (
                     <div className="share_post_modal_chats">
-                        {conversations.map((item: any) => (
+                        {chats.map((item: any) => (
                             <button
                                 key={item._id}
                                 type="button"
@@ -186,10 +195,23 @@ const SharePostModal = ({
                                 disabled={Boolean(sendingId)}
                                 onClick={() => handleShareToChat(item._id)}
                             >
-                                <UserBadge
-                                    data={item.participant}
-                                    asLink={false}
-                                />
+                                {item.kind === 'group' ? (
+                                    <span className="share_post_modal_chat_face">
+                                        <img
+                                            src={imageSrc(
+                                                item.photo,
+                                                DefaultProfileAvatar,
+                                            )}
+                                            alt=""
+                                        />
+                                        <span>{item.title || 'Group'}</span>
+                                    </span>
+                                ) : (
+                                    <UserBadge
+                                        data={item.participant}
+                                        asLink={false}
+                                    />
+                                )}
                                 {sendingId === item._id ? (
                                     <span className="share_post_modal_chat_status">
                                         Sending…
@@ -200,8 +222,9 @@ const SharePostModal = ({
                     </div>
                 ) : (
                     <p className="share_post_modal_hint">
-                        No chats yet. Write to someone from their profile — the
-                        conversation will show up here.
+                        {conversations.length
+                            ? 'No other chats to send this to.'
+                            : 'No chats yet. Write to someone from their profile — the conversation will show up here.'}
                     </p>
                 )}
             </div>

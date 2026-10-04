@@ -2577,6 +2577,7 @@ const MessagesPage = () => {
                     conversation={group}
                     profileId={profile?._id}
                     showToast={showToast}
+                    showModalWindow={showModalWindow}
                     onClose={requestCloseModal}
                     onUpdated={applyGroupUpdate}
                     onLeft={removeConversationFromState}
@@ -2795,7 +2796,7 @@ const MessagesPage = () => {
                                         >
                                             <GroupFace
                                                 item={groupItem}
-                                                subtitle={`${groupCount} people, ${groupOnline} online`}
+                                                stats={`${groupCount} people, ${groupOnline} online`}
                                                 typing={groupTypingNames}
                                             />
                                         </button>

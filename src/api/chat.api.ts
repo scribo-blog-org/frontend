@@ -61,6 +61,21 @@ const updateGroup = async (
     return parse(response);
 };
 
+const getGroupInvite = async (conversationId: any) => {
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/${conversationId}/invite`,
+    );
+    return parse(response);
+};
+
+const joinGroup = async (conversationId: any) => {
+    const response = await apiFetch(
+        `${apiUrl()}/api/chat/conversations/${conversationId}/join`,
+        { method: 'POST' },
+    );
+    return parse(response);
+};
+
 const addGroupMember = async (conversationId: any, userId: any) => {
     const response = await apiFetch(
         `${apiUrl()}/api/chat/conversations/${conversationId}/members`,
@@ -204,6 +219,8 @@ export {
     createConversation,
     createGroup,
     updateGroup,
+    getGroupInvite,
+    joinGroup,
     addGroupMember,
     removeGroupMember,
     updateGroupMemberRole,

@@ -1429,6 +1429,7 @@
 }
 
 .messages_group_face {
+    width: 100%;
     padding: 0;
     cursor: inherit;
     min-width: 0;
@@ -1438,8 +1439,10 @@
     }
 
     .user_badge_info {
+        flex: 1;
         flex-direction: column;
         align-items: flex-start;
+        width: 100%;
         min-width: 0;
         gap: 2px;
     }
@@ -1452,21 +1455,61 @@
     }
 }
 
+.messages_group_title_row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+
+    .user_badge_info_name {
+        flex: 1;
+        min-width: 0;
+        max-width: none;
+    }
+}
+
 .messages_group_subtitle {
+    margin: 0;
+    flex-shrink: 0;
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--light-text-color);
+    white-space: nowrap;
+}
+
+.messages_group_typing {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     margin: 0;
     font-size: 12px;
     line-height: 1.2;
     color: var(--light-text-color);
+
+    .user_activity_status_dots {
+        flex-shrink: 0;
+        color: var(--light-text-color);
+    }
 }
 
-.messages_group_subtitle_typing {
-    color: var(--text-color);
+.messages_group_typing_names {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--light-text-color);
 }
 
 .messages_group_open {
     border: 0;
     background: transparent;
     padding: 0;
+    min-width: 0;
+    flex: 1;
     text-align: left;
     cursor: pointer;
     color: inherit;
@@ -1504,6 +1547,42 @@
 .messages_group_form .search_select {
     position: relative;
     z-index: 2;
+}
+
+.messages_group_add_row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.messages_group_add_search {
+    flex: 1;
+    min-width: 0;
+}
+
+.messages_group_share {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    height: var(--control-height);
+    margin-left: auto;
+    padding: 6px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--light-text-color);
+    cursor: pointer;
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    @include hover {
+        color: var(--text-color);
+        background: transparent;
+    }
 }
 
 .messages_group_members_head {
@@ -1560,8 +1639,6 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    max-height: 220px;
-    overflow: auto;
 }
 
 .messages_group_search_item {

@@ -72,6 +72,29 @@
         overflow-y: auto;
     }
 
+    &_chat_face {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+
+        img {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+    }
+
     &_chat_item {
         display: flex;
         align-items: center;

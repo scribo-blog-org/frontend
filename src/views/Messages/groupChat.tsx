@@ -15,9 +15,11 @@ import UserBadge from '../../components/UserBadge';
 import ActionButton from '../../components/Ui/ActionButton';
 import DropFile from '../../components/Ui/DropFile';
 import InputField from '../../components/Ui/InputField';
+import SharePostModal from '../../components/SharePostModal';
 import Popup from '../../components/Ui/Popup';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
 import SearchSelect from '../../components/Ui/SearchSelect';
+import ShareIcon from '../../assets/svg/share.svg';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
 import ThreeDotsIcon from '../../assets/svg/three-dots.svg';
@@ -44,20 +46,38 @@ export function groupListPatch(detail: any, previous: any = {}) {
     };
 }
 
-export function GroupFace({ item, subtitle, typing }: any) {
+export function GroupFace({ item, subtitle, stats, typing }: any) {
     return (
         <div className="user_badge messages_group_face">
             <div className="user_badge_avatar">
                 <img src={imageSrc(item?.photo, DefaultProfileAvatar)} alt="" />
             </div>
             <div className="user_badge_info">
-                <p className="user_badge_info_name">{item?.title || 'Group'}</p>
+                <div className="messages_group_title_row">
+                    <p className="user_badge_info_name">
+                        {item?.title || 'Group'}
+                    </p>
+                    {stats ? (
+                        <p className="messages_group_subtitle">{stats}</p>
+                    ) : null}
+                </div>
                 {subtitle ? (
                     <p className="messages_group_subtitle">{subtitle}</p>
                 ) : null}
                 {typing ? (
-                    <p className="messages_group_subtitle messages_group_subtitle_typing">
-                        {typing}
+                    <p className="messages_group_typing">
+                        <span>Typing</span>
+                        <span
+                            className="user_activity_status_dots"
+                            aria-hidden="true"
+                        >
+                            <span />
+                            <span />
+                            <span />
+                        </span>
+                        <span className="messages_group_typing_names">
+                            {typing}
+                        </span>
                     </p>
                 ) : null}
             </div>
@@ -278,6 +298,7 @@ export function GroupSettings({
     conversation,
     profileId,
     showToast,
+    showModalWindow,
     onClose,
     onUpdated,
     onLeft,
@@ -366,6 +387,28 @@ export function GroupSettings({
     const members = Array.isArray(group?.members) ? group.members : [];
     const excludeIds = [profileId, ...members.map((member: any) => member._id)];
 
+    const openShare = () => {
+        showModalWindow?.({
+            title: 'Share',
+            size: 'small',
+            showCloseButton: true,
+            closeFunc: () => {},
+            content: (
+                <SharePostModal
+                    sharePath={`/chats/${group._id}`}
+                    postTitle={group.title || 'Group'}
+                    linkLabel="Link to the chat"
+                    excludeConversationId={group._id}
+                    sentLabel="Link sent to the chat"
+                    failLabel="Could not send the link"
+                    loginHint="Log in to send this chat as a message."
+                    showToast={showToast}
+                    requestCloseModal={onClose}
+                />
+            ),
+        });
+    };
+
     return (
         <div className="messages_group_form">
             {isAdmin ? (
@@ -413,13 +456,24 @@ export function GroupSettings({
             <div className="messages_group_members_head">
                 <p>Participants</p>
             </div>
-            {isAdmin ? (
-                <UserSearchSelect
-                    excludeIds={excludeIds}
-                    placeholder="Add people"
-                    onPick={handleAdd}
-                />
-            ) : null}
+            <div className="messages_group_add_row">
+                {isAdmin ? (
+                    <UserSearchSelect
+                        className="messages_group_add_search"
+                        excludeIds={excludeIds}
+                        placeholder="Add people"
+                        onPick={handleAdd}
+                    />
+                ) : null}
+                <button
+                    type="button"
+                    className="messages_group_share app-transition app-transition-color"
+                    aria-label="Share"
+                    onClick={openShare}
+                >
+                    <ShareIcon />
+                </button>
+            </div>
             <ul className="messages_group_members">
                 {members.map((member: any) => {
                     const isSelf = String(member._id) === String(profileId);
