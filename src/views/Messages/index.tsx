@@ -28,6 +28,7 @@ import {
     sendMessage,
 } from '../../api/chat.api';
 import { getUsersByIds } from '../../api/users.api';
+import { searchUsers } from '../../api/search.api';
 import { socketEvents } from '../../sockets/socket.events';
 import { socketService } from '../../sockets/socket.service';
 import {
@@ -68,6 +69,9 @@ import ArrowLeftIcon from '../../assets/svg/arrow-left.svg';
 import PlusIcon from '../../assets/svg/plus-icon.svg';
 import SendIcon from '../../assets/svg/send.svg';
 import ThreeDotsIcon from '../../assets/svg/three-dots.svg';
+import InfoIcon from '../../assets/svg/info.svg';
+import MessageIcon from '../../assets/svg/message.svg';
+import LogoutIcon from '../../assets/svg/logout.svg';
 import TickIcon from '../../assets/svg/tick.svg';
 import TickCircleIcon from '../../assets/svg/tick-circle.svg';
 import ChevronDownIcon from '../../assets/svg/chevron-down.svg';
@@ -129,7 +133,8 @@ const resolveReplyQuote = (message: any, messageById: any) => {
 
 const normalizeIncomingMessage = (message: any, userId: any) => ({
     ...message,
-    is_own: String(message.sender?._id) === String(userId),
+    is_own:
+        !message.system_event && String(message.sender?._id) === String(userId),
 });
 
 const mergeMessage = (list: any, message: any) => {
@@ -413,6 +418,10 @@ const MessagesPage = () => {
     );
     const [fetchedNickByUserId, setFetchedNickByUserId] = useState<any>({});
     const [conversationFilter, setConversationFilter] = useState('');
+    const [foundPeople, setFoundPeople] = useState<any>({
+        needle: '',
+        users: [],
+    });
     const [chatReloadKey, setChatReloadKey] = useState(0);
     const [leavingHeights, setLeavingHeights] = useState<any>({});
     const [isAwayFromBottom, setIsAwayFromBottom] = useState(false);
@@ -2487,6 +2496,55 @@ const MessagesPage = () => {
         );
     }, [conversations, conversationFilter]);
 
+    const peopleNeedle = conversationFilter.trim().replace(/^@/, '');
+
+    useEffect(() => {
+        if (peopleNeedle.length < 2) {
+            return;
+        }
+
+        let cancelled = false;
+        const timer = window.setTimeout(async () => {
+            const users = await searchUsers(peopleNeedle);
+
+            if (!cancelled) {
+                setFoundPeople({
+                    needle: peopleNeedle,
+                    users: Array.isArray(users) ? users : [],
+                });
+            }
+        }, 300);
+
+        return () => {
+            cancelled = true;
+            window.clearTimeout(timer);
+        };
+    }, [peopleNeedle]);
+
+    const startChatWith = async (userId: any) => {
+        await startConversationWithUser(userId, navigate, showToast);
+        setConversationFilter('');
+    };
+
+    const peopleToStart = useMemo(() => {
+        if (foundPeople.needle !== peopleNeedle) {
+            return [];
+        }
+
+        const known = new Set(
+            conversations
+                .filter((item: any) => !isGroupChat(item))
+                .map((item: any) => String(item.participant?._id)),
+        );
+
+        return foundPeople.users.filter(
+            (user: any) =>
+                user?._id &&
+                String(user._id) !== String(profile?._id) &&
+                !known.has(String(user._id)),
+        );
+    }, [foundPeople, peopleNeedle, conversations, profile?._id]);
+
     const knownNickByUserId = useMemo(() => {
         const map: Record<string, string> = {};
 
@@ -2837,7 +2895,7 @@ const MessagesPage = () => {
                     />
                     {isListLoading ? (
                         <Loading size={32} />
-                    ) : visibleConversations.length ? (
+                    ) : visibleConversations.length || peopleToStart.length ? (
                         <ul className="messages_conversation_list">
                             {visibleConversations.map((item: any) => (
                                 <li key={item._id}>
@@ -2926,11 +2984,38 @@ const MessagesPage = () => {
                                     </Link>
                                 </li>
                             ))}
+                            {peopleToStart.length ? (
+                                <li className="messages_people_head">
+                                    <span
+                                        className="messages_people_rule"
+                                        aria-hidden="true"
+                                    />
+                                    <p>People</p>
+                                </li>
+                            ) : null}
+                            {peopleToStart.map((user: any) => (
+                                <li
+                                    key={`person-${user._id}`}
+                                    className="messages_people_item"
+                                >
+                                    <UserBadge data={user} asLink={false} />
+                                    <button
+                                        type="button"
+                                        className="messages_people_start app-transition"
+                                        onClick={() =>
+                                            void startChatWith(user._id)
+                                        }
+                                    >
+                                        <MessageIcon />
+                                        <span>Start chat</span>
+                                    </button>
+                                </li>
+                            ))}
                         </ul>
                     ) : (
                         <p className="messages_empty_hint">
                             {conversationFilter.trim()
-                                ? 'No chats match this search.'
+                                ? 'Nothing found for this search.'
                                 : 'No conversations yet. Start one from a the user profile.'}
                         </p>
                     )}
@@ -3015,6 +3100,7 @@ const MessagesPage = () => {
                                                   [
                                                       {
                                                           title: 'Group info',
+                                                          icon: <InfoIcon />,
                                                           onClick:
                                                               openGroupSettings,
                                                       },
@@ -3022,6 +3108,7 @@ const MessagesPage = () => {
                                                   [
                                                       {
                                                           title: 'Leave group',
+                                                          icon: <LogoutIcon />,
                                                           type: 'danger',
                                                           onClick: () => {
                                                               void (async () => {
@@ -3162,6 +3249,24 @@ const MessagesPage = () => {
 
                                                         {group.messages.map(
                                                             (message: any) => {
+                                                                if (
+                                                                    message.system_event
+                                                                ) {
+                                                                    return (
+                                                                        <p
+                                                                            key={
+                                                                                message._id
+                                                                            }
+                                                                            id={`message_${message._id}`}
+                                                                            className="messages_system"
+                                                                        >
+                                                                            {
+                                                                                message.text
+                                                                            }
+                                                                        </p>
+                                                                    );
+                                                                }
+
                                                                 const isLeaving =
                                                                     message._id in
                                                                     leavingHeights;

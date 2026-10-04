@@ -33,6 +33,8 @@ const SearchSelect = ({
     hasMore = false,
     onLoadMore,
     minSearchLength = 0,
+    clearOnSelect = false,
+    onSelect,
 }: any) => {
     const setValue = onChange ?? onSetValue;
     const external = typeof onInput === 'function';
@@ -65,6 +67,14 @@ const SearchSelect = ({
     const resetValue = useCallback(() => {
         const search = inputValue.trim().toLowerCase();
 
+        if (clearOnSelect) {
+            setInputValue('');
+            if (external && search) onInput('');
+            setIsSearching(false);
+            setHighlightedIndex(-1);
+            return;
+        }
+
         const exactOption = options.find(
             (option: any) =>
                 optionLabel(option).trim().toLowerCase() === search,
@@ -85,7 +95,15 @@ const SearchSelect = ({
 
         setIsSearching(false);
         setHighlightedIndex(-1);
-    }, [inputValue, options, setValue, value, external, onInput]);
+    }, [
+        inputValue,
+        options,
+        setValue,
+        value,
+        external,
+        onInput,
+        clearOnSelect,
+    ]);
 
     const closeSelect = useCallback(() => {
         setIsOpen(false);
@@ -97,16 +115,16 @@ const SearchSelect = ({
     optionsRef.current = options;
 
     useEffect(() => {
-        if (external) return;
+        if (external || clearOnSelect) return;
         const option = options.find((o: any) => o.value === value);
         setInputValue(optionLabel(option));
-    }, [external, options, value]);
+    }, [external, clearOnSelect, options, value]);
 
     useEffect(() => {
-        if (!external) return;
+        if (!external || clearOnSelect) return;
         const option = optionsRef.current.find((o: any) => o.value === value);
         setInputValue(optionLabel(option));
-    }, [external, value]);
+    }, [external, clearOnSelect, value]);
 
     useEffect(() => {
         const handleClickOutside = (e: any) => {
@@ -165,11 +183,16 @@ const SearchSelect = ({
     };
 
     const handleSelect = (option: any) => {
-        setValue?.(option.value);
-        setInputValue(optionLabel(option));
+        if (clearOnSelect) {
+            setInputValue('');
+        } else {
+            setValue?.(option.value);
+            setInputValue(optionLabel(option));
+        }
         setIsSearching(false);
         setHighlightedIndex(-1);
         setIsOpen(false);
+        onSelect?.(option);
     };
 
     const handleKeyDown = (e: any) => {
@@ -334,7 +357,7 @@ const SearchSelect = ({
                             <p>{emptyLabel}</p>
                         </div>
                     )}
-                    {loading ? (
+                    {loading && !filteredOptions.length ? (
                         <div className="search_select_empty">
                             <p>Loading…</p>
                         </div>
