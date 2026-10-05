@@ -19,6 +19,7 @@ import TabsPage from '../../components/TabsPage/index';
 import CategoriesPage from './Categories';
 import LogsPage from './Logs';
 import AdminsPage from './Admins';
+import UsersPage from './Users';
 import RequestsPage from './Requests';
 import DashboardPage from './Dashboard';
 import BackupsPage from './Backups';
@@ -48,6 +49,12 @@ const AdminPanel = () => {
             key: 'categories',
             icon: <TagIcon />,
             content: <CategoriesPage />,
+        },
+        {
+            title: 'Users',
+            key: 'users',
+            icon: <PeoplesIcon />,
+            content: <UsersPage />,
         },
         {
             title: 'Administrators',

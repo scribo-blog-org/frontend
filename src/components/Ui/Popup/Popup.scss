@@ -173,6 +173,26 @@
         }
     }
 
+    .popup_menu_inline {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .popup_menu_inline_body {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin-left: 12px;
+        padding-left: 6px;
+        border-left: 1px solid var(--line-color);
+    }
+
+    .popup_menu_item_expanded .popup_menu_item_chevron {
+        transform: rotate(90deg);
+        opacity: 0.75;
+    }
+
     .popup_menu_item_active {
         background-color: var(--section-item-hover-background-color);
     }
