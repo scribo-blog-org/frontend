@@ -1792,8 +1792,20 @@ const MessagesPage = () => {
             return;
         }
 
+        const focusAtEnd = () => {
+            const field = composerInputRef.current;
+            if (!field) {
+                return;
+            }
+
+            field.focus({ preventScroll: true });
+            const end = field.value.length;
+            field.setSelectionRange(end, end);
+        };
+
         const frame = requestAnimationFrame(() => {
-            composerInputRef.current?.focus();
+            focusAtEnd();
+            requestAnimationFrame(focusAtEnd);
         });
 
         return () => cancelAnimationFrame(frame);
@@ -1841,8 +1853,17 @@ const MessagesPage = () => {
     };
 
     const clearTextSelection = () => {
-        window.getSelection()?.removeAllRanges();
-        requestAnimationFrame(() => window.getSelection()?.removeAllRanges());
+        const clear = () => {
+            const field = composerInputRef.current;
+            if (field && document.activeElement === field) {
+                return;
+            }
+
+            window.getSelection()?.removeAllRanges();
+        };
+
+        clear();
+        requestAnimationFrame(clear);
     };
 
     const preventRepeatedClickSelection = (event: any) => {
