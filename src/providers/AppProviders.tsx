@@ -17,7 +17,6 @@ import AppShell from '../layouts/AppShell';
 import PageLayout from '../layouts/PageLayout';
 
 import ModalWindow from '../components/Ui/ModalWindow';
-import Header from '../components/Header';
 import Footer from '../components/Footer';
 import Toast from '../components/Ui/Toast';
 import MobileNavigationBar from '../components/MobileNavigationBar';
@@ -113,7 +112,6 @@ function AppChrome({
                 />
                 <SessionBootstrap hasSession={hasSession}>
                     <AppShell>
-                        <Header />
                         <div className="app-shell_content">
                             <div className="app-shell_body">
                                 <PageLayout>{children}</PageLayout>
@@ -121,9 +119,9 @@ function AppChrome({
                             </div>
                         </div>
                         <MobileNavigationBar />
-                        <Toast toast={toast} showToast={showToast} />
                     </AppShell>
                 </SessionBootstrap>
+                <Toast toast={toast} showToast={showToast} />
             </AppLayout>
         </div>
     );
@@ -173,7 +171,15 @@ export default function AppProviders({
         }
 
         localStorage.setItem('theme', JSON.stringify(isDarkTheme));
+
+        // Transitions stay off until the new theme has been painted.
+        document.body.classList.add('theme-switching');
         document.body.classList.toggle('dark-theme', isDarkTheme);
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() =>
+                document.body.classList.remove('theme-switching'),
+            ),
+        );
 
         const metaThemeColor = document.querySelector(
             'meta[name="theme-color"]',

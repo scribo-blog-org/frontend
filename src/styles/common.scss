@@ -40,7 +40,6 @@ body {
     color: var(--text-color);
     font-size: var(--text-md);
     line-height: 1.5;
-    transition: background-color 0.3s ease;
 }
 
 body.dark-theme {
@@ -119,45 +118,22 @@ span::selection {
 }
 
 .app-transition {
-    @include use-transition-surface();
-}
-
-.app-transition.app-transition-color {
     @include use-transition();
 }
 
-.app-transition-color {
-    @include use-transition-text();
+// An icon inside an element that already animates its color inherits that
+// animation; transitioning it again would make it lag behind the parent.
+.app-transition svg.app-transition {
+    transition-property: background-color, border-color, box-shadow;
 }
 
-span,
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-a,
-li::marker {
-    @include use-transition-text();
-}
-
-:where(a, button).app-transition-color :where(span, p, svg),
-.app-transition.app-transition-color :where(span, p, svg) {
-    transition: none;
-}
-
-.app-transition .app-transition {
-    @include use-transition-surface();
-}
-
-.app-transition .app-transition.app-transition-color {
-    @include use-transition();
-}
-
-.app-transition .app-transition :where(span, p, h1, h2, h3, h4, h5, h6) {
-    @include use-transition-text();
+// Set by the theme toggle for the frames in which the theme changes, so the
+// switch is instant instead of animating every color transition.
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+    transition: none !important;
 }
 
 .section {

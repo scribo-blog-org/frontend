@@ -76,7 +76,7 @@ function AppSidebar() {
         <aside className="app-sidebar" aria-label="Navigation">
             <Link
                 href="/"
-                className="app-sidebar_logo app-transition-color"
+                className="app-sidebar_logo"
                 onClick={(event: any) =>
                     handleSameRouteClick(event, location.pathname, '/')
                 }

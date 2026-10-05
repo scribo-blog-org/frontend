@@ -22,8 +22,8 @@
     box-sizing: border-box;
     will-change: opacity, transform;
     transition:
-        opacity 0.2s ease,
-        transform 0.2s ease;
+        opacity 300ms ease,
+        transform 300ms ease;
 
     &_text {
         font-size: 12px;

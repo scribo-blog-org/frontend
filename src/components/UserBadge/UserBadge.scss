@@ -8,6 +8,10 @@
     border-radius: 6px;
     cursor: pointer;
 
+    .user_badge_info_name {
+        @include use-transition();
+    }
+
     @include hover {
         background: var(--section-item-hover-background-color);
 

@@ -63,6 +63,10 @@
             width: 16px;
         }
 
+        p {
+            @include use-transition();
+        }
+
         @include hover {
             color: var(--text-color);
             background: transparent;
@@ -75,6 +79,10 @@
 
     &_views {
         cursor: default;
+
+        p {
+            @include use-transition();
+        }
 
         @include hover {
             color: var(--light-text-color);

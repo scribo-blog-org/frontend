@@ -42,6 +42,24 @@ export function parseOwnPostUrl(rawUrl: any) {
     }
 }
 
+export function parseOwnChatUrl(rawUrl: any) {
+    try {
+        const url = new URL(trimUrlToken(rawUrl));
+        const origin = `${url.protocol}//${url.host}`;
+
+        if (!getAllowedOrigins().has(origin)) {
+            return null;
+        }
+
+        const match = url.pathname.match(
+            /^\/(?:messages|chats)\/([a-f0-9]{24})\/?$/i,
+        );
+        return match ? match[1] : null;
+    } catch {
+        return null;
+    }
+}
+
 export function extractUrls(text: any) {
     const src = stripLegacyMentionTokens(String(text || ''));
     const urls: any[] = [];

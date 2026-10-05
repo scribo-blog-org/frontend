@@ -9,28 +9,10 @@ import { format_back, format_date_time } from '../../utils/format';
 import UserBadge from '../../components/UserBadge/index';
 import NotificationMessage from '../../components/NotificationMessage/index';
 
-import PeoplesIcon from '../../assets/svg/peoples.svg';
-import LikeIcon from '../../assets/svg/like-outline.svg';
-import CommentIcon from '../../assets/svg/comment.svg';
-import ReplyIcon from '../../assets/svg/reply.svg';
-import AtIcon from '../../assets/svg/at.svg';
-import SupportIcon from '../../assets/svg/support.svg';
 import Tooltip from '../../components/Ui/Tooltip/index';
 import Loading from '../../components/Ui/Loading';
 
 import './Notifications.scss';
-
-const TYPE_ICONS: Record<string, any> = {
-    follow: PeoplesIcon,
-    unfollow: PeoplesIcon,
-    like_post: LikeIcon,
-    comment_post: CommentIcon,
-    reply_comment: ReplyIcon,
-    mention_post: AtIcon,
-    mention_comment: AtIcon,
-    support_reply: SupportIcon,
-    support_status: SupportIcon,
-};
 
 const Notifications = () => {
     const { profile, setProfile } = useContext(AppContext);
@@ -173,7 +155,6 @@ const Notifications = () => {
                         };
 
                         const isUnread = item.is_read === false;
-                        const TypeIcon = TYPE_ICONS[item.type];
 
                         return (
                             <div
@@ -198,9 +179,6 @@ const Notifications = () => {
                                         />
 
                                         <p className="notifications_page_item_message">
-                                            {TypeIcon ? (
-                                                <TypeIcon aria-hidden />
-                                            ) : null}
                                             <span>
                                                 <NotificationMessage
                                                     item={item}

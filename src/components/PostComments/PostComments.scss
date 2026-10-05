@@ -154,6 +154,10 @@
                         padding: 10px;
                         border-radius: 6px;
 
+                        p {
+                            @include use-transition();
+                        }
+
                         @include hover {
                             background: var(
                                 --section-item-hover-background-color

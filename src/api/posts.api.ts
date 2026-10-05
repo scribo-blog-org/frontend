@@ -36,7 +36,7 @@ const getPosts = async (query: any) => {
     return result;
 };
 
-const POSTS_PAGE_LIMIT = 5;
+const POSTS_PAGE_LIMIT = 10;
 
 function unwrapPostsResponse(response: any) {
     const payload = response?.data;

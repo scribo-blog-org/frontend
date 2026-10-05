@@ -22,7 +22,7 @@ export default function ActionButton({
     const resolvedSize = buttonSize(size);
     return (
         <button
-            className={`action_button ui_button_${resolvedSize} app-transition app-transition-color ${className} ${isLoading ? 'action_button_loading' : ''} ${isDisabled && !isLoading ? 'action_button_disabled' : ''}`}
+            className={`action_button ui_button_${resolvedSize} app-transition ${className} ${isLoading ? 'action_button_loading' : ''} ${isDisabled && !isLoading ? 'action_button_disabled' : ''}`}
             onClick={isDisabled ? undefined : onClick}
             type={type}
             disabled={isDisabled}

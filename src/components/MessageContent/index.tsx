@@ -4,6 +4,7 @@ import { Fragment, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Link } from '@/navigation';
 
 import RichText from '../RichText';
+import GroupInviteCard from '../GroupInviteCard';
 import { LinkPreviewCard, PostMessageCard } from '../PostEntity';
 import { useMessageEmbeds } from '../../hooks/useMessageEmbeds';
 import { profilePathFromNick } from '../../content/plainRichText';
@@ -128,6 +129,19 @@ const MessageRichContent = ({
             {blocks.map((block: any, index: any) => {
                 if (block.type === 'link') {
                     const embed = embedByUrl.get(block.url);
+
+                    if (embed?.type === 'group') {
+                        return (
+                            <div
+                                className="message_content_link_block"
+                                key={`link-${block.url}-${index}`}
+                            >
+                                <RevealBlock>
+                                    <GroupInviteCard invite={embed.invite} />
+                                </RevealBlock>
+                            </div>
+                        );
+                    }
 
                     return (
                         <div

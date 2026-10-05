@@ -45,8 +45,8 @@
             flex-shrink: 0;
             opacity: 0.4;
             transition:
-                opacity 0.15s ease,
-                background 0.3s ease;
+                opacity 300ms ease,
+                background 300ms ease;
         }
 
         @include category-colors {
@@ -97,7 +97,6 @@
 
             p {
                 color: inherit;
-                transition: color 0.15s ease;
             }
         }
     }

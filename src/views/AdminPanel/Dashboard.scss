@@ -317,10 +317,10 @@
         circle,
         text {
             transition:
-                fill 0.3s ease,
-                stroke 0.3s ease,
-                opacity 0.3s ease,
-                color 0.3s ease;
+                fill 300ms ease,
+                stroke 300ms ease,
+                opacity 300ms ease,
+                color 300ms ease;
         }
 
         &_grid {
@@ -368,9 +368,9 @@
             pointer-events: none;
             white-space: nowrap;
             transition:
-                background-color 0.3s ease,
-                color 0.3s ease,
-                box-shadow 0.3s ease;
+                background-color 300ms ease,
+                color 300ms ease,
+                box-shadow 300ms ease;
 
             p + p {
                 color: var(--light-text-color);
@@ -422,7 +422,7 @@
             border-radius: 999px;
             background: var(--section-item-hover-background-color);
             overflow: hidden;
-            transition: background-color 0.3s ease;
+            transition: background-color 300ms ease;
         }
 
         &_fill {
@@ -430,8 +430,8 @@
             border-radius: 999px;
             background: var(--text-color);
             transition:
-                background-color 0.3s ease,
-                width 0.3s ease;
+                background-color 300ms ease,
+                width 300ms ease;
         }
     }
 

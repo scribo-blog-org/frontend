@@ -23,12 +23,14 @@ import DropDown from '../../components/Ui/DropDown';
 import SearchSelect from '../../components/Ui/SearchSelect';
 import CancelButton from '../../components/Ui/CancelButton';
 import Loading from '../../components/Ui/Loading';
-import Pagination from '../../components/Ui/Pagination';
+import InfiniteScroll from '../../components/Ui/InfiniteScroll';
+import { usePagedList } from '../../hooks/usePagedList';
 
 import {
     CategoryEntity,
     EntityView,
     PostEntity,
+    RoleChip,
     SupportEntity,
     UserEntity,
 } from './LogEntities';
@@ -37,8 +39,8 @@ import { LOG_TYPES } from './logTypes';
 
 import './Logs.scss';
 
-const PAGE_SIZE = 18;
-const ENTITY_FILTERS = ['user', 'post', 'category', 'support_request'];
+const PAGE_SIZE = 30;
+const ENTITY_FILTERS = ['user', 'post', 'category', 'support_request', 'role'];
 
 const TYPE_OPTIONS = [
     { value: 'all', name: 'All events' },
@@ -55,18 +57,15 @@ const ENTITY_LABELS: any = {
 };
 const SEARCH_DELAY_MS = 250;
 const SEARCH_PAGE_SIZE = 20;
+const POSTS_BATCH = 50;
 
 const dayKey = (date: any) => new Date(date).toDateString();
 
 const LogsPage = () => {
     const { showToast } = useContext(AppContext);
-    const [logs, setLogs] = useState<any[]>([]);
     const [users, setUsers] = useState<any[]>([]);
     const [posts, setPosts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
-    const [loading, setLoading] = useState<any>(true);
-    const [page, setPage] = useState<any>(1);
-    const [pagesCount, setPagesCount] = useState<any>(0);
     const [filter, setFilter] = useState<any>({ type: null, id: null });
     const [typeFilter, setTypeFilter] = useState<any>('all');
     const rootRef = useRef<any>(null);
@@ -125,13 +124,13 @@ const LogsPage = () => {
     );
 
     useEffect(() => {
-        if (!searchActive) {
+        if (!searchActive || !searchText.trim()) {
             return;
         }
 
         const timer = setTimeout(
             () => loadEntities(searchText, 1),
-            searchText ? SEARCH_DELAY_MS : 0,
+            SEARCH_DELAY_MS,
         );
 
         return () => clearTimeout(timer);
@@ -146,13 +145,10 @@ const LogsPage = () => {
         }
 
         setFilter({ type, id });
-        setPage(1);
     };
 
-    useEffect(() => {
-        let cancelled = false;
-
-        const fetchData = async () => {
+    const fetchLogsPage = useCallback(
+        async (page: number) => {
             const query: any = { page, limit: PAGE_SIZE };
 
             if (typeFilter !== 'all') {
@@ -167,59 +163,82 @@ const LogsPage = () => {
                 query[filter.type] = filter.id;
             }
 
-            const [logsResult, categoriesResult] = await Promise.all([
-                getAllLogs(query),
-                getCategories(),
-            ]);
+            const result = await getAllLogs(query);
+
+            if (!result.status) {
+                showToast({ type: 'error', message: result.message });
+                return null;
+            }
+
+            return {
+                items: result.data?.items || [],
+                pages: result.data?.pagination?.pages || 0,
+            };
+        },
+        [typeFilter, filter.type, filter.id, showToast],
+    );
+
+    const feed = usePagedList({
+        fetchPage: fetchLogsPage,
+        resetKey: JSON.stringify([typeFilter, filter.type, filter.id]),
+    });
+    const logs = feed.items;
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const result = await getCategories();
+            setCategories(result?.data || []);
+        };
+
+        fetchCategories();
+    }, []);
+
+    useEffect(() => {
+        const knownIds = new Set(posts.map((post: any) => post._id));
+        const missingIds = [
+            ...new Set(logs.map((log: any) => log.data?.post).filter(Boolean)),
+        ].filter((id: any) => !knownIds.has(id));
+
+        if (!missingIds.length) {
+            return;
+        }
+
+        let cancelled = false;
+
+        const fetchPosts = async () => {
+            const results = await Promise.all(
+                Array.from(
+                    { length: Math.ceil(missingIds.length / POSTS_BATCH) },
+                    (_: any, index: any) =>
+                        getPosts({
+                            _id: missingIds.slice(
+                                index * POSTS_BATCH,
+                                (index + 1) * POSTS_BATCH,
+                            ),
+                            limit: POSTS_BATCH,
+                        }),
+                ),
+            );
 
             if (cancelled) {
                 return;
             }
 
-            setCategories(categoriesResult?.data || []);
+            const loaded = results.flatMap(
+                (result: any) => result?.data?.items || [],
+            );
 
-            if (!logsResult.status) {
-                showToast({ type: 'error', message: logsResult.message });
-                setLogs([]);
-                setPagesCount(0);
-                setLoading(false);
-                return;
-            }
-
-            const items = logsResult.data?.items || [];
-            setLogs(items);
-            setPagesCount(logsResult.data?.pagination?.pages || 0);
-
-            const postIds = [
-                ...new Set(
-                    items.map((log: any) => log.data?.post).filter(Boolean),
-                ),
-            ];
-
-            if (postIds.length) {
-                const postsResult = await getPosts({
-                    _id: postIds,
-                    limit: Math.min(50, postIds.length),
-                });
-
-                if (!cancelled) {
-                    setPosts(postsResult?.data?.items || []);
-                }
-            } else if (!cancelled) {
-                setPosts([]);
-            }
-
-            if (!cancelled) {
-                setLoading(false);
+            if (loaded.length) {
+                setPosts((prev: any) => [...prev, ...loaded]);
             }
         };
 
-        fetchData();
+        fetchPosts();
 
         return () => {
             cancelled = true;
         };
-    }, [page, filter.id, filter.type, typeFilter, showToast]);
+    }, [logs, posts]);
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -252,13 +271,11 @@ const LogsPage = () => {
     }, [logs]);
 
     useEffect(() => {
-        rootRef.current
-            ?.querySelector('.pagination_content')
-            ?.scrollTo({ top: 0 });
+        rootRef.current?.querySelector('.logs_list')?.scrollTo({ top: 0 });
         setExpanded(new Set());
-    }, [page, filter.id, typeFilter]);
+    }, [filter.type, filter.id, typeFilter]);
 
-    if (loading) {
+    if (feed.loading && !logs.length) {
         return <Loading size={40} />;
     }
 
@@ -276,7 +293,6 @@ const LogsPage = () => {
                         placeholder="Event type"
                         onChange={(value: any) => {
                             setTypeFilter(value);
-                            setPage(1);
                         }}
                     />
                 </div>
@@ -331,6 +347,9 @@ const LogsPage = () => {
                                 setFilter={applyFilter}
                             />
                         )}
+                        {filter.type === 'role' && (
+                            <RoleChip role={filter.id} />
+                        )}
                         <CancelButton
                             size="sm"
                             onClick={() =>
@@ -351,6 +370,7 @@ const LogsPage = () => {
                                         <EntityView
                                             kind={entity.type}
                                             name={entity.name}
+                                            deleted={entity.deleted}
                                         />
                                         <span className="logs_option_type">
                                             {ENTITY_LABELS[entity.type]}
@@ -361,12 +381,21 @@ const LogsPage = () => {
                             placeholder="Find a user, post, or category"
                             emptyLabel="Nothing in the log"
                             loading={entitiesLoading}
+                            minSearchLength={1}
                             hasMore={entitiesPage < entitiesPages}
                             onFocus={() => setSearchActive(true)}
                             onInput={(text: any) => {
                                 entitiesRequest.current++;
-                                setEntitiesLoading(true);
                                 setSearchText(text);
+
+                                if (text.trim()) {
+                                    setEntitiesLoading(true);
+                                } else {
+                                    setEntitiesLoading(false);
+                                    setEntities([]);
+                                    setEntitiesPage(0);
+                                    setEntitiesPages(0);
+                                }
                             }}
                             onLoadMore={() =>
                                 loadEntities(searchText, entitiesPage + 1)
@@ -389,18 +418,17 @@ const LogsPage = () => {
                 )}
             </div>
 
-            <Pagination
-                content={logs}
-                page={page - 1}
-                pagesCount={pagesCount}
-                onPageChange={(index: any) => setPage(index + 1)}
-            >
-                {(visible: any) =>
-                    visible.length ? (
-                        visible.map((log: any, index: any) => (
+            <div className="logs_list">
+                {logs.length ? (
+                    <InfiniteScroll
+                        hasNext={feed.hasNext}
+                        loadingNext={feed.loadingNext}
+                        onLoadNext={feed.loadNext}
+                    >
+                        {logs.map((log: any, index: any) => (
                             <Fragment key={log._id}>
                                 {index === 0 ||
-                                dayKey(visible[index - 1].date_time) !==
+                                dayKey(logs[index - 1].date_time) !==
                                     dayKey(log.date_time) ? (
                                     <div className="logs_day">
                                         {format_message_date_label(
@@ -417,35 +445,33 @@ const LogsPage = () => {
                                     expanded={expanded.has(log._id)}
                                     onToggle={() => toggle(log._id)}
                                     onPrev={
-                                        visible[index - 1]
+                                        logs[index - 1]
                                             ? () =>
                                                   setExpanded(
                                                       new Set([
-                                                          visible[index - 1]
-                                                              ._id,
+                                                          logs[index - 1]._id,
                                                       ]),
                                                   )
                                             : undefined
                                     }
                                     onNext={
-                                        visible[index + 1]
+                                        logs[index + 1]
                                             ? () =>
                                                   setExpanded(
                                                       new Set([
-                                                          visible[index + 1]
-                                                              ._id,
+                                                          logs[index + 1]._id,
                                                       ]),
                                                   )
                                             : undefined
                                     }
                                 />
                             </Fragment>
-                        ))
-                    ) : (
-                        <p className="logs_empty">No events</p>
-                    )
-                }
-            </Pagination>
+                        ))}
+                    </InfiniteScroll>
+                ) : (
+                    <p className="logs_empty">No events</p>
+                )}
+            </div>
         </div>
     );
 };

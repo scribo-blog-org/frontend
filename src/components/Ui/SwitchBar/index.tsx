@@ -85,7 +85,7 @@ export default function SwitchBar({
                     key={index}
                     ref={(el: any) => (buttonsRef.current[index] = el)}
                     type="button"
-                    className={`switcher_bar_item app-transition app-transition-color ${
+                    className={`switcher_bar_item app-transition ${
                         activeIndex === index ? 'switcher_bar_item_active' : ''
                     }`}
                     onClick={() => selectIndex?.(index)}

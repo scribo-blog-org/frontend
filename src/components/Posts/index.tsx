@@ -1,6 +1,13 @@
 'use client';
 
-import { useContext, useEffect, useMemo, useState } from 'react';
+import {
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 
 import { AppContext } from '@/providers/AppProviders';
 import {
@@ -15,7 +22,9 @@ import './Posts.scss';
 import PostsFilters from '../../components/PostsFilters';
 import NoPosts from '../NoPosts';
 import PostCard from '../PostCard';
-import Pagination from '../Ui/Pagination/index';
+import InfiniteScroll from '../Ui/InfiniteScroll';
+import { usePagedList } from '../../hooks/usePagedList';
+import { scrollTo } from '../../utils/navigation';
 
 const PAGE_LIMIT = POSTS_PAGE_LIMIT;
 const EMPTY_QUERY: any = {};
@@ -29,25 +38,17 @@ const Posts = ({
     query = EMPTY_QUERY,
     postsFilters = [],
     wait = false,
-    posts: controlledPosts,
-    setPosts: controlledSetPosts,
-    isLoading: controlledLoading,
-    page: controlledPage,
-    pagesCount: controlledPagesCount,
-    onPageChange,
+    feed: controlledFeed,
     showFilters = true,
+    isLoading: controlledLoading = false,
     initialPosts = [],
     initialPagesCount = 0,
 }: any) => {
-    const isControlled = typeof onPageChange === 'function';
+    const isControlled = Boolean(controlledFeed);
     const { profile } = useContext(AppContext);
 
     const [filters, setFilters] = useState<any[]>([]);
     const [categoryList, setCategoryList] = useState<any[]>([]);
-    const [posts, setPosts] = useState<any[]>(initialPosts);
-    const [page, setPage] = useState<any>(1);
-    const [pagesCount, setPagesCount] = useState<any>(initialPagesCount);
-    const [isLoading, setIsLoading] = useState<any>(initialPosts.length === 0);
 
     const queryKey = JSON.stringify(query);
 
@@ -103,10 +104,9 @@ const Posts = ({
         });
 
         setFilters(uniqueFilters);
-        setPage(1);
     }, [isControlled, categoryList, postsFilters, profile?._id]);
 
-    const requestQuery = useMemo(() => {
+    const baseQuery = useMemo(() => {
         const extraQuery = JSON.parse(queryKey);
         const allActive = filters.find((f: any) => f._id === 'all')?.isActive;
         const subscriptionFilterActive = filters.find(
@@ -121,7 +121,6 @@ const Posts = ({
 
         const next = {
             expand: 'author,category',
-            page,
             limit: PAGE_LIMIT,
             ...extraQuery,
         };
@@ -160,46 +159,62 @@ const Posts = ({
         }
 
         return next;
-    }, [filters, page, profile, queryKey]);
+    }, [filters, profile, queryKey]);
 
-    useEffect(() => {
-        if (isControlled || wait || !filters.length) {
-            return;
-        }
+    const resetKey = JSON.stringify(baseQuery);
 
-        const fetchPage = async () => {
-            if (requestQuery.empty) {
-                setPosts([]);
-                setPagesCount(0);
-                setIsLoading(false);
-                return;
+    const fetchPage = useCallback(
+        async (page: number) => {
+            if (baseQuery.empty) {
+                return { items: [], pages: 0, total: 0 };
             }
 
-            setIsLoading(true);
-            const response = await getPosts(requestQuery);
+            const response = await getPosts({ ...baseQuery, page });
             const { items, pagination } = unwrapPostsResponse(response);
 
             if (response?.status === true || items.length) {
-                setPosts(items);
-                setPagesCount(pagination.pages || 0);
+                return {
+                    items,
+                    pages: pagination.pages || 0,
+                    total: pagination.total,
+                };
             }
 
-            setIsLoading(false);
-        };
+            return null;
+        },
+        [baseQuery],
+    );
 
-        fetchPage();
-    }, [isControlled, requestQuery, wait, filters.length]);
+    const ownFeed = usePagedList({
+        fetchPage,
+        resetKey,
+        enabled: !isControlled && !wait && filters.length > 0,
+        initial: { items: initialPosts, pages: initialPagesCount },
+    });
+
+    const feed = controlledFeed ?? ownFeed;
+    const loading = isControlled ? Boolean(controlledLoading) : feed.loading;
+
+    const lastResetKey = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (isControlled || !filters.length) {
+            return;
+        }
+
+        if (
+            lastResetKey.current !== null &&
+            lastResetKey.current !== resetKey
+        ) {
+            scrollTo('posts_column', 'start');
+        }
+
+        lastResetKey.current = resetKey;
+    }, [isControlled, filters.length, resetKey]);
 
     const handleFilters = (next: any) => {
         setFilters(next);
-        setPage(1);
     };
-
-    const list = isControlled ? controlledPosts || [] : posts;
-    const loading = isControlled ? Boolean(controlledLoading) : isLoading;
-    const activePage = isControlled ? controlledPage || 1 : page;
-    const pages = isControlled ? controlledPagesCount || 0 : pagesCount;
-    const updatePosts = isControlled ? controlledSetPosts : setPosts;
 
     return (
         <div className="posts posts_columns" id="posts_column">
@@ -211,7 +226,7 @@ const Posts = ({
                 />
             )}
 
-            {loading && list.length === 0 ? (
+            {loading && feed.items.length === 0 ? (
                 [0, 1, 2, 3, 4].map((index: any) => (
                     <PostCard
                         key={index}
@@ -219,33 +234,29 @@ const Posts = ({
                         isLoading={true}
                     />
                 ))
-            ) : list.length === 0 ? (
+            ) : feed.items.length === 0 ? (
                 <NoPosts />
             ) : (
-                <Pagination
-                    content={list}
-                    page={activePage - 1}
-                    pagesCount={pages}
-                    onPageChange={(index: any) => {
-                        if (isControlled) {
-                            onPageChange(index + 1);
-                            return;
-                        }
-
-                        setPage(index + 1);
-                    }}
-                >
-                    {(visibleContent: any) =>
-                        visibleContent.map((post: any) => (
-                            <PostCard
-                                isLoading={false}
-                                key={post._id}
-                                post={post}
-                                setPosts={updatePosts}
-                            />
-                        ))
+                <InfiniteScroll
+                    hasNext={feed.hasNext}
+                    loadingNext={feed.loadingNext}
+                    onLoadNext={feed.loadNext}
+                    loader={
+                        <PostCard
+                            isLoading={true}
+                            post={{ title: 'Loading...' }}
+                        />
                     }
-                </Pagination>
+                >
+                    {feed.items.map((post: any) => (
+                        <PostCard
+                            isLoading={false}
+                            key={post._id}
+                            post={post}
+                            setPosts={feed.setItems}
+                        />
+                    ))}
+                </InfiniteScroll>
             )}
         </div>
     );
