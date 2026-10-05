@@ -14,7 +14,7 @@
     border-right: 1px solid var(--line-color);
     box-sizing: border-box;
     z-index: 100;
-    transition: border-color 0.3s ease;
+    transition: border-color 300ms ease;
 
     @include screen() {
         display: none;
@@ -57,7 +57,7 @@
         margin-top: var(--space-3);
         padding-top: var(--space-3);
         border-top: 1px solid var(--line-color);
-        transition: border-color 0.3s ease;
+        transition: border-color 300ms ease;
     }
 
     &_item {
@@ -94,7 +94,6 @@
         width: 20px;
         height: 20px;
         color: inherit;
-        @include use-transition-text();
 
         *[fill] {
             fill: currentColor;

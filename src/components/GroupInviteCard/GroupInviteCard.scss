@@ -1,0 +1,45 @@
+.group_invite_card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--line-color);
+    border-radius: 8px;
+    background: var(--input-background-color);
+
+    &_photo {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    &_info {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+    }
+
+    &_title {
+        overflow: hidden;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-color);
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &_muted {
+        font-size: 12px;
+        color: var(--light-text-color);
+    }
+
+    .primary_button {
+        flex-shrink: 0;
+    }
+}

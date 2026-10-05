@@ -1,12 +1,5 @@
 @use '../../styles/helpers' as *;
 
-.logs_page .pagination_content,
-.logs_page .pagination_content *,
-.logs_page .pagination_content *::before,
-.logs_page .pagination_content *::after {
-    @include use-theme-fade();
-}
-
 .logs_page {
     display: flex;
     flex-direction: column;
@@ -14,33 +7,13 @@
     min-height: 0;
     gap: var(--space-3);
 
-    .pagination {
-        flex: 1 1 0%;
-        min-height: 0;
-        gap: var(--space-2);
-    }
-
-    .pagination_content {
+    .logs_list {
         flex: 1 1 0%;
         min-height: 0;
         overflow-y: auto;
         border: 1px solid var(--line-color);
         border-radius: var(--radius-sm);
         scrollbar-gutter: stable;
-    }
-
-    .pagination_panel {
-        flex-shrink: 0;
-
-        button {
-            height: 34px;
-            width: 34px;
-        }
-
-        .pagination_navigation_button {
-            width: auto;
-            padding: 0 12px;
-        }
     }
 }
 
@@ -131,6 +104,7 @@
     min-height: 38px;
     padding: 10px 14px;
     cursor: pointer;
+    @include use-transition();
 
     @include hover {
         background: var(--section-item-hover-background-color);
@@ -278,6 +252,7 @@
     line-height: 1.2;
     color: var(--text-color);
     background: rgb(from var(--text-color) r g b / 0.07);
+    @include use-transition();
 
     &_avatar {
         width: 16px;
@@ -292,6 +267,7 @@
         height: 14px;
         flex-shrink: 0;
         color: var(--section-light-color);
+        @include use-transition();
     }
 
     &_verified {
@@ -389,6 +365,25 @@
         border-bottom: 0;
     }
 
+    &_collapse {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.25s ease;
+
+        &_open {
+            grid-template-rows: 1fr;
+        }
+
+        &_inner {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            transition: none;
+        }
+    }
+
     &_expanded {
         background: rgb(from var(--text-color) r g b / 0.035);
 
@@ -484,6 +479,7 @@
     border-radius: 6px;
     background: none;
     color: var(--light-text-color);
+    @include use-transition();
 
     svg {
         width: 14px;
@@ -517,6 +513,7 @@
     background: none;
     font-size: 12px;
     color: var(--light-text-color);
+    @include use-transition();
 
     svg {
         width: 14px;

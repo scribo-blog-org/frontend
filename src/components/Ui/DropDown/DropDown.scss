@@ -46,7 +46,7 @@
         width: 12px;
         height: 12px;
         color: var(--light-text-color);
-        transition: transform 0.2s ease;
+        transition: transform 300ms ease;
     }
 
     &_open .dropdown_chevron {

@@ -29,7 +29,7 @@ export default function PrimaryButton({
     return (
         <button
             id={id}
-            className={`primary_button ui_button_${resolvedSize} app-transition app-transition-color ${className} ${isLoading ? 'primary_button_loading' : ''} ${isDisabled && !isLoading ? 'primary_button_disabled' : ''}`}
+            className={`primary_button ui_button_${resolvedSize} app-transition ${className} ${isLoading ? 'primary_button_loading' : ''} ${isDisabled && !isLoading ? 'primary_button_disabled' : ''}`}
             onClick={isDisabled ? undefined : onClick}
             onMouseDown={onMouseDown}
             onTouchStart={onTouchStart}

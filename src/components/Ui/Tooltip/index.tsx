@@ -24,6 +24,9 @@ const getSlideTransform = (side: any) =>
 
 const Tooltip = ({ text, children, className, clickable = false }: any) => {
     const [open, setOpen] = useState<any>(false);
+    // After a click the tooltip stays hidden until the pointer leaves, so it
+    // does not pop up over whatever the click opened (modal, popup).
+    const [suppressed, setSuppressed] = useState<any>(false);
 
     const { refs, floatingStyles, context } = useFloating({
         open,
@@ -37,7 +40,7 @@ const Tooltip = ({ text, children, className, clickable = false }: any) => {
     const { isMounted, styles: transitionStyles } = useTransitionStyles(
         context,
         {
-            duration: 200,
+            duration: 300,
             initial: ({ side }: any) => ({
                 opacity: 0,
                 transform: getSlideTransform(side),
@@ -54,6 +57,8 @@ const Tooltip = ({ text, children, className, clickable = false }: any) => {
     );
 
     const hover = useHover(context, {
+        enabled: !suppressed,
+        mouseOnly: true,
         handleClose: safePolygon({ buffer: 4 }),
         delay: { open: 80, close: 0 },
     });
@@ -73,7 +78,13 @@ const Tooltip = ({ text, children, className, clickable = false }: any) => {
             <span
                 className={`tooltip_wrapper ${className || ''} ${clickable ? 'clickable' : ''}`}
                 ref={refs.setReference}
-                {...getReferenceProps()}
+                {...getReferenceProps({
+                    onClick: () => {
+                        setOpen(false);
+                        setSuppressed(true);
+                    },
+                    onPointerLeave: () => setSuppressed(false),
+                })}
             >
                 {children}
             </span>

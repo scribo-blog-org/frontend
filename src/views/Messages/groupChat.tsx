@@ -513,7 +513,7 @@ export function GroupSettings({
                 />
                 <button
                     type="button"
-                    className="messages_group_share app-transition app-transition-color"
+                    className="messages_group_share app-transition"
                     aria-label="Share"
                     onClick={openShare}
                 >

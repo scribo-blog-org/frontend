@@ -40,7 +40,6 @@ const SharePostModal = ({
 }: any) => {
     const { profile } = useContext(AppContext);
     const navigate = useNavigate();
-    const [copied, setCopied] = useState<any>(false);
     const [conversations, setConversations] = useState<any[]>([]);
     const [isLoadingChats, setIsLoadingChats] = useState<any>(Boolean(profile));
     const [sendingId, setSendingId] = useState<any>(null);
@@ -86,9 +85,7 @@ const SharePostModal = ({
     const handleCopy = async () => {
         try {
             await copyText(shareUrl);
-            setCopied(true);
             showToast?.({ message: 'Link copied', type: 'success' });
-            window.setTimeout(() => setCopied(false), 2000);
         } catch (error: any) {
             console.error(error);
             showToast?.({
@@ -145,7 +142,7 @@ const SharePostModal = ({
             {onBack ? (
                 <button
                     type="button"
-                    className="share_post_modal_back app-transition app-transition-color"
+                    className="share_post_modal_back app-transition"
                     onClick={onBack}
                 >
                     <ArrowLeftIcon />
@@ -172,7 +169,7 @@ const SharePostModal = ({
                     />
                     <PrimaryButton type="button" onClick={handleCopy}>
                         <CopyIcon />
-                        {copied ? 'Copied' : 'Copy'}
+                        Copy
                     </PrimaryButton>
                 </div>
             </div>

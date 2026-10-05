@@ -22,10 +22,7 @@ const Banner = () => (
                 rel="noreferrer"
                 aria-label="GitHub MaksimKosyanchuk"
             >
-                <GhIcon
-                    className="banner_link_icon app-transition-color"
-                    aria-hidden="true"
-                />
+                <GhIcon className="banner_link_icon" aria-hidden="true" />
                 <span className="banner_link_copy">
                     <span className="banner_link_label">GitHub</span>
                     <span className="banner_link_hint">MaksimKosyanchuk</span>
@@ -40,10 +37,7 @@ const Banner = () => (
                 href="/users/Maks"
                 aria-label="Profile on this site"
             >
-                <ProfileIcon
-                    className="banner_link_icon app-transition-color"
-                    aria-hidden="true"
-                />
+                <ProfileIcon className="banner_link_icon" aria-hidden="true" />
                 <span className="banner_link_copy">
                     <span className="banner_link_label">My profile</span>
                     <span className="banner_link_hint">on Scribo</span>

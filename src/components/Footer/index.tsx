@@ -6,6 +6,7 @@ import { Link } from '@/navigation';
 import { AppContext } from '@/providers/AppProviders';
 import LinkToProfile from '../LinkToProfile';
 
+import '../../layouts/DefaultContainer/DefaultContainer.scss';
 import './Footer.scss';
 
 import GhIcon from '../../assets/svg/github-icon.svg';
@@ -61,7 +62,7 @@ function Footer() {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <GhIcon className="app-transition app-transition-color" />
+                            <GhIcon className="app-transition" />
                         </a>
                         <a
                             className="footer_socials_item"
@@ -69,7 +70,7 @@ function Footer() {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <InstagramIcon className="app-transition app-transition-color" />
+                            <InstagramIcon className="app-transition" />
                         </a>
                         <a
                             className="footer_socials_item"
@@ -77,7 +78,7 @@ function Footer() {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <TelegramIcon className="app-transition app-transition-color" />
+                            <TelegramIcon className="app-transition" />
                         </a>
                         <a
                             className="footer_socials_item"
@@ -85,7 +86,7 @@ function Footer() {
                             target="_blank"
                             rel="noreferrer"
                         >
-                            <TWitterIcon className="app-transition app-transition-color" />
+                            <TWitterIcon className="app-transition" />
                         </a>
                     </div>
                     <div className="footer_column footer_main_logo">

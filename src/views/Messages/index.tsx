@@ -2898,7 +2898,7 @@ const MessagesPage = () => {
                         <h1 className="messages_title">Messages</h1>
                         <button
                             type="button"
-                            className="messages_new_group app-transition app-transition-color"
+                            className="messages_new_group app-transition"
                             onClick={openCreateGroup}
                             aria-label="New group"
                         >
@@ -3049,7 +3049,7 @@ const MessagesPage = () => {
                                 className="messages_blank_sheet"
                                 aria-hidden="true"
                             >
-                                <NewMessageIllustration className="app-transition-color" />
+                                <NewMessageIllustration className="app-transition" />
                             </div>
                             <div className="messages_blank_copy">
                                 <h1>This conversation is still empty</h1>
@@ -3712,7 +3712,7 @@ const MessagesPage = () => {
                                             >
                                                 <button
                                                     type="button"
-                                                    className="messages_selection_close app-transition app-transition-color"
+                                                    className="messages_selection_close app-transition"
                                                     onClick={clearSelection}
                                                     aria-label="Cancel selection"
                                                 >
@@ -3726,7 +3726,7 @@ const MessagesPage = () => {
                                                 <div className="messages_selection_actions">
                                                     <button
                                                         type="button"
-                                                        className="messages_selection_action app-transition app-transition-color"
+                                                        className="messages_selection_action app-transition"
                                                         aria-label="Copy selected messages"
                                                         disabled={
                                                             !selectedMessages.length

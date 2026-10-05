@@ -21,18 +21,21 @@ import ActionButton from '../../components/Ui/ActionButton';
 import DangerButton from '../../components/Ui/DangerButton';
 import Field from '../../components/Ui/Field';
 import Tooltip from '../../components/Ui/Tooltip';
-import SidebarPage from '../../components/SidebarPage';
 
 import './Settings.scss';
 
 import AvatarIcon from '../../assets/svg/avatar-icon.svg';
-import ProfileIcon from '../../assets/svg/profile-icon.svg';
-import SecurityIcon from '../../assets/svg/security.svg';
 import LogoutIcon from '../../assets/svg/logout.svg';
 
 const Settings = () => {
-    const { profile, setProfile, profileLoading, showToast } =
-        useContext(AppContext);
+    const {
+        profile,
+        setProfile,
+        profileLoading,
+        showToast,
+        isDarkTheme,
+        setIsDarkTheme,
+    } = useContext(AppContext);
     const [initialized, setInitialized] = useState<any>(false);
     const navigate = useNavigate();
     const [errors, setErrors] = useState<any>({});
@@ -449,14 +452,11 @@ const Settings = () => {
 
     return (
         <div className="settings">
-            <SidebarPage
-                pageTitle="Settings"
-                pages={[
+            <div className="settings_sections">
+                {[
                     {
                         title: 'Profile',
                         key: 'profile',
-                        aliases: ['privacy'],
-                        icon: <ProfileIcon />,
                         content: (
                             <form
                                 className="settings_panel settings_panel_profile"
@@ -638,8 +638,6 @@ const Settings = () => {
                     {
                         title: 'Security',
                         key: 'security',
-                        aliases: ['sessions', 'password'],
-                        icon: <SecurityIcon />,
                         content: (
                             <div className="settings_panel">
                                 <div className="settings_stack">
@@ -902,8 +900,30 @@ const Settings = () => {
                             </div>
                         ),
                     },
-                ]}
-            />
+                    {
+                        title: 'Appearance',
+                        key: 'appearance',
+                        content: (
+                            <div className="settings_panel">
+                                <div className="settings_stack">
+                                    <div className="settings_group settings_theme">
+                                        <p>Dark theme</p>
+                                        <Toggle
+                                            checked={isDarkTheme}
+                                            onChange={setIsDarkTheme}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ),
+                    },
+                ].map((section: any) => (
+                    <section key={section.key} className="settings_section">
+                        <h1>{section.title}</h1>
+                        {section.content}
+                    </section>
+                ))}
+            </div>
         </div>
     );
 };

@@ -21,6 +21,7 @@ import {
     UserEntity,
 } from './LogEntities';
 import { useEffect, useRef } from 'react';
+import { useOverlayPresence } from '../../components/Ui/useOverlayEnter';
 
 import LogDetails from './LogDetails';
 import { describeChanges } from './logFormat';
@@ -148,7 +149,7 @@ const changesTitle = (changes: any) =>
         )
         .join('\n');
 
-const detailsOf = (log: any) => {
+const detailsOf = (log: any, setFilter?: any) => {
     const data = log.data ?? {};
 
     if (Array.isArray(data.changes) && data.changes.length) {
@@ -179,7 +180,13 @@ const detailsOf = (log: any) => {
                 : {};
         case 'update_role':
             return {
-                node: <RoleChange from={data.old_role} to={data.new_role} />,
+                node: (
+                    <RoleChange
+                        from={data.old_role}
+                        to={data.new_role}
+                        setFilter={setFilter}
+                    />
+                ),
             };
         case 'create_support_request':
             return { node: <Quote text={data.message_preview} /> };
@@ -243,10 +250,13 @@ const LogRow = ({
         }
     }, [expanded]);
 
+    const { mounted: detailsMounted, visible: detailsVisible } =
+        useOverlayPresence(expanded);
+
     const config = typeOf(log);
     const Icon = config.icon;
     const data = log.data ?? {};
-    const details = detailsOf(log);
+    const details = detailsOf(log, setFilter);
 
     const actor = data.system ? (
         <SystemEntity />
@@ -304,29 +314,39 @@ const LogRow = ({
                 </Tooltip>
                 <ChevronDownIcon className="log_row_chevron" />
             </div>
-            {expanded ? (
-                <LogDetails
-                    log={log}
-                    config={config}
-                    names={{
-                        user: users.find(
-                            (u: any) => u._id === String(data.user),
-                        )?.nick_name,
-                        target: users.find(
-                            (u: any) =>
-                                u._id ===
-                                String(data.target_user ?? data.updated_user),
-                        )?.nick_name,
-                        post: posts.find((p: any) => p._id === data.post)
-                            ?.title,
-                        category: categories.find(
-                            (c: any) => c._id === data.category,
-                        )?.name,
-                    }}
-                    onPrev={onPrev}
-                    onNext={onNext}
-                />
-            ) : null}
+            <div
+                className={`log_item_collapse${detailsVisible ? ' log_item_collapse_open' : ''}`}
+            >
+                <div className="log_item_collapse_inner">
+                    {detailsMounted ? (
+                        <LogDetails
+                            log={log}
+                            config={config}
+                            names={{
+                                user: users.find(
+                                    (u: any) => u._id === String(data.user),
+                                )?.nick_name,
+                                target: users.find(
+                                    (u: any) =>
+                                        u._id ===
+                                        String(
+                                            data.target_user ??
+                                                data.updated_user,
+                                        ),
+                                )?.nick_name,
+                                post: posts.find(
+                                    (p: any) => p._id === data.post,
+                                )?.title,
+                                category: categories.find(
+                                    (c: any) => c._id === data.category,
+                                )?.name,
+                            }}
+                            onPrev={onPrev}
+                            onNext={onNext}
+                        />
+                    ) : null}
+                </div>
+            </div>
         </div>
     );
 };

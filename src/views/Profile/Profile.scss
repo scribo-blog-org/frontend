@@ -208,6 +208,7 @@
             }
 
             &_value {
+                @include use-transition();
                 font-size: var(--text-md);
                 font-weight: 600;
                 letter-spacing: 0;
@@ -216,6 +217,7 @@
             }
 
             &_label {
+                @include use-transition();
                 font-size: var(--text-md);
                 color: var(--light-text-color);
             }

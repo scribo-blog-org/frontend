@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react';
 
 import { getPostById } from '../api/posts.api';
+import { getGroupInvite } from '../api/chat.api';
 import { fetchLinkPreview } from '../api/linkPreview.api';
 import { plainTextExcerpt } from '../seo/excerpt';
-import { extractUrls, parseOwnPostUrl } from '../utils/messageLinks';
+import {
+    extractUrls,
+    parseOwnChatUrl,
+    parseOwnPostUrl,
+} from '../utils/messageLinks';
 
 export function useMessageEmbeds(text: any) {
     const [embeds, setEmbeds] = useState<any[]>([]);
@@ -42,6 +47,16 @@ export function useMessageEmbeds(text: any) {
                         }
 
                         return null;
+                    }
+
+                    const chatId = parseOwnChatUrl(url);
+
+                    if (chatId) {
+                        const result = await getGroupInvite(chatId);
+
+                        return result?.status === true && result.data
+                            ? { type: 'group', url, invite: result.data }
+                            : null;
                     }
 
                     const preview = await fetchLinkPreview(url);

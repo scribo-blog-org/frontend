@@ -6,6 +6,7 @@ export { default as DropDown } from './DropDown';
 export { default as DropFile } from './DropFile';
 export { default as Field } from './Field';
 export { default as Flyout } from './Flyout';
+export { default as InfiniteScroll } from './InfiniteScroll';
 export { default as InputField } from './InputField';
 export { default as Loading } from './Loading';
 export { default as ModalWindow } from './ModalWindow';

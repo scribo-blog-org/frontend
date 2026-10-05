@@ -18,7 +18,7 @@
         width: 3px;
         border-radius: 2px;
         background: var(--text-color);
-        transition: background 0.3s ease;
+        transition: background 300ms ease;
     }
 
     &_kicker {
@@ -48,7 +48,7 @@
         grid-template-columns: 1fr 1fr;
         margin-top: var(--space-1);
         border-top: 1px solid var(--line-color);
-        transition: border-color 0.3s ease;
+        transition: border-color 300ms ease;
 
         @include screen() {
             grid-template-columns: 1fr;
@@ -62,12 +62,12 @@
         padding: 14px 16px 14px 0;
         color: var(--text-color);
         border-bottom: 1px solid var(--line-color);
-        transition: border-color 0.3s ease;
+        transition: border-color 300ms ease;
 
         &:first-child {
             padding-right: 20px;
             border-right: 1px solid var(--line-color);
-            transition: border-color 0.3s ease;
+            transition: border-color 300ms ease;
         }
 
         &:last-child {
@@ -132,6 +132,6 @@
         height: 14px;
         flex-shrink: 0;
         color: var(--light-text-color);
-        transition: transform 0.2s ease;
+        transition: transform 300ms ease;
     }
 }

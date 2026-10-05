@@ -306,8 +306,8 @@ const ROLE_BADGES = ['author', 'moderator', 'admin', 'tech_admin'];
 
 const PLAIN_ROLES: Record<string, string> = { user: 'User' };
 
-export const RoleChip = ({ role }: any) =>
-    ROLE_BADGES.includes(role) ? (
+export const RoleChip = ({ role, setFilter }: any) => {
+    const chip = ROLE_BADGES.includes(role) ? (
         <span className="log_role">
             <RoleBadge user={{ role }} />
         </span>
@@ -319,15 +319,29 @@ export const RoleChip = ({ role }: any) =>
         </span>
     );
 
-export const RoleChange = ({ from, to }: any) => (
+    if (!setFilter || !role) {
+        return chip;
+    }
+
+    return (
+        <span
+            className="log_entity"
+            onClick={() => setFilter({ type: 'role', id: role })}
+        >
+            {chip}
+        </span>
+    );
+};
+
+export const RoleChange = ({ from, to, setFilter }: any) => (
     <span className="log_role_change">
         {from ? (
             <>
-                <RoleChip role={from} />
+                <RoleChip role={from} setFilter={setFilter} />
                 <Arrow />
             </>
         ) : null}
-        <RoleChip role={to} />
+        <RoleChip role={to} setFilter={setFilter} />
     </span>
 );
 
