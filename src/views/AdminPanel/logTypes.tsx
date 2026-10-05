@@ -172,6 +172,16 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
         text: () => "Changed a user's role",
         object: 'user',
     },
+    update_verified: {
+        title: 'Verification',
+        tone: 'update',
+        icon: EditIcon,
+        text: (log: any) =>
+            log?.data?.verified === false
+                ? 'Removed the verified badge from'
+                : 'Gave the verified badge to',
+        object: 'user',
+    },
     create_conversation: {
         title: 'Chat started',
         tone: 'create',
