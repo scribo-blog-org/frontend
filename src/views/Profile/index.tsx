@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams, useNavigate } from '@/navigation';
-import { useState, useEffect, useContext, useMemo } from 'react';
+import { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 
 import { AppContext } from '@/providers/AppProviders';
 
@@ -17,6 +17,7 @@ import { format_date_time, format_back } from '../../utils/format';
 
 import { scrollTo } from '../../utils/navigation';
 import { decodeRouteParam } from '../../utils/routeParam';
+import { usePagedList } from '../../hooks/usePagedList';
 
 import Verified from '../../assets/svg/verified.svg';
 import Calendar from '../../assets/svg/calendar-icon.svg';
@@ -53,10 +54,6 @@ const Profile = ({
     const [isProfileLoading, setIsProfileLoading] = useState<any>(!initialUser);
     const [activeTab, setActiveTab] = useState<any>(0);
     const [user, setUser] = useState<Record<string, any> | null>(initialUser);
-    const [posts, setPosts] = useState<any[]>([]);
-    const [postsPage, setPostsPage] = useState<any>(1);
-    const [postsPages, setPostsPages] = useState<any>(0);
-    const [isPostsLoading, setIsPostsLoading] = useState<any>(true);
     const [followThisUser, setFollowThisUser] = useState<any>(null);
     const [followAnotherUser, setFollowAnotherUser] = useState<any>(null);
 
@@ -147,66 +144,47 @@ const Profile = ({
         return (ids || []).map((item: any) => String(item._id || item));
     }, [user?._id, user?.saved_posts, profile?._id, profile?.saved_posts]);
 
-    useEffect(() => {
-        setPostsPage(1);
-        setPosts([]);
-        setIsPostsLoading(true);
-    }, [activeTab, user?._id]);
-
-    useEffect(() => {
-        if (!user?._id) {
-            return;
-        }
-
-        let cancelled = false;
-
-        const loadPosts = async () => {
+    const fetchProfilePosts = useCallback(
+        async (page: number) => {
             if (activeTab === 1 && savedPostsIds.length === 0) {
-                setPosts([]);
-                setPostsPages(0);
-                setIsPostsLoading(false);
-                return;
+                return { items: [], pages: 0, total: 0 };
             }
-
-            setIsPostsLoading(true);
 
             const query: any = {
                 expand: 'author,category',
-                page: postsPage,
+                page,
                 limit: POSTS_PAGE_LIMIT,
             };
 
             if (activeTab === 0) {
-                query.author = user._id;
+                query.author = user?._id;
             } else {
                 query._id = savedPostsIds;
             }
 
             const response = await getPosts(query);
 
-            if (cancelled) {
-                return;
+            if (response?.status !== true) {
+                return { items: [], pages: 0, total: 0 };
             }
 
             const { items, pagination } = unwrapPostsResponse(response);
 
-            if (response?.status === true) {
-                setPosts(items);
-                setPostsPages(pagination.pages || 0);
-            } else {
-                setPosts([]);
-                setPostsPages(0);
-            }
+            return {
+                items,
+                pages: pagination.pages || 0,
+                total: pagination.total,
+            };
+        },
+        [user?._id, activeTab, savedPostsIds],
+    );
 
-            setIsPostsLoading(false);
-        };
-
-        loadPosts();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [user?._id, activeTab, postsPage, savedPostsIds]);
+    const postsFeed = usePagedList({
+        fetchPage: fetchProfilePosts,
+        resetKey: JSON.stringify([user?._id, activeTab, savedPostsIds]),
+        enabled: Boolean(user?._id),
+        keepStale: false,
+    });
 
     const open_settings = () => {
         navigate('/settings');
@@ -407,7 +385,7 @@ const Profile = ({
                                     }
                                 >
                                     <span className="profile_info_stat_value">
-                                        {posts?.length ?? '0'}
+                                        {postsFeed.total}
                                     </span>
                                     <span className="profile_info_stat_label">
                                         posts
@@ -523,12 +501,8 @@ const Profile = ({
                 </Sceleton>
                 <div className="profile_posts">
                     <Posts
-                        posts={posts}
-                        setPosts={setPosts}
-                        isLoading={isProfileLoading || isPostsLoading}
-                        page={postsPage}
-                        pagesCount={postsPages}
-                        onPageChange={setPostsPage}
+                        feed={postsFeed}
+                        isLoading={isProfileLoading || postsFeed.loading}
                         showFilters={false}
                     />
                 </div>

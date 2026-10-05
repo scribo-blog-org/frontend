@@ -20,7 +20,15 @@ const formatMoment = (date: any) =>
         second: '2-digit',
     });
 
-const Card = ({ rows, children }: { rows?: DetailRow[]; children?: any }) => (
+const Card = ({
+    rows,
+    children,
+    setFilter,
+}: {
+    rows?: DetailRow[];
+    children?: any;
+    setFilter?: any;
+}) => (
     <div className="log_card">
         {rows?.map((row, index) => (
             <div key={`${row.label}-${index}`} className="log_card_row">
@@ -29,7 +37,11 @@ const Card = ({ rows, children }: { rows?: DetailRow[]; children?: any }) => (
                     className={`log_card_value${row.mono ? ' log_card_mono' : ''}`}
                 >
                     {row.change?.kind === 'role' ? (
-                        <RoleChange from={row.change.from} to={row.change.to} />
+                        <RoleChange
+                            from={row.change.from}
+                            to={row.change.to}
+                            setFilter={setFilter}
+                        />
                     ) : row.change?.kind === 'status' ? (
                         <StatusChange
                             from={row.change.from}
@@ -68,7 +80,7 @@ const Step = ({ title, meta, tone = 'default', children }: any) => (
     </section>
 );
 
-const LogDetails = ({ log, config, names, onPrev, onNext }: any) => {
+const LogDetails = ({ log, config, names, setFilter, onPrev, onNext }: any) => {
     const { showToast } = useContext(AppContext);
     const [showRaw, setShowRaw] = useState<any>(false);
     const details = describeDetails(log, formatMoment, names);
@@ -149,7 +161,7 @@ const LogDetails = ({ log, config, names, onPrev, onNext }: any) => {
                     title="Event"
                     meta={details.request.length ? config.title : details.time}
                 >
-                    <Card rows={details.facts} />
+                    <Card rows={details.facts} setFilter={setFilter} />
                 </Step>
 
                 {details.changes.length ? (

@@ -36,7 +36,7 @@
         display: grid;
         grid-template-rows: 0fr;
         min-height: 0;
-        transition: grid-template-rows 0.34s ease;
+        transition: grid-template-rows 300ms ease;
 
         &_open {
             grid-template-rows: 1fr;

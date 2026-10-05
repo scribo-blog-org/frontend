@@ -6,6 +6,7 @@ import {
     offset,
     flip,
     shift,
+    size,
     autoUpdate,
     FloatingPortal,
     FloatingTree,
@@ -327,15 +328,40 @@ function PopupMenu({
     open,
 }: any) {
     const { mounted, visible } = useOverlayPresence(open);
-    const { refs, x, y, placement } = useFloating({
+    // The side is chosen once, when the menu opens. Flipping on every resize
+    // made the menu jump to the other side as soon as an inline submenu
+    // expanded; instead it slides along the screen to stay fully visible and
+    // only scrolls when taller than the viewport.
+    const [lockedPlacement, setLockedPlacement] = useState<any>(null);
+    const { refs, x, y, placement, isPositioned } = useFloating({
         elements: {
             reference: anchorRef.current,
         },
-        placement: 'bottom-start',
+        placement: lockedPlacement ?? 'bottom-start',
         strategy: 'fixed',
-        middleware: [offset(8), flip(), shift({ padding: 8 })],
+        middleware: [
+            offset(8),
+            lockedPlacement ? null : flip(),
+            size({
+                apply({ elements }: any) {
+                    elements.floating.style.setProperty(
+                        '--popup-max-height',
+                        `${Math.max(0, window.innerHeight - 16)}px`,
+                    );
+                },
+            }),
+            shift({ padding: 8, crossAxis: true }),
+        ],
         whileElementsMounted: autoUpdate,
     });
+
+    useEffect(() => {
+        if (!mounted) {
+            setLockedPlacement(null);
+        } else if (isPositioned && !lockedPlacement) {
+            setLockedPlacement(placement);
+        }
+    }, [mounted, isPositioned, placement, lockedPlacement]);
 
     useFloatingPosition(refs, x, y);
 

@@ -1,34 +1,14 @@
-@mixin use-transition-surface() {
-    transition:
-        background-color 0.3s ease,
-        background 0.3s ease,
-        border-color 0.3s ease,
-        box-shadow 0.3s ease;
-}
-
-@mixin use-transition-text() {
-    transition: color 0.3s ease;
-}
-
+// Hover and state transition for colors. Theme changes are applied with
+// transitions disabled (see `theme-switching` in common.scss).
 @mixin use-transition() {
     transition:
-        background-color 0.3s ease,
-        background 0.3s ease,
-        border-color 0.3s ease,
-        box-shadow 0.3s ease,
-        color 0.3s ease;
-}
-
-@mixin use-theme-fade() {
-    transition:
-        background-color 0.3s ease,
-        background 0.3s ease,
-        border-color 0.3s ease,
-        box-shadow 0.3s ease,
-        color 0.3s ease,
-        fill 0.3s ease,
-        stroke 0.3s ease,
-        transform 0.15s ease;
+        color 300ms ease,
+        background-color 300ms ease,
+        background 300ms ease,
+        border-color 300ms ease,
+        box-shadow 300ms ease,
+        fill 300ms ease,
+        stroke 300ms ease;
 }
 
 @mixin screen($size: 'sm') {
