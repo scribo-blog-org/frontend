@@ -221,10 +221,10 @@ const EditPost = () => {
                     isMultiline={true}
                     multilineRows={1}
                     onChange={(e: any) =>
-                        setFields({
-                            ...fields,
+                        setFields((prev: any) => ({
+                            ...prev,
                             postTitle: e.target.value,
-                        })
+                        }))
                     }
                     onFocus={() => handleFocus('postTitle')}
                     length={FIELD_LIMITS.postTitle.max}
@@ -269,10 +269,10 @@ const EditPost = () => {
                     initialHtml={fields.postContent}
                     onFocus={() => handleFocus('postContent')}
                     onChange={(html: any) =>
-                        setFields({
-                            ...fields,
+                        setFields((prev: any) => ({
+                            ...prev,
                             postContent: html,
-                        })
+                        }))
                     }
                     error={errors?.postContent}
                 />
