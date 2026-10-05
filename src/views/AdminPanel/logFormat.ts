@@ -125,6 +125,7 @@ const KNOWN_KEYS = new Set([
     'updated_user',
     'old_role',
     'new_role',
+    'verified',
     'status',
     'previous_status',
     'comments_removed',
@@ -231,6 +232,10 @@ export function describeDetails(
                 to: String(data.new_role ?? '—'),
             },
         );
+    }
+
+    if (typeof data.verified === 'boolean') {
+        add('Verified badge', yesNo(data.verified));
     }
 
     if (present(data.status) && present(data.previous_status)) {

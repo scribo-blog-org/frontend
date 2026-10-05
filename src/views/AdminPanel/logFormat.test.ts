@@ -108,6 +108,20 @@ describe('describeDetails', () => {
         });
     });
 
+    it('shows whether a verified badge was given or taken away', () => {
+        const details = describeDetails({
+            type: 'update_verified',
+            data: {
+                user: 'u1',
+                updated_user: 'u3',
+                target_nick: 'Beekeeper',
+                verified: false,
+            },
+        });
+        expect(value(details, 'Verified badge')).toBe('no');
+        expect(value(details, 'On the user')).toBe('Beekeeper');
+    });
+
     it('keeps a role change structured even when the old role was not recorded', () => {
         const details = describeDetails({
             type: 'update_role',

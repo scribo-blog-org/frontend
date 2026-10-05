@@ -54,6 +54,49 @@ const updateRole = async (user_id: any, new_role: any) => {
     }
 };
 
+const getAdminUsers = async ({
+    page = 1,
+    limit = 20,
+    search = '',
+    sort = 'activity',
+    roles = '',
+}: any = {}) => {
+    const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+        sort,
+    });
+    if (search) params.set('search', search);
+    if (roles) params.set('roles', roles);
+
+    try {
+        const response = await apiFetch(
+            `${apiUrl()}/api/users/admin/list?${params.toString()}`,
+        );
+        return await response.json();
+    } catch (err: any) {
+        console.error(err);
+        return { status: false, message: err.message };
+    }
+};
+
+const setVerified = async (user_id: any, verified: boolean) => {
+    try {
+        const response = await apiFetch(
+            `${apiUrl()}/api/users/${user_id}/verified`,
+            {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ verified }),
+            },
+        );
+        return await response.json();
+    } catch (err: any) {
+        console.error(err);
+        return { status: false, message: err.message };
+    }
+};
+
 const read_notifications = async () => {
     const result = await apiFetch(`${apiUrl()}/api/profile/notifications`, {
         method: 'PATCH',
@@ -90,4 +133,12 @@ const getUsersByIds = async (ids: any = []) => {
     return result?.status && Array.isArray(result.data) ? result.data : [];
 };
 
-export { getUsers, getUsersByIds, updateRole, read_notifications, follow };
+export {
+    getUsers,
+    getUsersByIds,
+    getAdminUsers,
+    updateRole,
+    setVerified,
+    read_notifications,
+    follow,
+};

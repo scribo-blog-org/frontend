@@ -1,52 +1,118 @@
 @use '../../styles/helpers' as *;
 
-.admin_panel_content_amdins_page {
+.admin_staff {
     display: flex;
     flex-direction: column;
+    gap: var(--space-5);
     width: 100%;
-    box-sizing: border-box;
+    min-width: 0;
+
+    &_grant {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        padding: 18px 20px;
+        background: var(--section-background-color);
+        border-radius: var(--radius);
+
+        &_text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+
+            h3 {
+                margin: 0;
+                font-size: 15px;
+                font-weight: 600;
+            }
+
+            p {
+                font-size: 13px;
+                color: var(--light-text-color);
+            }
+        }
+
+        &_form {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+            gap: var(--space-3);
+            align-items: start;
+
+            @include screen() {
+                grid-template-columns: 1fr;
+            }
+        }
+    }
+
+    &_list {
+        display: flex;
+        flex-direction: column;
+    }
 
     &_item {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+        display: flex;
         align-items: center;
-        column-gap: clamp(8px, 2vw, 20px);
+        justify-content: space-between;
+        gap: var(--space-3);
         padding: 12px 18px;
         border-radius: 8px;
         box-sizing: border-box;
         width: 100%;
+
+        @include screen() {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 12px;
+        }
 
         @include hover {
             background: var(--section-item-hover-background-color);
         }
 
         &_user {
-            justify-self: flex-start;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px 12px;
             min-width: 0;
         }
 
         &_role {
-        }
-
-        &_actions {
             display: flex;
-            justify-self: flex-end;
             align-items: center;
-            height: 18px;
-            width: 18px;
-            cursor: pointer;
+            gap: 8px;
+            flex-shrink: 0;
 
-            svg {
-                height: 100%;
-                width: 100%;
-                color: var(--section-light-color);
-            }
+            &_trigger {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                cursor: pointer;
 
-            @include hover {
-                svg {
-                    color: var(--section-color);
+                .role_badge {
+                    cursor: pointer;
+                    transition: background-color 0.15s ease;
+                }
+
+                @include hover {
+                    .role_badge {
+                        background: rgb(from var(--role-color) r g b / 0.2);
+                    }
+                }
+
+                > svg {
+                    width: 12px;
+                    height: 12px;
+                    color: var(--light-text-color);
                 }
             }
         }
+    }
+
+    &_empty {
+        padding: 24px 0;
+        text-align: center;
+        font-size: 14px;
+        color: var(--light-text-color);
     }
 }
