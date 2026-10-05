@@ -94,6 +94,22 @@ function canHoverFinePointer() {
     );
 }
 
+const COMPACT_MENU_QUERY = '(hover: none), (max-width: 640px)';
+
+function useCompactMenu() {
+    const [compact, setCompact] = useState<any>(false);
+
+    useEffect(() => {
+        const media = window.matchMedia(COMPACT_MENU_QUERY);
+        const sync = () => setCompact(media.matches);
+        sync();
+        media.addEventListener('change', sync);
+        return () => media.removeEventListener('change', sync);
+    }, []);
+
+    return compact;
+}
+
 function findActiveItem(sections: any) {
     for (const section of sections) {
         for (const item of section) {
@@ -174,6 +190,7 @@ function FlyoutItem({
     const sections = normalizeSections(item.items);
     const isDropdown = item.type === 'dropdown';
     const valueLabel = item.valueLabel ?? findActiveItem(sections)?.title;
+    const compact = useCompactMenu();
 
     const { refs, x, y, placement, context } = useFloating({
         nodeId,
@@ -202,6 +219,40 @@ function FlyoutItem({
 
     if (sections.length === 0) {
         return null;
+    }
+
+    if (compact) {
+        return (
+            <div className="popup_menu_inline">
+                <button
+                    type="button"
+                    className={`popup_menu_item popup_menu_item_flyout app-transition ${isDropdown ? 'popup_menu_item_dropdown' : ''} ${open ? 'popup_menu_item_expanded' : ''} ${item.className ?? ''}`}
+                    aria-expanded={open}
+                    onClick={(event: any) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        setOpen((current: any) => !current);
+                    }}
+                >
+                    {item.icon}
+                    <p className="popup_menu_item_title">{item.title}</p>
+                    {isDropdown && valueLabel ? (
+                        <p className="popup_menu_item_value">{valueLabel}</p>
+                    ) : null}
+                    <ChevronRightIcon className="popup_menu_item_chevron" />
+                </button>
+                {open ? (
+                    <div className="popup_menu_inline_body">
+                        <MenuBody
+                            sections={sections}
+                            onItemSelect={onItemSelect}
+                            portalRootId={portalRootId}
+                            layer={layer}
+                        />
+                    </div>
+                ) : null}
+            </div>
+        );
     }
 
     return (
