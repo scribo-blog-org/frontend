@@ -1,0 +1,47 @@
+@use '../../styles/helpers' as *;
+
+.push_prompt {
+    position: fixed;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    z-index: 4000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: min(360px, calc(100vw - 2 * var(--space-4)));
+    padding: var(--space-4);
+    box-sizing: border-box;
+    border: 1px solid var(--line-color);
+    border-radius: 12px;
+    background: var(--main-background);
+
+    @include screen() {
+        right: 10px;
+        left: 10px;
+        width: auto;
+        bottom: calc(var(--mobile-nav-height) + 12px);
+    }
+
+    .push_prompt_copy {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .push_prompt_title {
+        font-size: 14px;
+        line-height: 1.35;
+    }
+
+    .push_prompt_hint {
+        font-size: 12px;
+        line-height: 1.4;
+        color: var(--light-text-color);
+    }
+
+    .push_prompt_actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+    }
+}
