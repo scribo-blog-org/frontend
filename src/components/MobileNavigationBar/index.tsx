@@ -62,7 +62,7 @@ const MobileNavigationBar = () => {
     const onAdminPanel = location.pathname.startsWith('/admin-panel');
     const isOpenChat = /^\/messages\/[^/]+/.test(location.pathname);
 
-    const slots = useMemo(() => {
+    const { slots, floating } = useMemo(() => {
         const home = {
             id: 'home',
             path: '/',
@@ -164,29 +164,27 @@ const MobileNavigationBar = () => {
                   id: 'login',
                   path: '/auth/login',
                   extraPaths: ['/auth/register'],
-                  node: <CurrentUserBadge asLink={false} avatarOnly />,
+                  node: (
+                      <CurrentUserBadge asLink={false} avatarOnly guestAsIcon />
+                  ),
                   onClick: () => navigate('/auth/login'),
               };
 
-        const left = [home, search];
+        const slots = [home, search];
 
         if (profile) {
-            left.push(notifications, messages);
+            slots.push(messages, notifications);
         }
 
-        const right: any[] = [];
+        slots.push(profileSlot);
 
-        if (canCreate) {
-            right.push(create);
-        }
-
-        if (isAdmin) {
-            right.push(admin);
-        }
-
-        right.push(profileSlot);
-
-        return [...left, ...right];
+        return {
+            slots,
+            floating: [
+                ...(canCreate ? [create] : []),
+                ...(isAdmin ? [admin] : []),
+            ],
+        };
     }, [
         profile,
         navigate,
@@ -221,6 +219,21 @@ const MobileNavigationBar = () => {
         <nav
             className={`navigation_bar ${slots.length >= 5 ? 'navigation_bar_compact' : ''}`}
         >
+            {floating.length ? (
+                <div className="navigation_bar_floating">
+                    {floating.map((item: any) => (
+                        <button
+                            key={item.id}
+                            type="button"
+                            className={`navigation_bar_fab float_section blurred app-transition${isSlotActive(item) ? ' navigation_bar_fab_active' : ''}`}
+                            aria-label={item.id}
+                            onClick={item.onClick}
+                        >
+                            {item.node}
+                        </button>
+                    ))}
+                </div>
+            ) : null}
             <SwitchBar
                 className="float_section blurred"
                 items={slots.map((item: any) => item.node)}

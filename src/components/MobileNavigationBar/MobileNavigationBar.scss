@@ -26,12 +26,12 @@
 
     .switcher_bar_item {
         position: relative;
-        padding: 10px 20px;
+        padding: 14px 20px;
         min-width: 0;
 
         svg {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
         }
 
         .popup {
@@ -62,19 +62,59 @@
         }
 
         .user_badge_avatar {
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
 
             @include screen() {
-                width: 22px;
-                height: 22px;
+                width: 24px;
+                height: 24px;
             }
         }
     }
 
+    &_floating {
+        position: absolute;
+        right: 14px;
+        bottom: calc(100% + 4px);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+
+    .navigation_bar_fab {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 52px;
+        height: 52px;
+        padding: 0;
+        border-radius: 999px;
+        color: var(--text-color);
+        background: var(--float-section-background-color);
+        border: 1px solid var(--float-section-line-color);
+        pointer-events: auto;
+        cursor: pointer;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        &_active {
+            color: var(--text-color);
+        }
+
+        .navigation_bar_badge {
+            top: 12px;
+            right: 14px;
+        }
+    }
+
     &_avatar {
-        width: 22px;
-        height: 22px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
         object-fit: cover;
         display: block;
@@ -116,7 +156,7 @@
 
     &_compact {
         .switcher_bar_item {
-            padding: 10px 12px;
+            padding: 14px 12px;
         }
 
         .navigation_bar_badge {

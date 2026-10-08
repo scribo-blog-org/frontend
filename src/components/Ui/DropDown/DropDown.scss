@@ -41,6 +41,13 @@
         }
     }
 
+    &_custom {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+        align-items: center;
+    }
+
     &_chevron {
         flex-shrink: 0;
         width: 12px;

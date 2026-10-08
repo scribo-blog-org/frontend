@@ -11,6 +11,7 @@ import { isAdminRole } from '../AccountMenu/getAccountMenuBody';
 import { handleSameRouteClick, isPathActive } from '../../utils/navigation';
 
 import PrimaryButton from '../Ui/PrimaryButton/index';
+import UserAvatar from '../UserBadge/UserAvatar';
 
 import MainLogo from '../../assets/svg/full-logo-icon.svg';
 import HomeIcon from '../../assets/svg/home-icon.svg';
@@ -87,6 +88,34 @@ function AppSidebar() {
             </Link>
 
             <nav className="app-sidebar_nav">
+                {profile ? (
+                    <Link
+                        href={`/users/${profile.nick_name}`}
+                        className={navClass(`/users/${profile.nick_name}`)}
+                        onClick={(event: any) =>
+                            handleSameRouteClick(
+                                event,
+                                location.pathname,
+                                `/users/${profile.nick_name}`,
+                            )
+                        }
+                    >
+                        <UserAvatar
+                            data={profile}
+                            className="app-sidebar_item_avatar"
+                        />
+                        <span>Profile</span>
+                    </Link>
+                ) : (
+                    <Link
+                        href="/auth/login"
+                        className={navClass('/auth/login', ['/auth/register'])}
+                    >
+                        <ProfileIcon className="app-sidebar_item_icon" />
+                        <span>Profile</span>
+                    </Link>
+                )}
+
                 <Link
                     href="/"
                     className={navClass('/')}
@@ -115,21 +144,6 @@ function AppSidebar() {
 
                 {profile ? (
                     <>
-                        <Link
-                            href={`/users/${profile.nick_name}`}
-                            className={navClass(`/users/${profile.nick_name}`)}
-                            onClick={(event: any) =>
-                                handleSameRouteClick(
-                                    event,
-                                    location.pathname,
-                                    `/users/${profile.nick_name}`,
-                                )
-                            }
-                        >
-                            <ProfileIcon className="app-sidebar_item_icon" />
-                            <span>Profile</span>
-                        </Link>
-
                         <Link
                             href="/messages"
                             className={navClass('/messages')}

@@ -19,6 +19,8 @@ import RichText from '../../components/RichText';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
 import ActionButton from '../../components/Ui/ActionButton';
 import DropDown from '../../components/Ui/DropDown';
+import Tooltip from '../../components/Ui/Tooltip';
+import RelativeTime from '../../components/RelativeTime';
 import Loading from '../../components/Ui/Loading';
 import UserBadge from '../../components/UserBadge/index';
 
@@ -29,6 +31,34 @@ import '../AdminPanel/RequestDetail.scss';
 
 const canManageSupport = (profile: any) =>
     ['admin', 'tech_admin'].includes(profile?.role);
+
+const StatusBadge = ({ status }: any) => (
+    <span className={`support_status support_status_${status}`}>
+        {statusLabel(status)}
+    </span>
+);
+
+const EntryTime = ({ date }: any) => (
+    <Tooltip text={format_date_time(date)}>
+        <span className="support_request_detail_time">
+            <RelativeTime date={date} intervalMs={30000} />
+        </span>
+    </Tooltip>
+);
+
+// A signed-in requester shows as a user badge; a guest shows as the email,
+// which only staff receive from the API.
+const RequesterName = ({ item, showEmail }: any) => {
+    if (item.requester) {
+        return <UserBadge data={item.requester} />;
+    }
+
+    return (
+        <span className="support_request_detail_author">
+            {showEmail && item.email ? item.email : 'Request author'}
+        </span>
+    );
+};
 
 const SupportRequestPage = () => {
     const { key } = useParams();
@@ -158,138 +188,120 @@ const SupportRequestPage = () => {
         navigate('/404');
     }
 
+    const requesterName = <RequesterName item={item} showEmail={isStaff} />;
+
     return (
         <div className="support_request_detail">
-            <div className="support_request_detail_card app-transition">
-                <div className="support_request_detail_top">
-                    <ActionButton
-                        disabled={sending || statusSaving}
-                        onClick={() =>
-                            navigate(
-                                isStaff
-                                    ? '/admin-panel?tab=requests'
-                                    : item.is_owner
-                                      ? '/support/mine'
-                                      : '/support',
-                            )
-                        }
-                    >
-                        <ArrowLeftIcon />
-                        Support
-                    </ActionButton>
-                    <div className="support_request_detail_tags">
-                        {showStatus ? (
-                            <span
-                                className={`support_status support_status_${item.status}`}
-                            >
-                                {statusLabel(item.status)}
-                            </span>
-                        ) : null}
-                        <span className="support_kind">
-                            {kindLabel(item.kind)}
-                        </span>
-                    </div>
-                </div>
-                {isStaff ? (
-                    <p className="support_request_detail_email">{item.email}</p>
-                ) : null}
-                <p className="support_request_detail_date">
-                    {format_date_time(item.created_date)}
-                </p>
-                <div className="support_request_detail_message">
-                    <RichText text={item.message} />
-                </div>
-                {isStaff ? (
-                    <Field title="Status">
+            <div className="support_request_detail_top">
+                <ActionButton
+                    disabled={sending || statusSaving}
+                    onClick={() =>
+                        navigate(
+                            isStaff
+                                ? '/admin-panel?tab=requests'
+                                : item.is_owner
+                                  ? '/support/mine'
+                                  : '/support',
+                        )
+                    }
+                >
+                    <ArrowLeftIcon />
+                    Support
+                </ActionButton>
+                <div className="support_request_detail_tags">
+                    <span className="support_kind">{kindLabel(item.kind)}</span>
+                    {showStatus && isStaff ? (
                         <DropDown
+                            className="support_request_detail_status"
                             options={SUPPORT_STATUSES}
                             value={item.status}
                             onChange={handleStatus}
+                            renderOption={(option: any) => (
+                                <StatusBadge status={option.value} />
+                            )}
                         />
-                    </Field>
-                ) : null}
+                    ) : showStatus ? (
+                        <StatusBadge status={item.status} />
+                    ) : null}
+                </div>
             </div>
 
-            <div className="support_request_detail_card app-transition">
-                <h1 className="kicker">Conversation</h1>
-                {item.replies?.length ? (
-                    <div className="support_request_detail_replies">
-                        {item.replies.map((entry: any) => (
-                            <div
-                                key={entry._id}
-                                className={`support_request_detail_reply app-transition ${entry.author_type === 'requester' ? 'support_request_detail_reply_requester' : ''}`}
-                            >
-                                <div className="support_request_detail_reply_head">
-                                    {entry.author_type === 'staff' &&
-                                    entry.admin ? (
-                                        <UserBadge data={entry.admin} />
-                                    ) : (
-                                        <p className="support_request_detail_reply_author">
-                                            Request author
-                                        </p>
-                                    )}
-                                    <p>
-                                        {format_date_time(entry.created_date)}
-                                    </p>
-                                </div>
-                                <RichText
-                                    className="support_request_detail_reply_text"
-                                    text={entry.text}
-                                />
-                            </div>
-                        ))}
+            <div className="support_request_detail_thread">
+                <div className="support_request_detail_entry">
+                    <div className="support_request_detail_entry_head">
+                        {requesterName}
+                        <EntryTime date={item.created_date} />
                     </div>
-                ) : (
-                    <p className="support_request_detail_empty">
-                        No replies yet
-                    </p>
-                )}
-                {canReply ? (
-                    <form
-                        className="support_request_detail_form"
-                        onSubmit={(event: any) => {
-                            event.preventDefault();
-                            handleReply();
-                        }}
+                    <RichText
+                        className="support_request_detail_entry_text"
+                        text={item.message}
+                    />
+                </div>
+                {item.replies?.map((entry: any) => (
+                    <div
+                        key={entry._id}
+                        className="support_request_detail_entry"
                     >
-                        <Field
-                            title={isStaff ? 'Reply' : 'Message'}
-                            error={error}
-                        >
-                            <RichInputField
-                                preset="social"
-                                isMultiline={true}
-                                multilineRows={6}
-                                length={FIELD_LIMITS.supportReply.max}
-                                value={reply}
-                                placeholder={
-                                    isStaff
-                                        ? 'Reply text'
-                                        : 'Add to the request'
-                                }
-                                onChange={(event: any) =>
-                                    setReply(event.target.value)
-                                }
-                                onFocus={() => setError(null)}
-                                error={error}
-                            />
-                        </Field>
-                        <PrimaryButton
-                            type="submit"
-                            isLoading={sending}
-                            disabled={statusSaving}
-                        >
-                            Send
-                        </PrimaryButton>
-                    </form>
-                ) : (
-                    <p className="support_request_detail_empty">
-                        {item.closed
-                            ? 'The request is reviewed and new replies are closed.'
-                            : 'Only administrators can reply. To write in the thread, send a request from your account.'}
-                    </p>
-                )}
+                        <div className="support_request_detail_entry_head">
+                            {entry.author_type === 'staff' && entry.admin ? (
+                                <UserBadge data={entry.admin} />
+                            ) : entry.author_type === 'staff' ? (
+                                <span className="support_request_detail_author">
+                                    Scribo team
+                                </span>
+                            ) : (
+                                requesterName
+                            )}
+                            <EntryTime date={entry.created_date} />
+                        </div>
+                        <RichText
+                            className="support_request_detail_entry_text"
+                            text={entry.text}
+                        />
+                    </div>
+                ))}
             </div>
+
+            {canReply ? (
+                <form
+                    className="support_request_detail_form"
+                    onSubmit={(event: any) => {
+                        event.preventDefault();
+                        handleReply();
+                    }}
+                >
+                    <Field title={isStaff ? 'Reply' : 'Message'} error={error}>
+                        <RichInputField
+                            preset="plain"
+                            isMultiline={true}
+                            multilineRows={5}
+                            length={FIELD_LIMITS.supportReply.max}
+                            value={reply}
+                            placeholder={
+                                isStaff ? 'Reply text' : 'Add to the request'
+                            }
+                            onChange={(event: any) =>
+                                setReply(event.target.value)
+                            }
+                            onFocus={() => setError(null)}
+                            error={error}
+                        />
+                    </Field>
+                    <PrimaryButton
+                        type="submit"
+                        isLoading={sending}
+                        disabled={statusSaving}
+                    >
+                        Send
+                    </PrimaryButton>
+                </form>
+            ) : (
+                <p className="support_request_detail_empty">
+                    {item.closed
+                        ? 'The request is reviewed and new replies are closed.'
+                        : 'Only administrators can reply. To write in the thread, send a request from your account.'}
+                </p>
+            )}
         </div>
     );
 };

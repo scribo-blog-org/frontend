@@ -16,6 +16,7 @@ const DropDown = ({
     placeholder = 'Choose',
     error = false,
     className = '',
+    renderOption,
 }: any) => {
     const [isOpen, setIsOpen] = useState<any>(false);
     const wrapperRef = useRef<any>(null);
@@ -70,13 +71,21 @@ const DropDown = ({
                 {selectedOption?.icon ? (
                     <span className="dropdown_icon">{selectedOption.icon}</span>
                 ) : null}
-                <p
-                    className={
-                        selectedOption ? '' : 'dropdown_select_placeholder'
-                    }
-                >
-                    {selectedOption ? optionLabel(selectedOption) : placeholder}
-                </p>
+                {selectedOption && renderOption ? (
+                    <span className="dropdown_custom">
+                        {renderOption(selectedOption)}
+                    </span>
+                ) : (
+                    <p
+                        className={
+                            selectedOption ? '' : 'dropdown_select_placeholder'
+                        }
+                    >
+                        {selectedOption
+                            ? optionLabel(selectedOption)
+                            : placeholder}
+                    </p>
+                )}
                 <ChevronDownIcon className="dropdown_chevron" />
             </button>
 
@@ -99,7 +108,13 @@ const DropDown = ({
                                         {option.icon}
                                     </span>
                                 ) : null}
-                                <p>{optionLabel(option)}</p>
+                                {renderOption ? (
+                                    <span className="dropdown_custom">
+                                        {renderOption(option)}
+                                    </span>
+                                ) : (
+                                    <p>{optionLabel(option)}</p>
+                                )}
                             </button>
                         );
                     })}

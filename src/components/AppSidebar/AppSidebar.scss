@@ -27,17 +27,16 @@
         margin-bottom: var(--space-5);
         padding: 0 var(--space-2);
         color: var(--text-color);
-
-        @include hover {
-            opacity: 0.8;
-        }
+        transition: none;
     }
 
     &_logo_icon {
         height: 28px;
         width: auto;
+        transition: none;
 
         path {
+            transition: none;
             fill: currentColor;
         }
     }
@@ -98,6 +97,12 @@
         *[fill] {
             fill: currentColor;
         }
+    }
+
+    .user_badge_avatar.app-sidebar_item_avatar {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
     }
 
     &_badge {
