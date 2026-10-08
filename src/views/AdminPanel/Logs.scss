@@ -5,11 +5,14 @@
     flex-direction: column;
     flex: 1 1 0%;
     min-height: 0;
+    min-width: 0;
     gap: var(--space-3);
 
     .logs_list {
         flex: 1 1 0%;
         min-height: 0;
+        min-width: 0;
+        overflow-x: hidden;
         overflow-y: auto;
         border: 1px solid var(--line-color);
         border-radius: var(--radius-sm);
@@ -168,6 +171,14 @@
         align-items: center;
         gap: 4px 8px;
         padding: 8px 12px;
+        // A long entry scrolls on its own instead of widening the page.
+        max-width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
     }
 
     &_level {
