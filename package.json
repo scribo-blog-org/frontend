@@ -1,6 +1,6 @@
 {
   "name": "scribo-next",
-  "version": "8.2.0",
+  "version": "8.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev --port 3000",
