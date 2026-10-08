@@ -75,14 +75,14 @@
     &_floating {
         position: absolute;
         right: 14px;
-        bottom: calc(100% - 8px);
+        bottom: calc(100% + 4px);
         display: flex;
         flex-direction: column;
         gap: 10px;
         pointer-events: none;
     }
 
-    &_fab {
+    .navigation_bar_fab {
         position: relative;
         display: flex;
         align-items: center;
@@ -90,7 +90,7 @@
         width: 48px;
         height: 48px;
         padding: 0;
-        border-radius: 50%;
+        border-radius: 999px;
         color: var(--text-color);
         background: var(--float-section-background-color);
         border: 1px solid var(--float-section-line-color);
