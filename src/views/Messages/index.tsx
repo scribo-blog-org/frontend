@@ -145,7 +145,11 @@ const mergeMessage = (list: any, message: any) => {
     }
 
     const next = [...list];
-    next[index] = { ...next[index], ...message };
+    next[index] = {
+        ...next[index],
+        ...message,
+        ...(next[index].status === 'read' ? { status: 'read' } : {}),
+    };
     return next;
 };
 
@@ -1731,6 +1735,10 @@ const MessagesPage = () => {
     const handleStartReply = (message: any) => {
         setEditingMessage(null);
         setReplyTo(message);
+
+        // iOS only opens the keyboard when focus happens synchronously inside
+        // the user gesture, so the post-render effect alone is not enough.
+        composerInputRef.current?.focus({ preventScroll: true });
     };
 
     const scrollListToNode = (
@@ -2202,7 +2210,8 @@ const MessagesPage = () => {
                             ? {
                                   ...item,
                                   ...result.data,
-                                  status: 'sent',
+                                  status:
+                                      item.status === 'read' ? 'read' : 'sent',
                                   local_key: item.local_key || pendingId,
                               }
                             : item,

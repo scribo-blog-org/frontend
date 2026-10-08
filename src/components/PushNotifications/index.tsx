@@ -161,7 +161,11 @@ const PushNotifications = () => {
             if (event.data?.type === 'push:where') {
                 event.ports[0]?.postMessage({
                     path: window.location.pathname,
-                    visible: document.visibilityState === 'visible',
+                    // A window left behind with Alt+Tab is still "visible",
+                    // so focus is what tells that the user is looking at it.
+                    visible:
+                        document.visibilityState === 'visible' &&
+                        document.hasFocus(),
                 });
             }
         };

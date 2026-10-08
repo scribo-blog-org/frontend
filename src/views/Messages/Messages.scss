@@ -1173,6 +1173,12 @@
     margin-bottom: 10px;
     flex-direction: column;
     pointer-events: none;
+
+    // Same bottom offset as the mobile navigation bar so the iOS home
+    // indicator does not cover the input.
+    @include screen() {
+        margin-bottom: 16px;
+    }
 }
 
 .messages_composer {
