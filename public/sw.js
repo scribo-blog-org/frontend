@@ -56,10 +56,20 @@ self.addEventListener('push', (event) => {
                 return;
             }
 
+            // Showing a notification with a tag that is still on screen only
+            // swaps it in place, and macOS then updates Notification Center
+            // without a new banner. Closing the old one first keeps a single
+            // notification per chat and makes the new one pop up.
+            if (data.tag) {
+                const previous = await self.registration.getNotifications({
+                    tag: data.tag,
+                });
+                previous.forEach((notification) => notification.close());
+            }
+
             await self.registration.showNotification(data.title || 'Scribo', {
                 body: data.body || '',
                 tag: data.tag,
-                renotify: Boolean(data.tag),
                 icon: data.icon || '/logo-192.png',
                 badge: '/logo-192.png',
                 data: { url },
