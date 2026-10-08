@@ -18,6 +18,7 @@ import DashboardIcon from '../../assets/svg/dashboard.svg';
 
 import SwitchBar from '../Ui/SwitchBar';
 import CurrentUserBadge from '../CurrentUserBadge/index';
+import { useAdminAttention } from '../../hooks/useAdminAttention';
 import { isAdminRole } from '../AccountMenu/getAccountMenuBody';
 import { isPathActive, navigateOrScrollTop } from '../../utils/navigation';
 
@@ -57,6 +58,7 @@ const MobileNavigationBar = () => {
 
     const canCreate = Boolean(profile?.permissions?.includes('create_post'));
     const isAdmin = isAdminRole(profile?.role);
+    const adminAttention = useAdminAttention(profile);
     const onAdminPanel = location.pathname.startsWith('/admin-panel');
     const isOpenChat = /^\/messages\/[^/]+/.test(location.pathname);
 
@@ -125,7 +127,16 @@ const MobileNavigationBar = () => {
         const admin = {
             id: 'admin',
             path: '/admin-panel',
-            node: onAdminPanel ? <HomeIcon /> : <DashboardIcon />,
+            node: (
+                <>
+                    {adminAttention.any ? (
+                        <span className="navigation_bar_badge">
+                            <span className="navigation_bar_badge_dot" />
+                        </span>
+                    ) : null}
+                    {onAdminPanel ? <HomeIcon /> : <DashboardIcon />}
+                </>
+            ),
             onClick: () => {
                 if (onAdminPanel) {
                     navigateOrScrollTop(navigate, location.pathname, '/');
@@ -183,6 +194,7 @@ const MobileNavigationBar = () => {
         unreadMessages,
         canCreate,
         isAdmin,
+        adminAttention.any,
         onAdminPanel,
         location,
     ]);
