@@ -16,6 +16,7 @@ import {
     isDeviceSubscribed,
     pushSupport,
 } from '../../utils/push';
+import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import { format_back, format_date_time } from '../../utils/format';
 
@@ -48,6 +49,7 @@ const Settings = () => {
     const [pushSupportState, setPushSupportState] =
         useState<string>('supported');
     const [pushDenied, setPushDenied] = useState<boolean>(false);
+    const { mode: installMode, install } = useInstallPrompt();
     const navigate = useNavigate();
 
     const refreshPush = async () => {
@@ -1048,6 +1050,33 @@ const Settings = () => {
                                                 </div>
                                             )}
                                     </div>
+                                    {installMode === 'prompt' ||
+                                    installMode === 'ios' ? (
+                                        <div className="settings_group">
+                                            <div className="settings_switch">
+                                                <div className="settings_switch_copy">
+                                                    <p className="settings_switch_title">
+                                                        Install the app
+                                                    </p>
+                                                    <p className="settings_switch_hint">
+                                                        {installMode === 'ios'
+                                                            ? 'Tap Share in Safari, choose Add to Home Screen, then open Scribo from the new icon. iPhone only offers notifications to an installed app'
+                                                            : 'Open Scribo in its own window, right from your home screen or desktop'}
+                                                    </p>
+                                                </div>
+                                                {installMode === 'prompt' ? (
+                                                    <ActionButton
+                                                        type="button"
+                                                        onClick={() =>
+                                                            void install()
+                                                        }
+                                                    >
+                                                        Install
+                                                    </ActionButton>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    ) : null}
                                 </div>
                             </div>
                         ),
