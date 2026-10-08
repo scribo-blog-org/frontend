@@ -146,6 +146,9 @@ const Tabs = ({ items, activeKey, onChange, label, className = '' }: any) => {
                 >
                     {item.icon}
                     <span>{item.title}</span>
+                    {item.dot ? (
+                        <i className="tabs_tab_dot" aria-hidden="true" />
+                    ) : null}
                 </button>
             ))}
         </div>
