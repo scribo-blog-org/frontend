@@ -1,4 +1,3 @@
-
 import { kindLabel, statusLabel } from '../Support/constants';
 export { describeChanges, fieldLabel } from './logFormat';
 
