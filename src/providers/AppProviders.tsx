@@ -30,6 +30,7 @@ import {
     subscribeAccessToken,
 } from '../api/http';
 import SessionBootstrap from '../session/SessionBootstrap';
+import PushNotifications from '../components/PushNotifications';
 
 export type AppContextValue = {
     profile: any;
@@ -119,6 +120,7 @@ function AppChrome({
                             </div>
                         </div>
                         <MobileNavigationBar />
+                        <PushNotifications />
                     </AppShell>
                 </SessionBootstrap>
                 <Toast toast={toast} showToast={showToast} />

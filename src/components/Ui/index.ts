@@ -2,6 +2,7 @@ export { default as ActionButton } from './ActionButton';
 export { default as CancelButton } from './CancelButton';
 export { default as ChipButton } from './ChipButton';
 export { default as DangerButton } from './DangerButton';
+export { default as DateTimePicker } from './DateTimePicker';
 export { default as DropDown } from './DropDown';
 export { default as DropFile } from './DropFile';
 export { default as Field } from './Field';

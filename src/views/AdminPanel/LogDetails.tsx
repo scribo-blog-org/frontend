@@ -9,6 +9,7 @@ import CopyIcon from '../../assets/svg/copy.svg';
 
 import { Arrow, RoleChange, StatusChange } from './LogEntities';
 import { describeDetails, type DetailRow } from './logFormat';
+import { LEVELS } from './logTypes';
 
 const formatMoment = (date: any) =>
     new Date(date).toLocaleString('ru-RU', {
@@ -80,7 +81,15 @@ const Step = ({ title, meta, tone = 'default', children }: any) => (
     </section>
 );
 
-const LogDetails = ({ log, config, names, setFilter, onPrev, onNext }: any) => {
+const LogDetails = ({
+    log,
+    config,
+    level,
+    names,
+    setFilter,
+    onPrev,
+    onNext,
+}: any) => {
     const { showToast } = useContext(AppContext);
     const [showRaw, setShowRaw] = useState<any>(false);
     const details = describeDetails(log, formatMoment, names);
@@ -113,6 +122,11 @@ const LogDetails = ({ log, config, names, setFilter, onPrev, onNext }: any) => {
                         {config.title}
                     </span>
                 )}
+                {level && level !== 'info' ? (
+                    <span className={`log_badge log_badge_${level}`}>
+                        {LEVELS[level as keyof typeof LEVELS]}
+                    </span>
+                ) : null}
                 {isError && log.data?.status ? (
                     <span className="log_badge log_badge_error">
                         {log.data.status}

@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from '@/navigation';
 
 import { AppContext } from '@/providers/AppProviders';
 import { getUnreadCount } from '../../api/chat.api';
+import { useAdminAttention } from '../../hooks/useAdminAttention';
 import { socketService } from '../../sockets/socket.service';
 import { isAdminRole } from '../AccountMenu/getAccountMenuBody';
 import { handleSameRouteClick, isPathActive } from '../../utils/navigation';
@@ -36,6 +37,7 @@ function AppSidebar() {
     );
     const canCreate = Boolean(profile?.permissions?.includes('create_post'));
     const isAdmin = isAdminRole(profile?.role);
+    const adminAttention = useAdminAttention(profile);
     const onAdminPanel = location.pathname.startsWith('/admin-panel');
 
     useEffect(() => {
@@ -214,6 +216,12 @@ function AppSidebar() {
                             )
                         }
                     >
+                        {adminAttention.any ? (
+                            <span
+                                className="app-sidebar_dot"
+                                aria-hidden="true"
+                            />
+                        ) : null}
                         {onAdminPanel ? (
                             <HomeIcon className="app-sidebar_item_icon" />
                         ) : (

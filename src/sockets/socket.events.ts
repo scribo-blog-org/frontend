@@ -1,6 +1,20 @@
 import { socketClient } from './socket.client';
 
 class SocketEvents {
+    subscribeAdminSupport(callback: any) {
+        return socketClient.subscribe(
+            'admin',
+            'support:new',
+            (message: any) => {
+                if (typeof message.payload?.count !== 'number') {
+                    return;
+                }
+                callback(message.payload.count);
+            },
+            { private: true },
+        );
+    }
+
     subscribeUserNotifications(userId: any, callback: any) {
         const roomName = `user:${userId}`;
 
