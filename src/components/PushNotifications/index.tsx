@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from '@/navigation';
 import { AppContext } from '@/providers/AppProviders';
 
+import { captureInstallPrompt, installMode } from '../../utils/install';
 import {
     enablePush,
     getPushPreference,
@@ -20,12 +21,31 @@ import NotificationIcon from '../../assets/svg/notification.svg';
 import './PushNotifications.scss';
 
 const DISMISSED_KEY = 'push_prompt_dismissed';
+const INSTALL_DISMISSED_KEY = 'install_prompt_dismissed';
 
 const markDismissed = (userId: string) => {
     try {
         localStorage.setItem(`${DISMISSED_KEY}:${userId}`, '1');
     } catch {
         // The prompt simply shows again next visit.
+    }
+};
+
+const markInstallDismissed = (userId: string) => {
+    try {
+        localStorage.setItem(`${INSTALL_DISMISSED_KEY}:${userId}`, '1');
+    } catch {
+        // The hint simply shows again next visit.
+    }
+};
+
+const readInstallDismissed = (userId: string) => {
+    try {
+        return (
+            localStorage.getItem(`${INSTALL_DISMISSED_KEY}:${userId}`) === '1'
+        );
+    } catch {
+        return false;
     }
 };
 
@@ -92,6 +112,31 @@ const PromptContent = ({
     );
 };
 
+// Safari on iPhone only offers notifications to a site opened from the Home
+// Screen, and there is no API to install it, so all we can do is explain.
+const InstallHintContent = ({
+    requestCloseModal,
+}: {
+    requestCloseModal: () => void;
+}) => (
+    <div className="push_prompt">
+        <div className="push_prompt_icon">
+            <NotificationIcon />
+        </div>
+        <p className="push_prompt_text">
+            To get notifications on iPhone, add Scribo to your Home Screen.
+        </p>
+        <ol className="push_prompt_list">
+            <li>Tap Share in Safari</li>
+            <li>Choose Add to Home Screen</li>
+            <li>Open Scribo from the new icon and turn on notifications</li>
+        </ol>
+        <div className="push_prompt_actions">
+            <PrimaryButton onClick={requestCloseModal}>Got it</PrimaryButton>
+        </div>
+    </div>
+);
+
 const PushNotifications = () => {
     const { profile, showModalWindow, requestCloseModal, showToast } =
         useContext(AppContext);
@@ -99,6 +144,7 @@ const PushNotifications = () => {
     const userId = profile?._id;
 
     useEffect(() => {
+        captureInstallPrompt();
         void registerServiceWorker();
 
         if (pushSupport() !== 'supported') {
@@ -117,6 +163,23 @@ const PushNotifications = () => {
     }, [navigate]);
 
     useEffect(() => {
+        if (
+            userId &&
+            pushSupport() === 'needs-install' &&
+            installMode() === 'ios' &&
+            !readInstallDismissed(userId)
+        ) {
+            showModalWindow({
+                title: 'Install Scribo',
+                size: 'small',
+                content: (
+                    <InstallHintContent requestCloseModal={requestCloseModal} />
+                ),
+                closeFunc: () => markInstallDismissed(userId),
+            });
+            return;
+        }
+
         if (!userId || pushSupport() !== 'supported') {
             return;
         }

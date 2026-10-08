@@ -1,3 +1,4 @@
+import { isIos } from './install';
 import {
     deletePushSubscription,
     getPushKey,
@@ -44,8 +45,7 @@ export const pushSupport = (): PushSupport => {
         return 'supported';
     }
 
-    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    return isIos ? 'needs-install' : 'unsupported';
+    return isIos() ? 'needs-install' : 'unsupported';
 };
 
 const urlBase64ToUint8Array = (base64: string) => {
