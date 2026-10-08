@@ -72,6 +72,46 @@
         }
     }
 
+    &_floating {
+        position: absolute;
+        right: 14px;
+        bottom: calc(100% - 8px);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: none;
+    }
+
+    &_fab {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        padding: 0;
+        border-radius: 50%;
+        color: var(--text-color);
+        background: var(--float-section-background-color);
+        border: 1px solid var(--float-section-line-color);
+        pointer-events: auto;
+        cursor: pointer;
+
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        &_active {
+            color: var(--text-color);
+        }
+
+        .navigation_bar_badge {
+            top: 10px;
+            right: 12px;
+        }
+    }
+
     &_avatar {
         width: 22px;
         height: 22px;

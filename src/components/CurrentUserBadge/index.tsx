@@ -5,17 +5,22 @@ import './CurrentUserBadge.scss';
 import { useContext } from 'react';
 import { AppContext } from '@/providers/AppProviders';
 import { Link } from '@/navigation';
+import UserAvatar from '../UserBadge/UserAvatar';
 import ProfileIcon from '../../assets/svg/profile.svg';
 
-const guestIcon = (defaultAvatar: any) =>
-    defaultAvatar ?? (
+// A guest is drawn as a non-existent user (the default avatar) unless the
+// place asks for the profile icon, as navigation does.
+const guestIcon = (useIcon: any) =>
+    useIcon ? (
         <ProfileIcon className="user_badge_guest_icon" aria-hidden="true" />
+    ) : (
+        <UserAvatar data={null} />
     );
 
 const CurrentUserBadge = ({
     className,
     asLink = true,
-    defaultAvatar,
+    guestAsIcon = false,
     avatarOnly = false,
 }: any) => {
     const { profile } = useContext(AppContext);
@@ -32,11 +37,11 @@ const CurrentUserBadge = ({
             href={'/auth/login'}
             className={`user_badge ${className ?? ''} app-transition`}
         >
-            {guestIcon(defaultAvatar)}
+            {guestIcon(guestAsIcon)}
         </Link>
     ) : (
         <div className={`user_badge ${className ?? ''} app-transition`}>
-            {guestIcon(defaultAvatar)}
+            {guestIcon(guestAsIcon)}
         </div>
     );
 };

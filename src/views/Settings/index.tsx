@@ -884,6 +884,144 @@ const Settings = () => {
                                             </div>
                                         )}
                                     </div>
+                                </div>
+                            </div>
+                        ),
+                    },
+                    {
+                        title: 'Notifications',
+                        key: 'notifications',
+                        content: (
+                            <div className="settings_panel">
+                                <div className="settings_stack">
+                                    <div className="settings_group">
+                                        <div className="settings_switch">
+                                            <div className="settings_switch_copy">
+                                                <p className="settings_switch_title">
+                                                    Push notifications
+                                                </p>
+                                                <p className="settings_switch_hint">
+                                                    {pushSupportState ===
+                                                    'needs-install'
+                                                        ? 'On iPhone, add Scribo to the Home Screen first, then open it from there'
+                                                        : pushSupportState ===
+                                                            'unsupported'
+                                                          ? 'This browser does not support notifications'
+                                                          : pushDenied
+                                                            ? 'Blocked in the browser, allow notifications for this site in its settings'
+                                                            : 'New messages and activity on this device, even when Scribo is closed'}
+                                                </p>
+                                            </div>
+                                            <Toggle
+                                                checked={pushOn}
+                                                onChange={
+                                                    pushSupportState ===
+                                                        'supported' &&
+                                                    !pushDenied &&
+                                                    !pushBusy
+                                                        ? togglePush
+                                                        : () => undefined
+                                                }
+                                            />
+                                        </div>
+                                        {pushSupportState === 'supported' &&
+                                            pushDenied && (
+                                                <div className="settings_push_blocked">
+                                                    <p className="settings_push_blocked_title">
+                                                        Notifications are
+                                                        blocked for this site
+                                                    </p>
+                                                    <ol className="settings_push_blocked_steps">
+                                                        <li>
+                                                            Click the icon left
+                                                            of the address bar
+                                                            (lock or settings)
+                                                        </li>
+                                                        <li>
+                                                            Set Notifications to
+                                                            Allow
+                                                        </li>
+                                                        <li>
+                                                            Come back here, this
+                                                            page updates on its
+                                                            own
+                                                        </li>
+                                                    </ol>
+                                                    <ActionButton
+                                                        type="button"
+                                                        onClick={() =>
+                                                            void retryPush()
+                                                        }
+                                                    >
+                                                        Enable notifications
+                                                    </ActionButton>
+                                                </div>
+                                            )}
+                                    </div>
+                                </div>
+                            </div>
+                        ),
+                    },
+                    {
+                        title: 'App',
+                        key: 'app',
+                        content: (
+                            <div className="settings_panel">
+                                <div className="settings_stack">
+                                    {installMode === 'prompt' ||
+                                    installMode === 'ios' ? (
+                                        <div className="settings_group">
+                                            <div className="settings_switch">
+                                                <div className="settings_switch_copy">
+                                                    <p className="settings_switch_title">
+                                                        Install the app
+                                                    </p>
+                                                    <p className="settings_switch_hint">
+                                                        {installMode === 'ios'
+                                                            ? 'Tap Share in Safari, choose Add to Home Screen, then open Scribo from the new icon. iPhone only offers notifications to an installed app'
+                                                            : 'Open Scribo in its own window, right from your home screen or desktop'}
+                                                    </p>
+                                                </div>
+                                                {installMode === 'prompt' ? (
+                                                    <ActionButton
+                                                        type="button"
+                                                        onClick={() =>
+                                                            void install()
+                                                        }
+                                                    >
+                                                        Install
+                                                    </ActionButton>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    ) : null}
+                                </div>
+                            </div>
+                        ),
+                    },
+                    {
+                        title: 'Appearance',
+                        key: 'appearance',
+                        content: (
+                            <div className="settings_panel">
+                                <div className="settings_stack">
+                                    <div className="settings_group settings_theme">
+                                        <p>Dark theme</p>
+                                        <Toggle
+                                            checked={isDarkTheme}
+                                            onChange={setIsDarkTheme}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        ),
+                    },
+                    {
+                        title: 'Sessions',
+                        key: 'sessions',
+                        content: (
+                            <div className="settings_panel">
+                                <div className="settings_stack">
                                     <div className="settings_group">
                                         <p className="kicker">Sessions</p>
                                         <div className="settings_sessions">
@@ -980,130 +1118,19 @@ const Settings = () => {
                             </div>
                         ),
                     },
-                    {
-                        title: 'Notifications',
-                        key: 'notifications',
-                        content: (
-                            <div className="settings_panel">
-                                <div className="settings_stack">
-                                    <div className="settings_group">
-                                        <div className="settings_switch">
-                                            <div className="settings_switch_copy">
-                                                <p className="settings_switch_title">
-                                                    Push notifications
-                                                </p>
-                                                <p className="settings_switch_hint">
-                                                    {pushSupportState ===
-                                                    'needs-install'
-                                                        ? 'On iPhone, add Scribo to the Home Screen first, then open it from there'
-                                                        : pushSupportState ===
-                                                            'unsupported'
-                                                          ? 'This browser does not support notifications'
-                                                          : pushDenied
-                                                            ? 'Blocked in the browser, allow notifications for this site in its settings'
-                                                            : 'New messages and activity on this device, even when Scribo is closed'}
-                                                </p>
-                                            </div>
-                                            <Toggle
-                                                checked={pushOn}
-                                                onChange={
-                                                    pushSupportState ===
-                                                        'supported' &&
-                                                    !pushDenied &&
-                                                    !pushBusy
-                                                        ? togglePush
-                                                        : () => undefined
-                                                }
-                                            />
-                                        </div>
-                                        {pushSupportState === 'supported' &&
-                                            pushDenied && (
-                                                <div className="settings_push_blocked">
-                                                    <p className="settings_push_blocked_title">
-                                                        Notifications are
-                                                        blocked for this site
-                                                    </p>
-                                                    <ol className="settings_push_blocked_steps">
-                                                        <li>
-                                                            Click the icon left
-                                                            of the address bar
-                                                            (lock or settings)
-                                                        </li>
-                                                        <li>
-                                                            Set Notifications to
-                                                            Allow
-                                                        </li>
-                                                        <li>
-                                                            Come back here, this
-                                                            page updates on its
-                                                            own
-                                                        </li>
-                                                    </ol>
-                                                    <ActionButton
-                                                        type="button"
-                                                        onClick={() =>
-                                                            void retryPush()
-                                                        }
-                                                    >
-                                                        Enable notifications
-                                                    </ActionButton>
-                                                </div>
-                                            )}
-                                    </div>
-                                    {installMode === 'prompt' ||
-                                    installMode === 'ios' ? (
-                                        <div className="settings_group">
-                                            <div className="settings_switch">
-                                                <div className="settings_switch_copy">
-                                                    <p className="settings_switch_title">
-                                                        Install the app
-                                                    </p>
-                                                    <p className="settings_switch_hint">
-                                                        {installMode === 'ios'
-                                                            ? 'Tap Share in Safari, choose Add to Home Screen, then open Scribo from the new icon. iPhone only offers notifications to an installed app'
-                                                            : 'Open Scribo in its own window, right from your home screen or desktop'}
-                                                    </p>
-                                                </div>
-                                                {installMode === 'prompt' ? (
-                                                    <ActionButton
-                                                        type="button"
-                                                        onClick={() =>
-                                                            void install()
-                                                        }
-                                                    >
-                                                        Install
-                                                    </ActionButton>
-                                                ) : null}
-                                            </div>
-                                        </div>
-                                    ) : null}
-                                </div>
-                            </div>
-                        ),
-                    },
-                    {
-                        title: 'Appearance',
-                        key: 'appearance',
-                        content: (
-                            <div className="settings_panel">
-                                <div className="settings_stack">
-                                    <div className="settings_group settings_theme">
-                                        <p>Dark theme</p>
-                                        <Toggle
-                                            checked={isDarkTheme}
-                                            onChange={setIsDarkTheme}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        ),
-                    },
-                ].map((section: any) => (
-                    <section key={section.key} className="settings_section">
-                        <h1>{section.title}</h1>
-                        {section.content}
-                    </section>
-                ))}
+                ]
+                    .filter(
+                        (section: any) =>
+                            section.key !== 'app' ||
+                            installMode === 'prompt' ||
+                            installMode === 'ios',
+                    )
+                    .map((section: any) => (
+                        <section key={section.key} className="settings_section">
+                            <h1>{section.title}</h1>
+                            {section.content}
+                        </section>
+                    ))}
             </div>
         </div>
     );

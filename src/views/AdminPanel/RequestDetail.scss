@@ -8,17 +8,6 @@
     max-width: 760px;
     margin: 0 auto 40px;
 
-    &_card {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        padding: 0;
-
-        h1 {
-            margin: 0;
-        }
-    }
-
     &_top {
         display: flex;
         align-items: center;
@@ -37,22 +26,21 @@
         align-items: center;
     }
 
-    &_email {
-        font-size: 16px;
+    &_author {
+        font-size: 14px;
         font-weight: 500;
+        overflow-wrap: anywhere;
     }
 
-    &_date {
+    &_time {
         font-size: 13px;
         color: var(--light-text-color);
+        white-space: nowrap;
     }
 
-    &_message,
-    &_reply_text {
-        font-size: 14px;
-        line-height: 1.5;
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
+    &_status {
+        width: auto;
+        min-width: 150px;
     }
 
     &_empty {
@@ -60,23 +48,25 @@
         color: var(--light-text-color);
     }
 
-    &_replies {
+    // No transitions here: a reply that is appended must not flash its
+    // separator.
+    &_thread {
         display: flex;
         flex-direction: column;
-        gap: 12px;
     }
 
-    &_reply {
+    &_entry {
         display: flex;
         flex-direction: column;
         gap: 10px;
-        padding: 12px 0;
-        border: 0;
-        border-bottom: 1px solid var(--line-color);
-        border-radius: 0;
+        padding: 16px 0;
 
-        &:last-child {
-            border-bottom: none;
+        & + & {
+            border-top: 1px solid var(--line-color);
+        }
+
+        &:first-child {
+            padding-top: 0;
         }
 
         &_head {
@@ -84,22 +74,13 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-
-            p {
-                font-size: 13px;
-                color: var(--light-text-color);
-                white-space: nowrap;
-            }
-
-            .support_request_detail_reply_author {
-                font-size: 14px;
-                font-weight: 500;
-                color: var(--text-color);
-            }
         }
 
-        &_requester {
-            background: var(--section-item-hover-background-color);
+        &_text {
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
         }
     }
 

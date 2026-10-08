@@ -4,11 +4,9 @@ import { Link } from '@/navigation';
 
 import './UserBadge.scss';
 
-import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
-import { imageSrc } from '../../utils/image';
-
 import Verified from '../../assets/svg/verified.svg';
 import Tooltip from '../Ui/Tooltip/index';
+import UserAvatar from './UserAvatar';
 
 const UserBadge = ({
     data,
@@ -20,12 +18,7 @@ const UserBadge = ({
 
     const content = (
         <>
-            <div className="user_badge_avatar">
-                <img
-                    src={imageSrc(data?.avatar, DefaultProfileAvatar)}
-                    alt={'user_badge_avatar'}
-                />
-            </div>
+            <UserAvatar data={data} />
             {avatarOnly ? null : (
                 <div className="user_badge_info">
                     <p className="user_badge_info_name">{data.nick_name}</p>
