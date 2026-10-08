@@ -3,6 +3,7 @@
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AppContext } from '@/providers/AppProviders';
 import { getUsers, read_notifications } from '../../api/users.api';
+import { getProfile } from '../../api/profile.api';
 import { socketService } from '../../sockets/socket.service';
 import { format_back, format_date_time } from '../../utils/format';
 
@@ -85,6 +86,19 @@ const Notifications = () => {
         }
 
         const markAsRead = async () => {
+            // The socket may have been asleep while notifications arrived, for
+            // instance when the page is opened from a push, so the profile in
+            // memory can be stale. Show the server's list, with its unread
+            // marks, before marking everything read.
+            const fresh = await getProfile();
+
+            if (
+                fresh?.status === true &&
+                Array.isArray(fresh.data?.notifications)
+            ) {
+                setItems([...fresh.data.notifications].reverse());
+            }
+
             const result = await read_notifications();
 
             if (result?.status !== true) {
