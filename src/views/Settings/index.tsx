@@ -10,6 +10,13 @@ import {
     getSessions,
     deleteSession,
 } from '../../api/auth.api';
+import {
+    disablePush,
+    enablePush,
+    isDeviceSubscribed,
+    pushSupport,
+} from '../../utils/push';
+import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import { format_back, format_date_time } from '../../utils/format';
 
@@ -37,7 +44,80 @@ const Settings = () => {
         setIsDarkTheme,
     } = useContext(AppContext);
     const [initialized, setInitialized] = useState<any>(false);
+    const [pushOn, setPushOn] = useState<boolean>(false);
+    const [pushBusy, setPushBusy] = useState<boolean>(false);
+    const [pushSupportState, setPushSupportState] =
+        useState<string>('supported');
+    const [pushDenied, setPushDenied] = useState<boolean>(false);
+    const { mode: installMode, install } = useInstallPrompt();
     const navigate = useNavigate();
+
+    const refreshPush = async () => {
+        setPushDenied(Notification.permission === 'denied');
+        setPushOn(await isDeviceSubscribed());
+    };
+
+    useEffect(() => {
+        const support = pushSupport();
+        setPushSupportState(support);
+        if (support !== 'supported') {
+            return;
+        }
+        void refreshPush();
+
+        // Picks up the user allowing notifications in the browser settings
+        // without reloading the page.
+        let status: PermissionStatus | null = null;
+        const onChange = () => void refreshPush();
+        navigator.permissions
+            ?.query({ name: 'notifications' })
+            .then((result) => {
+                status = result;
+                result.addEventListener('change', onChange);
+            })
+            .catch(() => undefined);
+        window.addEventListener('focus', onChange);
+
+        return () => {
+            status?.removeEventListener('change', onChange);
+            window.removeEventListener('focus', onChange);
+        };
+    }, []);
+
+    const togglePush = async (next: boolean) => {
+        setPushBusy(true);
+        if (next) {
+            const result = await enablePush(String(profile?._id));
+            setPushOn(result === 'enabled');
+            setPushDenied(Notification.permission === 'denied');
+            if (result === 'unavailable') {
+                showToast({
+                    type: 'error',
+                    message: 'Could not turn on notifications',
+                });
+            }
+        } else {
+            await disablePush(String(profile?._id));
+            setPushOn(false);
+        }
+        setPushBusy(false);
+    };
+
+    // Browsers cannot open a site's permission settings from a page, so the
+    // button re-reads the permission and turns notifications on as soon as the
+    // user has allowed them there.
+    const retryPush = async () => {
+        if (Notification.permission === 'denied') {
+            setPushDenied(true);
+            showToast({
+                type: 'error',
+                message:
+                    'Still blocked, allow notifications in the site settings first',
+            });
+            return;
+        }
+        await togglePush(true);
+    };
     const [errors, setErrors] = useState<any>({});
     const [isLoading, setIsLoading] = useState<any>(false);
     const [passwordLoading, setPasswordLoading] = useState<any>(false);
@@ -896,6 +976,107 @@ const Settings = () => {
                                             Log out
                                         </DangerButton>
                                     </div>
+                                </div>
+                            </div>
+                        ),
+                    },
+                    {
+                        title: 'Notifications',
+                        key: 'notifications',
+                        content: (
+                            <div className="settings_panel">
+                                <div className="settings_stack">
+                                    <div className="settings_group">
+                                        <div className="settings_switch">
+                                            <div className="settings_switch_copy">
+                                                <p className="settings_switch_title">
+                                                    Push notifications
+                                                </p>
+                                                <p className="settings_switch_hint">
+                                                    {pushSupportState ===
+                                                    'needs-install'
+                                                        ? 'On iPhone, add Scribo to the Home Screen first, then open it from there'
+                                                        : pushSupportState ===
+                                                            'unsupported'
+                                                          ? 'This browser does not support notifications'
+                                                          : pushDenied
+                                                            ? 'Blocked in the browser, allow notifications for this site in its settings'
+                                                            : 'New messages and activity on this device, even when Scribo is closed'}
+                                                </p>
+                                            </div>
+                                            <Toggle
+                                                checked={pushOn}
+                                                onChange={
+                                                    pushSupportState ===
+                                                        'supported' &&
+                                                    !pushDenied &&
+                                                    !pushBusy
+                                                        ? togglePush
+                                                        : () => undefined
+                                                }
+                                            />
+                                        </div>
+                                        {pushSupportState === 'supported' &&
+                                            pushDenied && (
+                                                <div className="settings_push_blocked">
+                                                    <p className="settings_push_blocked_title">
+                                                        Notifications are
+                                                        blocked for this site
+                                                    </p>
+                                                    <ol className="settings_push_blocked_steps">
+                                                        <li>
+                                                            Click the icon left
+                                                            of the address bar
+                                                            (lock or settings)
+                                                        </li>
+                                                        <li>
+                                                            Set Notifications to
+                                                            Allow
+                                                        </li>
+                                                        <li>
+                                                            Come back here, this
+                                                            page updates on its
+                                                            own
+                                                        </li>
+                                                    </ol>
+                                                    <ActionButton
+                                                        type="button"
+                                                        onClick={() =>
+                                                            void retryPush()
+                                                        }
+                                                    >
+                                                        Enable notifications
+                                                    </ActionButton>
+                                                </div>
+                                            )}
+                                    </div>
+                                    {installMode === 'prompt' ||
+                                    installMode === 'ios' ? (
+                                        <div className="settings_group">
+                                            <div className="settings_switch">
+                                                <div className="settings_switch_copy">
+                                                    <p className="settings_switch_title">
+                                                        Install the app
+                                                    </p>
+                                                    <p className="settings_switch_hint">
+                                                        {installMode === 'ios'
+                                                            ? 'Tap Share in Safari, choose Add to Home Screen, then open Scribo from the new icon. iPhone only offers notifications to an installed app'
+                                                            : 'Open Scribo in its own window, right from your home screen or desktop'}
+                                                    </p>
+                                                </div>
+                                                {installMode === 'prompt' ? (
+                                                    <ActionButton
+                                                        type="button"
+                                                        onClick={() =>
+                                                            void install()
+                                                        }
+                                                    >
+                                                        Install
+                                                    </ActionButton>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    ) : null}
                                 </div>
                             </div>
                         ),

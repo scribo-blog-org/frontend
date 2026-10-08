@@ -69,6 +69,12 @@ class SocketService {
             this.emit('chat:typing', payload);
         });
 
+        if (user.permissions?.includes('manage_support')) {
+            void socketEvents.subscribeAdminSupport((count: any) => {
+                this.emit('admin:support-new', count);
+            });
+        }
+
         await socketClient.waitForSubscribed(this._userRoom(user._id));
 
         this.isConnected = true;

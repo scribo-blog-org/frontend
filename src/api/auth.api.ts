@@ -1,5 +1,6 @@
 import { apiUrl } from '../config';
 import { apiFetch, setAccessToken } from './http';
+import { releasePush } from '../utils/push';
 
 const verificationGoogle = async (token: any) => {
     try {
@@ -218,6 +219,7 @@ const resetPassword = ({
     });
 
 const logout = async () => {
+    await releasePush().catch(() => undefined);
     const response = await apiFetch(`${apiUrl()}/api/auth/logout`, {
         method: 'POST',
     });

@@ -18,16 +18,22 @@ import { getPosts } from '../../api/posts.api';
 import { format_message_date_label } from '../../utils/format';
 
 import FilterIcon from '../../assets/svg/filter.svg';
+import PlayIcon from '../../assets/svg/play.svg';
+import PauseIcon from '../../assets/svg/pause.svg';
+import RefreshIcon from '../../assets/svg/refresh.svg';
 
 import DropDown from '../../components/Ui/DropDown';
 import SearchSelect from '../../components/Ui/SearchSelect';
 import CancelButton from '../../components/Ui/CancelButton';
+import ActionButton from '../../components/Ui/ActionButton';
+import DateTimePicker from '../../components/Ui/DateTimePicker';
 import Loading from '../../components/Ui/Loading';
 import InfiniteScroll from '../../components/Ui/InfiniteScroll';
 import { usePagedList } from '../../hooks/usePagedList';
 
 import {
     CategoryEntity,
+    ConversationEntity,
     EntityView,
     PostEntity,
     RoleChip,
@@ -40,7 +46,14 @@ import { LOG_TYPES } from './logTypes';
 import './Logs.scss';
 
 const PAGE_SIZE = 30;
-const ENTITY_FILTERS = ['user', 'post', 'category', 'support_request', 'role'];
+const ENTITY_FILTERS = [
+    'user',
+    'post',
+    'category',
+    'conversation',
+    'support_request',
+    'role',
+];
 
 const TYPE_OPTIONS = [
     { value: 'all', name: 'All events' },
@@ -50,11 +63,21 @@ const TYPE_OPTIONS = [
     })),
 ];
 
+const LEVEL_OPTIONS = [
+    { value: 'all', name: 'All levels' },
+    { value: 'problems', name: 'Problems only' },
+    { value: 'error', name: 'Errors' },
+    { value: 'warn', name: 'Warnings' },
+    { value: 'info', name: 'Info' },
+];
+
 const ENTITY_LABELS: any = {
     user: 'User',
     post: 'Post',
     category: 'Category',
+    conversation: 'Chat',
 };
+const LIVE_MS = 3000;
 const SEARCH_DELAY_MS = 250;
 const SEARCH_PAGE_SIZE = 20;
 const POSTS_BATCH = 50;
@@ -68,6 +91,9 @@ const LogsPage = () => {
     const [categories, setCategories] = useState<any[]>([]);
     const [filter, setFilter] = useState<any>({ type: null, id: null });
     const [typeFilter, setTypeFilter] = useState<any>('all');
+    const [levelFilter, setLevelFilter] = useState<any>('all');
+    const [dateFrom, setDateFrom] = useState<any>('');
+    const [dateTo, setDateTo] = useState<any>('');
     const rootRef = useRef<any>(null);
     const [expanded, setExpanded] = useState<any>(() => new Set());
     const toggle = (id: any) =>
@@ -155,6 +181,18 @@ const LogsPage = () => {
                 query.type = typeFilter;
             }
 
+            if (levelFilter !== 'all') {
+                query.level = levelFilter;
+            }
+
+            if (dateFrom) {
+                query.from = new Date(dateFrom).toISOString();
+            }
+
+            if (dateTo) {
+                query.to = new Date(dateTo).toISOString();
+            }
+
             if (
                 filter.type &&
                 filter.id &&
@@ -175,14 +213,52 @@ const LogsPage = () => {
                 pages: result.data?.pagination?.pages || 0,
             };
         },
-        [typeFilter, filter.type, filter.id, showToast],
+        [
+            typeFilter,
+            levelFilter,
+            dateFrom,
+            dateTo,
+            filter.type,
+            filter.id,
+            showToast,
+        ],
     );
 
     const feed = usePagedList({
         fetchPage: fetchLogsPage,
-        resetKey: JSON.stringify([typeFilter, filter.type, filter.id]),
+        resetKey: JSON.stringify([
+            typeFilter,
+            levelFilter,
+            dateFrom,
+            dateTo,
+            filter.type,
+            filter.id,
+        ]),
     });
     const logs = feed.items;
+    const [live, setLive] = useState<any>(false);
+    const [reloading, setReloading] = useState<any>(false);
+    const refreshFeed = feed.refresh;
+
+    const reload = async () => {
+        setReloading(true);
+        await refreshFeed();
+        setReloading(false);
+    };
+
+    useEffect(() => {
+        if (!live) {
+            return;
+        }
+
+        const timer = setInterval(() => {
+            if (!document.hidden) {
+                refreshFeed();
+            }
+        }, LIVE_MS);
+
+        return () => clearInterval(timer);
+    }, [live, refreshFeed]);
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -273,11 +349,7 @@ const LogsPage = () => {
     useEffect(() => {
         rootRef.current?.querySelector('.logs_list')?.scrollTo({ top: 0 });
         setExpanded(new Set());
-    }, [filter.type, filter.id, typeFilter]);
-
-    if (feed.loading && !logs.length) {
-        return <Loading size={40} />;
-    }
+    }, [filter.type, filter.id, typeFilter, levelFilter, dateFrom, dateTo]);
 
     const supportLog = logs.find(
         (log: any) => log.data?.support_request === filter.id,
@@ -286,140 +358,207 @@ const LogsPage = () => {
     return (
         <div className="logs_page" ref={rootRef}>
             <div className="logs_toolbar">
-                <div className="logs_toolbar_type">
-                    <DropDown
-                        options={TYPE_OPTIONS}
-                        value={typeFilter}
-                        placeholder="Event type"
-                        onChange={(value: any) => {
-                            setTypeFilter(value);
-                        }}
-                    />
+                <div className="logs_toolbar_row">
+                    {filter.type ? (
+                        <div className="logs_toolbar_filter">
+                            <FilterIcon />
+                            {filter.type === 'user' && (
+                                <UserEntity
+                                    id={filter.id}
+                                    data={users.find(
+                                        (u: any) => u._id === filter.id,
+                                    )}
+                                    setFilter={applyFilter}
+                                />
+                            )}
+                            {filter.type === 'post' && (
+                                <PostEntity
+                                    id={filter.id}
+                                    data={posts.find(
+                                        (p: any) => p._id === filter.id,
+                                    )}
+                                    snapshotTitle={
+                                        logs.find(
+                                            (log: any) =>
+                                                log.data?.post === filter.id,
+                                        )?.data?.post_title
+                                    }
+                                    setFilter={applyFilter}
+                                />
+                            )}
+                            {filter.type === 'category' && (
+                                <CategoryEntity
+                                    id={filter.id}
+                                    data={categories.find(
+                                        (c: any) => c._id === filter.id,
+                                    )}
+                                    snapshot={
+                                        logs.find(
+                                            (log: any) =>
+                                                log.data?.category ===
+                                                filter.id,
+                                        )?.data?.category_snapshot
+                                    }
+                                    setFilter={applyFilter}
+                                />
+                            )}
+                            {filter.type === 'conversation' && (
+                                <ConversationEntity
+                                    id={filter.id}
+                                    title={
+                                        logs.find(
+                                            (log: any) =>
+                                                log.data?.conversation ===
+                                                    filter.id &&
+                                                log.data?.title,
+                                        )?.data?.title
+                                    }
+                                    setFilter={applyFilter}
+                                />
+                            )}
+                            {filter.type === 'support_request' && (
+                                <SupportEntity
+                                    id={filter.id}
+                                    accessKey={supportLog?.data?.access_key}
+                                    kind={supportLog?.data?.kind}
+                                    setFilter={applyFilter}
+                                />
+                            )}
+                            {filter.type === 'role' && (
+                                <RoleChip role={filter.id} />
+                            )}
+                            <CancelButton
+                                size="sm"
+                                onClick={() =>
+                                    applyFilter({ type: null, id: null })
+                                }
+                            >
+                                Reset
+                            </CancelButton>
+                        </div>
+                    ) : (
+                        <div className="logs_toolbar_search">
+                            <SearchSelect
+                                options={entities.map((entity: any) => ({
+                                    value: {
+                                        type: entity.type,
+                                        value: entity.id,
+                                    },
+                                    name: entity.name,
+                                    render: () => (
+                                        <>
+                                            <EntityView
+                                                kind={entity.type}
+                                                name={entity.name}
+                                                deleted={entity.deleted}
+                                            />
+                                            <span className="logs_option_type">
+                                                {ENTITY_LABELS[entity.type]}
+                                            </span>
+                                        </>
+                                    ),
+                                }))}
+                                placeholder="Find a user, post, category, or chat"
+                                emptyLabel="Nothing in the log"
+                                loading={entitiesLoading}
+                                minSearchLength={1}
+                                hasMore={entitiesPage < entitiesPages}
+                                onFocus={() => setSearchActive(true)}
+                                onInput={(text: any) => {
+                                    entitiesRequest.current++;
+                                    setSearchText(text);
+
+                                    if (text.trim()) {
+                                        setEntitiesLoading(true);
+                                    } else {
+                                        setEntitiesLoading(false);
+                                        setEntities([]);
+                                        setEntitiesPage(0);
+                                        setEntitiesPages(0);
+                                    }
+                                }}
+                                onLoadMore={() =>
+                                    loadEntities(searchText, entitiesPage + 1)
+                                }
+                                onChange={(value: any) => {
+                                    if (!value?.type) {
+                                        return;
+                                    }
+
+                                    setSearchActive(false);
+                                    setSearchText('');
+                                    setEntities([]);
+                                    applyFilter({
+                                        type: value.type,
+                                        id: value.value,
+                                    });
+                                }}
+                            />
+                        </div>
+                    )}
+
+                    <div className="logs_toolbar_actions">
+                        <ActionButton
+                            size="lg"
+                            className={live ? 'logs_live_active' : ''}
+                            onClick={() => setLive((value: any) => !value)}
+                        >
+                            {live ? <PauseIcon /> : <PlayIcon />}
+                            Live
+                        </ActionButton>
+                        <ActionButton
+                            size="lg"
+                            onClick={reload}
+                            className={`logs_reload${reloading ? ' logs_reload_busy' : ''}`}
+                        >
+                            <RefreshIcon />
+                        </ActionButton>
+                    </div>
                 </div>
 
-                {filter.type ? (
-                    <div className="logs_toolbar_filter">
-                        <FilterIcon />
-                        {filter.type === 'user' && (
-                            <UserEntity
-                                id={filter.id}
-                                data={users.find(
-                                    (u: any) => u._id === filter.id,
-                                )}
-                                setFilter={applyFilter}
-                            />
-                        )}
-                        {filter.type === 'post' && (
-                            <PostEntity
-                                id={filter.id}
-                                data={posts.find(
-                                    (p: any) => p._id === filter.id,
-                                )}
-                                snapshotTitle={
-                                    logs.find(
-                                        (log: any) =>
-                                            log.data?.post === filter.id,
-                                    )?.data?.post_title
-                                }
-                                setFilter={applyFilter}
-                            />
-                        )}
-                        {filter.type === 'category' && (
-                            <CategoryEntity
-                                id={filter.id}
-                                data={categories.find(
-                                    (c: any) => c._id === filter.id,
-                                )}
-                                snapshot={
-                                    logs.find(
-                                        (log: any) =>
-                                            log.data?.category === filter.id,
-                                    )?.data?.category_snapshot
-                                }
-                                setFilter={applyFilter}
-                            />
-                        )}
-                        {filter.type === 'support_request' && (
-                            <SupportEntity
-                                id={filter.id}
-                                accessKey={supportLog?.data?.access_key}
-                                kind={supportLog?.data?.kind}
-                                setFilter={applyFilter}
-                            />
-                        )}
-                        {filter.type === 'role' && (
-                            <RoleChip role={filter.id} />
-                        )}
-                        <CancelButton
-                            size="sm"
-                            onClick={() =>
-                                applyFilter({ type: null, id: null })
-                            }
-                        >
-                            Reset
-                        </CancelButton>
-                    </div>
-                ) : (
-                    <div className="logs_toolbar_search">
-                        <SearchSelect
-                            options={entities.map((entity: any) => ({
-                                value: { type: entity.type, value: entity.id },
-                                name: entity.name,
-                                render: () => (
-                                    <>
-                                        <EntityView
-                                            kind={entity.type}
-                                            name={entity.name}
-                                            deleted={entity.deleted}
-                                        />
-                                        <span className="logs_option_type">
-                                            {ENTITY_LABELS[entity.type]}
-                                        </span>
-                                    </>
-                                ),
-                            }))}
-                            placeholder="Find a user, post, or category"
-                            emptyLabel="Nothing in the log"
-                            loading={entitiesLoading}
-                            minSearchLength={1}
-                            hasMore={entitiesPage < entitiesPages}
-                            onFocus={() => setSearchActive(true)}
-                            onInput={(text: any) => {
-                                entitiesRequest.current++;
-                                setSearchText(text);
-
-                                if (text.trim()) {
-                                    setEntitiesLoading(true);
-                                } else {
-                                    setEntitiesLoading(false);
-                                    setEntities([]);
-                                    setEntitiesPage(0);
-                                    setEntitiesPages(0);
-                                }
-                            }}
-                            onLoadMore={() =>
-                                loadEntities(searchText, entitiesPage + 1)
-                            }
+                <div className="logs_toolbar_row">
+                    <div className="logs_toolbar_level">
+                        <DropDown
+                            options={LEVEL_OPTIONS}
+                            value={levelFilter}
+                            placeholder="Level"
                             onChange={(value: any) => {
-                                if (!value?.type) {
-                                    return;
-                                }
-
-                                setSearchActive(false);
-                                setSearchText('');
-                                setEntities([]);
-                                applyFilter({
-                                    type: value.type,
-                                    id: value.value,
-                                });
+                                setLevelFilter(value);
                             }}
                         />
                     </div>
-                )}
+                    <div className="logs_toolbar_type">
+                        <DropDown
+                            options={TYPE_OPTIONS}
+                            value={typeFilter}
+                            placeholder="Event type"
+                            onChange={(value: any) => {
+                                setTypeFilter(value);
+                            }}
+                        />
+                    </div>
+
+                    <div className="logs_toolbar_range">
+                        <DateTimePicker
+                            label="From"
+                            value={dateFrom}
+                            max={dateTo || undefined}
+                            onChange={setDateFrom}
+                        />
+                        <DateTimePicker
+                            label="To"
+                            value={dateTo}
+                            min={dateFrom || undefined}
+                            onChange={setDateTo}
+                        />
+                    </div>
+                </div>
             </div>
 
             <div className="logs_list">
-                {logs.length ? (
+                {feed.loading && !logs.length ? (
+                    <Loading size={40} />
+                ) : logs.length ? (
                     <InfiniteScroll
                         hasNext={feed.hasNext}
                         loadingNext={feed.loadingNext}

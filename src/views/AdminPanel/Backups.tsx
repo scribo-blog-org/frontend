@@ -516,6 +516,11 @@ const BackupsPage = () => {
                                         {format_back(item.started_at)}
                                     </p>
                                 </Tooltip>
+                                <p className="admin_panel_content_backups_page_item_version">
+                                    {item.contents?.app_version ??
+                                        item.source?.app_version ??
+                                        '—'}
+                                </p>
                                 <p className="admin_panel_content_backups_page_item_trigger">
                                     {kindLabel(item)}
                                     {info?.current?.backup_id === item._id ? (

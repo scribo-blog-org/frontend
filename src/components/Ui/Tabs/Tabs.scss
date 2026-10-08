@@ -70,6 +70,16 @@
         color: var(--section-light-hover-color);
     }
 
+    &_dot {
+        position: absolute;
+        top: 9px;
+        right: 6px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--red-f5);
+    }
+
     &_active {
         color: var(--text-color);
 

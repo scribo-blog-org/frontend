@@ -8,6 +8,7 @@ import {
     Arrow,
     CategoryEntity,
     CommentEntity,
+    ConversationEntity,
     BackupEntity,
     DeployEntity,
     GuestEntity,
@@ -25,7 +26,7 @@ import { useOverlayPresence } from '../../components/Ui/useOverlayEnter';
 
 import LogDetails from './LogDetails';
 import { describeChanges } from './logFormat';
-import { typeOf } from './logTypes';
+import { LEVELS, levelOf, typeOf } from './logTypes';
 
 const Changes = ({ changes }: any) => (
     <>
@@ -110,24 +111,48 @@ const objectOf = (log: any, config: any, ctx: any) => {
             return data.original_name ? (
                 <TextEntity>{data.original_name}</TextEntity>
             ) : null;
-        case 'system':
+        case 'group':
+            return data.conversation ? (
+                <ConversationEntity
+                    id={data.conversation}
+                    title={data.title}
+                    setFilter={setFilter}
+                />
+            ) : null;
+        case 'method':
+            return data.method ? (
+                <TextEntity>
+                    {data.method === 'google' ? 'Google' : 'Password'}
+                </TextEntity>
+            ) : null;
+        case 'system': {
             if (log.type === 'server_start') {
                 return (
                     <DeployEntity
-                        name={`v${data.version ?? '?'} · ${data.env ?? ''}`}
+                        name={[
+                            `v${data.version ?? '?'}`,
+                            data.sha_short,
+                            data.env,
+                        ]
+                            .filter(Boolean)
+                            .join(' · ')}
                     />
                 );
             }
 
-            return (
-                <TextEntity>
-                    {log.type === 'db_version_sync'
-                        ? `v${data.app_version ?? '?'} · data ${data.to_version ?? '?'}`
-                        : log.type === 'server_error'
-                          ? `${data.method ?? ''} ${data.path ?? ''}`
-                          : (data.trigger ?? '')}
-                </TextEntity>
-            );
+            const text =
+                log.type === 'db_version_sync'
+                    ? `v${data.app_version ?? '?'} · data ${data.to_version ?? '?'}`
+                    : log.type === 'server_error'
+                      ? `${data.method ?? ''} ${data.path ?? ''}`.trim()
+                      : log.type === 'backup_rotated'
+                        ? data.removed_files
+                            ? `${data.removed_files} ${data.removed_files === 1 ? 'file' : 'files'}`
+                            : ''
+                        : (data.trigger ?? '');
+
+            return text ? <TextEntity>{text}</TextEntity> : null;
+        }
         default:
             return null;
     }
@@ -212,6 +237,16 @@ const detailsOf = (log: any, setFilter?: any) => {
         case 'backup_upload_failed':
         case 'backup_restore_result':
             return { node: <ErrorText text={data.error} /> };
+        case 'db_version_failed':
+            return { node: <ErrorText text={data.error} /> };
+        case 'update_group_member_role':
+            return {
+                node: (
+                    <Quote
+                        text={`${data.previous_member_role ?? '—'} → ${data.member_role ?? '—'}`}
+                    />
+                ),
+            };
         default:
             return {};
     }
@@ -254,7 +289,7 @@ const LogRow = ({
         useOverlayPresence(expanded);
 
     const config = typeOf(log);
-    const Icon = config.icon;
+    const level = levelOf(log);
     const data = log.data ?? {};
     const details = detailsOf(log, setFilter);
 
@@ -278,7 +313,7 @@ const LogRow = ({
             className={`log_item${expanded ? ' log_item_expanded' : ''}`}
         >
             <div
-                className={`log_row log_row_tone_${config.tone}`}
+                className={`log_row log_row_level_${level}`}
                 role="button"
                 tabIndex={0}
                 aria-expanded={expanded}
@@ -290,9 +325,10 @@ const LogRow = ({
                     }
                 }}
             >
-                <span className="log_row_icon" title={config.title}>
-                    <Icon />
-                </span>
+                <span
+                    className="log_row_level"
+                    title={`${LEVELS[level]} · ${config.title}`}
+                />
                 <div className="log_row_actor">{actor}</div>
                 <span className="log_row_verb">{config.text(log)}</span>
                 <div className="log_row_object">
@@ -322,6 +358,7 @@ const LogRow = ({
                         <LogDetails
                             log={log}
                             config={config}
+                            level={level}
                             names={{
                                 user: users.find(
                                     (u: any) => u._id === String(data.user),

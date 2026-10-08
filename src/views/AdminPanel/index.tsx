@@ -14,6 +14,7 @@ import { useContext, useEffect } from 'react';
 
 import { AppContext } from '@/providers/AppProviders';
 
+import { useAdminAttention } from '../../hooks/useAdminAttention';
 import TabsPage from '../../components/TabsPage/index';
 
 import CategoriesPage from './Categories';
@@ -27,6 +28,7 @@ import BackupsPage from './Backups';
 const AdminPanel = () => {
     const navigate = useNavigate();
     const { profile, profileLoading } = useContext(AppContext);
+    const adminAttention = useAdminAttention(profile);
 
     useEffect(() => {
         if (
@@ -66,6 +68,7 @@ const AdminPanel = () => {
             title: 'Support',
             key: 'requests',
             icon: <SupportIcon />,
+            dot: adminAttention.support,
             content: <RequestsPage />,
         },
         {

@@ -11,6 +11,7 @@ import CommentIcon from '../../assets/svg/comment.svg';
 import SupportIcon from '../../assets/svg/support.svg';
 import BackupIcon from '../../assets/svg/backup.svg';
 import GlobalIcon from '../../assets/svg/global.svg';
+import MessageIcon from '../../assets/svg/message.svg';
 
 import ArrowIcon from '../../assets/svg/arrow-left.svg';
 import PostIcon from '../../assets/svg/post.svg';
@@ -33,6 +34,7 @@ const GLYPHS: any = {
     support: SupportIcon,
     backup: BackupIcon,
     deploy: GlobalIcon,
+    conversation: MessageIcon,
 };
 
 export const EntityView = ({
@@ -192,6 +194,22 @@ export const CategoryEntity = ({ id, data, snapshot, setFilter }: any) => {
         </Popup>
     );
 };
+
+export const ConversationEntity = ({ id, title, setFilter }: any) => (
+    <Popup
+        body={[
+            {
+                title: 'Chat history',
+                onClick: () => setFilter({ type: 'conversation', id }),
+                icon: <FilterIcon />,
+            },
+        ]}
+    >
+        <span className="log_entity">
+            <EntityView kind="conversation" name={title ?? 'Chat'} />
+        </span>
+    </Popup>
+);
 
 export const CommentEntity = ({ postId, commentId, text, deleted }: any) => {
     const navigate = useNavigate();

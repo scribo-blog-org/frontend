@@ -4,6 +4,16 @@ function socketUrl() {
     return publicEnv('NEXT_PUBLIC_SOCKET_URL') || 'ws://localhost:3002';
 }
 const AUTH_TIMEOUT_MS = 10000;
+const PING_INTERVAL_MS = 20_000;
+// The server answers every ping, so silence for this long means the
+// connection is dead even though the browser still reports it as open.
+const SILENCE_LIMIT_MS = 50_000;
+
+// Online means the app is in the foreground, like in Telegram: a minimized
+// window, a hidden tab or a window without focus is offline.
+function isAppActive() {
+    return document.visibilityState === 'visible' && document.hasFocus();
+}
 
 class SocketClient {
     socket: any;
@@ -18,6 +28,8 @@ class SocketClient {
     presenceListeners: any;
     presenceQueries: any;
     typingQueries: any;
+    pingTimer: any;
+    lastHeardAt: any;
     constructor() {
         this.socket = null;
         this.token = null;
@@ -31,6 +43,51 @@ class SocketClient {
         this.presenceListeners = new Set();
         this.presenceQueries = new Map();
         this.typingQueries = new Map();
+        this.pingTimer = null;
+        this.lastHeardAt = 0;
+
+        if (typeof window !== 'undefined') {
+            const onStateChange = () => this._reportActivity();
+            document.addEventListener('visibilitychange', onStateChange);
+            window.addEventListener('focus', onStateChange);
+            window.addEventListener('blur', onStateChange);
+            window.addEventListener('pagehide', () => this._ping(false));
+            window.addEventListener('pageshow', onStateChange);
+            window.addEventListener('online', () => {
+                if (!this.socket && this.token && !this.reconnectTimer) {
+                    void this._recover();
+                }
+            });
+        }
+    }
+
+    _ping(active: any) {
+        this._send({ type: 'ping', active });
+    }
+
+    _reportActivity() {
+        if (this.authedToken) {
+            this._ping(isAppActive());
+        }
+    }
+
+    _startHeartbeat() {
+        this._stopHeartbeat();
+        this.lastHeardAt = Date.now();
+        this.pingTimer = setInterval(() => {
+            if (Date.now() - this.lastHeardAt > SILENCE_LIMIT_MS) {
+                this.socket?.close();
+                return;
+            }
+            this._reportActivity();
+        }, PING_INTERVAL_MS);
+    }
+
+    _stopHeartbeat() {
+        if (this.pingTimer) {
+            clearInterval(this.pingTimer);
+            this.pingTimer = null;
+        }
     }
 
     async setAuth(accessToken: any) {
@@ -138,6 +195,7 @@ class SocketClient {
         }
         this.statusListeners.clear();
         this.authedToken = null;
+        this._stopHeartbeat();
         this._rejectAuth(new Error('disconnected'));
         if (this.socket) {
             this.socket.close();
@@ -279,6 +337,7 @@ class SocketClient {
                 }
                 this.openPromise = null;
                 this.authedToken = null;
+                this._stopHeartbeat();
                 if (!settled) {
                     settled = true;
                     reject(new Error('socket closed'));
@@ -322,7 +381,11 @@ class SocketClient {
                 settle.reject(error);
             },
         };
-        this._send({ type: 'auth', access: this.token });
+        this._send({
+            type: 'auth',
+            access: this.token,
+            active: isAppActive(),
+        });
         return promise;
     }
 
@@ -347,8 +410,15 @@ class SocketClient {
             return;
         }
 
+        this.lastHeardAt = Date.now();
+
+        if (message.type === 'pong') {
+            return;
+        }
+
         if (message.type === 'auth' && message.ok) {
             this.authedToken = this.token;
+            this._startHeartbeat();
             if (this.authWait) {
                 this.authWait.resolve();
             }

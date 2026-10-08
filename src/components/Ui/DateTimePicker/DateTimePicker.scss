@@ -1,0 +1,79 @@
+@use '../../../styles/helpers' as *;
+
+.date_time_picker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: var(--control-height);
+    padding: 0 10px 0 12px;
+    background-color: transparent;
+    border: 1px solid var(--input-outline-color);
+    border-radius: 8px;
+    color: var(--input-text-color);
+    cursor: text;
+
+    &:focus-within {
+        border-color: var(--input-outline-active-color);
+    }
+
+    &_label {
+        flex-shrink: 0;
+        font-size: 13px;
+        color: var(--light-text-color);
+    }
+
+    &_input {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 100%;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        outline: none;
+        color: inherit;
+        font-family: inherit;
+        @include field-font;
+
+        &::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+        }
+
+        &::-webkit-datetime-edit {
+            color: var(--input-placeholder-color);
+        }
+    }
+
+    &_filled &_input::-webkit-datetime-edit {
+        color: var(--input-text-color);
+    }
+
+    &_clear {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+        padding: 0;
+        color: var(--light-text-color);
+
+        svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        @include hover {
+            color: var(--text-color);
+        }
+    }
+
+    &_disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+    }
+}
+
+body.dark-theme .date_time_picker_input {
+    color-scheme: dark;
+}
