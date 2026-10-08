@@ -155,6 +155,15 @@ const PushNotifications = () => {
             if (event.data?.type === 'push:navigate') {
                 navigate(event.data.url);
             }
+
+            // The service worker asks before showing a push, because it cannot
+            // tell which page this window is on after in-app navigation.
+            if (event.data?.type === 'push:where') {
+                event.ports[0]?.postMessage({
+                    path: window.location.pathname,
+                    visible: document.visibilityState === 'visible',
+                });
+            }
         };
 
         navigator.serviceWorker.addEventListener('message', onMessage);

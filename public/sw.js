@@ -25,13 +25,33 @@ self.addEventListener('push', (event) => {
                 type: 'window',
                 includeUncontrolled: true,
             });
-            const viewing = windows.some((client) => {
-                if (!client.focused || client.visibilityState !== 'visible') {
+            // `client.url` is the address the window was opened with and does
+            // not follow in-app navigation, so each window is asked where it
+            // is now. A window that does not answer in time is not counted.
+            const states = await Promise.all(
+                windows.map(
+                    (client) =>
+                        new Promise((resolve) => {
+                            const channel = new MessageChannel();
+                            const timer = setTimeout(() => resolve(null), 500);
+                            channel.port1.onmessage = (reply) => {
+                                clearTimeout(timer);
+                                resolve(reply.data);
+                            };
+                            client.postMessage({ type: 'push:where' }, [
+                                channel.port2,
+                            ]);
+                        }),
+                ),
+            );
+            const viewing = states.some((state) => {
+                if (!state || !state.visible) {
                     return false;
                 }
-                const path = strip(new URL(client.url).pathname);
+                const path = strip(state.path);
                 return path === target || (isChat && path === '/messages');
             });
+            console.log('[sw] push', { target, viewing, states });
             if (viewing) {
                 return;
             }
