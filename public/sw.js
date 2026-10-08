@@ -15,18 +15,23 @@ self.addEventListener('push', (event) => {
 
     event.waitUntil(
         (async () => {
-            // The user is already looking at the page this would open.
+            // Skip the push when the user is already looking at what it is
+            // about: the same page, or the chat list for a chat message,
+            // since the open messenger shows new messages by itself.
+            const strip = (path) => path.replace(/\/+$/, '') || '/';
+            const target = strip(new URL(url, self.location.origin).pathname);
+            const isChat = target.startsWith('/messages/');
             const windows = await self.clients.matchAll({
                 type: 'window',
                 includeUncontrolled: true,
             });
-            const viewing = windows.some(
-                (client) =>
-                    client.focused &&
-                    client.visibilityState === 'visible' &&
-                    new URL(client.url).pathname ===
-                        new URL(url, self.location.origin).pathname,
-            );
+            const viewing = windows.some((client) => {
+                if (!client.focused || client.visibilityState !== 'visible') {
+                    return false;
+                }
+                const path = strip(new URL(client.url).pathname);
+                return path === target || (isChat && path === '/messages');
+            });
             if (viewing) {
                 return;
             }
