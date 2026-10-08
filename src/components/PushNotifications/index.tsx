@@ -15,9 +15,19 @@ import {
 import PrimaryButton from '../Ui/PrimaryButton';
 import CancelButton from '../Ui/CancelButton';
 
+import NotificationIcon from '../../assets/svg/notification.svg';
+
 import './PushNotifications.scss';
 
 const DISMISSED_KEY = 'push_prompt_dismissed';
+
+const markDismissed = (userId: string) => {
+    try {
+        localStorage.setItem(`${DISMISSED_KEY}:${userId}`, '1');
+    } catch {
+        // The prompt simply shows again next visit.
+    }
+};
 
 const readDismissed = (userId: string) => {
     try {
@@ -27,11 +37,65 @@ const readDismissed = (userId: string) => {
     }
 };
 
-const PushNotifications = () => {
-    const { profile } = useContext(AppContext);
-    const navigate = useNavigate();
-    const [showPrompt, setShowPrompt] = useState(false);
+const PromptContent = ({
+    userId,
+    requestCloseModal,
+    showToast,
+}: {
+    userId: string;
+    requestCloseModal: () => void;
+    showToast: any;
+}) => {
     const [loading, setLoading] = useState(false);
+
+    const accept = async () => {
+        setLoading(true);
+        const result = await enablePush(userId);
+        setLoading(false);
+
+        if (result === 'unavailable') {
+            showToast({
+                type: 'error',
+                message: 'Could not turn on notifications',
+            });
+        }
+        requestCloseModal();
+    };
+
+    return (
+        <div className="push_prompt">
+            <div className="push_prompt_icon">
+                <NotificationIcon />
+            </div>
+            <p className="push_prompt_text">
+                Know right away when someone writes to you or something new
+                happens on your account.
+            </p>
+            <ul className="push_prompt_list">
+                <li>New messages in your chats</li>
+                <li>
+                    Notifications: likes, comments, replies, mentions, follows
+                    and answers to your support requests
+                </li>
+            </ul>
+            <p className="push_prompt_hint">
+                Only these two, nothing else. You can turn it off any time in
+                Settings.
+            </p>
+            <div className="push_prompt_actions">
+                <CancelButton onClick={requestCloseModal}>Not now</CancelButton>
+                <PrimaryButton onClick={accept} isLoading={loading}>
+                    Enable
+                </PrimaryButton>
+            </div>
+        </div>
+    );
+};
+
+const PushNotifications = () => {
+    const { profile, showModalWindow, requestCloseModal, showToast } =
+        useContext(AppContext);
+    const navigate = useNavigate();
     const userId = profile?._id;
 
     useEffect(() => {
@@ -75,11 +139,21 @@ const PushNotifications = () => {
 
             if (
                 Notification.permission === 'default' &&
-                !readDismissed(userId)
+                !readDismissed(userId) &&
+                !cancelled
             ) {
-                if (!cancelled) {
-                    setShowPrompt(true);
-                }
+                showModalWindow({
+                    title: 'Turn on notifications?',
+                    size: 'small',
+                    content: (
+                        <PromptContent
+                            userId={userId}
+                            requestCloseModal={requestCloseModal}
+                            showToast={showToast}
+                        />
+                    ),
+                    closeFunc: () => markDismissed(userId),
+                });
             }
         };
 
@@ -88,46 +162,11 @@ const PushNotifications = () => {
         return () => {
             cancelled = true;
         };
+        // The prompt belongs to the sign-in, not to later context updates.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId]);
 
-    const dismiss = () => {
-        try {
-            localStorage.setItem(`${DISMISSED_KEY}:${userId}`, '1');
-        } catch {
-            // The prompt simply shows again next visit.
-        }
-        setShowPrompt(false);
-    };
-
-    const accept = async () => {
-        if (!userId) return;
-        setLoading(true);
-        await enablePush(userId);
-        setLoading(false);
-        dismiss();
-    };
-
-    if (!showPrompt) {
-        return null;
-    }
-
-    return (
-        <div className="push_prompt app-transition" role="dialog">
-            <div className="push_prompt_copy">
-                <p className="push_prompt_title">Turn on notifications?</p>
-                <p className="push_prompt_hint">
-                    Get new messages and activity even when Scribo is closed.
-                    You can change this any time in Settings.
-                </p>
-            </div>
-            <div className="push_prompt_actions">
-                <CancelButton onClick={dismiss}>Not now</CancelButton>
-                <PrimaryButton onClick={accept} isLoading={loading}>
-                    Enable
-                </PrimaryButton>
-            </div>
-        </div>
-    );
+    return null;
 };
 
 export default PushNotifications;
