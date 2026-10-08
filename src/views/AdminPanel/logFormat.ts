@@ -166,6 +166,22 @@ const KNOWN_KEYS = new Set([
     'method',
     'path',
     'conversation',
+    'conversations',
+    'title',
+    'fields',
+    'moderation',
+    'message_author',
+    'own_message',
+    'count',
+    'text_length',
+    'member_role',
+    'previous_member_role',
+    'sha',
+    'sha_short',
+    'migration',
+    'migration_from',
+    'migration_to',
+    'sessions_closed',
 ]);
 
 const present = (value: any) =>
@@ -300,7 +316,40 @@ export function describeDetails(
     }
     add('Run', data.trigger);
 
+    if (data.moderation) {
+        add('By', 'Moderation (not the author)');
+    }
+    add('Group', data.title);
+    add('Group ID', data.conversation, true);
+    add('Changed', Array.isArray(data.fields) ? data.fields.join(', ') : null);
+    if (present(data.member_role)) {
+        add(
+            'Group role',
+            `${data.previous_member_role ?? '—'} → ${data.member_role}`,
+        );
+    }
+    add('Messages deleted', data.count);
+    add('Message length', data.text_length);
+    if (typeof data.own_message === 'boolean') {
+        add('Own message', yesNo(data.own_message));
+    }
+    add('Login method', log?.type === 'login' ? data.method : null);
+    if (log?.type === 'password_reset' && data.sessions_closed) {
+        add('Sessions', 'all closed');
+    }
+
     add('Version', data.version);
+    add('Commit', data.sha_short ? data.sha : null, true);
+    if (log?.type === 'server_start' && present(data.migration)) {
+        add(
+            'Migrations',
+            data.migration === 'synced'
+                ? `data ${data.migration_from ?? '—'} → ${data.migration_to ?? '—'}`
+                : data.migration === 'unchanged'
+                  ? `none (data ${data.migration_to ?? '—'})`
+                  : data.migration,
+        );
+    }
     add('Node', data.node);
     add('Environment', data.env);
     add('Port', data.port);

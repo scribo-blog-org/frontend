@@ -28,6 +28,7 @@ export function usePagedList({
     const fetchRef = useRef(fetchPage);
     const requestRef = useRef(0);
     const busyRef = useRef(false);
+    const refreshingRef = useRef(false);
     const pageRef = useRef(page);
     const pagesRef = useRef(pages);
 
@@ -92,7 +93,14 @@ export function usePagedList({
             return;
         }
 
-        setItems((prev: any[]) => [...prev, ...result.items]);
+        setItems((prev: any[]) => {
+            const known = new Set(prev.map((item: any) => item._id));
+
+            return [
+                ...prev,
+                ...result.items.filter((item: any) => !known.has(item._id)),
+            ];
+        });
         setPage(next);
         setPages(result.pages || 0);
 
@@ -101,7 +109,45 @@ export function usePagedList({
         }
     }, []);
 
+    // Re-requests the first page without the loading state. Items already shown
+    // stay in place, only the ones that are new get added on top.
+    const refresh = useCallback(async () => {
+        if (refreshingRef.current) {
+            return;
+        }
+
+        refreshingRef.current = true;
+
+        const request = requestRef.current;
+        const result = await fetchRef.current(1).finally(() => {
+            refreshingRef.current = false;
+        });
+
+        if (request !== requestRef.current || !result) {
+            return;
+        }
+
+        setItems((prev: any[]) => {
+            const known = new Set(prev.map((item: any) => item._id));
+            const fresh = result.items.filter(
+                (item: any) => !known.has(item._id),
+            );
+
+            return fresh.length ? [...fresh, ...prev] : prev;
+        });
+
+        if (pageRef.current <= 1) {
+            setPage(result.items.length ? 1 : 0);
+            setPages(result.pages || 0);
+        }
+
+        if (result.total !== undefined) {
+            setTotal(result.total);
+        }
+    }, []);
+
     return {
+        refresh,
         items,
         setItems,
         total,

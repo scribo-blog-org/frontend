@@ -19,15 +19,30 @@
 
 .logs_toolbar {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: var(--space-3);
     flex-shrink: 0;
     position: relative;
     z-index: 3;
 
-    @include screen() {
-        flex-direction: column;
-        align-items: stretch;
+    &_row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+
+        @include screen() {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+
+    &_level {
+        flex: 0 0 170px;
+        min-width: 0;
+
+        @include screen() {
+            flex-basis: auto;
+        }
     }
 
     &_type {
@@ -39,17 +54,37 @@
         }
     }
 
-    &_search {
-        flex: 1 1 0%;
-        min-width: 0;
-        max-width: 420px;
+    &_range {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        flex-shrink: 0;
 
         @include screen() {
-            max-width: none;
+            flex-direction: column;
+            align-items: stretch;
         }
     }
 
+    &_actions {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        flex-shrink: 0;
+
+        svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+
+    &_search {
+        flex: 1 1 0%;
+        min-width: 0;
+    }
+
     &_filter {
+        flex: 1 1 0%;
         display: flex;
         align-items: center;
         gap: var(--space-2);
@@ -84,7 +119,6 @@
 }
 
 .log_row {
-    --tone: var(--light-text-color);
     --col-actor: 170px;
     --col-verb: 200px;
     --col-object: 260px;
@@ -92,7 +126,7 @@
 
     display: grid;
     grid-template-columns:
-        24px
+        8px
         var(--col-actor)
         var(--col-verb)
         minmax(0, var(--col-object))
@@ -136,37 +170,26 @@
         padding: 8px 12px;
     }
 
-    &_tone_create {
-        --tone: var(--log-create-color);
+    &_level {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--line-color);
     }
 
-    &_tone_update {
-        --tone: var(--log-update-color);
+    &_level_warn {
+        --level: var(--log-update-color);
+        box-shadow: inset 2px 0 0 var(--level);
     }
 
-    &_tone_delete,
-    &_tone_error {
-        --tone: var(--log-error-color);
+    &_level_error {
+        --level: var(--log-error-color);
+        box-shadow: inset 2px 0 0 var(--level);
     }
 
-    &_tone_register {
-        --tone: var(--log-register-color);
-    }
-
-    &_icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-        border-radius: 6px;
-        background: rgb(from var(--tone) r g b / 0.14);
-
-        svg {
-            width: 14px;
-            height: 14px;
-            color: var(--tone);
-        }
+    &_level_warn &_level,
+    &_level_error &_level {
+        background: var(--level);
     }
 
     &_actor,
@@ -460,6 +483,11 @@
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
 
+    &_warn {
+        color: var(--log-update-color);
+        border-color: rgb(from var(--log-update-color) r g b / 0.4);
+    }
+
     &_error {
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         color: var(--log-error-color);
@@ -700,4 +728,28 @@
 .log_role .role_badge {
     margin-top: 0;
     padding: 3px 8px;
+}
+
+.logs_live_active {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.logs_reload {
+    width: var(--button-height-lg);
+    padding: 0;
+}
+
+.logs_reload_busy {
+    pointer-events: none;
+
+    svg {
+        animation: logs_reload_spin 0.8s linear infinite;
+    }
+}
+
+@keyframes logs_reload_spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
