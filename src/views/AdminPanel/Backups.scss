@@ -80,6 +80,11 @@
         padding: 12px 16px;
         border-radius: var(--radius-sm);
 
+        // Six columns need about 1000px, so a narrower window gets two rows.
+        @media (max-width: 1240px) {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
         @include screen() {
             grid-template-columns: 1fr;
             align-items: flex-start;
@@ -90,6 +95,13 @@
         &_trigger,
         &_size {
             font-size: 14px;
+        }
+
+        &_trigger {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-2);
         }
 
         &_time,
@@ -138,123 +150,57 @@
     }
 }
 
-.backup_status {
-    width: fit-content;
-    font-size: 12px;
-    font-weight: 500;
-    padding: 4px 8px;
-    border-radius: 6px;
-    white-space: nowrap;
-    @include use-transition();
-
-    &_running {
-        color: var(--warning-color);
-        background: rgb(from var(--warning-color) r g b / 0.12);
-    }
-
-    &_success {
-        color: var(--success-color);
-        background: rgb(from var(--success-color) r g b / 0.12);
-    }
-
-    &_failed {
-        color: var(--error-color);
-        background: rgb(from var(--error-color) r g b / 0.12);
-    }
-}
-
-.backup_current {
-    margin-left: 8px;
-    font-size: 12px;
-    font-weight: 500;
-    padding: 2px 8px;
-    border-radius: 6px;
-    color: var(--accent-color);
-    background: rgb(from var(--accent-color) r g b / 0.12);
-}
-
-.backup_notice {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 12px 16px;
-    font-size: 14px;
-    border-radius: var(--radius-sm);
-    background: var(--section-item-hover-background-color);
-    animation: admin_backups_enter 260ms ease backwards;
-    @include use-transition();
-
-    &_warning {
-        background: rgb(from var(--warning-color) r g b / 0.12);
-    }
-
-    &_error {
-        background: rgb(from var(--error-color) r g b / 0.12);
-    }
-
-    &_details {
-        font-size: 13px;
-        color: var(--error-color);
-        white-space: pre-wrap;
-        word-break: break-word;
-    }
+.backup_notice_details {
+    display: block;
+    margin-top: var(--space-1);
+    font-size: var(--text-xs);
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .backup_restore_dialog {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    font-size: 14px;
-
-    &_hint {
-        font-size: 13px;
-        color: var(--light-text-color);
-    }
-
-    &_warnings {
+    &_confirm {
         display: flex;
         flex-direction: column;
-        gap: 8px;
-        padding-left: 18px;
-        color: var(--error-color);
+        gap: var(--space-2);
     }
 
     &_label {
+        font-size: var(--text-sm);
         font-weight: 500;
     }
 
-    &_bottom {
+    // Lives inside the content because the confirmation state is local to the
+    // dialog; it mirrors the modal footer bar.
+    &_footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 1;
+        background: var(--modal-window-body-background-color);
         display: flex;
-        justify-content: flex-end;
-        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: var(--space-3);
+        margin: 0 -20px -20px;
+        padding: 12px 20px;
+        border-top: 1px solid var(--line-color);
+        font-size: var(--text-sm);
+        color: var(--light-text-color);
     }
 }
 
 .backup_details {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin: 0;
-    font-size: 14px;
-
-    &_row {
-        display: grid;
-        grid-template-columns: 160px 1fr;
-        gap: 12px;
-
-        @include screen() {
-            grid-template-columns: 1fr;
-            gap: 2px;
-        }
+    &_value {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: var(--space-2);
     }
 
-    dt {
+    &_muted {
+        font-size: var(--text-xs);
         color: var(--light-text-color);
-    }
-
-    dd {
-        margin: 0;
-        word-break: break-word;
     }
 }
 
@@ -267,8 +213,7 @@
 
 @media (prefers-reduced-motion: reduce) {
     .admin_panel_content_backups_page_item,
-    .admin_panel_content_backups_page_empty,
-    .backup_notice {
+    .admin_panel_content_backups_page_empty {
         animation: none;
     }
 }
