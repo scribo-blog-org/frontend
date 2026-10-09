@@ -575,6 +575,9 @@ const LogsPage = () => {
                                     posts={posts}
                                     categories={categories}
                                     setFilter={applyFilter}
+                                    position={index + 1}
+                                    total={logs.length}
+                                    hasMore={feed.hasNext}
                                     expanded={expanded.has(log._id)}
                                     onToggle={() => toggle(log._id)}
                                     onPrev={

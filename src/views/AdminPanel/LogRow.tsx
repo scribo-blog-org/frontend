@@ -311,6 +311,9 @@ const LogRow = ({
     onToggle,
     onPrev,
     onNext,
+    position,
+    total,
+    hasMore,
 }: any) => {
     const itemRef = useRef<any>(null);
 
@@ -438,6 +441,9 @@ const LogRow = ({
                             setFilter={setFilter}
                             onPrev={onPrev}
                             onNext={onNext}
+                            position={position}
+                            total={total}
+                            hasMore={hasMore}
                         />
                     ) : null}
                 </div>
