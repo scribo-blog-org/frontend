@@ -39,13 +39,15 @@
     color: var(--light-text-color);
 }
 
-// One plate for the whole group; the rows are separated by thin lines.
+// A tray holds the group and every row is its own card inside it, so rows
+// stay apart even when the tray and the page are close in colour.
 .panel {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    gap: 6px;
+    padding: 6px;
     border: 1px solid var(--line-color);
-    border-radius: 12px;
+    border-radius: 18px;
     background: var(--panel-frame-color);
 }
 
@@ -55,18 +57,14 @@
     gap: var(--space-3);
     width: 100%;
     min-width: 0;
-    padding: 12px 16px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
+    padding: 12px 14px;
+    border: 1px solid var(--panel-row-border-color);
+    border-radius: 12px;
+    background: var(--panel-row-color);
     font: inherit;
     color: var(--text-color);
     text-align: left;
     @include use-transition();
-
-    & + & {
-        border-top: 1px solid var(--line-color);
-    }
 
     &_action {
         cursor: pointer;
@@ -98,7 +96,7 @@
         width: 32px;
         height: 32px;
         border-radius: 10px;
-        background: var(--panel-row-color);
+        background: var(--panel-frame-color);
         color: var(--light-text-color);
 
         svg {

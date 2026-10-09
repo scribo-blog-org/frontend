@@ -115,6 +115,7 @@ body {
     --panel-frame-color: var(--gray-f7);
     --panel-row-color: var(--gray-ff);
     --panel-row-hover-color: var(--gray-f1);
+    --panel-row-border-color: var(--gray-e7);
 
     --post-card-description-color: #6b6b6b;
     --post-card-hover-background-color: var(--gray-f9);
@@ -316,6 +317,7 @@ body.dark-theme {
     --panel-frame-color: var(--gray-25);
     --panel-row-color: var(--gray-2f);
     --panel-row-hover-color: var(--gray-33);
+    --panel-row-border-color: var(--gray-33);
 
     --post-card-description-color: var(--gray-b5);
     --post-card-hover-background-color: var(--gray-25);
