@@ -50,16 +50,21 @@
                 background 300ms ease;
         }
 
+        // Hover is shown by the dot alone; the name keeps its color.
+        @include hover() {
+            color: var(--light-text-color);
+        }
+
+        &.chip_button_active {
+            @include hover() {
+                color: var(--text-color);
+            }
+        }
+
         @include category-colors {
             @include hover() {
-                color: var(--category-color);
-
                 .category_dot {
                     opacity: 1;
-                }
-
-                p {
-                    color: var(--category-color);
                 }
             }
 
@@ -78,17 +83,18 @@
 
                 @include hover() {
                     background: transparent;
-                    color: var(--category-color);
-
-                    p {
-                        color: var(--category-color);
-                    }
+                    color: var(--text-color);
                 }
             }
         }
 
         &.category_content_tag {
             color: var(--text-color);
+
+            @include hover() {
+                color: var(--text-color);
+            }
+
             font-weight: 400;
             box-shadow: none;
 
