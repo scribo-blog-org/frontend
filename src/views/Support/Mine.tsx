@@ -9,9 +9,10 @@ import {
     getMySupportRequests,
 } from '../../api/support.api';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
-import { SUPPORT_KINDS, kindLabel, statusLabel } from './constants';
+import { SUPPORT_KINDS, kindLabel, statusLabel, statusTone } from './constants';
 import { format_back, format_date_time } from '../../utils/format';
 
+import { Pill } from '../../components/Ui/Panel';
 import Field from '../../components/Ui/Field/index';
 import RichInputField from '../../components/RichInputField';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
@@ -225,14 +226,12 @@ const SupportMine = () => {
                                         }
                                     >
                                         <div className="admin_panel_content_requests_page_item_meta">
-                                            <span
-                                                className={`support_status support_status_${item.status}`}
+                                            <Pill
+                                                tone={statusTone(item.status)}
                                             >
                                                 {statusLabel(item.status)}
-                                            </span>
-                                            <span className="support_kind">
-                                                {kindLabel(item.kind)}
-                                            </span>
+                                            </Pill>
+                                            <Pill>{kindLabel(item.kind)}</Pill>
                                         </div>
                                         <p className="admin_panel_content_requests_page_item_preview">
                                             {item.message_preview}
