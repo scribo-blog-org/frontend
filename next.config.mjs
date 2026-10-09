@@ -33,6 +33,8 @@ const nextConfig = {
             },
         ];
     },
+    // Lets a phone on the home network open the dev server by LAN address.
+    allowedDevOrigins: ['192.168.*.*', '10.*.*.*'],
     reactStrictMode: true,
     logging: {
         incomingRequests: false,
