@@ -38,9 +38,10 @@
         max-height: 80vh;
         width: 600px;
         max-width: 80vw;
-        border-radius: 8px;
+        border-radius: 16px;
         background-color: var(--modal-window-body-background-color);
         border: 1px solid var(--line-color);
+        box-shadow: var(--modal-window-shadow);
 
         @include screen() {
             max-width: 90%;
@@ -49,36 +50,94 @@
 
         &_title {
             display: flex;
-            padding: 20px;
+            padding: 16px 20px;
             align-items: center;
-            justify-content: center;
+            gap: var(--space-3);
             flex-shrink: 0;
+            border-bottom: 1px solid var(--line-color);
+
+            &_icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                width: 40px;
+                height: 40px;
+                border-radius: 12px;
+                background: var(--panel-frame-color);
+                color: var(--text-color);
+
+                svg {
+                    width: 20px;
+                    height: 20px;
+                }
+            }
+
+            &_copy {
+                display: flex;
+                flex: 1;
+                flex-direction: column;
+                gap: 2px;
+                min-width: 0;
+            }
 
             &_close_button {
                 display: flex;
-                margin-left: auto;
+                flex-shrink: 0;
                 color: var(--modal-window-button-color);
-                padding: 6px;
+                width: 32px;
+                height: 32px;
                 cursor: pointer;
                 align-items: center;
                 justify-content: center;
-                border-radius: 999px;
+                border: 1px solid var(--line-color);
+                border-radius: 10px;
 
                 @include hover() {
                     background: var(--section-item-hover-background-color);
                 }
+
+                svg {
+                    width: 14px;
+                    height: 14px;
+                }
             }
 
-            svg {
-                width: 16px;
-                height: 16px;
-            }
-
-            p {
+            &_text {
+                margin: 0;
                 color: var(--modal-window-title-text-color);
-                position: relative;
-                font-size: 24px;
+                font-size: var(--text-xl);
+                font-weight: 600;
+                letter-spacing: -0.02em;
+                line-height: 1.25;
+                overflow-wrap: anywhere;
                 transition: opacity 300ms ease;
+            }
+
+            &_subtitle {
+                margin: 0;
+                font-size: var(--text-sm);
+                color: var(--light-text-color);
+            }
+        }
+
+        &_footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: var(--space-3);
+            flex-shrink: 0;
+            padding: 12px 20px;
+            border-top: 1px solid var(--line-color);
+            font-size: var(--text-sm);
+            color: var(--light-text-color);
+
+            &_actions {
+                display: flex;
+                align-items: center;
+                gap: var(--space-2);
+                margin-left: auto;
             }
         }
 
@@ -104,7 +163,7 @@
         }
 
         &_swapping {
-            .modal_window_body_title_text,
+            .modal_window_body_title_copy,
             .modal_window_body_content_inner {
                 opacity: 0;
             }

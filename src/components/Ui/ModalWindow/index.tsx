@@ -160,14 +160,28 @@ const ModalWindow = ({
                 }${isSwapping ? ' modal_window_body_swapping' : ''}`}
             >
                 <div className="modal_window_body_title">
-                    <p className="modal_window_body_title_text">
-                        {activeModal?.title ?? ''}
-                    </p>
+                    {activeModal?.icon ? (
+                        <span className="modal_window_body_title_icon">
+                            {activeModal.icon}
+                        </span>
+                    ) : null}
+
+                    <div className="modal_window_body_title_copy">
+                        <p className="modal_window_body_title_text">
+                            {activeModal?.title ?? ''}
+                        </p>
+                        {activeModal?.subtitle ? (
+                            <p className="modal_window_body_title_subtitle">
+                                {activeModal.subtitle}
+                            </p>
+                        ) : null}
+                    </div>
 
                     {activeModal?.showCloseButton === false ? null : (
                         <button
                             type="button"
                             onClick={closeModalWindow}
+                            aria-label="Close"
                             className="modal_window_body_title_close_button app-transition"
                         >
                             <CrossIcon />
@@ -190,6 +204,12 @@ const ModalWindow = ({
                         {activeModal?.content ?? null}
                     </div>
                 </div>
+
+                {activeModal?.footer ? (
+                    <div className="modal_window_body_footer">
+                        {activeModal.footer}
+                    </div>
+                ) : null}
             </div>
         </div>
     );
