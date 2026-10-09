@@ -35,6 +35,7 @@ const SearchSelect = ({
     minSearchLength = 0,
     clearOnSelect = false,
     onSelect,
+    disabled = false,
 }: any) => {
     const setValue = onChange ?? onSetValue;
     const external = typeof onInput === 'function';
@@ -55,14 +56,16 @@ const SearchSelect = ({
     }, [options, value]);
 
     const filteredOptions = useMemo(() => {
-        const search = inputValue.trim().toLowerCase();
+        // The field shows the chosen option's name until the user types, and
+        // that name must not hide the other options when the list opens.
+        const search = isSearching ? inputValue.trim().toLowerCase() : '';
 
         if (external || !search) return options;
 
         return options.filter((option: any) =>
             optionLabel(option).toLowerCase().includes(search),
         );
-    }, [options, inputValue, external]);
+    }, [options, inputValue, external, isSearching]);
 
     const resetValue = useCallback(() => {
         const search = inputValue.trim().toLowerCase();
@@ -257,7 +260,7 @@ const SearchSelect = ({
     return (
         <div
             ref={wrapperRef}
-            className={`search_select ${className} app-transition`}
+            className={`search_select ${className} app-transition${disabled ? ' search_select_disabled' : ''}`}
         >
             <div
                 className={`search_select_input ${error ? 'incorrect_field' : ''} app-transition`}
@@ -277,6 +280,7 @@ const SearchSelect = ({
                     ref={inputRef}
                     value={inputValue}
                     placeholder={placeholder}
+                    disabled={disabled}
                     onFocus={() => {
                         if (queryReady(inputValue)) {
                             setIsOpen(true);
@@ -289,6 +293,7 @@ const SearchSelect = ({
 
                 <button
                     type="button"
+                    disabled={disabled}
                     className={`search_select_right_icon ${isOpen ? 'search_select_right_icon_close' : ''} app-transition`}
                     onMouseDown={(e: any) => {
                         e.preventDefault();
@@ -306,7 +311,7 @@ const SearchSelect = ({
                 </button>
             </div>
 
-            {listMounted && (
+            {listMounted && !disabled && (
                 <div
                     className={`search_select_list blurred float_section${listVisible ? ' search_select_list_visible' : ''}`}
                     onScroll={(e: any) => {

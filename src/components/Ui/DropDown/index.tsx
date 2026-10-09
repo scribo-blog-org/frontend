@@ -17,6 +17,7 @@ const DropDown = ({
     error = false,
     className = '',
     renderOption,
+    disabled = false,
 }: any) => {
     const [isOpen, setIsOpen] = useState<any>(false);
     const wrapperRef = useRef<any>(null);
@@ -60,12 +61,13 @@ const DropDown = ({
     return (
         <div
             ref={wrapperRef}
-            className={`dropdown ${isOpen ? 'dropdown_open' : ''} ${error ? 'dropdown_error' : ''} ${className}`.trim()}
+            className={`dropdown ${isOpen ? 'dropdown_open' : ''} ${error ? 'dropdown_error' : ''} ${disabled ? 'dropdown_disabled' : ''} ${className}`.trim()}
         >
             <button
                 type="button"
                 className="dropdown_select app-transition"
                 aria-expanded={isOpen}
+                disabled={disabled}
                 onClick={() => setIsOpen((open: any) => !open)}
             >
                 {selectedOption?.icon ? (
@@ -89,7 +91,7 @@ const DropDown = ({
                 <ChevronDownIcon className="dropdown_chevron" />
             </button>
 
-            {listMounted ? (
+            {listMounted && !disabled ? (
                 <div
                     className={`dropdown_list blurred float_section${listVisible ? ' dropdown_list_visible' : ''}`}
                 >

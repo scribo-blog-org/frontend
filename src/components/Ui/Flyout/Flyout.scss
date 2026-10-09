@@ -1,8 +1,11 @@
 @use '../../../styles/helpers.scss' as *;
 @use '../../../styles/overlaySurface.scss' as *;
 
-.flyout {
+.flyout_shell {
     z-index: 1200;
+}
+
+.flyout {
     min-width: 160px;
     max-width: min(320px, calc(100vw - 16px));
     padding: 4px;
@@ -23,6 +26,7 @@
         font-weight: 500;
         color: var(--text-color);
         text-align: start;
+        @include use-transition();
 
         @include hover {
             background-color: var(--section-item-hover-background-color);

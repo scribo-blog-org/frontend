@@ -179,6 +179,7 @@ export default function TextEditor({
     onChange,
     error,
     onFocus,
+    disabled = false,
 }: any) {
     const [switcherActiveIndex, setSwitcherActiveIndex] = useState<any>(0);
 
@@ -202,8 +203,10 @@ export default function TextEditor({
             }
         >
             <InitialHtmlPlugin html={initialHtml} />
-            <EditablePlugin editable={switcherActiveIndex === 0} />
-            <div className="text_editor app-transition">
+            <EditablePlugin editable={!disabled && switcherActiveIndex === 0} />
+            <div
+                className={`text_editor app-transition${disabled ? ' text_editor_disabled' : ''}`}
+            >
                 <div
                     className={`text_editor_body ${error ? 'incorrect_field' : ''} app-transition`}
                 >

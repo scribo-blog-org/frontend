@@ -2,6 +2,7 @@
 
 import './ActionButton.scss';
 import Loader from '../Loading';
+import SegmentLoader from '../Loading/SegmentLoading';
 
 const buttonSize = (size: any) =>
     size === 'sm' || size === 'lg' ? size : 'md';
@@ -17,6 +18,9 @@ export default function ActionButton({
     size = 'md',
     disabled = false,
     isLoading = false,
+    loaderVariant = 'ring',
+    'aria-label': ariaLabel,
+    'aria-expanded': ariaExpanded,
 }: any) {
     const isDisabled = disabled || isLoading;
     const resolvedSize = buttonSize(size);
@@ -26,8 +30,14 @@ export default function ActionButton({
             onClick={isDisabled ? undefined : onClick}
             type={type}
             disabled={isDisabled}
+            aria-label={ariaLabel}
+            aria-expanded={ariaExpanded}
         >
-            <Loader size={loaderSize(resolvedSize)} />
+            {loaderVariant === 'segments' ? (
+                <SegmentLoader size={loaderSize(resolvedSize)} />
+            ) : (
+                <Loader size={loaderSize(resolvedSize)} />
+            )}
             {children}
         </button>
     );

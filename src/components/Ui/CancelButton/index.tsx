@@ -26,7 +26,7 @@ export default function CancelButton({
 
     return (
         <button
-            className={`cancel_button ui_button_${resolvedSize} ${isActive ? 'cancel_button_active' : ''} ${isLoading ? 'cancel_button_loading' : ''} ${isDisabled ? 'cancel_button_disabled' : ''} app-transition ${className}`}
+            className={`cancel_button ui_button_${resolvedSize} ${isActive ? 'cancel_button_active' : ''} ${isLoading ? 'cancel_button_loading' : ''} ${isDisabled && !isLoading ? 'cancel_button_disabled' : ''} app-transition ${className}`}
             onClick={isDisabled ? undefined : onClick}
             type={type}
             disabled={isDisabled}
