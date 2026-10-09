@@ -14,5 +14,15 @@
         min-width: 0;
         overflow-y: auto;
         padding-top: var(--space-4);
+
+        // A spacer rather than padding: padding at the end of a scroll
+        // container is dropped by some mobile browsers, which left the last
+        // rows under the navigation bar.
+        &::after {
+            content: '';
+            display: block;
+            flex: 0 0 auto;
+            height: var(--bottom-inset, 0px);
+        }
     }
 }
