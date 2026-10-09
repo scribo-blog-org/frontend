@@ -105,11 +105,6 @@ const HEALTH_ITEMS = [
         hint: 'Took more than a second to answer',
     },
     {
-        type: 'login_failed',
-        label: 'Failed sign-ins',
-        hint: 'Wrong password or unknown account',
-    },
-    {
         type: 'rate_limited',
         label: 'Rate limits',
         hint: 'Someone sent too many requests',
@@ -123,11 +118,6 @@ const HEALTH_ITEMS = [
         type: 'external_failed',
         label: 'Service failures',
         hint: 'Mail, push or Google did not answer',
-    },
-    {
-        type: 'session_failed',
-        label: 'Session failures',
-        hint: 'Refreshing a sign-in did not work',
     },
 ];
 

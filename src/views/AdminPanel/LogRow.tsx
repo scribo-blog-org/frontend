@@ -275,7 +275,6 @@ const detailsOf = (log: any, setFilter?: any) => {
         case 'rate_limited':
             return { node: <Quote text={data.rule} /> };
         case 'login_failed':
-        case 'session_failed':
             return {
                 node: (
                     <Quote text={data.reason ? reasonLabel(data.reason) : ''} />

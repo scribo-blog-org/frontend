@@ -396,12 +396,6 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
         text: () => 'An external service failed',
         object: 'system',
     },
-    session_failed: {
-        title: 'Session refresh failed',
-        tone: 'update',
-        text: () => 'Could not refresh a session',
-        object: null,
-    },
     logout: {
         title: 'Sign-out',
         tone: 'info',

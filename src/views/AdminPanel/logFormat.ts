@@ -207,7 +207,6 @@ const REASONS: Record<string, string> = {
     no_user: 'No account with this login',
     bad_password: 'Wrong password',
     google_invalid: 'Google token was rejected',
-    'Session has expired': 'Session has expired',
 };
 
 export const reasonLabel = (reason: any) => REASONS[reason] ?? String(reason);
