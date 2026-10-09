@@ -11,40 +11,6 @@ self.addEventListener('push', (event) => {
         data = { body: event.data ? event.data.text() : '' };
     }
 
-    if (data.dismiss) {
-        event.waitUntil(
-            (async () => {
-                const shown = await self.registration.getNotifications(
-                    data.tag ? { tag: data.tag } : {},
-                );
-                const targets = shown.filter(
-                    (notification) =>
-                        data.tag ||
-                        (data.tagPrefix &&
-                            (notification.tag || '').startsWith(
-                                data.tagPrefix,
-                            )),
-                );
-                targets.forEach((notification) => notification.close());
-
-                // Browsers require every push to end in a visible notification;
-                // a dismiss that closed nothing would otherwise surface a
-                // generic one, so a blank one is shown and closed at once.
-                if (!targets.length) {
-                    await self.registration.showNotification('Scribo', {
-                        tag: 'dismiss',
-                        silent: true,
-                    });
-                    const blank = await self.registration.getNotifications({
-                        tag: 'dismiss',
-                    });
-                    blank.forEach((notification) => notification.close());
-                }
-            })(),
-        );
-        return;
-    }
-
     const url = data.url || '/';
 
     event.waitUntil(
