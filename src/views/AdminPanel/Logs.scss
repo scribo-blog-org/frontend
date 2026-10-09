@@ -447,13 +447,17 @@
 
     &_header {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         gap: var(--space-2);
+        row-gap: var(--space-2);
         min-width: 0;
     }
 
     &_path {
-        min-width: 0;
+        flex: 0 1 auto;
+        max-width: 100%;
+        min-width: 80px;
         overflow: hidden;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 13px;
@@ -1136,4 +1140,18 @@
     font-variant-numeric: tabular-nums;
     color: var(--light-text-color);
     white-space: nowrap;
+}
+
+// The details column shrinks with the window, so the plate gives up its extras
+// before it gets cut off: first the bar, then the query count.
+@media (max-width: 1360px) {
+    .log_timing_bar {
+        display: none;
+    }
+}
+
+@media (max-width: 1120px) {
+    .log_timing_queries {
+        display: none;
+    }
 }

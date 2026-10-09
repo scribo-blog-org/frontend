@@ -531,7 +531,8 @@
     }
 
     &_before {
-        background: var(--line-color);
+        background: var(--light-text-color);
+        opacity: 0.45;
     }
 }
 
@@ -619,4 +620,16 @@
 
 .analytics_error_count {
     font-weight: 600;
+}
+
+// Half-width blocks are too narrow for label, bar and note in one line, so the
+// bar drops under the label there.
+.analytics_grid .analytics_bars_wide .analytics_bars_row {
+    grid-template-columns: minmax(0, 1fr) max-content;
+    row-gap: 4px;
+}
+
+.analytics_grid .analytics_bars_wide .analytics_bars_track {
+    grid-column: 1 / -1;
+    grid-row: 2;
 }
