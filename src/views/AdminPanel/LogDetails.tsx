@@ -154,6 +154,20 @@ const LogDetails = ({
                         <ChevronDownIcon />
                     </button>
                     <span className="log_details_divider" />
+                    {details.requestId && setFilter ? (
+                        <button
+                            type="button"
+                            className="log_text_button"
+                            onClick={() =>
+                                setFilter({
+                                    type: 'request',
+                                    id: details.requestId,
+                                })
+                            }
+                        >
+                            All events of this request
+                        </button>
+                    ) : null}
                     <button
                         type="button"
                         className="log_text_button"
@@ -231,20 +245,6 @@ const LogDetails = ({
             </div>
 
             <div className="log_details_footer">
-                {details.requestId && setFilter ? (
-                    <button
-                        type="button"
-                        className="log_text_button"
-                        onClick={() =>
-                            setFilter({
-                                type: 'request',
-                                id: details.requestId,
-                            })
-                        }
-                    >
-                        All events of this request
-                    </button>
-                ) : null}
                 <button
                     type="button"
                     className="log_text_button"
