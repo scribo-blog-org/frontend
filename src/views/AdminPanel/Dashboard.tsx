@@ -721,17 +721,6 @@ const DashboardPage = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [data],
     );
-    const topErrors = useMemo(
-        () =>
-            (health.top_errors || []).map((item: any) => ({
-                key: `${item.method} ${item.path} ${item.error}`,
-                label: `${item.method ?? ''} ${(item.path ?? '').replace('/api', '')}`.trim(),
-                count: item.count,
-                valueLabel: `×${formatNumber(item.count)}`,
-                note: `${item.error} · last ${format_back(item.last_at)}`,
-            })),
-        [health],
-    );
     const slowQueries = useMemo(
         () =>
             (health.slow_queries || []).map((item: any) => ({
@@ -859,11 +848,59 @@ const DashboardPage = () => {
                                 hint="Server errors in the selected period"
                             >
                                 <section className="analytics_block app-transition">
-                                    <RankedBars
-                                        items={topErrors}
-                                        wideLabel
-                                        empty="No server errors in this period"
-                                    />
+                                    {health.top_errors?.length ? (
+                                        <ul className="analytics_health_list">
+                                            {health.top_errors.map(
+                                                (item: any) => (
+                                                    <li
+                                                        key={`${item.method} ${item.path} ${item.error}`}
+                                                        className="analytics_error_row"
+                                                    >
+                                                        <div className="analytics_error_main">
+                                                            <p
+                                                                className="analytics_error_route"
+                                                                title={`${item.method} ${item.path}`}
+                                                            >
+                                                                {item.method}{' '}
+                                                                {String(
+                                                                    item.path ??
+                                                                        '',
+                                                                ).replace(
+                                                                    '/api',
+                                                                    '',
+                                                                )}
+                                                            </p>
+                                                            <p
+                                                                className="analytics_error_text"
+                                                                title={
+                                                                    item.error
+                                                                }
+                                                            >
+                                                                {item.error}
+                                                            </p>
+                                                        </div>
+                                                        <div className="analytics_error_side">
+                                                            <span className="analytics_error_count">
+                                                                ×
+                                                                {formatNumber(
+                                                                    item.count,
+                                                                )}
+                                                            </span>
+                                                            <span className="analytics_health_time">
+                                                                {format_back(
+                                                                    item.last_at,
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </li>
+                                                ),
+                                            )}
+                                        </ul>
+                                    ) : (
+                                        <p className="analytics_empty">
+                                            No server errors in this period
+                                        </p>
+                                    )}
                                 </section>
                             </AnalyticsGroup>
                             <AnalyticsGroup
