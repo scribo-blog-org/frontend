@@ -28,11 +28,11 @@ import MessageIcon from '../../assets/svg/message.svg';
 import { startConversationWithUser } from '../Messages/index';
 
 import PeoplesIcon from '../../assets/svg/peoples.svg';
-import { Panel, PanelRow, Banner } from '../../components/Ui';
+import { Panel, Banner } from '../../components/Ui';
 import Sceleton from '../../components/Ui/Sceleton/Sceleton';
 
 import Posts from '../../components/Posts/index';
-import UserBadge from '../../components/UserBadge/index';
+import UserRow from '../../components/UserRow';
 import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
 import { imageSrc } from '../../utils/image';
 import FollowButton from '../../components/FollowButton';
@@ -226,16 +226,11 @@ const Profile = ({
             content: users.length ? (
                 <Panel>
                     {users.map((authorData: any) => (
-                        <PanelRow
+                        <UserRow
                             key={authorData._id}
                             className="profile_follow_row"
-                            title={<UserBadge data={authorData} />}
-                            description={
-                                <UserActivityStatus
-                                    user={authorData}
-                                    viewerId={profile?._id}
-                                />
-                            }
+                            user={authorData}
+                            viewerId={profile?._id}
                             trailing={
                                 profile &&
                                 profile._id === authorData._id ? null : (

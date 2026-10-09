@@ -10,10 +10,16 @@ import {
     updateGroupMemberRole,
 } from '../../api/chat.api';
 import { searchUsers } from '../../api/search.api';
-import UserActivityStatus from '../../components/UserActivityStatus';
 import UserBadge from '../../components/UserBadge';
+import UserRow from '../../components/UserRow';
 import ActionButton from '../../components/Ui/ActionButton';
-import { MetaGrid, Panel, PanelRow, Pill } from '../../components/Ui';
+import {
+    MetaGrid,
+    ModalFooter,
+    Panel,
+    PanelRow,
+    Pill,
+} from '../../components/Ui';
 import DropFile from '../../components/Ui/DropFile';
 import InputField from '../../components/Ui/InputField';
 import SharePostModal from '../../components/SharePostModal';
@@ -195,13 +201,6 @@ const imageDropProps = {
     fileTypes: 'SVG, PNG, JPEG, JPG, and others',
 };
 
-export const ModalFooter = ({ hint, children }: any) => (
-    <div className="messages_modal_footer">
-        <span className="messages_modal_footer_hint">{hint}</span>
-        <div className="messages_modal_footer_actions">{children}</div>
-    </div>
-);
-
 export const ModalAvatar = ({ src }: any) => (
     <img
         className="messages_modal_avatar"
@@ -363,10 +362,12 @@ export function CreateGroupForm({
                     />
                 </div>
                 {members.map((member) => (
-                    <PanelRow
+                    <UserRow
                         key={member._id}
                         className="messages_group_member"
-                        title={<UserBadge data={member} asLink={false} />}
+                        user={member}
+                        asLink={false}
+                        status={false}
                         trailing={
                             <button
                                 type="button"
@@ -659,17 +660,11 @@ export function GroupSettings({
                 {members.map((member: any) => {
                     const isSelf = String(member._id) === String(profileId);
                     return (
-                        <PanelRow
+                        <UserRow
                             key={member._id}
                             className="messages_group_member"
-                            title={<UserBadge data={member} />}
-                            description={
-                                <UserActivityStatus
-                                    user={member}
-                                    viewerId={profileId}
-                                    className="messages_activity_status"
-                                />
-                            }
+                            user={member}
+                            viewerId={profileId}
                             trailing={
                                 <>
                                     <Pill

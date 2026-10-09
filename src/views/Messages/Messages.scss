@@ -1741,46 +1741,6 @@
     object-fit: cover;
 }
 
-.messages_modal_footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 1;
-    background: var(--modal-window-body-background-color);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    margin: 0 -20px -20px;
-    padding: 12px 20px;
-    border-top: 1px solid var(--line-color);
-    font-size: var(--text-sm);
-    color: var(--light-text-color);
-
-    @include screen() {
-        flex-direction: column-reverse;
-        align-items: stretch;
-        margin: 0 -10px -10px;
-        padding: 12px 10px;
-    }
-
-    &_hint {
-        min-width: 0;
-    }
-
-    &_actions {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        margin-left: auto;
-
-        @include screen() {
-            margin-left: 0;
-            flex-direction: column-reverse;
-            align-items: stretch;
-        }
-    }
-}
-
 .messages_join_description {
     font-size: var(--text-md);
     line-height: 1.4;
@@ -1820,16 +1780,6 @@
 
 .messages_group_member {
     animation: messages_list_enter 260ms ease backwards;
-
-    // The status sits under the name, not under the avatar: badge padding,
-    // avatar and the gap before the name.
-    .panel_row_description {
-        padding-left: 34px;
-
-        @include screen() {
-            padding-left: 28px;
-        }
-    }
 
     .panel_row_trailing {
         display: flex;

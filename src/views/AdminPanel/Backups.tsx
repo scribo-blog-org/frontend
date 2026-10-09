@@ -32,6 +32,7 @@ import WarningIcon from '../../assets/svg/warning-icon.svg';
 import LoginIcon from '../../assets/svg/login.svg';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
 import ActionButton from '../../components/Ui/ActionButton';
+import ModalFooter from '../../components/Ui/ModalFooter';
 import DangerButton from '../../components/Ui/DangerButton/index';
 import InputField from '../../components/Ui/InputField/index';
 
@@ -243,23 +244,20 @@ const RestoreDialog = ({ item, info, onCancel, onStarted, showToast }: any) => {
                     onChange={(event: any) => setWord(event.target.value)}
                 />
             </div>
-            <div className="backup_restore_dialog_footer">
-                <span>This cannot be undone</span>
-                <div className="modal_window_body_footer_actions">
-                    <ActionButton disabled={isStarting} onClick={onCancel}>
-                        Cancel
-                    </ActionButton>
-                    <DangerButton
-                        onClick={start}
-                        isActive={true}
-                        isLoading={isStarting}
-                        disabled={word.trim().toUpperCase() !== CONFIRM_WORD}
-                    >
-                        <RestoreIcon />
-                        Restore
-                    </DangerButton>
-                </div>
-            </div>
+            <ModalFooter hint="This cannot be undone">
+                <ActionButton disabled={isStarting} onClick={onCancel}>
+                    Cancel
+                </ActionButton>
+                <DangerButton
+                    onClick={start}
+                    isActive={true}
+                    isLoading={isStarting}
+                    disabled={word.trim().toUpperCase() !== CONFIRM_WORD}
+                >
+                    <RestoreIcon />
+                    Restore
+                </DangerButton>
+            </ModalFooter>
         </>
     );
 };

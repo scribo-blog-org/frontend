@@ -37,6 +37,7 @@ import {
     format_time,
     is_same_calendar_day,
 } from '../../utils/format';
+import { ModalFooter } from '../../components/Ui';
 import UserBadge from '../../components/UserBadge';
 import UserActivityStatus from '../../components/UserActivityStatus';
 import {
@@ -87,7 +88,6 @@ import {
     GroupSettings,
     JoinGroupPrompt,
     ModalAvatar,
-    ModalFooter,
     TypingDots,
     groupListPatch,
     isGroupChat,
