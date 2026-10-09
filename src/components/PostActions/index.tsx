@@ -243,6 +243,8 @@ const PostActions = ({
 
         showModalWindow({
             title: 'Share',
+            subtitle: article.title,
+            icon: <ShareIcon />,
             size: 'small',
             content: (
                 <SharePostModal
