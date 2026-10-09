@@ -6,7 +6,15 @@ import { useNavigate } from '@/navigation';
 import { AppContext } from '@/providers/AppProviders';
 import { getConversations, sendMessage } from '../../api/chat.api';
 import Loading from '../Ui/Loading';
-import { Banner, Panel, PanelRow } from '../Ui';
+import {
+    ActionButton,
+    Banner,
+    InputField,
+    ModalFooter,
+    Panel,
+    PanelRow,
+    PrimaryButton,
+} from '../Ui';
 import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
 import { absoluteUrl } from '../../seo/site';
 import { imageSrc } from '../../utils/image';
@@ -158,33 +166,34 @@ const SharePostModal = ({
                 </button>
             ) : null}
 
-            <Panel title={linkLabel}>
-                <div className="panel_row share_post_modal_url">
-                    <label
-                        className="share_post_modal_sr"
-                        htmlFor="share_post_modal_link"
-                    >
-                        {linkLabel}
-                    </label>
-                    <input
+            <div className="share_post_modal_group">
+                <label
+                    className="share_post_modal_label"
+                    htmlFor="share_post_modal_link"
+                >
+                    {linkLabel}
+                </label>
+                <div className="share_post_modal_link_row">
+                    <InputField
                         id="share_post_modal_link"
-                        className="share_post_modal_link app-transition"
+                        className="share_post_modal_link"
                         type="text"
                         readOnly
+                        length={1000}
                         value={shareUrl}
                         onClick={(event: any) => event.target.select()}
                     />
+                    <PrimaryButton
+                        className="share_post_modal_copy"
+                        disabled={Boolean(sendingId)}
+                        isLoading={isCopying}
+                        onClick={handleCopy}
+                    >
+                        {isCopied ? <CheckIcon /> : <LinkIcon />}
+                        {isCopied ? 'Copied' : 'Copy'}
+                    </PrimaryButton>
                 </div>
-                <button
-                    type="button"
-                    className={`share_post_modal_copy app-transition${isCopied ? ' share_post_modal_copy_done' : ''}`}
-                    disabled={isCopying || Boolean(sendingId)}
-                    onClick={handleCopy}
-                >
-                    {isCopied ? <CheckIcon /> : <LinkIcon />}
-                    {isCopied ? 'Copied' : 'Copy link'}
-                </button>
-            </Panel>
+            </div>
 
             <Panel title="Send to chat">
                 {!profile ? (
@@ -192,14 +201,16 @@ const SharePostModal = ({
                         title="Log in to send"
                         description={loginHint}
                         trailing={
-                            <span className="share_post_modal_action">
+                            <ActionButton
+                                size="sm"
+                                onClick={() => {
+                                    requestCloseModal?.();
+                                    navigate('/auth/login');
+                                }}
+                            >
                                 Log in
-                            </span>
+                            </ActionButton>
                         }
-                        onClick={() => {
-                            requestCloseModal?.();
-                            navigate('/auth/login');
-                        }}
                     />
                 ) : isLoadingChats ? (
                     <div className="share_post_modal_loader panel_row">
@@ -217,8 +228,6 @@ const SharePostModal = ({
                                 <PanelRow
                                     key={item._id}
                                     className="share_post_modal_chat"
-                                    disabled={Boolean(sendingId)}
-                                    onClick={() => handleShareToChat(item._id)}
                                     icon={
                                         <img
                                             src={imageSrc(
@@ -243,11 +252,16 @@ const SharePostModal = ({
                                             : 'Direct message'
                                     }
                                     trailing={
-                                        <span
-                                            className={`share_post_modal_action${isSending ? ' share_post_modal_action_busy' : ''}`}
+                                        <ActionButton
+                                            size="sm"
+                                            isLoading={isSending}
+                                            disabled={Boolean(sendingId)}
+                                            onClick={() =>
+                                                handleShareToChat(item._id)
+                                            }
                                         >
-                                            {isSending ? 'Sending…' : 'Send'}
-                                        </span>
+                                            Send
+                                        </ActionButton>
                                     }
                                 />
                             );
@@ -265,15 +279,16 @@ const SharePostModal = ({
             </Panel>
 
             {nativeShareAvailable ? (
-                <Panel>
-                    <PanelRow
-                        icon={<ShareIcon />}
-                        title="Share via…"
-                        description="Use the share menu of your device"
-                        disabled={isSharing || Boolean(sendingId)}
+                <ModalFooter hint="Use the share menu of your device">
+                    <ActionButton
+                        isLoading={isSharing}
+                        disabled={Boolean(sendingId)}
                         onClick={handleNativeShare}
-                    />
-                </Panel>
+                    >
+                        <ShareIcon />
+                        Share via…
+                    </ActionButton>
+                </ModalFooter>
             ) : null}
         </div>
     );

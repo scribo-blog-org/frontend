@@ -39,13 +39,13 @@
     color: var(--light-text-color);
 }
 
-// The frame is a soft tray, and every row is its own rounded card inside it.
+// One plate for the whole group; the rows are separated by thin lines.
 .panel {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding: 4px;
-    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--line-color);
+    border-radius: 12px;
     background: var(--panel-frame-color);
 }
 
@@ -55,14 +55,18 @@
     gap: var(--space-3);
     width: 100%;
     min-width: 0;
-    padding: 12px 14px;
-    border: 1px solid var(--line-color);
-    border-radius: 12px;
-    background: var(--panel-row-color);
+    padding: 12px 16px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     font: inherit;
     color: var(--text-color);
     text-align: left;
     @include use-transition();
+
+    & + & {
+        border-top: 1px solid var(--line-color);
+    }
 
     &_action {
         cursor: pointer;
@@ -94,7 +98,7 @@
         width: 32px;
         height: 32px;
         border-radius: 10px;
-        background: var(--panel-frame-color);
+        background: var(--panel-row-color);
         color: var(--light-text-color);
 
         svg {

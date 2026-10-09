@@ -5,99 +5,52 @@
     flex-direction: column;
     gap: var(--space-5);
 
-    &_sr {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        white-space: nowrap;
+    &_group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
     }
 
-    &_url {
-        position: relative;
-        padding: 0 !important;
-        overflow: hidden;
+    &_label {
+        padding: 0 4px;
+        font-size: var(--text-sm);
+        font-weight: 500;
+        color: var(--light-text-color);
+    }
+
+    &_link_row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+
+        .input_field_wrapper {
+            flex: 1;
+            min-width: 0;
+        }
+
+        @include screen() {
+            flex-direction: column;
+            align-items: stretch;
+        }
     }
 
     &_link {
-        flex: 1;
-        min-width: 0;
-        height: var(--control-height);
-        padding: 0 14px;
-        border: 0;
-        border-radius: 12px;
-        background: transparent;
-        color: var(--light-text-color);
         font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         font-size: var(--text-sm);
         text-overflow: ellipsis;
-        user-select: all;
-        @include use-transition();
-
-        &:focus {
-            color: var(--text-color);
-        }
-
-        &:focus-visible {
-            outline: 2px solid var(--input-outline-active-color);
-            outline-offset: -2px;
-        }
     }
 
     &_copy {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--space-2);
-        width: 100%;
-        height: var(--control-height);
-        border: 1px solid var(--line-color);
-        border-radius: 12px;
-        background: var(--panel-row-color);
-        color: var(--text-color);
-        font: inherit;
-        font-size: var(--text-md);
-        font-weight: 500;
-        cursor: pointer;
-        @include use-transition();
+        flex-shrink: 0;
+        min-width: 104px;
 
         svg {
             width: 16px;
             height: 16px;
         }
-
-        @include hover() {
-            &:not(:disabled) {
-                background: var(--panel-row-hover-color);
-            }
-        }
-
-        &:focus-visible {
-            outline: 2px solid var(--input-outline-active-color);
-            outline-offset: 2px;
-        }
-
-        &:disabled {
-            opacity: 0.6;
-            cursor: default;
-        }
-
-        &_done {
-            color: var(--success-color);
-            border-color: rgb(from var(--success-color) r g b / 0.4);
-        }
-    }
-
-    &_chats {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
     }
 
     &_chat {
-        flex-shrink: 0;
-
         .panel_row_icon {
             width: 36px;
             height: 36px;
@@ -119,31 +72,12 @@
         }
     }
 
-    &_action {
-        padding: 4px 12px;
-        border: 1px solid var(--line-color);
-        border-radius: 999px;
-        background: var(--panel-frame-color);
-        font-size: var(--text-xs);
-        font-weight: 500;
-        color: var(--text-color);
-        white-space: nowrap;
-        @include use-transition();
-
-        &_busy {
-            color: var(--light-text-color);
-        }
-    }
-
-    .panel_row_action:hover
-        .share_post_modal_action:not(.share_post_modal_action_busy) {
-        background: var(--text-color);
-        border-color: var(--text-color);
-        color: var(--modal-window-body-background-color);
-    }
-
     &_loader {
         justify-content: center;
+    }
+
+    &_empty {
+        padding: var(--space-3);
     }
 
     &_back {
@@ -171,8 +105,7 @@
 
         &:disabled {
             opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none;
+            cursor: default;
         }
     }
 }
