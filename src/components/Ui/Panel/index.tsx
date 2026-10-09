@@ -6,12 +6,14 @@ export type PillTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 
 // A titled group: a small caption above a soft frame that holds the rows.
 // `flat` drops the frame and the row cards, for a group that already sits in a
-// bigger block: the rows are then only divided by thin lines.
+// bigger block: the rows are then only divided by thin lines. `bare` drops only
+// the frame and keeps the row cards, for a block that is already a frame.
 export const Panel = ({
     title,
     hint,
     action,
     flat = false,
+    bare = false,
     children,
     className,
 }: any) => (
@@ -29,7 +31,11 @@ export const Panel = ({
                 ) : null}
             </header>
         ) : null}
-        <div className={`panel${flat ? ' panel_flat' : ''}`}>{children}</div>
+        <div
+            className={`panel${flat ? ' panel_flat' : ''}${bare ? ' panel_bare' : ''}`}
+        >
+            {children}
+        </div>
     </section>
 );
 

@@ -609,176 +609,158 @@ const Settings = () => {
                                 }}
                             >
                                 <div className="settings_stack">
-                                    <div className="settings_card">
-                                        <div className="settings_group">
-                                            <p className="kicker">Account</p>
-                                            <div className="settings_avatar">
-                                                <DropFile
-                                                    value={fields.userAvatar}
-                                                    setValue={(file: any) =>
-                                                        setFields(
-                                                            (prev: any) => ({
-                                                                ...prev,
-                                                                userAvatar:
-                                                                    file,
-                                                            }),
-                                                        )
-                                                    }
-                                                    background={
-                                                        <AvatarIcon className="drop_file_info_avatar_icon app-transition" />
-                                                    }
-                                                    dropFileType={'image/*'}
-                                                    fileTypes={
-                                                        'SVG, PNG, JPEG, JPG, and others'
-                                                    }
-                                                    errors={errors?.userAvatar}
-                                                    addNewErrors={
-                                                        add_errors_to_image
-                                                    }
-                                                    clearErrors={
-                                                        clear_errors_from_image
-                                                    }
-                                                    onRemove={
-                                                        handleAvatarRemove
-                                                    }
-                                                    previewUrl={profile?.avatar}
-                                                    disabled={isLoading}
-                                                />
-                                            </div>
-                                            {profile?.email ? (
-                                                <Field title="Email">
-                                                    <InputField
-                                                        type="email"
-                                                        value={profile.email}
-                                                        confirmed={Boolean(
-                                                            profile.is_verified,
-                                                        )}
-                                                        onChange={() => {}}
-                                                        disabled={isLoading}
-                                                    />
-                                                </Field>
-                                            ) : null}
-                                            <Field
-                                                error={
-                                                    errors?.userNickName ?? null
+                                    <div className="settings_group">
+                                        <p className="kicker">Account</p>
+                                        <div className="settings_avatar">
+                                            <DropFile
+                                                value={fields.userAvatar}
+                                                setValue={(file: any) =>
+                                                    setFields((prev: any) => ({
+                                                        ...prev,
+                                                        userAvatar: file,
+                                                    }))
                                                 }
-                                                title={'Username'}
-                                            >
+                                                background={
+                                                    <AvatarIcon className="drop_file_info_avatar_icon app-transition" />
+                                                }
+                                                dropFileType={'image/*'}
+                                                fileTypes={
+                                                    'SVG, PNG, JPEG, JPG, and others'
+                                                }
+                                                errors={errors?.userAvatar}
+                                                addNewErrors={
+                                                    add_errors_to_image
+                                                }
+                                                clearErrors={
+                                                    clear_errors_from_image
+                                                }
+                                                onRemove={handleAvatarRemove}
+                                                previewUrl={profile?.avatar}
+                                                disabled={isLoading}
+                                            />
+                                        </div>
+                                        {profile?.email ? (
+                                            <Field title="Email">
                                                 <InputField
-                                                    className={`user_name`}
-                                                    type="text"
-                                                    onChange={(e: any) =>
-                                                        setFields({
-                                                            ...fields,
-                                                            userNickName:
-                                                                e.target.value,
-                                                        })
-                                                    }
-                                                    onFocus={() =>
-                                                        handleFocus(
-                                                            'userNickName',
-                                                        )
-                                                    }
-                                                    placeholder="User Name"
-                                                    value={fields?.userNickName}
-                                                    error={
-                                                        errors?.userNickName ??
-                                                        null
-                                                    }
-                                                    length={
-                                                        FIELD_LIMITS.nick.max
-                                                    }
+                                                    type="email"
+                                                    value={profile.email}
+                                                    confirmed={Boolean(
+                                                        profile.is_verified,
+                                                    )}
+                                                    onChange={() => {}}
                                                     disabled={isLoading}
                                                 />
                                             </Field>
-                                            <Field
+                                        ) : null}
+                                        <Field
+                                            error={errors?.userNickName ?? null}
+                                            title={'Username'}
+                                        >
+                                            <InputField
+                                                className={`user_name`}
+                                                type="text"
+                                                onChange={(e: any) =>
+                                                    setFields({
+                                                        ...fields,
+                                                        userNickName:
+                                                            e.target.value,
+                                                    })
+                                                }
+                                                onFocus={() =>
+                                                    handleFocus('userNickName')
+                                                }
+                                                placeholder="User Name"
+                                                value={fields?.userNickName}
+                                                error={
+                                                    errors?.userNickName ?? null
+                                                }
+                                                length={FIELD_LIMITS.nick.max}
+                                                disabled={isLoading}
+                                            />
+                                        </Field>
+                                        <Field
+                                            error={
+                                                errors?.userDescription ?? null
+                                            }
+                                            title={'Description'}
+                                        >
+                                            <InputField
+                                                className={`description`}
+                                                type="text"
+                                                isMultiline={true}
+                                                length={
+                                                    FIELD_LIMITS.description.max
+                                                }
+                                                rows={3}
+                                                onChange={(e: any) =>
+                                                    setFields({
+                                                        ...fields,
+                                                        userDescription:
+                                                            e.target.value,
+                                                    })
+                                                }
+                                                onFocus={() =>
+                                                    handleFocus(
+                                                        'userDescription',
+                                                    )
+                                                }
+                                                placeholder="Description of profile"
+                                                value={fields?.userDescription}
                                                 error={
                                                     errors?.userDescription ??
                                                     null
                                                 }
-                                                title={'Description'}
-                                            >
-                                                <InputField
-                                                    className={`description`}
-                                                    type="text"
-                                                    isMultiline={true}
-                                                    length={
-                                                        FIELD_LIMITS.description
-                                                            .max
+                                                disabled={isLoading}
+                                            />
+                                        </Field>
+                                    </div>
+                                    <Panel title="Privacy" flat>
+                                        <PanelRow
+                                            title="Show email"
+                                            description="The address will be visible on the profile page"
+                                            trailing={
+                                                <Toggle
+                                                    checked={
+                                                        fields.isEmailPublic
                                                     }
-                                                    rows={3}
-                                                    onChange={(e: any) =>
-                                                        setFields({
-                                                            ...fields,
-                                                            userDescription:
-                                                                e.target.value,
-                                                        })
-                                                    }
-                                                    onFocus={() =>
-                                                        handleFocus(
-                                                            'userDescription',
-                                                        )
-                                                    }
-                                                    placeholder="Description of profile"
-                                                    value={
-                                                        fields?.userDescription
-                                                    }
-                                                    error={
-                                                        errors?.userDescription ??
-                                                        null
+                                                    onChange={
+                                                        set_email_visibility
                                                     }
                                                     disabled={isLoading}
                                                 />
-                                            </Field>
-                                        </div>
-                                        <Panel title="Privacy" flat>
-                                            <PanelRow
-                                                title="Show email"
-                                                description="The address will be visible on the profile page"
-                                                trailing={
-                                                    <Toggle
-                                                        checked={
-                                                            fields.isEmailPublic
-                                                        }
-                                                        onChange={
-                                                            set_email_visibility
-                                                        }
-                                                        disabled={isLoading}
-                                                    />
-                                                }
-                                            />
-                                            <PanelRow
-                                                title="Public saved posts"
-                                                description="Visitors of the profile will see saved posts"
-                                                trailing={
-                                                    <Toggle
-                                                        checked={
-                                                            fields.isSavedPostsPublic
-                                                        }
-                                                        onChange={
-                                                            set_saved_posts_visibility
-                                                        }
-                                                        disabled={isLoading}
-                                                    />
-                                                }
-                                            />
-                                            <PanelRow
-                                                title="Show last activity"
-                                                description="The date and time will be visible on the profile page"
-                                                trailing={
-                                                    <Toggle
-                                                        checked={
-                                                            fields.isLastActivityPublic
-                                                        }
-                                                        onChange={
-                                                            set_last_activity_visibility
-                                                        }
-                                                        disabled={isLoading}
-                                                    />
-                                                }
-                                            />
-                                        </Panel>
-                                    </div>
+                                            }
+                                        />
+                                        <PanelRow
+                                            title="Public saved posts"
+                                            description="Visitors of the profile will see saved posts"
+                                            trailing={
+                                                <Toggle
+                                                    checked={
+                                                        fields.isSavedPostsPublic
+                                                    }
+                                                    onChange={
+                                                        set_saved_posts_visibility
+                                                    }
+                                                    disabled={isLoading}
+                                                />
+                                            }
+                                        />
+                                        <PanelRow
+                                            title="Show last activity"
+                                            description="The date and time will be visible on the profile page"
+                                            trailing={
+                                                <Toggle
+                                                    checked={
+                                                        fields.isLastActivityPublic
+                                                    }
+                                                    onChange={
+                                                        set_last_activity_visibility
+                                                    }
+                                                    disabled={isLoading}
+                                                />
+                                            }
+                                        />
+                                    </Panel>
                                     <div className="settings_panel_actions">
                                         <PrimaryButton
                                             type="submit"
@@ -797,7 +779,7 @@ const Settings = () => {
                         content: (
                             <div className="settings_panel">
                                 <div className="settings_stack">
-                                    <Panel title="Password">
+                                    <Panel bare>
                                         {changingPassword ? (
                                             <form
                                                 className="settings_password"
@@ -978,7 +960,7 @@ const Settings = () => {
                         content: (
                             <div className="settings_panel">
                                 <div className="settings_stack">
-                                    <Panel>
+                                    <Panel bare>
                                         <PanelRow
                                             icon={<NotificationIcon />}
                                             title="Push notifications"
@@ -1058,7 +1040,7 @@ const Settings = () => {
                                 <div className="settings_stack">
                                     {installMode === 'prompt' ||
                                     installMode === 'ios' ? (
-                                        <Panel>
+                                        <Panel bare>
                                             <PanelRow
                                                 title="Install the app"
                                                 description={
@@ -1091,7 +1073,7 @@ const Settings = () => {
                         content: (
                             <div className="settings_panel">
                                 <div className="settings_stack">
-                                    <Panel>
+                                    <Panel bare>
                                         <PanelRow
                                             icon={<MoonIcon />}
                                             title="Dark theme"
@@ -1113,7 +1095,7 @@ const Settings = () => {
                         content: (
                             <div className="settings_panel">
                                 <div className="settings_stack">
-                                    <Panel>
+                                    <Panel bare>
                                         {sessionsLoading ? (
                                             <p className="settings_sessions_empty">
                                                 Loading…
