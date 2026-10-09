@@ -23,6 +23,11 @@
         transition: opacity 300ms;
     }
 
+    .loader,
+    .loader-segment {
+        animation-play-state: paused;
+    }
+
     @include hover {
         background-color: var(--red-button-hover-color);
         border-color: var(--red-button-hover-color);
@@ -51,6 +56,11 @@
         color: var(--red-button-secondary-color);
     }
 
+    .loader,
+    .loader-segment {
+        animation-play-state: running;
+    }
+
     @include hover {
         color: transparent;
         background-color: var(--red-button-primary-color);
@@ -60,13 +70,13 @@
 
 .danger_button_disabled {
     cursor: not-allowed;
-    background-color: var(--red-button-primary-color);
-    border-color: var(--red-button-primary-color);
-    color: var(--red-button-secondary-color);
+    background-color: var(--red-button-disabled-background-color);
+    border-color: var(--red-button-disabled-background-color);
+    color: var(--red-button-disabled-color);
 
     @include hover {
-        background-color: var(--red-button-primary-color);
-        border-color: var(--red-button-primary-color);
-        color: var(--red-button-secondary-color);
+        background-color: var(--red-button-disabled-background-color);
+        border-color: var(--red-button-disabled-background-color);
+        color: var(--red-button-disabled-color);
     }
 }

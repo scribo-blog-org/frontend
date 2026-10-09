@@ -11,9 +11,8 @@ import ThreeDotsIcon from '../../assets/svg/three-dots.svg';
 import RedirectIcon from '../../assets/svg/redirect.svg';
 import VerifiedIcon from '../../assets/svg/verified.svg';
 
-import RoleBadge from '../../components/RoleBadge/index';
 import UserBadge from '../../components/UserBadge/index';
-import RelativeTime from '../../components/RelativeTime/index';
+import UserActivityStatus from '../../components/UserActivityStatus/index';
 import Tabs from '../../components/Ui/Tabs';
 import InputField from '../../components/Ui/InputField';
 import Loading from '../../components/Ui/Loading';
@@ -31,7 +30,6 @@ import {
 import './Users.scss';
 
 const PAGE_SIZE = 20;
-const ONLINE_WINDOW_MS = 5 * 60 * 1000;
 
 const SORTS = [
     { value: 'activity', label: 'Last active' },
@@ -78,6 +76,7 @@ const UsersPage = () => {
             limit: PAGE_SIZE,
             sort,
             search,
+            roles: 'user,author',
         });
         if (current !== requestId.current) {
             return;
@@ -106,15 +105,22 @@ const UsersPage = () => {
             ),
         );
 
+    // The change shows at once and is rolled back to the previous value if the
+    // server refuses.
     const changeRole = async (user: any, role: string) => {
+        const previous = user.role;
+        if (role === previous) {
+            return;
+        }
+        patchUser(user._id, { role });
         const result = await updateRole(user._id, role);
         if (result?.status) {
-            patchUser(user._id, { role });
             showToast({
                 type: 'success',
                 message: `${user.nick_name} is now ${roleLabel(role).toLowerCase()}`,
             });
         } else {
+            patchUser(user._id, { role: previous });
             showToast({
                 type: 'error',
                 message: result?.message || 'Could not change the role',
@@ -123,10 +129,11 @@ const UsersPage = () => {
     };
 
     const toggleVerified = async (user: any) => {
-        const next = !user.is_verified;
+        const previous = Boolean(user.is_verified);
+        const next = !previous;
+        patchUser(user._id, { is_verified: next });
         const result = await setVerified(user._id, next);
         if (result?.status) {
-            patchUser(user._id, { is_verified: next });
             showToast({
                 type: 'success',
                 message: next
@@ -134,6 +141,7 @@ const UsersPage = () => {
                     : `Verification removed from ${user.nick_name}`,
             });
         } else {
+            patchUser(user._id, { is_verified: previous });
             showToast({
                 type: 'error',
                 message: result?.message || 'Could not update verification',
@@ -184,10 +192,6 @@ const UsersPage = () => {
 
         return sections;
     };
-
-    const isOnline = (user: any) =>
-        Date.now() - new Date(user.last_activity_at).getTime() <
-        ONLINE_WINDOW_MS;
 
     return (
         <div className="admin_users">
@@ -252,55 +256,27 @@ const UsersPage = () => {
                                     >
                                         <div className="admin_users_item_user">
                                             <UserBadge data={user} />
-                                            <RoleBadge user={user} />
                                         </div>
                                         <div className="admin_users_item_activity">
-                                            {isOnline(user) ? (
-                                                <p className="admin_users_item_online">
-                                                    Online
-                                                </p>
-                                            ) : (
-                                                <Tooltip
-                                                    text={format_date_time(
-                                                        user.last_activity_at,
-                                                    )}
-                                                >
-                                                    <p>
-                                                        Active{' '}
-                                                        <RelativeTime
-                                                            date={
-                                                                user.last_activity_at
-                                                            }
-                                                            intervalMs={30000}
-                                                        />
-                                                    </p>
-                                                </Tooltip>
-                                            )}
-                                            <p className="admin_users_item_meta">
-                                                {formatNumber(user.posts_count)}{' '}
-                                                posts ·{' '}
-                                                {formatNumber(
-                                                    user.comments_count,
-                                                )}{' '}
-                                                comments ·{' '}
-                                                {formatNumber(
-                                                    user.followers_count,
-                                                )}{' '}
-                                                followers
-                                            </p>
-                                            <p className="admin_users_item_meta">
-                                                Joined{' '}
-                                                {format_date_time(
-                                                    user.created_date,
-                                                )}
-                                            </p>
+                                            <UserActivityStatus
+                                                user={{
+                                                    ...user,
+                                                    is_last_activity_public: true,
+                                                }}
+                                                viewerId={profile?._id}
+                                            />
                                         </div>
+                                        <p className="admin_users_item_registered">
+                                            {format_date_time(
+                                                user.created_date,
+                                            )}
+                                        </p>
                                         <div className="admin_users_item_actions">
                                             <Tooltip text="More actions">
                                                 <Popup
                                                     body={getPopupBody(user)}
                                                 >
-                                                    <ThreeDotsIcon className="app-transition" />
+                                                    <ThreeDotsIcon />
                                                 </Popup>
                                             </Tooltip>
                                         </div>

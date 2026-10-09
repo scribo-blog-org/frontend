@@ -103,6 +103,7 @@
 }
 
 .logs_empty {
+    animation: logs_fade_in 260ms ease backwards;
     padding: 24px;
     font-size: 14px;
     color: var(--light-text-color);
@@ -238,6 +239,7 @@
         width: 16px;
         height: 16px;
         color: var(--light-text-color);
+        transition: transform 0.25s ease;
         @include screen() {
             display: none;
         }
@@ -393,7 +395,9 @@
 }
 
 .log_item {
+    animation: logs_fade_in 260ms ease backwards;
     border-bottom: 1px solid var(--line-color);
+    @include use-transition();
 
     &:last-child {
         border-bottom: 0;
@@ -741,7 +745,9 @@
     padding: 3px 8px;
 }
 
-.logs_live_active {
+// Doubled with the button's own class so the accent wins whatever order the
+// stylesheets end up in.
+.action_button.logs_live_active {
     color: var(--accent-color);
     border-color: var(--accent-color);
 }
@@ -751,16 +757,348 @@
     padding: 0;
 }
 
-.logs_reload_busy {
-    pointer-events: none;
-
-    svg {
-        animation: logs_reload_spin 0.8s linear infinite;
+@keyframes logs_fade_in {
+    from {
+        opacity: 0;
     }
 }
 
-@keyframes logs_reload_spin {
-    to {
-        transform: rotate(360deg);
+@media (prefers-reduced-motion: reduce) {
+    .log_row_chevron {
+        transition: none;
+    }
+
+    .logs_empty,
+    .log_item {
+        animation: none;
+    }
+}
+
+.action_button.logs_filters_toggle {
+    display: none;
+    width: var(--button-height-lg);
+    padding: 0;
+    flex-shrink: 0;
+
+    @include screen() {
+        display: flex;
+    }
+
+    svg {
+        transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    &_open svg {
+        transform: rotate(180deg);
+    }
+}
+
+// Marks that a filter is active while the filters are folded away.
+.logs_filters_dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-color);
+}
+
+// Live and Reload sit beside the search on wide screens and move into the
+// folded block on a phone.
+.logs_toolbar_actions_wide {
+    @include screen() {
+        display: none;
+    }
+}
+
+.logs_toolbar_actions_folded {
+    display: none;
+
+    @include screen() {
+        display: flex;
+    }
+}
+
+.logs_toolbar_row_top {
+    @include screen() {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+// On a phone the secondary filters fold away behind the Filters button and
+// open with a height animation; on wide screens they are plain content.
+.logs_toolbar_filters {
+    @include screen() {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: 0fr;
+        min-width: 0;
+        margin-top: calc(var(--space-3) * -1);
+        visibility: hidden;
+        transition:
+            grid-template-rows 300ms cubic-bezier(0.16, 1, 0.3, 1),
+            margin-top 300ms cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0s linear 300ms;
+    }
+
+    &_inner {
+        @include screen() {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+            min-height: 0;
+            min-width: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 300ms ease;
+        }
+    }
+
+    &_open {
+        @include screen() {
+            grid-template-rows: 1fr;
+            margin-top: 0;
+            visibility: visible;
+            transition:
+                grid-template-rows 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                margin-top 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0s;
+        }
+
+        .logs_toolbar_filters_inner {
+            opacity: 1;
+        }
+    }
+
+    // Once fully open, lists that drop down from the filters must not be
+    // clipped by the folding block.
+    &_settled .logs_toolbar_filters_inner {
+        @include screen() {
+            overflow: visible;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .logs_toolbar_filters,
+    .logs_toolbar_filters_inner {
+        transition: none;
+    }
+}
+
+.log_repeats {
+    margin-left: 2px;
+}
+
+.log_timing {
+    --timing-color: var(--log-update-color);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 8px;
+    border: 1px solid rgb(from var(--timing-color) r g b / 0.4);
+    border-radius: 6px;
+    background: rgb(from var(--timing-color) r g b / 0.08);
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: nowrap;
+    cursor: default;
+    @include use-transition();
+
+    @include hover {
+        background: rgb(from var(--timing-color) r g b / 0.16);
+    }
+
+    &_error {
+        --timing-color: var(--log-error-color);
+    }
+
+    &_value {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        color: var(--timing-color);
+    }
+
+    &_bar {
+        display: inline-flex;
+        width: 44px;
+        height: 4px;
+        overflow: hidden;
+        border-radius: 2px;
+        background: var(--text-color);
+        opacity: 0.55;
+
+        &_db {
+            height: 100%;
+            background: var(--light-text-color);
+        }
+    }
+
+    &_queries {
+        color: var(--light-text-color);
+
+        &_many {
+            color: var(--timing-color);
+            font-weight: 600;
+        }
+    }
+}
+
+.log_timing_panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: 12px 14px;
+    border: 1px solid var(--line-color);
+    border-radius: 10px;
+    background: var(--input-background-color);
+
+    &_total {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        font-size: 13px;
+    }
+
+    &_label {
+        color: var(--light-text-color);
+    }
+
+    &_value {
+        font-size: 20px;
+        font-weight: 600;
+
+        &_warn {
+            color: var(--log-update-color);
+        }
+
+        &_error {
+            color: var(--log-error-color);
+        }
+    }
+}
+
+.log_timing_split {
+    display: flex;
+    gap: 3px;
+    height: 14px;
+}
+
+.log_timing_segment {
+    min-width: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    @include use-transition();
+
+    &_db {
+        background: var(--light-text-color);
+    }
+
+    &_app {
+        background: var(--text-color);
+    }
+
+    &_dim {
+        opacity: 0.3;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--input-outline-active-color);
+        outline-offset: 2px;
+    }
+}
+
+.log_timing_legend {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    &_item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 8px;
+        margin: 0 -8px;
+        border: 0;
+        border-radius: 6px;
+        background: none;
+        font-size: 13px;
+        text-align: left;
+        color: var(--text-color);
+        cursor: pointer;
+        @include use-transition();
+
+        &_active {
+            background: var(--section-item-hover-background-color);
+        }
+    }
+
+    &_label {
+        flex: 1;
+        color: var(--light-text-color);
+    }
+
+    &_value {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+    }
+
+    &_share {
+        display: inline-block;
+        min-width: 40px;
+        text-align: right;
+        color: var(--light-text-color);
+    }
+}
+
+.log_timing_dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+
+    &_db {
+        background: var(--light-text-color);
+    }
+
+    &_app {
+        background: var(--text-color);
+    }
+}
+
+.log_timing_hint {
+    margin: 0;
+    font-size: 12px;
+    color: var(--light-text-color);
+}
+
+.log_timing_warning {
+    margin: 0;
+    padding: 8px 10px;
+    border: 1px solid rgb(from var(--log-update-color) r g b / 0.4);
+    border-radius: 8px;
+    background: rgb(from var(--log-update-color) r g b / 0.08);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.log_timing_queries_row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line-color);
+    font-size: 13px;
+
+    .log_timing_legend_label {
+        flex: 1;
+    }
+
+    &_many {
+        color: var(--log-update-color);
+        font-weight: 600;
     }
 }

@@ -75,22 +75,33 @@ const GrantRole = ({ profile, onGranted }: any) => {
     }, []);
 
     const grant = async () => {
-        if (!picked || !role) {
+        if (!picked || !role || saving) {
             return;
         }
+        // The list and the form update at once; both go back if the server
+        // refuses.
+        const user = picked;
+        const chosen = role;
+        const undo = onGranted({ ...user, role: chosen });
+        setPicked(null);
+        setRole('');
+        setFound([]);
         setSaving(true);
-        const result = await updateRole(picked._id, role);
-        setSaving(false);
+        let result;
+        try {
+            result = await updateRole(user._id, chosen);
+        } finally {
+            setSaving(false);
+        }
         if (result?.status) {
             showToast({
                 type: 'success',
-                message: `${picked.nick_name} is now ${roleLabel(role).toLowerCase()}`,
+                message: `${user.nick_name} is now ${roleLabel(chosen).toLowerCase()}`,
             });
-            onGranted({ ...picked, role });
-            setPicked(null);
-            setRole('');
-            setFound([]);
         } else {
+            undo();
+            setPicked(user);
+            setRole(chosen);
             showToast({
                 type: 'error',
                 message: result?.message || 'Could not change the role',
@@ -123,6 +134,7 @@ const GrantRole = ({ profile, onGranted }: any) => {
                     placeholder="Search user"
                     emptyLabel="No users found"
                     loading={searching}
+                    disabled={saving}
                     minSearchLength={2}
                     onInput={search}
                     onSelect={(option: any) => {
@@ -145,6 +157,7 @@ const GrantRole = ({ profile, onGranted }: any) => {
                     value={role}
                     onChange={setRole}
                     placeholder="Role"
+                    disabled={saving}
                 />
                 <PrimaryButton
                     onClick={grant}
@@ -197,8 +210,32 @@ const AdminsPage = () => {
         if (role === user.role) {
             return;
         }
+        // Applied before the answer; a refused change puts the row back as it
+        // was, at the same position.
+        const index = staff.findIndex((item: any) => item._id === user._id);
+        setStaff((previous: any[]) =>
+            role === 'user'
+                ? previous.filter((item: any) => item._id !== user._id)
+                : previous.map((item: any) =>
+                      item._id === user._id ? { ...item, role } : item,
+                  ),
+        );
         const result = await updateRole(user._id, role);
         if (!result?.status) {
+            setStaff((previous: any[]) => {
+                if (previous.some((item: any) => item._id === user._id)) {
+                    return previous.map((item: any) =>
+                        item._id === user._id ? user : item,
+                    );
+                }
+                const next = [...previous];
+                next.splice(
+                    index < 0 ? next.length : Math.min(index, next.length),
+                    0,
+                    user,
+                );
+                return next;
+            });
             showToast({
                 type: 'error',
                 message: result?.message || 'Could not change the role',
@@ -212,20 +249,23 @@ const AdminsPage = () => {
                     ? `${user.nick_name} is a regular user again`
                     : `${user.nick_name} is now ${roleLabel(role).toLowerCase()}`,
         });
-        setStaff((previous: any[]) =>
-            role === 'user'
-                ? previous.filter((item: any) => item._id !== user._id)
-                : previous.map((item: any) =>
-                      item._id === user._id ? { ...item, role } : item,
-                  ),
-        );
     };
 
-    const handleGranted = (user: any) =>
+    // Returns a function that reverts the addition.
+    const handleGranted = (user: any) => {
+        const before = staff.find((item: any) => item._id === user._id);
         setStaff((previous: any[]) => [
             user,
             ...previous.filter((item: any) => item._id !== user._id),
         ]);
+        return () =>
+            setStaff((previous: any[]) => {
+                const rest = previous.filter(
+                    (item: any) => item._id !== user._id,
+                );
+                return before ? [before, ...rest] : rest;
+            });
+    };
 
     const manageable = canManageRoles(profile);
 

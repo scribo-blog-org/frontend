@@ -147,3 +147,12 @@
         font-size: 14px;
     }
 }
+
+.drop_file_disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+
+    * {
+        pointer-events: none;
+    }
+}

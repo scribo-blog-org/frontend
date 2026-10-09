@@ -69,9 +69,14 @@ const PromptContent = ({
     const [loading, setLoading] = useState(false);
 
     const accept = async () => {
+        if (loading) return;
         setLoading(true);
-        const result = await enablePush(userId);
-        setLoading(false);
+        let result: any;
+        try {
+            result = await enablePush(userId);
+        } finally {
+            setLoading(false);
+        }
 
         if (result === 'unavailable') {
             showToast({
@@ -103,7 +108,9 @@ const PromptContent = ({
                 Settings.
             </p>
             <div className="push_prompt_actions">
-                <CancelButton onClick={requestCloseModal}>Not now</CancelButton>
+                <CancelButton disabled={loading} onClick={requestCloseModal}>
+                    Not now
+                </CancelButton>
                 <PrimaryButton onClick={accept} isLoading={loading}>
                     Enable
                 </PrimaryButton>

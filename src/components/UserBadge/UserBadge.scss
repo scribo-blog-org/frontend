@@ -7,6 +7,7 @@
     padding: 6px;
     border-radius: 6px;
     cursor: pointer;
+    @include use-transition();
 
     .user_badge_info_name {
         @include use-transition();

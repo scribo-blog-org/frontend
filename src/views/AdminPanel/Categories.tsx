@@ -67,13 +67,15 @@ const DeleteCategoryActions = ({
     category,
     closeModal,
     requestCloseModal,
-    fetchCategories,
+    removeCategory,
     showToast,
 }: any) => {
-    const [isDeleting, setIsDeleting] = useState<any>(false);
-
     const requestDelete = async () => {
-        setIsDeleting(true);
+        // The row leaves the list as the dialog closes; it comes back at its
+        // place if the server refuses.
+        requestCloseModal();
+        const restore = removeCategory(category);
+
         try {
             const result = await deleteCategory(category._id);
 
@@ -82,29 +84,26 @@ const DeleteCategoryActions = ({
                     type: 'success',
                     message: 'Category deleted!',
                 });
-                requestCloseModal();
-                fetchCategories();
             } else {
+                restore();
                 showToast({
                     type: 'error',
                     message: result.message,
                 });
             }
-        } finally {
-            setIsDeleting(false);
+        } catch {
+            restore();
+            showToast({
+                type: 'error',
+                message: 'Could not delete the category',
+            });
         }
     };
 
     return (
         <div className="admin_panel_content_categories_page_modal_window_bottom">
-            <ActionButton disabled={isDeleting} onClick={closeModal}>
-                Cancel
-            </ActionButton>
-            <DangerButton
-                onClick={requestDelete}
-                isActive={true}
-                isLoading={isDeleting}
-            >
+            <ActionButton onClick={closeModal}>Cancel</ActionButton>
+            <DangerButton onClick={requestDelete} isActive={true}>
                 Delete
             </DangerButton>
         </div>
@@ -212,6 +211,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
     }, [category]);
 
     const doSave = async () => {
+        if (fetching) return;
         const name = (fields.categoryName || '').trim();
         if (!name || name.length > FIELD_LIMITS.categoryName.max) {
             setErrors((prev: any) => ({
@@ -223,12 +223,16 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
             return;
         }
         setFetching(true);
-        const result = await editCategory(category._id, {
-            categoryName: fields.categoryName,
-            categoryIcon: fields.categoryIcon,
-            categoryColor: fields.categoryColor,
-        });
-        setFetching(false);
+        let result;
+        try {
+            result = await editCategory(category._id, {
+                categoryName: fields.categoryName,
+                categoryIcon: fields.categoryIcon,
+                categoryColor: fields.categoryColor,
+            });
+        } finally {
+            setFetching(false);
+        }
         if (result.status) {
             const updatedCategory = {
                 ...result.data,
@@ -302,6 +306,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
                 <div className="admin_panel_content_edit_categories_page">
                     <SearchSelect
                         input_label={'Category'}
+                        disabled={fetching}
                         value={category?._id}
                         onSetValue={(value: any) => {
                             setCategory(
@@ -316,9 +321,12 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
                     {!category?.name && !category?.icon && !category?.color ? (
                         <></>
                     ) : (
-                        <div className="admin_panel_content_edit_categories_page_settings app-transition">
+                        <div
+                            className={`admin_panel_content_edit_categories_page_settings ${fetching ? 'admin_panel_content_edit_categories_page_settings_locked' : ''} app-transition`}
+                        >
                             <Field error={errors?.categoryName} title={'Name'}>
                                 <InputField
+                                    disabled={fetching}
                                     placeholder={'Enter a category name'}
                                     value={fields?.categoryName}
                                     error={errors?.categoryName}
@@ -339,7 +347,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
                                 />
                             </Field>
                             <div className="admin_panel_content_edit_categories_page_settings_color">
-                                <Popup body={popupColorBody}>
+                                <Popup body={fetching ? [] : popupColorBody}>
                                     <div
                                         className={`admin_panel_content_edit_categories_page_settings_color`}
                                     >
@@ -388,6 +396,7 @@ const EditCategoryPage = ({ active_category, setActivePage }: any) => {
                                                             : ''
                                                     }`}
                                                     onClick={() =>
+                                                        !fetching &&
                                                         setFields(
                                                             (prev: any) => ({
                                                                 ...prev,
@@ -463,6 +472,7 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
     ];
 
     const doCreate = async () => {
+        if (fetching) return;
         const name = (fields.categoryName || '').trim();
         if (!name || name.length > FIELD_LIMITS.categoryName.max) {
             setErrors((prev: any) => ({
@@ -475,9 +485,12 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
         }
         setFetching(true);
 
-        const result = await createCategory(fields);
-
-        setFetching(false);
+        let result;
+        try {
+            result = await createCategory(fields);
+        } finally {
+            setFetching(false);
+        }
 
         if (result.status) {
             showToast({
@@ -516,9 +529,12 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
             </ActionButton>
 
             <div className="admin_panel_content_edit_categories_page">
-                <div className="admin_panel_content_edit_categories_page_settings app-transition">
+                <div
+                    className={`admin_panel_content_edit_categories_page_settings ${fetching ? 'admin_panel_content_edit_categories_page_settings_locked' : ''} app-transition`}
+                >
                     <Field error={errors?.categoryName} title={'Name'}>
                         <InputField
+                            disabled={fetching}
                             placeholder="Enter a category name"
                             length={FIELD_LIMITS.categoryName.max}
                             onMouseDown={() =>
@@ -539,7 +555,7 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
                         />
                     </Field>
 
-                    <Popup body={popupColorBody}>
+                    <Popup body={fetching ? [] : popupColorBody}>
                         <div className="admin_panel_content_edit_categories_page_settings_color">
                             <Field
                                 error={errors?.categoryColor}
@@ -582,6 +598,7 @@ const CreateCategoryPage = ({ setActivePage }: any) => {
                                                 : ''
                                         }`}
                                         onClick={() =>
+                                            !fetching &&
                                             setFields((prev: any) => ({
                                                 ...prev,
                                                 categoryIcon:
@@ -630,6 +647,28 @@ const HomeCategoryPage = ({ setActivePage, setActiveCategory }: any) => {
         fetchCategories();
     }, []);
 
+    const removeCategory = (category: any) => {
+        let index = -1;
+        setCategories((prev: any[]) => {
+            index = prev.findIndex((item: any) => item._id === category._id);
+            return prev.filter((item: any) => item._id !== category._id);
+        });
+
+        return () =>
+            setCategories((prev: any[]) => {
+                if (prev.some((item: any) => item._id === category._id)) {
+                    return prev;
+                }
+                const next = [...prev];
+                next.splice(
+                    index < 0 ? next.length : Math.min(index, next.length),
+                    0,
+                    category,
+                );
+                return next;
+            });
+    };
+
     const appRoot =
         document.getElementById('app-root') ?? document.documentElement;
 
@@ -653,7 +692,7 @@ const HomeCategoryPage = ({ setActivePage, setActiveCategory }: any) => {
                     category={category}
                     closeModal={closeModal}
                     requestCloseModal={requestCloseModal}
-                    fetchCategories={fetchCategories}
+                    removeCategory={removeCategory}
                     showToast={showToast}
                 />
             </div>
@@ -686,11 +725,11 @@ const HomeCategoryPage = ({ setActivePage, setActiveCategory }: any) => {
                 {isLoading ? (
                     <Loading size={40} />
                 ) : (
-                    categories?.map((category: any, index: any) => {
+                    categories?.map((category: any) => {
                         return (
                             <div
                                 className="admin_panel_content_categories_page_category app-transition"
-                                key={index}
+                                key={category._id}
                             >
                                 <div className="admin_panel_content_categories_page_category_data">
                                     <Category

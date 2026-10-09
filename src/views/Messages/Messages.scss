@@ -11,6 +11,7 @@
 }
 
 .messages_layout {
+    position: relative;
     display: flex;
     align-items: stretch;
     flex: 1;
@@ -19,20 +20,71 @@
     width: 100%;
     overflow: hidden;
 
+    // On a phone the chat is a sheet over the list: it slides in from the
+    // right while the list stays underneath, shifted back a little.
     &_chat {
         .messages_sidebar {
             @include screen() {
-                display: none;
+                transform: translateX(-24%);
+                opacity: 0.5;
+                pointer-events: none;
             }
         }
     }
 }
 
-.messages_layout:not(.messages_layout_chat) {
-    @include screen() {
-        .messages_chat {
-            display: none;
-        }
+@include screen() {
+    .messages_layout .messages_chat {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background: var(--main-background);
+        transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .messages_layout:not(.messages_layout_chat) .messages_chat {
+        transform: translateX(100%);
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+            transform 340ms cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0s linear 340ms;
+    }
+
+    .messages_layout_leaving .messages_chat {
+        transform: translateX(100%);
+    }
+
+    .messages_layout_leaving .messages_sidebar {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+// On a wide screen the chat pane slides in from the right edge when a chat is
+// opened, and back out the same way.
+@media screen and (min-width: 769px) {
+    .messages_layout_chat .messages_chat {
+        animation: messages_chat_in 340ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .messages_layout_leaving .messages_chat {
+        transform: translateX(100%);
+        transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+}
+
+@keyframes messages_chat_in {
+    from {
+        transform: translateX(100%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .messages_layout .messages_chat,
+    .messages_layout .messages_sidebar {
+        animation: none;
+        transition: none;
     }
 }
 
@@ -92,6 +144,9 @@
     @include use-transition();
 
     @include screen() {
+        transition:
+            transform 340ms cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 340ms ease;
         flex-basis: 100%;
         width: 100%;
         min-width: 0;
@@ -137,6 +192,7 @@
 
     > li {
         width: 100%;
+        animation: messages_list_enter 260ms ease backwards;
     }
 }
 
@@ -266,6 +322,7 @@
 }
 
 .messages_conversation_unread {
+    animation: messages_unread_pop 220ms ease backwards;
     min-width: 20px;
     height: 20px;
     padding: 0 6px;
@@ -1376,6 +1433,7 @@
 
 .messages_empty_state,
 .messages_empty_hint {
+    animation: messages_list_enter 260ms ease backwards;
     color: var(--light-text-color);
     font-size: 14px;
 }
@@ -1780,6 +1838,12 @@
         color: var(--text-color);
         background: transparent;
     }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
 }
 
 .messages_group_members_head {
@@ -1839,6 +1903,7 @@
 }
 
 .messages_group_search_item {
+    @include use-transition();
     width: 100%;
     border: 0;
     background: transparent;
@@ -1853,6 +1918,7 @@
 }
 
 .messages_group_member {
+    animation: messages_list_enter 260ms ease backwards;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1894,6 +1960,12 @@
     @include hover {
         background: var(--section-item-hover-background-color);
     }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
 }
 
 .messages_group_member_actions {
@@ -1910,10 +1982,39 @@
     cursor: pointer;
     font-size: 12px;
     padding: 0;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 }
 
 .messages_group_role {
     font-size: 12px;
     color: var(--light-text-color);
     flex-shrink: 0;
+}
+
+@keyframes messages_list_enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@keyframes messages_unread_pop {
+    from {
+        opacity: 0;
+        transform: scale(0.6);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .messages_conversation_list > li,
+    .messages_conversation_unread,
+    .messages_empty_state,
+    .messages_empty_hint,
+    .messages_group_member {
+        animation: none;
+    }
 }

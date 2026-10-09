@@ -234,3 +234,38 @@ describe('describeDetails', () => {
         expect(describeDetails({ type: 'x' }).facts).toEqual([]);
     });
 });
+
+describe('describeDetails timing', () => {
+    it('reads the split of a slow request and its request id', () => {
+        const details = describeDetails({
+            type: 'slow_request',
+            data: {
+                route: 'GET /api/posts',
+                total_ms: 2400,
+                db_ms: 1800,
+                db_queries: 42,
+                request: { id: 'ab12cd', method: 'GET', path: '/api/posts' },
+            },
+        });
+        expect(details.timing).toEqual({ total: 2400, db: 1800, queries: 42 });
+        expect(details.requestId).toBe('ab12cd');
+    });
+
+    it('has no timing for events without a measured request', () => {
+        const details = describeDetails({ type: 'login', data: {} });
+        expect(details.timing).toBeNull();
+        expect(details.requestId).toBeNull();
+    });
+
+    it('explains why a sign-in failed', () => {
+        const details = describeDetails({
+            type: 'login_failed',
+            data: { reason: 'bad_password', method: 'password', repeats: 3 },
+        });
+        const rows = Object.fromEntries(
+            details.facts.map((row: any) => [row.label, row.value]),
+        );
+        expect(rows['Reason']).toBe('Wrong password');
+        expect(rows['Similar events skipped']).toBe('3');
+    });
+});

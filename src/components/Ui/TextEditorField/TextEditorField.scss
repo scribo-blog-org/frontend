@@ -158,3 +158,12 @@
 .text_editor_italic {
     font-style: italic;
 }
+
+.text_editor_disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+
+    > * {
+        pointer-events: none;
+    }
+}

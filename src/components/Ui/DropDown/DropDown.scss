@@ -41,6 +41,12 @@
         }
     }
 
+    &_disabled &_select {
+        cursor: not-allowed;
+        color: var(--light-text-color);
+        opacity: 0.55;
+    }
+
     &_custom {
         display: flex;
         flex: 1;

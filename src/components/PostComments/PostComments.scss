@@ -57,6 +57,10 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
+            animation: comment_enter 240ms ease backwards;
+            transition:
+                opacity 220ms ease,
+                transform 220ms ease;
 
             @include screen() {
                 padding-bottom: 0;
@@ -202,6 +206,12 @@
             }
         }
 
+        .comment_leaving {
+            opacity: 0;
+            transform: translateX(-8px);
+            pointer-events: none;
+        }
+
         .comment_root_line {
             margin-top: 12px;
             padding-top: 16px;
@@ -221,5 +231,19 @@
     svg {
         width: 18px;
         height: 18px;
+    }
+}
+
+@keyframes comment_enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .post_comments_list .comment {
+        animation: none;
+        transition: none;
     }
 }

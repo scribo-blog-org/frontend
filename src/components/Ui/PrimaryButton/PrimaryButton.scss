@@ -22,6 +22,13 @@
         transition: opacity 300ms;
     }
 
+    // The loader is always mounted so it can fade in; it only needs to spin
+    // while it is shown.
+    .loader,
+    .loader-segment {
+        animation-play-state: paused;
+    }
+
     @include hover {
         background-color: var(--submit-button-primary-hover-color);
     }
@@ -38,6 +45,11 @@
         .loader {
             opacity: 1;
             color: var(--submit-button-primary-color);
+        }
+
+        .loader,
+        .loader-segment {
+            animation-play-state: running;
         }
 
         @include hover {

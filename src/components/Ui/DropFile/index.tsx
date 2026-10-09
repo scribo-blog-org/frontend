@@ -24,6 +24,7 @@ const DropFile = ({
     maxSizeBytes = 4 * 1024 * 1024,
     typeError = 'Incorrect type of file!',
     sizeError = 'Max size of image must be 4 mb!',
+    disabled = false,
 }: any) => {
     const setFile = onChange ?? setValue;
     const [preview, setPreview] = useState<any>(null);
@@ -32,6 +33,8 @@ const DropFile = ({
     const fileRef = useRef<any>(null);
     const inputRef = useRef<any>(null);
     const lastPreviewUrlRef = useRef(previewUrl);
+    const disabledRef = useRef(disabled);
+    disabledRef.current = disabled;
 
     useEffect(() => {
         if (lastPreviewUrlRef.current !== previewUrl) {
@@ -119,7 +122,8 @@ const DropFile = ({
             e.stopPropagation();
             setIsDragged(false);
 
-            if (e.dataTransfer.files.length > 0) {
+            // A form that is being submitted must not take a new file.
+            if (!disabledRef.current && e.dataTransfer.files.length > 0) {
                 setFile(e.dataTransfer.files[0]);
             }
         };
@@ -141,7 +145,7 @@ const DropFile = ({
         <>
             <div
                 ref={fileRef}
-                className={`drop_file app-transition${isDragged ? ' drop_file_dragged' : ''} ${
+                className={`drop_file app-transition${isDragged ? ' drop_file_dragged' : ''}${disabled ? ' drop_file_disabled' : ''} ${
                     errors ? 'drop_file_incorrect_field' : ''
                 }`}
             >
@@ -157,6 +161,8 @@ const DropFile = ({
                                       : 'Selected file'}
                             </p>
                             <button
+                                type="button"
+                                disabled={disabled}
                                 className="remove_image_button"
                                 onClick={(e: any) => {
                                     e.preventDefault();
@@ -195,6 +201,7 @@ const DropFile = ({
                             type="file"
                             accept={dropFileType}
                             onChange={setFileHandler}
+                            disabled={disabled}
                             ref={inputRef}
                         />
                     </>

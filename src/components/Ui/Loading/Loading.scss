@@ -7,31 +7,39 @@
     color: var(--loader-color);
 }
 
-.loader-segment {
-    position: absolute;
-    top: 50%;
-    left: 50%;
+.loader_ring {
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, transparent, currentColor);
+    mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - var(--ring-width)),
+        #000 calc(100% - var(--ring-width) + 0.5px)
+    );
+    animation: loader_ring_spin 0.9s linear infinite;
 
-    width: 6%;
-    height: 22%;
-
-    background: currentColor;
-    border-radius: 999px;
-
-    transform: translate(-50%, -50%)
-        rotate(calc(-360deg / var(--segments) * var(--i))) translateY(-140%);
-
-    opacity: 0.2;
-
-    animation: fade 0.8s linear infinite;
-    animation-delay: calc(-0.8s / var(--segments) * var(--i));
+    // The gradient ends in a flat edge; this dot rounds off the solid end.
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: var(--ring-width);
+        height: var(--ring-width);
+        border-radius: 50%;
+        background: currentColor;
+        transform: translateX(-50%);
+    }
 }
 
-@keyframes fade {
-    0% {
-        opacity: 1;
+@keyframes loader_ring_spin {
+    to {
+        transform: rotate(360deg);
     }
-    100% {
-        opacity: 0.2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loader_ring {
+        animation-duration: 2.4s;
     }
 }

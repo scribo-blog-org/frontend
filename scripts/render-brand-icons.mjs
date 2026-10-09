@@ -30,6 +30,18 @@ function squareIcon(markInner) {
 `;
 }
 
+// The home screen masks the icon to a rounded square, so the mark gets a safe
+// margin instead of the near full-bleed size used for the favicon.
+function paddedIcon(markInner) {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <svg x="96" y="128" width="320" height="256" viewBox="0 0 135 108" fill="${INK}">
+    ${markInner}
+  </svg>
+</svg>
+`;
+}
+
 function socialCard(wordmarkInner) {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
@@ -64,7 +76,7 @@ await writeFile(path.join(publicDir, 'logo-512.png'), png(iconSvg, 512));
 await writeFile(path.join(publicDir, 'logo-192.png'), png(iconSvg, 192));
 await writeFile(
     path.join(publicDir, 'apple-touch-icon.png'),
-    png(iconSvg, 180, BG),
+    png(paddedIcon(mark), 180, BG),
 );
 await writeFile(path.join(publicDir, 'og.png'), png(ogSvg, 1200, BG));
 

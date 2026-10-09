@@ -136,6 +136,9 @@ const EditPost = () => {
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
+        if (isLoading) {
+            return;
+        }
         const next: any = {};
         const title = (fields.postTitle || '').trim();
         if (title.length < FIELD_LIMITS.postTitle.min) {
@@ -153,8 +156,12 @@ const EditPost = () => {
             return;
         }
         setIsLoading(true);
-        const result = await create_post();
-        setIsLoading(false);
+        let result;
+        try {
+            result = await create_post();
+        } finally {
+            setIsLoading(false);
+        }
         setCreateResult(result);
     };
 
@@ -229,6 +236,7 @@ const EditPost = () => {
                     onFocus={() => handleFocus('postTitle')}
                     length={FIELD_LIMITS.postTitle.max}
                     error={errors?.postTitle}
+                    disabled={isLoading}
                 />
             </Field>
 
@@ -244,6 +252,7 @@ const EditPost = () => {
                     onFocus={() => handleFocus('categoryId')}
                     error={errors?.categoryId}
                     options={allCategories}
+                    disabled={isLoading}
                 />
             </Field>
 
@@ -261,6 +270,7 @@ const EditPost = () => {
                 addNewErrors={add_errors_to_image}
                 clearErrors={clear_errors_from_image}
                 onRemove={handleClick}
+                disabled={isLoading}
                 previewUrl={fields.featuredImage}
             />
 
@@ -275,6 +285,7 @@ const EditPost = () => {
                         }))
                     }
                     error={errors?.postContent}
+                    disabled={isLoading}
                 />
             </Field>
 

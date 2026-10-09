@@ -34,6 +34,7 @@ const DeletePostActions = ({
     const [isDeleting, setIsDeleting] = useState<any>(false);
 
     const handleDelete = async () => {
+        if (isDeleting) return;
         setIsDeleting(true);
         try {
             const result = await deletePost(post._id);

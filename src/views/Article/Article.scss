@@ -1,6 +1,8 @@
 @use '../../styles/helpers.scss' as *;
 
 .article {
+    animation: article_enter 260ms ease backwards;
+
     &_title {
         font-size: 36px;
         line-height: 1.2;
@@ -100,5 +102,18 @@
             line-height: 1.4;
             margin-top: 16px;
         }
+    }
+}
+
+@keyframes article_enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .article {
+        animation: none;
     }
 }

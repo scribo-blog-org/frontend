@@ -1,10 +1,10 @@
 'use client';
 
-import { useContext, useState } from 'react';
+import { useContext, useRef } from 'react';
 import { AppContext } from '@/providers/AppProviders';
 
 import { follow } from '../../api/users.api';
-import { hasId, sameId } from '../../utils/ids';
+import { hasId, sameId, setIdPresent } from '../../utils/ids';
 
 import './FollowButton.scss';
 
@@ -15,78 +15,100 @@ const FollowButton = ({
     authorId,
     className,
     size = 'md',
+    onOptimisticChange,
 }: any) => {
-    const { profile, showToast } = useContext(AppContext);
-    const [isLoading, setIsLoading] = useState<any>(false);
+    const { profile, setProfile, showToast } = useContext(AppContext);
+    const pendingRef = useRef(false);
 
-    const followUser = async () => {
-        setIsLoading(true);
-        try {
-            const result = await follow({ method: 'POST', user_id: authorId });
+    const isFollowing = Boolean(
+        profile?.follows?.some((item: any) => hasId([item], authorId)),
+    );
 
-            if (result.status === true) {
-                await setNewData(result.data);
-                showToast({
-                    message: `You followed ${result.data.followed.nick_name}!`,
-                    type: 'success',
-                });
-            } else {
-                if (result.statusCode === 401) {
-                    showToast({
-                        type: 'warning',
-                        message: 'Log in to follow!',
-                    });
-                }
-            }
-        } finally {
-            setIsLoading(false);
+    // The button flips immediately and is restored if the server rejects the
+    // change, so a slow request never leaves the UI waiting.
+    const toggleFollow = async () => {
+        if (pendingRef.current) return;
+        pendingRef.current = true;
+        const willFollow = !isFollowing;
+        const canPredict = Boolean(profile);
+
+        if (canPredict) {
+            setProfile((prev: any) =>
+                prev
+                    ? {
+                          ...prev,
+                          follows: setIdPresent(
+                              prev.follows,
+                              authorId,
+                              willFollow,
+                          ),
+                      }
+                    : prev,
+            );
+            onOptimisticChange?.(willFollow);
         }
-    };
 
-    const unfollowUser = async () => {
-        setIsLoading(true);
+        const rollback = () => {
+            if (!canPredict) return;
+            setProfile((prev: any) =>
+                prev
+                    ? {
+                          ...prev,
+                          follows: setIdPresent(
+                              prev.follows,
+                              authorId,
+                              !willFollow,
+                          ),
+                      }
+                    : prev,
+            );
+            onOptimisticChange?.(!willFollow);
+        };
+
         try {
             const result = await follow({
-                method: 'DELETE',
+                method: willFollow ? 'POST' : 'DELETE',
                 user_id: authorId,
             });
 
-            if (result.status === true) {
+            if (result?.status === true) {
                 await setNewData(result.data);
                 showToast({
-                    message: `You unfollowed ${result.data.followed.nick_name}!`,
+                    message: `You ${willFollow ? 'followed' : 'unfollowed'} ${result.data.followed.nick_name}!`,
                     type: 'success',
                 });
             } else {
-                if (result.statusCode === 401) {
-                    showToast({
-                        type: 'warning',
-                        message: 'Log in to unfollow!',
-                    });
-                }
+                rollback();
+                showToast(
+                    result?.statusCode === 401
+                        ? {
+                              type: 'warning',
+                              message: `Log in to ${willFollow ? 'follow' : 'unfollow'}!`,
+                          }
+                        : {
+                              type: 'error',
+                              message: `Could not ${willFollow ? 'follow' : 'unfollow'}. Try again.`,
+                          },
+                );
             }
+        } catch {
+            rollback();
+            showToast({
+                type: 'error',
+                message: `Could not ${willFollow ? 'follow' : 'unfollow'}. Try again.`,
+            });
         } finally {
-            setIsLoading(false);
+            pendingRef.current = false;
         }
     };
 
-    return profile?.follows?.some((item: any) => hasId([item], authorId)) ? (
+    return (
         <ActionButton
-            isLoading={isLoading}
             size={size}
-            onClick={() => unfollowUser()}
+            onClick={toggleFollow}
             className={`follow_button app-transition ${className ?? ''} ${sameId(profile?._id, authorId) ? 'non_visible' : ''}`}
         >
-            Unfollow
-        </ActionButton>
-    ) : (
-        <ActionButton
-            isLoading={isLoading}
-            size={size}
-            onClick={() => followUser()}
-            className={`follow_button app-transition ${className ?? ''} ${sameId(profile?._id, authorId) ? 'non_visible' : ''}`}
-        >
-            Follow
+            {isFollowing ? 'Unfollow' : 'Follow'}
         </ActionButton>
     );
 };

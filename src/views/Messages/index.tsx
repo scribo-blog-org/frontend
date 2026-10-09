@@ -320,7 +320,7 @@ const DeleteChatModalActions = ({
                 type="button"
                 isActive
                 isLoading={isDeleting}
-                disabled={disabled || isDeleting}
+                disabled={disabled}
                 onClick={handleDelete}
                 className="modal_delete_post_content_button"
             >
@@ -404,6 +404,9 @@ const MessagesPage = () => {
         useContext(AppContext);
 
     const [conversations, setConversations] = useState<any[]>([]);
+    // Set while the chat slides out after Back, before the route changes.
+    const [isLeavingChat, setIsLeavingChat] = useState<any>(false);
+    const leaveTimer = useRef<any>(0);
     const [activeConversation, setActiveConversation] = useState<any>(null);
     const [messages, setMessages] = useState<any[]>([]);
     const [draft, setDraft] = useState<any>('');
@@ -412,6 +415,7 @@ const MessagesPage = () => {
     const [isListLoading, setIsListLoading] = useState<any>(true);
     const [isChatLoading, setIsChatLoading] = useState<any>(false);
     const [isSending, setIsSending] = useState<any>(false);
+    const [startingChatId, setStartingChatId] = useState<any>(null);
     const [messageMenu, setMessageMenu] = useState<any>(null);
     const messageMenuRef = useRef<any>(null);
     messageMenuRef.current = messageMenu;
@@ -2101,11 +2105,46 @@ const MessagesPage = () => {
 
         try {
             if (editingMessage) {
+                // The text changes in the thread right away and goes back to the
+                // original, with the draft restored, if the server refuses.
+                const original = editingMessage;
+                setMessages((current: any) =>
+                    current.map((item: any) =>
+                        item._id === original._id
+                            ? {
+                                  ...item,
+                                  text,
+                                  edited_at:
+                                      item.edited_at ||
+                                      new Date().toISOString(),
+                              }
+                            : item,
+                    ),
+                );
+                setEditingMessage(null);
+                setDraft('');
                 setIsSending(true);
-                const result = await editMessage(editingMessage._id, { text });
-                setIsSending(false);
+                let result;
+                try {
+                    result = await editMessage(original._id, { text });
+                } finally {
+                    setIsSending(false);
+                }
 
                 if (!result?.status) {
+                    setMessages((current: any) =>
+                        current.map((item: any) =>
+                            item._id === original._id
+                                ? {
+                                      ...item,
+                                      text: original.text,
+                                      edited_at: original.edited_at ?? null,
+                                  }
+                                : item,
+                        ),
+                    );
+                    setEditingMessage(original);
+                    setDraft(text);
                     showToast?.({
                         type: 'error',
                         message:
@@ -2115,8 +2154,6 @@ const MessagesPage = () => {
                 }
 
                 upsertMessage(result.data);
-                setEditingMessage(null);
-                setDraft('');
                 setConversations((current: any) => {
                     const existing = current.find(
                         (item: any) => item._id === conversationId,
@@ -2171,12 +2208,15 @@ const MessagesPage = () => {
             setIsSending(true);
             pinMessagesToBottom();
 
-            const result = await sendMessage(conversationId, {
-                text,
-                replyTo: replyTo?._id,
-            });
-
-            setIsSending(false);
+            let result;
+            try {
+                result = await sendMessage(conversationId, {
+                    text,
+                    replyTo: replyTo?._id,
+                });
+            } finally {
+                setIsSending(false);
+            }
 
             if (!result?.status) {
                 setMessages((current: any) =>
@@ -2371,17 +2411,62 @@ const MessagesPage = () => {
 
     beginMessageLeaveRef.current = beginMessageLeave;
 
+    // Puts messages back after a refused delete: they were already animating
+    // out, so cancel that and re-insert whatever has been removed meanwhile,
+    // in time order.
+    const restoreMessages = (restored: any[]) => {
+        const ids = restored.map((item: any) => String(item._id));
+
+        ids.forEach((id: any) => {
+            deletedMessageIdsRef.current.delete(id);
+            leavingIdsRef.current.delete(id);
+        });
+        setLeavingHeights((current: any) => {
+            if (!ids.some((id: any) => id in current)) {
+                return current;
+            }
+
+            const next = { ...current };
+            ids.forEach((id: any) => delete next[id]);
+            return next;
+        });
+        setMessages((current: any) => {
+            const next = [...current];
+
+            restored.forEach((message: any) => {
+                if (next.some((item: any) => item._id === message._id)) {
+                    return;
+                }
+
+                const at = new Date(message.created_at).getTime();
+                const index = next.findIndex(
+                    (item: any) => new Date(item.created_at).getTime() > at,
+                );
+                next.splice(index === -1 ? next.length : index, 0, message);
+            });
+
+            return next;
+        });
+    };
+
+    // The message starts leaving at once; a failed request brings it back.
     const handleDelete = async (messageId: any) => {
+        const message = messages.find(
+            (item: any) => String(item._id) === String(messageId),
+        );
+
+        beginMessageLeave(messageId);
+
         const result = await deleteMessage(messageId);
         if (!result?.status) {
+            if (message) {
+                restoreMessages([message]);
+            }
             showToast?.({
                 type: 'error',
                 message: result?.message || 'Could not delete the message',
             });
-            return;
         }
-
-        beginMessageLeave(messageId);
     };
 
     const copyText = async (text: any) => {
@@ -2455,20 +2540,28 @@ const MessagesPage = () => {
             return;
         }
 
+        const removed = messages.filter((item: any) =>
+            ids.includes(String(item._id)),
+        );
+
+        ids.forEach((id: any) => beginMessageLeave(id));
+        clearSelection();
+
         setIsDeletingSelection(true);
-        const result = await deleteMessages(ids);
-        setIsDeletingSelection(false);
+        let result;
+        try {
+            result = await deleteMessages(ids);
+        } finally {
+            setIsDeletingSelection(false);
+        }
 
         if (!result?.status) {
+            restoreMessages(removed);
             showToast?.({
                 type: 'error',
                 message: result?.message || 'Could not delete the messages',
             });
-            return;
         }
-
-        ids.forEach((id: any) => beginMessageLeave(id));
-        clearSelection();
     };
 
     const messageActionHandlers = {
@@ -2552,8 +2645,17 @@ const MessagesPage = () => {
     }, [peopleNeedle]);
 
     const startChatWith = async (userId: any) => {
-        await startConversationWithUser(userId, navigate, showToast);
-        setConversationFilter('');
+        if (startingChatId) {
+            return;
+        }
+
+        setStartingChatId(userId);
+        try {
+            await startConversationWithUser(userId, navigate, showToast);
+            setConversationFilter('');
+        } finally {
+            setStartingChatId(null);
+        }
     };
 
     const peopleToStart = useMemo(() => {
@@ -2883,6 +2985,30 @@ const MessagesPage = () => {
         isChatLoading,
     ]);
 
+    useEffect(() => {
+        if (!conversationId) {
+            window.clearTimeout(leaveTimer.current);
+            setIsLeavingChat(false);
+        }
+    }, [conversationId]);
+
+    useEffect(() => () => window.clearTimeout(leaveTimer.current), []);
+
+    // The chat slides out first; the route changes once it is off screen.
+    const closeChat = () => {
+        if (isLeavingChat) {
+            return;
+        }
+
+        setIsLeavingChat(true);
+        leaveTimer.current = window.setTimeout(
+            () => navigate('/messages'),
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                ? 0
+                : 300,
+        );
+    };
+
     if (!profile) {
         return (
             <div className="messages_page">
@@ -2900,7 +3026,7 @@ const MessagesPage = () => {
     return (
         <div className="messages_page">
             <div
-                className={`messages_layout${conversationId ? ' messages_layout_chat' : ''}`}
+                className={`messages_layout${conversationId ? ' messages_layout_chat' : ''}${isLeavingChat ? ' messages_layout_leaving' : ''}`}
             >
                 <aside className="messages_sidebar">
                     <div className="messages_sidebar_head">
@@ -3032,6 +3158,7 @@ const MessagesPage = () => {
                                     <button
                                         type="button"
                                         className="messages_people_start app-transition"
+                                        disabled={Boolean(startingChatId)}
                                         onClick={() =>
                                             void startChatWith(user._id)
                                         }
@@ -3075,7 +3202,7 @@ const MessagesPage = () => {
                                     <button
                                         type="button"
                                         className="messages_back app-transition"
-                                        onClick={() => navigate('/messages')}
+                                        onClick={closeChat}
                                         aria-label="Back"
                                     >
                                         <ArrowLeftIcon />

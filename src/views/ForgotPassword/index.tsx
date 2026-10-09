@@ -35,6 +35,13 @@ const ForgotPassword = () => {
     });
     const [errors, setErrors] = useState<any>({});
 
+    const locked = Boolean(pendingAction);
+    const guardLink = (e: any) => {
+        if (locked) {
+            e.preventDefault();
+        }
+    };
+
     const handleFocus = (fieldName: any) => {
         const other = { ...errors };
         delete other[fieldName];
@@ -54,6 +61,9 @@ const ForgotPassword = () => {
     };
 
     const sendCode = async (fromResend: any = false) => {
+        if (locked) {
+            return;
+        }
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
             setErrors({ userEmail: 'Invalid email' });
             return;
@@ -90,6 +100,9 @@ const ForgotPassword = () => {
     };
 
     const confirmCode = async () => {
+        if (locked) {
+            return;
+        }
         const emailCode = code.join('');
 
         if (emailCode.length !== CODE_LENGTH) {
@@ -127,6 +140,9 @@ const ForgotPassword = () => {
     };
 
     const submitPassword = async () => {
+        if (locked) {
+            return;
+        }
         const next: any = {};
         if (
             passwords.newPassword.length < FIELD_LIMITS.password.min ||
@@ -216,11 +232,13 @@ const ForgotPassword = () => {
                                     value={email}
                                     error={errors?.userEmail ?? null}
                                     length={FIELD_LIMITS.email.max}
+                                    disabled={locked}
                                 />
                             </Field>
                             <PrimaryButton
                                 type="submit"
                                 isLoading={pendingAction === 'submit'}
+                                disabled={locked}
                             >
                                 Send code
                             </PrimaryButton>
@@ -228,7 +246,13 @@ const ForgotPassword = () => {
                     </div>
                     <p className="redirect_object">
                         Remembered your password?
-                        <Link href="/auth/login">Log in</Link>
+                        <Link
+                            href="/auth/login"
+                            aria-disabled={locked}
+                            onClick={guardLink}
+                        >
+                            Log in
+                        </Link>
                     </p>
                 </form>
             ) : null}
@@ -252,13 +276,14 @@ const ForgotPassword = () => {
                                         onChange={setCode}
                                         error={errors?.emailCode}
                                         onFocus={() => handleFocus('emailCode')}
+                                        disabled={locked}
                                     />
                                 </div>
                             </div>
                             <PrimaryButton
                                 type="submit"
                                 isLoading={pendingAction === 'submit'}
-                                disabled={Boolean(pendingAction)}
+                                disabled={locked}
                             >
                                 Continue
                             </PrimaryButton>
@@ -266,7 +291,7 @@ const ForgotPassword = () => {
                                 type="button"
                                 onClick={() => sendCode(true)}
                                 isLoading={pendingAction === 'resend'}
-                                disabled={Boolean(pendingAction)}
+                                disabled={locked}
                             >
                                 Send the code again
                             </ActionButton>
@@ -276,7 +301,7 @@ const ForgotPassword = () => {
                         <button
                             type="button"
                             className="auth_text_button"
-                            disabled={Boolean(pendingAction)}
+                            disabled={locked}
                             onClick={() => setStep('email')}
                         >
                             Change email
@@ -314,6 +339,7 @@ const ForgotPassword = () => {
                                     placeholder="New password"
                                     value={passwords.newPassword}
                                     error={errors?.newPassword ?? null}
+                                    disabled={locked}
                                 />
                             </Field>
                             <Field
@@ -336,18 +362,26 @@ const ForgotPassword = () => {
                                     placeholder="Repeat the password"
                                     value={passwords.newPasswordConfirm}
                                     error={errors?.newPasswordConfirm ?? null}
+                                    disabled={locked}
                                 />
                             </Field>
                             <PrimaryButton
                                 type="submit"
                                 isLoading={pendingAction === 'submit'}
+                                disabled={locked}
                             >
                                 Change password
                             </PrimaryButton>
                         </div>
                     </div>
                     <p className="redirect_object">
-                        <Link href="/auth/login">Back to sign-in</Link>
+                        <Link
+                            href="/auth/login"
+                            aria-disabled={locked}
+                            onClick={guardLink}
+                        >
+                            Back to sign-in
+                        </Link>
                     </p>
                 </form>
             ) : null}

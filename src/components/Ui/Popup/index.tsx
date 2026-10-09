@@ -1,6 +1,14 @@
 'use client';
 
-import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+    createContext,
+    Fragment,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react';
 import {
     useFloating,
     offset,
@@ -9,16 +17,11 @@ import {
     size,
     autoUpdate,
     FloatingPortal,
-    FloatingTree,
-    FloatingNode,
-    useFloatingNodeId,
-    useHover,
-    useInteractions,
-    safePolygon,
 } from '@floating-ui/react';
 import './Popup.scss';
 
 import ChevronRightIcon from '../../../assets/svg/chevron-right.svg';
+import ChevronLeftIcon from '../../../assets/svg/chevron-left.svg';
 import { useOverlayPresence } from '../useOverlayEnter';
 
 const MENU_ROOT_DEFAULT = 'app-layout';
@@ -39,7 +42,7 @@ function resolveLayer(explicitLayer: any, anchorEl: any) {
     return anchorEl?.closest('.header') ? 'header' : 'content';
 }
 
-function popupLayerClass(layer: any, nested: any = false) {
+function popupLayerClass(layer: any) {
     const classes = ['popup_menu'];
 
     if (layer === 'header') {
@@ -50,16 +53,12 @@ function popupLayerClass(layer: any, nested: any = false) {
         classes.push('popup_menu_modal');
     }
 
-    if (nested) {
-        classes.push('popup_menu_nested');
-    }
-
     return classes.join(' ');
 }
 
-function popupMenuShellProps({ layer, nested = false, placement }: any) {
+function popupMenuShellProps({ layer, placement }: any) {
     return {
-        className: popupLayerClass(layer, nested),
+        className: popupLayerClass(layer),
         'data-popup-placement': placement,
     };
 }
@@ -88,29 +87,6 @@ function normalizeSections(body: any) {
         .filter((section: any) => section.length > 0);
 }
 
-function canHoverFinePointer() {
-    return (
-        typeof window !== 'undefined' &&
-        window.matchMedia('(hover: hover) and (pointer: fine)').matches
-    );
-}
-
-const COMPACT_MENU_QUERY = '(hover: none), (max-width: 640px)';
-
-function useCompactMenu() {
-    const [compact, setCompact] = useState<any>(false);
-
-    useEffect(() => {
-        const media = window.matchMedia(COMPACT_MENU_QUERY);
-        const sync = () => setCompact(media.matches);
-        sync();
-        media.addEventListener('change', sync);
-        return () => media.removeEventListener('change', sync);
-    }, []);
-
-    return compact;
-}
-
 function findActiveItem(sections: any) {
     for (const section of sections) {
         for (const item of section) {
@@ -129,22 +105,44 @@ function useFloatingPosition(refs: any, x: any, y: any) {
     }, [refs, x, y]);
 }
 
-function MenuItem({ item, onItemSelect, portalRootId, layer }: any) {
+const MENU_SLIDE_MS = 300;
+
+const MenuNavContext = createContext<any>(null);
+
+function MenuItem({ item, onItemSelect }: any) {
+    const nav = useContext(MenuNavContext);
+
     if (item.type === 'submenu' || item.type === 'dropdown') {
+        const isDropdown = item.type === 'dropdown';
+        const valueLabel =
+            item.valueLabel ??
+            findActiveItem(normalizeSections(item.items))?.title;
+
         return (
-            <FlyoutItem
-                item={item}
-                onItemSelect={onItemSelect}
-                portalRootId={portalRootId}
-                layer={layer}
-            />
+            <button
+                type="button"
+                className={`popup_menu_item popup_menu_item_flyout app-transition ${isDropdown ? 'popup_menu_item_dropdown' : ''} ${item.className ?? ''}`}
+                onClick={(event: any) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    nav.push(item);
+                }}
+            >
+                {item.icon}
+                <p className="popup_menu_item_title">{item.title}</p>
+                {isDropdown && valueLabel ? (
+                    <p className="popup_menu_item_value">{valueLabel}</p>
+                ) : null}
+                <ChevronRightIcon className="popup_menu_item_chevron" />
+            </button>
         );
     }
 
     return (
         <button
             type="button"
-            className={`popup_menu_item app-transition ${item.className ?? ''} ${item.type === 'danger' ? 'popup_menu_item_danger' : ''} ${item.isActive ? 'popup_menu_item_active' : ''}`}
+            className={`popup_menu_item app-transition ${item.className ?? ''} ${item.type === 'danger' ? 'popup_menu_item_danger' : ''} ${item.isActive ? 'popup_menu_item_active' : ''} ${item.disabled ? 'popup_menu_item_disabled' : ''}`}
+            disabled={item.disabled}
             onClick={() => {
                 if (!item.isActive) {
                     item.onClick?.();
@@ -158,7 +156,7 @@ function MenuItem({ item, onItemSelect, portalRootId, layer }: any) {
     );
 }
 
-function MenuBody({ sections, onItemSelect, portalRootId, layer }: any) {
+function MenuBody({ sections, onItemSelect }: any) {
     return sections.map((section: any, sectionIndex: any) => (
         <Fragment key={sectionIndex}>
             {sectionIndex > 0 && (
@@ -170,8 +168,6 @@ function MenuBody({ sections, onItemSelect, portalRootId, layer }: any) {
                         key={item.id ?? `${sectionIndex}-${itemIndex}`}
                         item={item}
                         onItemSelect={onItemSelect}
-                        portalRootId={portalRootId}
-                        layer={layer}
                     />
                 ))}
             </div>
@@ -179,134 +175,110 @@ function MenuBody({ sections, onItemSelect, portalRootId, layer }: any) {
     ));
 }
 
-function FlyoutItem({
-    item,
-    onItemSelect,
-    portalRootId = MENU_ROOT_DEFAULT,
-    layer = 'content',
-}: any) {
-    const nodeId = useFloatingNodeId();
-    const [open, setOpen] = useState<any>(false);
-    const { mounted, visible } = useOverlayPresence(open);
-    const sections = normalizeSections(item.items);
-    const isDropdown = item.type === 'dropdown';
-    const valueLabel = item.valueLabel ?? findActiveItem(sections)?.title;
-    const compact = useCompactMenu();
+// A submenu does not open beside the menu: its items replace the current ones
+// and slide in from the right, with a back row that returns to the previous
+// level. Every visited level stays mounted next to the active one so both can
+// slide at once, and the stack height follows the active level.
+function MenuStack({ sections, onItemSelect }: any) {
+    const [trail, setTrail] = useState<any[]>([]);
+    const [depth, setDepth] = useState<any>(0);
+    const [height, setHeight] = useState<any>(null);
+    const panels = useRef<any[]>([]);
+    const timer = useRef<any>(0);
 
-    const { refs, x, y, placement, context } = useFloating({
-        nodeId,
-        open,
-        onOpenChange: setOpen,
-        placement: 'right-start',
-        strategy: 'fixed',
-        middleware: [
-            offset(6),
-            flip({
-                fallbackPlacements: ['left-start', 'right-end', 'left-end'],
-            }),
-            shift({ padding: 8 }),
-        ],
-        whileElementsMounted: autoUpdate,
-    });
+    useEffect(() => () => window.clearTimeout(timer.current), []);
 
-    useFloatingPosition(refs, x, y);
+    useLayoutEffect(() => {
+        const node = panels.current[depth];
 
-    const hover = useHover(context, {
-        handleClose: safePolygon({ buffer: 6 }),
-        delay: { open: 40, close: 100 },
-    });
+        if (!node) {
+            return;
+        }
 
-    const { getReferenceProps, getFloatingProps } = useInteractions([hover]);
+        const measure = () => setHeight(node.offsetHeight);
+        measure();
 
-    if (sections.length === 0) {
-        return null;
-    }
+        const observer = new ResizeObserver(measure);
+        observer.observe(node);
 
-    if (compact) {
-        return (
-            <div className="popup_menu_inline">
-                <button
-                    type="button"
-                    className={`popup_menu_item popup_menu_item_flyout app-transition ${isDropdown ? 'popup_menu_item_dropdown' : ''} ${open ? 'popup_menu_item_expanded' : ''} ${item.className ?? ''}`}
-                    aria-expanded={open}
-                    onClick={(event: any) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        setOpen((current: any) => !current);
-                    }}
-                >
-                    {item.icon}
-                    <p className="popup_menu_item_title">{item.title}</p>
-                    {isDropdown && valueLabel ? (
-                        <p className="popup_menu_item_value">{valueLabel}</p>
-                    ) : null}
-                    <ChevronRightIcon className="popup_menu_item_chevron" />
-                </button>
-                {open ? (
-                    <div className="popup_menu_inline_body">
-                        <MenuBody
-                            sections={sections}
-                            onItemSelect={onItemSelect}
-                            portalRootId={portalRootId}
-                            layer={layer}
-                        />
-                    </div>
-                ) : null}
-            </div>
-        );
-    }
+        return () => observer.disconnect();
+    }, [depth, trail.length]);
+
+    const nav = {
+        push: (item: any) => {
+            window.clearTimeout(timer.current);
+            setTrail((current: any) => [...current.slice(0, depth), item]);
+            // The new level is first mounted off to the right, then the next
+            // frame moves it in, so it slides instead of appearing in place.
+            const target = depth + 1;
+            requestAnimationFrame(() =>
+                requestAnimationFrame(() => setDepth(target)),
+            );
+        },
+        back: () => {
+            window.clearTimeout(timer.current);
+            const target = depth - 1;
+            setDepth(target);
+            timer.current = window.setTimeout(
+                () => setTrail((current: any) => current.slice(0, target)),
+                MENU_SLIDE_MS,
+            );
+        },
+    };
+
+    const levels = [
+        { sections },
+        ...trail.map((item: any) => ({
+            item,
+            sections: normalizeSections(item.items),
+        })),
+    ];
 
     return (
-        <FloatingNode id={nodeId}>
-            <button
-                type="button"
-                ref={refs.setReference}
-                className={`popup_menu_item popup_menu_item_flyout app-transition ${isDropdown ? 'popup_menu_item_dropdown' : ''} ${item.className ?? ''}`}
-                {...getReferenceProps({
-                    onClick: (event: any) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        if (!canHoverFinePointer()) {
-                            setOpen((current: any) => !current);
-                        }
-                    },
-                })}
+        <MenuNavContext.Provider value={nav}>
+            <div
+                className="popup_menu_stack"
+                style={height == null ? undefined : { height }}
             >
-                {item.icon}
-                <p className="popup_menu_item_title">{item.title}</p>
-                {isDropdown && valueLabel ? (
-                    <p className="popup_menu_item_value">{valueLabel}</p>
-                ) : null}
-                <ChevronRightIcon className="popup_menu_item_chevron" />
-            </button>
-
-            {mounted && (
-                <FloatingPortal root={document.getElementById(portalRootId)}>
+                {levels.map((level: any, index: any) => (
                     <div
-                        {...getFloatingProps({
-                            ref: (node: any) => {
-                                refs.setFloating(node);
-                                setPopupPosition(node, x, y);
-                            },
-                            ...popupMenuShellProps({
-                                layer,
-                                nested: true,
-                                placement,
-                            }),
-                        })}
+                        key={index}
+                        ref={(node: any) => {
+                            panels.current[index] = node;
+                        }}
+                        className="popup_menu_panel"
+                        style={{
+                            transform: `translateX(${(index - depth) * 100}%)`,
+                        }}
+                        aria-hidden={index !== depth}
+                        inert={index !== depth}
                     >
-                        <PopupMenuSurface visible={visible}>
-                            <MenuBody
-                                sections={sections}
-                                onItemSelect={onItemSelect}
-                                portalRootId={portalRootId}
-                                layer={layer}
+                        {level.item ? (
+                            <button
+                                type="button"
+                                className="popup_menu_item popup_menu_back app-transition"
+                                onClick={nav.back}
+                            >
+                                <ChevronLeftIcon className="popup_menu_item_chevron" />
+                                <p className="popup_menu_item_title">
+                                    {level.item.title}
+                                </p>
+                            </button>
+                        ) : null}
+                        {level.item ? (
+                            <div
+                                className="popup_menu_separator"
+                                role="separator"
                             />
-                        </PopupMenuSurface>
+                        ) : null}
+                        <MenuBody
+                            sections={level.sections}
+                            onItemSelect={onItemSelect}
+                        />
                     </div>
-                </FloatingPortal>
-            )}
-        </FloatingNode>
+                ))}
+            </div>
+        </MenuNavContext.Provider>
     );
 }
 
@@ -438,22 +410,18 @@ function Popup({
             </div>
 
             {sections.length > 0 && (
-                <FloatingTree>
-                    <PopupMenu
-                        open={open}
-                        anchorRef={buttonRef}
-                        onClose={() => setOpen(false)}
-                        portalRootId={portalRootId}
-                        layer={activeLayer}
-                    >
-                        <MenuBody
-                            sections={sections}
-                            onItemSelect={() => setOpen(false)}
-                            portalRootId={portalRootId}
-                            layer={activeLayer}
-                        />
-                    </PopupMenu>
-                </FloatingTree>
+                <PopupMenu
+                    open={open}
+                    anchorRef={buttonRef}
+                    onClose={() => setOpen(false)}
+                    portalRootId={portalRootId}
+                    layer={activeLayer}
+                >
+                    <MenuStack
+                        sections={sections}
+                        onItemSelect={() => setOpen(false)}
+                    />
+                </PopupMenu>
             )}
         </div>
     );

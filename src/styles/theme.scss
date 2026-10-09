@@ -80,6 +80,16 @@ body {
     --red-button-hover-color: var(--red-6d);
     --red-button-secondary-color: var(--gray-ff);
     --red-button-third-color: var(--red-f5);
+    --red-button-disabled-background-color: color-mix(
+        in srgb,
+        var(--red-f5) 22%,
+        var(--gray-ff)
+    );
+    --red-button-disabled-color: color-mix(
+        in srgb,
+        var(--red-f5) 55%,
+        var(--gray-ff)
+    );
 
     --profile-badge-background-color: var(--gray-f1);
     --profile-badge-hover-background-color: var(--gray-e7);
@@ -267,6 +277,16 @@ body.dark-theme {
     --red-button-hover-color: var(--red-c4);
     --red-button-secondary-color: var(--gray-ff);
     --red-button-third-color: var(--red-b9);
+    --red-button-disabled-background-color: color-mix(
+        in srgb,
+        var(--red-b9) 28%,
+        var(--gray-25)
+    );
+    --red-button-disabled-color: color-mix(
+        in srgb,
+        var(--red-b9) 55%,
+        var(--gray-79)
+    );
 
     --profile-badge-background-color: var(--gray-33);
     --profile-badge-hover-background-color: var(--gray-4f);

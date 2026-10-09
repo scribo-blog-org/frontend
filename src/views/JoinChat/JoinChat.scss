@@ -8,6 +8,7 @@
     width: min(420px, 100%);
     margin: 48px auto;
     text-align: center;
+    animation: join_chat_enter 260ms ease backwards;
 
     h1 {
         margin: 0;
@@ -35,5 +36,18 @@
         font-size: 15px;
         line-height: 1.4;
         white-space: pre-wrap;
+    }
+}
+
+@keyframes join_chat_enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .join_chat {
+        animation: none;
     }
 }

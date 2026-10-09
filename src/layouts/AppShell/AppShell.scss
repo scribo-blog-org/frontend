@@ -33,6 +33,15 @@
         }
     }
 
+    // The mobile navigation bar floats over the page, so anything that scrolls
+    // has to stop short of it. Every scroll surface reserves this inset
+    // instead of guessing the bar height on its own.
+    &_main:has(> .navigation_bar) {
+        @include screen() {
+            --bottom-inset: var(--mobile-nav-height);
+        }
+    }
+
     &_content {
         display: flex;
         flex-direction: column;
@@ -57,7 +66,7 @@
 
     &_main:has(> .navigation_bar) &_content .app-shell_body {
         @include screen() {
-            padding-bottom: var(--mobile-nav-height);
+            padding-bottom: var(--bottom-inset);
         }
     }
 
@@ -88,10 +97,9 @@
                 padding-bottom: 0;
             }
 
-            .tabs_page_content,
             .messages_conversation_list,
             .messages_list {
-                padding-bottom: var(--mobile-nav-height);
+                padding-bottom: var(--bottom-inset);
             }
         }
     }

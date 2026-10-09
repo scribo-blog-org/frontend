@@ -31,9 +31,14 @@ const GroupInviteCard = ({ invite, className = '' }: any) => {
             return;
         }
 
+        if (joining) return;
         setJoining(true);
-        const result = await joinGroup(invite._id);
-        setJoining(false);
+        let result: any;
+        try {
+            result = await joinGroup(invite._id);
+        } finally {
+            setJoining(false);
+        }
 
         if (!result?.status) {
             showToast?.({

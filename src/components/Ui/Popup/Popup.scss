@@ -26,14 +26,6 @@
 
     &_modal {
         z-index: 2100;
-
-        &.popup_menu_nested {
-            z-index: 2110;
-        }
-    }
-
-    &_nested {
-        z-index: calc(var(--z-popup-content) + 10);
     }
 }
 
@@ -175,24 +167,38 @@
         }
     }
 
-    .popup_menu_inline {
+    // Levels sit in one grid cell, so the stack is as wide as the widest of
+    // them; its height is set from the active level and animated.
+    .popup_menu_stack {
+        display: grid;
+        overflow: hidden;
+        flex-shrink: 0;
+        transition: height 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .popup_menu_panel {
+        grid-area: 1 / 1;
+        align-self: start;
+        min-width: 0;
         display: flex;
         flex-direction: column;
         gap: 2px;
+        transition:
+            transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 300ms ease;
+
+        &[aria-hidden='true'] {
+            opacity: 0;
+            pointer-events: none;
+        }
     }
 
-    .popup_menu_inline_body {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-        margin-left: 12px;
-        padding-left: 6px;
-        border-left: 1px solid var(--line-color);
-    }
+    .popup_menu_back {
+        color: var(--light-text-color);
 
-    .popup_menu_item_expanded .popup_menu_item_chevron {
-        transform: rotate(90deg);
-        opacity: 0.75;
+        .popup_menu_item_chevron {
+            opacity: 0.8;
+        }
     }
 
     .popup_menu_item_active {
@@ -210,14 +216,20 @@
             color: var(--red-f5);
         }
     }
-}
 
-.popup_menu_header.popup_menu_nested {
-    z-index: calc(var(--z-popup-header) + 10);
+    // Placed after the hover variants so an unavailable item never highlights.
+    .popup_menu_item_disabled,
+    .popup_menu_item_disabled:hover {
+        cursor: not-allowed;
+        opacity: 0.55;
+        background-color: transparent;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .popup_menu_surface {
+    .popup_menu_surface,
+    .popup_menu_stack,
+    .popup_menu_panel {
         transition: none;
         transform: none;
     }
