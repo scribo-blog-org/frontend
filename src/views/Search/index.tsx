@@ -1,19 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Link, useSearchParams } from '@/navigation';
+import { Link, useNavigate, useSearchParams } from '@/navigation';
 
 import { searchSite } from '../../api/search.api';
-import Category from '../../components/Category';
-import UserBadge from '../../components/UserBadge';
 import InputField from '../../components/Ui/InputField';
 import { Panel, PanelRow } from '../../components/Ui';
-import { format_back } from '../../utils/format';
 import { CATEGORY_COLORS } from '../../styles/constants';
 
-import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
-import { imageSrc, mediaUrl } from '../../utils/image';
-import Verified from '../../assets/svg/verified.svg';
+import PostPreview from '../../components/PostPreview';
+import UserRow from '../../components/UserRow';
 import ChevronRightIcon from '../../assets/svg/chevron-right.svg';
 import CrossIcon from '../../assets/svg/cross-icon.svg';
 
@@ -26,6 +22,7 @@ const Count = ({ value }: any) => (
 );
 
 const SearchPage = () => {
+    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const urlQuery = searchParams.get('q') || '';
     const [value, setValue] = useState<any>(urlQuery);
@@ -135,45 +132,24 @@ const SearchPage = () => {
                                 action={<Count value={people.length} />}
                             >
                                 {people.map((user: any) => (
-                                    <Link
+                                    <UserRow
                                         key={user._id}
-                                        className="search_page_link"
-                                        href={`/users/${user.nick_name}`}
-                                    >
-                                        <PanelRow
-                                            className="search_page_person"
-                                            icon={
-                                                <img
-                                                    className="search_page_person_avatar"
-                                                    src={imageSrc(
-                                                        user.avatar,
-                                                        DefaultProfileAvatar,
-                                                    )}
-                                                    alt=""
-                                                />
-                                            }
-                                            title={
-                                                <span className="search_page_person_name">
-                                                    {user.nick_name}
-                                                    {user.is_verified ? (
-                                                        <Verified className="search_page_person_verified verified-icon" />
-                                                    ) : null}
-                                                </span>
-                                            }
-                                            description={
-                                                <span className="search_page_person_bio">
-                                                    {user.description ||
-                                                        'Profile on the site'}
-                                                </span>
-                                            }
-                                            trailing={
-                                                <ChevronRightIcon
-                                                    className="search_page_chevron"
-                                                    aria-hidden="true"
-                                                />
-                                            }
-                                        />
-                                    </Link>
+                                        user={user}
+                                        status={false}
+                                        onClick={() =>
+                                            navigate(`/users/${user.nick_name}`)
+                                        }
+                                        description={
+                                            user.description ||
+                                            'Profile on the site'
+                                        }
+                                        trailing={
+                                            <ChevronRightIcon
+                                                className="search_page_chevron"
+                                                aria-hidden="true"
+                                            />
+                                        }
+                                    />
                                 ))}
                             </Panel>
                         </section>
@@ -229,51 +205,13 @@ const SearchPage = () => {
                                 action={<Count value={posts.length} />}
                             >
                                 {posts.map((post: any) => (
-                                    <article
+                                    <PostPreview
                                         key={post._id}
-                                        className="search_page_post"
-                                    >
-                                        <div className="search_page_post_meta">
-                                            <UserBadge data={post.author} />
-                                            {post.created_date ? (
-                                                <p className="search_page_post_date">
-                                                    {format_back(
-                                                        post.created_date,
-                                                    )}
-                                                </p>
-                                            ) : null}
-                                            {post.category ? (
-                                                <Category
-                                                    tag
-                                                    category={post.category}
-                                                />
-                                            ) : null}
-                                        </div>
-                                        <Link
-                                            className="search_page_post_body"
-                                            href={`/posts/${post._id}`}
-                                        >
-                                            <span className="search_page_post_copy">
-                                                <span className="search_page_post_title">
-                                                    {post.title}
-                                                </span>
-                                                {post.snippet ? (
-                                                    <span className="search_page_post_snippet">
-                                                        {post.snippet}
-                                                    </span>
-                                                ) : null}
-                                            </span>
-                                            {post.featured_image ? (
-                                                <img
-                                                    className="search_page_post_thumb"
-                                                    src={mediaUrl(
-                                                        post.featured_image,
-                                                    )}
-                                                    alt=""
-                                                />
-                                            ) : null}
-                                        </Link>
-                                    </article>
+                                        post={post}
+                                        href={`/posts/${post._id}`}
+                                        media="side"
+                                        showDate
+                                    />
                                 ))}
                             </Panel>
                         </section>

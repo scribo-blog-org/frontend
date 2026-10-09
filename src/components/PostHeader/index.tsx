@@ -18,16 +18,16 @@ import { format_back, format_date_time } from '../../utils/format';
 
 import UserBadge from '../UserBadge';
 import Popup from '../Ui/Popup';
-import { Panel, Banner } from '../Ui';
+import { Panel, Banner, ModalFooter } from '../Ui';
+import PostPreview from '../PostPreview';
 import ActionButton from '../Ui/ActionButton';
 import DangerButton from '../Ui/DangerButton';
 import Tooltip from '../Ui/Tooltip/index';
 import Category from '../Category';
 
 import Sceleton from '../Ui/Sceleton/Sceleton';
-import { mediaUrl } from '../../utils/image';
 
-const DeletePostFooter = ({
+const DeletePostContent = ({
     post,
     requestCloseModal,
     onDeletePost,
@@ -55,9 +55,14 @@ const DeletePostFooter = ({
     };
 
     return (
-        <>
-            <span>Deleting is permanent</span>
-            <div className="modal_window_body_footer_actions">
+        <div className="modal_delete_post_content">
+            <Banner tone="danger" icon={<WarningIcon />}>
+                This post will be removed and cannot be restored.
+            </Banner>
+            <Panel>
+                <PostPreview post={post} media="side" showDate />
+            </Panel>
+            <ModalFooter hint="Deleting is permanent">
                 <ActionButton disabled={isDeleting} onClick={requestCloseModal}>
                     Cancel
                 </ActionButton>
@@ -68,36 +73,10 @@ const DeletePostFooter = ({
                 >
                     Delete
                 </DangerButton>
-            </div>
-        </>
+            </ModalFooter>
+        </div>
     );
 };
-
-const getDeleteModalContent = (post: any) => (
-    <div className="modal_delete_post_content">
-        <Banner tone="danger" icon={<WarningIcon />}>
-            This post will be removed and cannot be restored.
-        </Banner>
-        <Panel>
-            <div className="modal_delete_post_content_post">
-                <div className="modal_delete_post_content_post_header">
-                    <PostHeader post={post} />
-                    <Category tag category={post.category} />
-                </div>
-                <h2 className="modal_delete_post_content_post_title">
-                    {post.title}
-                </h2>
-                {post.featured_image && (
-                    <img
-                        className="modal_delete_post_content_post_image"
-                        src={mediaUrl(post.featured_image)}
-                        alt="post_image"
-                    />
-                )}
-            </div>
-        </Panel>
-    </div>
-);
 
 const PostHeader = memo(
     ({
@@ -117,9 +96,8 @@ const PostHeader = memo(
                 subtitle: 'This action cannot be undone',
                 icon: <DeleteIcon />,
                 size: 'small',
-                content: getDeleteModalContent(post),
-                footer: (
-                    <DeletePostFooter
+                content: (
+                    <DeletePostContent
                         post={post}
                         requestCloseModal={requestCloseModal}
                         onDeletePost={onDeletePost}
