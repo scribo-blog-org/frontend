@@ -184,10 +184,7 @@ const MobileNavigationBar = () => {
             // buttons are drawn over its content.
             floating: onAdminPanel
                 ? []
-                : [
-                      ...(canCreate ? [create] : []),
-                      ...(isAdmin ? [admin] : []),
-                  ],
+                : [...(canCreate ? [create] : []), ...(isAdmin ? [admin] : [])],
         };
     }, [
         profile,

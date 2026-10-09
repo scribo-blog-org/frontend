@@ -359,7 +359,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .admin_panel_content_categories_page .admin_panel_content_categories_page_category,
+    .admin_panel_content_categories_page
+        .admin_panel_content_categories_page_category,
     .admin_panel_content_edit_categories_page {
         animation: none;
     }
