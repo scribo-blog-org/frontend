@@ -110,11 +110,6 @@ const HEALTH_ITEMS = [
         hint: 'Someone sent too many requests',
     },
     {
-        type: 'access_denied',
-        label: 'Denied access',
-        hint: 'Actions refused for lack of rights',
-    },
-    {
         type: 'external_failed',
         label: 'Service failures',
         hint: 'Mail, push or Google did not answer',
