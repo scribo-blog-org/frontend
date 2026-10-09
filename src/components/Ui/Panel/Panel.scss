@@ -139,6 +139,8 @@
 
     display: inline-flex;
     align-items: center;
+    justify-self: start;
+    width: fit-content;
     gap: 5px;
     padding: 2px 9px;
     border: 1px solid rgb(from var(--pill-color) r g b / 0.35);
@@ -226,13 +228,9 @@
 
 .meta_grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
     gap: var(--space-3) var(--space-5);
     margin: 0;
-
-    @include screen() {
-        grid-template-columns: minmax(0, 1fr);
-    }
 
     &_item {
         display: flex;
