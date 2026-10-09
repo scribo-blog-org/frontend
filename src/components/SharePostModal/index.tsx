@@ -52,18 +52,6 @@ const SharePostModal = ({
     const nativeShareAvailable = canUseNativeShare();
 
     useEffect(() => {
-        const field = document.getElementById('share_post_modal_link');
-        if (!field) {
-            return;
-        }
-
-        const input = field as HTMLInputElement;
-        input.focus();
-        input.select();
-        input.scrollLeft = 0;
-    }, [shareUrl]);
-
-    useEffect(() => {
         if (!profile) {
             setIsLoadingChats(false);
             return;
@@ -184,7 +172,6 @@ const SharePostModal = ({
                         type="text"
                         readOnly
                         value={shareUrl}
-                        onFocus={(event: any) => event.target.select()}
                         onClick={(event: any) => event.target.select()}
                     />
                 </div>

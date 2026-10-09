@@ -120,6 +120,7 @@
 
         &_action {
             display: flex;
+            flex-wrap: wrap;
             justify-content: flex-start;
             align-items: center;
             gap: 8px;
@@ -130,6 +131,7 @@
             }
 
             .admin_panel_content_backups_page_hint {
+                flex: 1 1 100%;
                 margin: 0;
             }
         }

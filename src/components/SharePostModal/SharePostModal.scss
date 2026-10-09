@@ -16,7 +16,8 @@
 
     &_url {
         position: relative;
-        padding: 0;
+        padding: 0 !important;
+        overflow: hidden;
     }
 
     &_link {
@@ -35,9 +36,12 @@
         @include use-transition();
 
         &:focus {
+            color: var(--text-color);
+        }
+
+        &:focus-visible {
             outline: 2px solid var(--input-outline-active-color);
             outline-offset: -2px;
-            color: var(--text-color);
         }
     }
 
@@ -91,6 +95,16 @@
         gap: 4px;
         max-height: 240px;
         overflow-y: auto;
+        -webkit-mask-image: linear-gradient(
+            to bottom,
+            #000 calc(100% - 20px),
+            transparent
+        );
+        mask-image: linear-gradient(
+            to bottom,
+            #000 calc(100% - 20px),
+            transparent
+        );
     }
 
     &_chat {
@@ -118,13 +132,26 @@
     }
 
     &_action {
-        font-size: var(--text-sm);
+        padding: 4px 12px;
+        border: 1px solid var(--line-color);
+        border-radius: 999px;
+        background: var(--panel-frame-color);
+        font-size: var(--text-xs);
         font-weight: 500;
-        color: var(--accent-color);
+        color: var(--text-color);
+        white-space: nowrap;
+        @include use-transition();
 
         &_busy {
             color: var(--light-text-color);
         }
+    }
+
+    .panel_row_action:hover
+        .share_post_modal_action:not(.share_post_modal_action_busy) {
+        background: var(--text-color);
+        border-color: var(--text-color);
+        color: var(--modal-window-body-background-color);
     }
 
     &_loader {

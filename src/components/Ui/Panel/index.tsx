@@ -70,10 +70,10 @@ export const Pill = ({ tone = 'neutral', icon, children, className }: any) => (
 
 // A tinted strip for one important sentence (a result, a warning, a hint).
 export const Banner = ({ tone = 'info', icon, action, children }: any) => (
-    <div className={`banner banner_${tone}`}>
-        {icon ? <span className="banner_icon">{icon}</span> : null}
-        <p className="banner_text">{children}</p>
-        {action ? <span className="banner_action">{action}</span> : null}
+    <div className={`notice notice_${tone}`}>
+        {icon ? <span className="notice_icon">{icon}</span> : null}
+        <p className="notice_text">{children}</p>
+        {action ? <span className="notice_action">{action}</span> : null}
     </div>
 );
 

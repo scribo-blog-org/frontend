@@ -178,35 +178,35 @@
     }
 }
 
-.banner {
-    --banner-color: var(--accent-color);
+.notice {
+    --notice-color: var(--accent-color);
 
     display: flex;
     align-items: center;
     gap: var(--space-3);
     padding: 10px 14px;
-    border: 1px solid rgb(from var(--banner-color) r g b / 0.3);
+    border: 1px solid rgb(from var(--notice-color) r g b / 0.3);
     border-radius: 12px;
-    background: rgb(from var(--banner-color) r g b / 0.08);
+    background: rgb(from var(--notice-color) r g b / 0.08);
     font-size: var(--text-sm);
     line-height: 1.45;
 
     &_success {
-        --banner-color: var(--success-color);
+        --notice-color: var(--success-color);
     }
 
     &_warning {
-        --banner-color: var(--warning-color);
+        --notice-color: var(--warning-color);
     }
 
     &_danger {
-        --banner-color: var(--error-color);
+        --notice-color: var(--error-color);
     }
 
     &_icon {
         display: flex;
         flex-shrink: 0;
-        color: var(--banner-color);
+        color: var(--notice-color);
 
         svg {
             width: 16px;
