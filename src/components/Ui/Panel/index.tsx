@@ -5,8 +5,19 @@ import './Panel.scss';
 export type PillTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 
 // A titled group: a small caption above a soft frame that holds the rows.
-export const Panel = ({ title, hint, action, children, className }: any) => (
-    <section className={`panel_group${className ? ` ${className}` : ''}`}>
+// `flat` drops the frame and the row cards, for a group that already sits in a
+// bigger block: the rows are then only divided by thin lines.
+export const Panel = ({
+    title,
+    hint,
+    action,
+    flat = false,
+    children,
+    className,
+}: any) => (
+    <section
+        className={`panel_group${flat ? ' panel_group_flat' : ''}${className ? ` ${className}` : ''}`}
+    >
         {title || action ? (
             <header className="panel_head">
                 <div className="panel_head_text">
@@ -18,7 +29,7 @@ export const Panel = ({ title, hint, action, children, className }: any) => (
                 ) : null}
             </header>
         ) : null}
-        <div className="panel">{children}</div>
+        <div className={`panel${flat ? ' panel_flat' : ''}`}>{children}</div>
     </section>
 );
 

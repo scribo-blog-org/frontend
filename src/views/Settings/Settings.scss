@@ -44,6 +44,21 @@
         width: 100%;
     }
 
+    // One block for a whole form: the fields and the toggles under them.
+    .settings_card {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-6);
+        padding: var(--space-5);
+        border: 1px solid var(--line-color);
+        border-radius: 18px;
+        background: var(--panel-frame-color);
+
+        @include screen() {
+            padding: var(--space-4);
+        }
+    }
+
     .settings_group {
         display: flex;
         flex-direction: column;

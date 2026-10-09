@@ -136,6 +136,34 @@
     }
 }
 
+.panel_group_flat .panel_head {
+    padding: 0;
+}
+
+.panel_flat {
+    gap: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+
+    .panel_row {
+        padding-right: 0;
+        padding-left: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    .panel_row + .panel_row {
+        border-top: 1px solid var(--line-color);
+    }
+
+    .panel_row_action:hover {
+        background: transparent;
+    }
+}
+
 .pill {
     --pill-color: var(--light-text-color);
 
