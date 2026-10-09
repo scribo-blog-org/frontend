@@ -412,6 +412,16 @@ const BackupsPage = () => {
     return (
         <div className="admin_panel_content_backups_page">
             <div className="admin_panel_content_backups_page_header">
+                {info?.app_version ? (
+                    <p className="admin_panel_content_backups_page_version">
+                        <span className="admin_panel_content_backups_page_version_label">
+                            Version
+                        </span>
+                        v{info.app_version}
+                        {info.app_sha ? ` · ${info.app_sha}` : ''}
+                        {info.db_version ? ` · data ${info.db_version}` : ''}
+                    </p>
+                ) : null}
                 <div className="admin_panel_content_backups_page_header_info">
                     {info?.enabled ? (
                         <>

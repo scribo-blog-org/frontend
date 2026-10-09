@@ -29,6 +29,24 @@
         }
     }
 
+    &_version {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin: 0;
+        padding: 8px 12px;
+        border: 1px solid var(--input-outline-color);
+        border-radius: 8px;
+        font-size: 13px;
+        line-height: 1.4;
+
+        &_label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--light-text-color);
+        }
+    }
+
     &_empty {
         animation: admin_backups_enter 260ms ease backwards;
     }

@@ -811,6 +811,18 @@ const DashboardPage = () => {
                     <span className="analytics_period_bounds_label">Range</span>
                     {formatRange(range)}
                 </p>
+                {data?.app?.version ? (
+                    <p className="analytics_period_bounds">
+                        <span className="analytics_period_bounds_label">
+                            Version
+                        </span>
+                        v{data.app.version}
+                        {data.app.sha ? ` · ${data.app.sha}` : ''}
+                        {data.app.started_at
+                            ? ` · started ${format_back(data.app.started_at)}`
+                            : ''}
+                    </p>
+                ) : null}
             </div>
 
             {isLoading ? (
