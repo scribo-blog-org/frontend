@@ -391,8 +391,27 @@
             align-items: center;
         }
 
+        // The value can carry a note (e.g. latency percentiles), so its
+        // column follows the content instead of cutting it off.
         &_wide &_row {
-            grid-template-columns: 180px minmax(0, 1fr) 96px;
+            grid-template-columns: 180px minmax(0, 1fr) max-content;
+        }
+
+        &_wide &_value {
+            overflow: visible;
+            text-overflow: clip;
+        }
+
+        @include screen() {
+            &_wide &_row {
+                grid-template-columns: minmax(0, 1fr) max-content;
+                row-gap: 4px;
+            }
+
+            &_wide &_track {
+                grid-column: 1 / -1;
+                grid-row: 2;
+            }
         }
 
         &_label,
