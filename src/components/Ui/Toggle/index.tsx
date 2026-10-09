@@ -2,12 +2,13 @@
 
 import './Toggle.scss';
 
-const Toggle = ({ checked, onChange }: any) => {
+const Toggle = ({ checked, onChange, disabled = false }: any) => {
     return (
-        <label className="toggle">
+        <label className={`toggle${disabled ? ' toggle_disabled' : ''}`}>
             <input
                 type="checkbox"
                 checked={checked ?? false}
+                disabled={disabled}
                 onChange={(e: any) => onChange(e.target.checked)}
             />
             <span className="track">

@@ -85,22 +85,36 @@ const Settings = () => {
     }, []);
 
     const togglePush = async (next: boolean) => {
+        // The switch follows the click immediately; it goes back if the device
+        // could not be (un)subscribed.
         setPushBusy(true);
-        if (next) {
-            const result = await enablePush(String(profile?._id));
-            setPushOn(result === 'enabled');
-            setPushDenied(Notification.permission === 'denied');
-            if (result === 'unavailable') {
-                showToast({
-                    type: 'error',
-                    message: 'Could not turn on notifications',
-                });
+        setPushOn(next);
+        try {
+            if (next) {
+                const result = await enablePush(String(profile?._id));
+                setPushOn(result === 'enabled');
+                setPushDenied(Notification.permission === 'denied');
+                if (result === 'unavailable') {
+                    showToast({
+                        type: 'error',
+                        message: 'Could not turn on notifications',
+                    });
+                }
+            } else {
+                await disablePush(String(profile?._id));
+                setPushOn(false);
             }
-        } else {
-            await disablePush(String(profile?._id));
-            setPushOn(false);
+        } catch {
+            setPushOn(!next);
+            showToast({
+                type: 'error',
+                message: next
+                    ? 'Could not turn on notifications'
+                    : 'Could not turn off notifications',
+            });
+        } finally {
+            setPushBusy(false);
         }
-        setPushBusy(false);
     };
 
     // Browsers cannot open a site's permission settings from a page, so the
@@ -327,6 +341,9 @@ const Settings = () => {
     };
 
     const save_password = async () => {
+        if (passwordLoading) {
+            return;
+        }
         setPasswordLoading(true);
         if (!password_field_validation()) {
             setPasswordLoading(false);
@@ -336,7 +353,6 @@ const Settings = () => {
         try {
             const result = await changePassword(passwordFields);
 
-            setPasswordLoading(false);
             if (result.status === true) {
                 setPasswordFields({
                     currentPassword: '',
@@ -366,12 +382,16 @@ const Settings = () => {
             }
         } catch (error: any) {
             console.log(error);
-            setPasswordLoading(false);
             showToast({ message: 'Error!', type: 'error' });
+        } finally {
+            setPasswordLoading(false);
         }
     };
 
     const save_settings = async () => {
+        if (isLoading) {
+            return;
+        }
         setIsLoading(true);
         if (!field_validation()) {
             setIsLoading(false);
@@ -408,7 +428,6 @@ const Settings = () => {
         try {
             const result = await editProfile(formData);
 
-            setIsLoading(false);
             if (result.status === true) {
                 setProfile((prev: any) => ({
                     ...prev,
@@ -444,6 +463,8 @@ const Settings = () => {
                 });
             }
             return { status: 'error', message: 'server not found' };
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -461,10 +482,40 @@ const Settings = () => {
 
     const handleDeleteSession = async (session: any) => {
         setEndingSessionId(session._id);
+
+        // Another device's session leaves the list at once and comes back at
+        // its place if the server refuses. Ending the current one signs the
+        // user out, so that row stays until the server answers.
+        const index = sessions.findIndex(
+            (item: any) => item._id === session._id,
+        );
+        const optimistic = !session.isCurrent && index !== -1;
+
+        if (optimistic) {
+            setSessions((prev: any) =>
+                prev.filter((item: any) => item._id !== session._id),
+            );
+        }
+
+        const restore = () => {
+            if (!optimistic) {
+                return;
+            }
+            setSessions((prev: any) => {
+                if (prev.some((item: any) => item._id === session._id)) {
+                    return prev;
+                }
+                const next = [...prev];
+                next.splice(Math.min(index, next.length), 0, session);
+                return next;
+            });
+        };
+
         try {
             const result = await deleteSession(session._id);
 
             if (!result?.status) {
+                restore();
                 showToast({
                     message: 'Could not end the session',
                     type: 'error',
@@ -486,6 +537,12 @@ const Settings = () => {
                 prev.filter((item: any) => item._id !== session._id),
             );
             showToast({ message: 'Session ended', type: 'success' });
+        } catch {
+            restore();
+            showToast({
+                message: 'Could not end the session',
+                type: 'error',
+            });
         } finally {
             setEndingSessionId(null);
         }
@@ -573,6 +630,7 @@ const Settings = () => {
                                                 }
                                                 onRemove={handleAvatarRemove}
                                                 previewUrl={profile?.avatar}
+                                                disabled={isLoading}
                                             />
                                         </div>
                                         {profile?.email ? (
@@ -584,6 +642,7 @@ const Settings = () => {
                                                         profile.is_verified,
                                                     )}
                                                     onChange={() => {}}
+                                                    disabled={isLoading}
                                                 />
                                             </Field>
                                         ) : null}
@@ -610,6 +669,7 @@ const Settings = () => {
                                                     errors?.userNickName ?? null
                                                 }
                                                 length={FIELD_LIMITS.nick.max}
+                                                disabled={isLoading}
                                             />
                                         </Field>
                                         <Field
@@ -644,6 +704,7 @@ const Settings = () => {
                                                     errors?.userDescription ??
                                                     null
                                                 }
+                                                disabled={isLoading}
                                             />
                                         </Field>
                                     </div>
@@ -662,6 +723,7 @@ const Settings = () => {
                                             <Toggle
                                                 checked={fields.isEmailPublic}
                                                 onChange={set_email_visibility}
+                                                disabled={isLoading}
                                             />
                                         </div>
                                         <div className="settings_switch">
@@ -681,6 +743,7 @@ const Settings = () => {
                                                 onChange={
                                                     set_saved_posts_visibility
                                                 }
+                                                disabled={isLoading}
                                             />
                                         </div>
                                         <div className="settings_switch">
@@ -700,6 +763,7 @@ const Settings = () => {
                                                 onChange={
                                                     set_last_activity_visibility
                                                 }
+                                                disabled={isLoading}
                                             />
                                         </div>
                                     </div>
@@ -766,6 +830,9 @@ const Settings = () => {
                                                             errors?.currentPassword ??
                                                             null
                                                         }
+                                                        disabled={
+                                                            passwordLoading
+                                                        }
                                                     />
                                                 </Field>
                                                 <Field
@@ -802,6 +869,9 @@ const Settings = () => {
                                                         error={
                                                             errors?.newPassword ??
                                                             null
+                                                        }
+                                                        disabled={
+                                                            passwordLoading
                                                         }
                                                     />
                                                 </Field>
@@ -841,6 +911,9 @@ const Settings = () => {
                                                         error={
                                                             errors?.newPasswordConfirm ??
                                                             null
+                                                        }
+                                                        disabled={
+                                                            passwordLoading
                                                         }
                                                     />
                                                 </Field>
@@ -949,6 +1022,7 @@ const Settings = () => {
                                                     </ol>
                                                     <ActionButton
                                                         type="button"
+                                                        isLoading={pushBusy}
                                                         onClick={() =>
                                                             void retryPush()
                                                         }

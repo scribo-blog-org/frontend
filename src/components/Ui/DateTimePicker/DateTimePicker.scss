@@ -11,6 +11,7 @@
     border-radius: 8px;
     color: var(--input-text-color);
     cursor: text;
+    @include use-transition();
 
     &:focus-within {
         border-color: var(--input-outline-active-color);
@@ -57,6 +58,7 @@
         height: 18px;
         padding: 0;
         color: var(--light-text-color);
+        @include use-transition();
 
         svg {
             width: 12px;

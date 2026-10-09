@@ -43,6 +43,8 @@ const SharePostModal = ({
     const [conversations, setConversations] = useState<any[]>([]);
     const [isLoadingChats, setIsLoadingChats] = useState<any>(Boolean(profile));
     const [sendingId, setSendingId] = useState<any>(null);
+    const [isCopying, setIsCopying] = useState<any>(false);
+    const [isSharing, setIsSharing] = useState<any>(false);
     const shareUrl = absoluteUrl(sharePath || `/posts/${postId}`);
     const chats = conversations.filter(
         (item) => String(item._id) !== String(excludeConversationId || ''),
@@ -83,6 +85,8 @@ const SharePostModal = ({
     }, [profile]);
 
     const handleCopy = async () => {
+        if (isCopying) return;
+        setIsCopying(true);
         try {
             await copyText(shareUrl);
             showToast?.({ message: 'Link copied', type: 'success' });
@@ -92,10 +96,14 @@ const SharePostModal = ({
                 message: 'Could not copy the link',
                 type: 'error',
             });
+        } finally {
+            setIsCopying(false);
         }
     };
 
     const handleNativeShare = async () => {
+        if (isSharing) return;
+        setIsSharing(true);
         try {
             await sharePostNative({ title: postTitle, url: shareUrl });
         } catch (error: any) {
@@ -108,6 +116,8 @@ const SharePostModal = ({
                 message: 'Could not open the Share menu',
                 type: 'error',
             });
+        } finally {
+            setIsSharing(false);
         }
     };
 
@@ -118,11 +128,14 @@ const SharePostModal = ({
 
         setSendingId(conversationId);
 
-        const result = await sendMessage(conversationId, {
-            text: shareUrl,
-        });
-
-        setSendingId(null);
+        let result: any;
+        try {
+            result = await sendMessage(conversationId, {
+                text: shareUrl,
+            });
+        } finally {
+            setSendingId(null);
+        }
 
         if (!result?.status) {
             showToast?.({
@@ -143,6 +156,7 @@ const SharePostModal = ({
                 <button
                     type="button"
                     className="share_post_modal_back app-transition"
+                    disabled={Boolean(sendingId)}
                     onClick={onBack}
                 >
                     <ArrowLeftIcon />
@@ -167,7 +181,12 @@ const SharePostModal = ({
                         onFocus={(event: any) => event.target.select()}
                         onClick={(event: any) => event.target.select()}
                     />
-                    <PrimaryButton type="button" onClick={handleCopy}>
+                    <PrimaryButton
+                        type="button"
+                        isLoading={isCopying}
+                        disabled={Boolean(sendingId)}
+                        onClick={handleCopy}
+                    >
                         <CopyIcon />
                         Copy
                     </PrimaryButton>
@@ -243,6 +262,8 @@ const SharePostModal = ({
                 <ActionButton
                     type="button"
                     className="share_post_modal_native"
+                    isLoading={isSharing}
+                    disabled={Boolean(sendingId)}
                     onClick={handleNativeShare}
                 >
                     <ShareIcon />

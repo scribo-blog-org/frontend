@@ -1,4 +1,5 @@
 import { apiUrl } from '../config';
+import { usesLocalDevApi } from '../config/publicEnv';
 
 export function mediaUrl(value: unknown) {
     if (typeof value !== 'string' || !value) {
@@ -6,6 +7,10 @@ export function mediaUrl(value: unknown) {
     }
 
     if (value.startsWith('/uploads/')) {
+        if (usesLocalDevApi()) {
+            return value;
+        }
+
         return `${apiUrl().replace(/\/+$/, '')}${value}`;
     }
 

@@ -62,7 +62,7 @@ const Support = () => {
     };
 
     const handleSubmit = async () => {
-        if (!validate()) {
+        if (isLoading || !validate()) {
             return;
         }
 
@@ -142,6 +142,7 @@ const Support = () => {
                         onFocus={() => handleFocus('userEmail')}
                         error={errors?.userEmail ?? null}
                         length={FIELD_LIMITS.email.max}
+                        disabled={isLoading}
                     />
                 </Field>
                 <Field title="Subject" error={errors?.supportKind ?? null}>
@@ -150,6 +151,7 @@ const Support = () => {
                         value={fields.supportKind}
                         placeholder="Choose a subject"
                         error={Boolean(errors?.supportKind)}
+                        disabled={isLoading}
                         onChange={(value: any) => {
                             handleFocus('supportKind');
                             setFields({ ...fields, supportKind: value });
@@ -172,15 +174,27 @@ const Support = () => {
                         }
                         onFocus={() => handleFocus('supportMessage')}
                         error={errors?.supportMessage ?? null}
+                        disabled={isLoading}
                     />
                 </Field>
                 <PrimaryButton type="submit" isLoading={isLoading}>
                     Send
                 </PrimaryButton>
                 <p className="support_page_note">
-                    If you <Link href="/auth/login">log in</Link>, replies will
-                    arrive on the site, and you will be able to write in the
-                    thread yourself.
+                    If you{' '}
+                    <Link
+                        href="/auth/login"
+                        aria-disabled={isLoading}
+                        onClick={(event: any) => {
+                            if (isLoading) {
+                                event.preventDefault();
+                            }
+                        }}
+                    >
+                        log in
+                    </Link>
+                    , replies will arrive on the site, and you will be able to
+                    write in the thread yourself.
                 </p>
             </form>
         </div>

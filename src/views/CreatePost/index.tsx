@@ -115,6 +115,9 @@ const CreatePost = () => {
 
     const handleSubmit = async (e: any) => {
         e.preventDefault();
+        if (isLoading) {
+            return;
+        }
         const next: any = {};
         const title = (fields.postTitle || '').trim();
         if (title.length < FIELD_LIMITS.postTitle.min) {
@@ -132,8 +135,12 @@ const CreatePost = () => {
             return;
         }
         setIsLoading(true);
-        const result = await create_post(fields.postTitle);
-        setIsLoading(false);
+        let result;
+        try {
+            result = await create_post(fields.postTitle);
+        } finally {
+            setIsLoading(false);
+        }
         setCreateResult(result);
     };
 
@@ -192,6 +199,7 @@ const CreatePost = () => {
                     onFocus={() => handleFocus('postTitle')}
                     length={FIELD_LIMITS.postTitle.max}
                     error={errors?.postTitle}
+                    disabled={isLoading}
                 />
             </Field>
             <Field error={errors?.categoryId} title={'Category'}>
@@ -207,6 +215,7 @@ const CreatePost = () => {
                     error={errors?.categoryId}
                     placeholder={'Choose a category'}
                     options={allCategories}
+                    disabled={isLoading}
                 />
             </Field>
             <DropFile
@@ -220,6 +229,7 @@ const CreatePost = () => {
                 addNewErrors={add_errors_to_image}
                 clearErrors={clear_errors_from_image}
                 onRemove={handleClick}
+                disabled={isLoading}
             />
             <Field error={errors?.postContent} title={'Post text'}>
                 <TextEditorField
@@ -228,6 +238,7 @@ const CreatePost = () => {
                         setFields({ ...fields, postContent: html })
                     }
                     error={errors?.postContent}
+                    disabled={isLoading}
                 />
             </Field>
             <div className="create_post_buttons">

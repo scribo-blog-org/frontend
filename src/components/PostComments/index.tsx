@@ -96,6 +96,7 @@ const CommentForm = ({
                     value={value}
                     onMouseDown={handleInputMouseDown}
                     placeholder={placeholder}
+                    disabled={isLoading}
                     onChange={(e: any) => onChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                 />
@@ -140,6 +141,15 @@ const mapCommentTree = (comments: any, commentId: any, updater: any) =>
         return item;
     });
 
+const removeFromTree = (comments: any, commentId: any): any =>
+    (comments || [])
+        .filter((item: any) => !sameId(item._id, commentId))
+        .map((item: any) =>
+            item.replies?.length
+                ? { ...item, replies: removeFromTree(item.replies, commentId) }
+                : item,
+        );
+
 const Comment = ({
     comment,
     level = 0,
@@ -149,9 +159,11 @@ const Comment = ({
     profile,
     fetchComments,
     patchComment,
+    removeComment,
     showToast,
     postId,
 }: any) => {
+    const [isLeaving, setIsLeaving] = useState<any>(false);
     const [showForm, setShowForm] = useState<any>(false);
     const [editMode, setEditMode] = useState<any>(false);
     const [isLoading, setIsLoading] = useState<any>(false);
@@ -163,56 +175,64 @@ const Comment = ({
     const likeWanted = useRef<any>(null);
 
     const doReply = async (e: any) => {
-        setIsLoading(true);
         e.preventDefault();
+        if (isLoading) return;
+        setIsLoading(true);
 
-        const data = {
-            commentText: replyText,
-            parentCommentId: comment._id,
-        };
+        try {
+            const data = {
+                commentText: replyText,
+                parentCommentId: comment._id,
+            };
 
-        const result = await commentPost(postId, data);
+            const result = await commentPost(postId, data);
 
-        if (result.status) {
-            await fetchComments({
-                onSuccessFetch: () => {
-                    setReplyText('');
-                    setShowForm(false);
-                    showToast({
-                        type: 'success',
-                        message: 'Reply published',
-                    });
-                },
-            });
+            if (result.status) {
+                await fetchComments({
+                    onSuccessFetch: () => {
+                        setReplyText('');
+                        setShowForm(false);
+                        showToast({
+                            type: 'success',
+                            message: 'Reply published',
+                        });
+                    },
+                });
+            }
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     const doEditComment = async (e: any) => {
-        setIsLoading(true);
         e.preventDefault();
+        if (isLoading) return;
+        setIsLoading(true);
 
-        const result = await editComment(comment._id, editText);
+        try {
+            const result = await editComment(comment._id, editText);
 
-        if (result.status) {
-            setEditMode(false);
-            await fetchComments({
-                onSuccessFetch: () => {
-                    setReplyText('');
-                    setShowForm(false);
-                    showToast({
-                        type: 'success',
-                        message: 'Changes saved',
-                    });
-                },
-            });
-        } else {
-            showToast({
-                type: 'error',
-                message: result.message,
-            });
+            if (result.status) {
+                setEditMode(false);
+                await fetchComments({
+                    onSuccessFetch: () => {
+                        setReplyText('');
+                        setShowForm(false);
+                        showToast({
+                            type: 'success',
+                            message: 'Changes saved',
+                        });
+                    },
+                });
+            } else {
+                showToast({
+                    type: 'error',
+                    message: result.message,
+                });
+            }
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     const flushLike = async () => {
@@ -315,18 +335,37 @@ const Comment = ({
             {
                 title: 'Delete',
                 onClick: () => {
-                    deleteComment(comment._id).then((result: any) => {
-                        if (result.status === true) {
-                            fetchComments({
-                                onSuccessFetch: () => {
-                                    showToast({
-                                        type: 'success',
-                                        message: 'Comment deleted',
-                                    });
-                                },
-                            });
-                        }
-                    });
+                    // The comment fades out right away and is only dropped
+                    // from the tree once the exit animation is over; a failed
+                    // request brings it back.
+                    setIsLeaving(true);
+                    const leaveDelay = window.matchMedia(
+                        '(prefers-reduced-motion: reduce)',
+                    ).matches
+                        ? 0
+                        : 220;
+                    const request = deleteComment(comment._id).catch(
+                        () => null,
+                    );
+                    setTimeout(() => {
+                        const restore = removeComment(comment._id);
+                        request.then((result: any) => {
+                            if (result?.status === true) {
+                                showToast({
+                                    type: 'success',
+                                    message: 'Comment deleted',
+                                });
+                            } else {
+                                restore();
+                                showToast({
+                                    type: 'error',
+                                    message:
+                                        result?.message ||
+                                        'Could not delete the comment',
+                                });
+                            }
+                        });
+                    }, leaveDelay);
                 },
                 icon: <DeleteIcon />,
                 type: 'danger',
@@ -336,7 +375,7 @@ const Comment = ({
 
     return (
         <div
-            className={`comment app-transition${level === 0 ? ' comment_root' : ''}${level === 0 && !isFirstRoot ? ' comment_root_line' : ''}`}
+            className={`comment app-transition${isLeaving ? ' comment_leaving' : ''}${level === 0 ? ' comment_root' : ''}${level === 0 && !isFirstRoot ? ' comment_root_line' : ''}`}
         >
             <div className="comment_body app-transition">
                 {editMode ? (
@@ -457,6 +496,7 @@ const Comment = ({
                                 setReplyCommentText={setReplyCommentText}
                                 fetchComments={fetchComments}
                                 patchComment={patchComment}
+                                removeComment={removeComment}
                                 showToast={showToast}
                                 profile={profile}
                                 postId={postId}
@@ -506,28 +546,48 @@ const PostComments = ({ postId, navigateTo, onCommentsChange }: any) => {
         setComments((prev: any) => mapCommentTree(prev, commentId, updater));
     };
 
+    const commentsRef = useRef<any[]>(comments);
+    commentsRef.current = comments;
+
+    const applyComments = (next: any) => {
+        setComments(next);
+        onCommentsChangeRef.current?.(next, countCommentTree(next));
+    };
+
+    // Returns a function that puts the previous tree back if the server
+    // refuses the deletion.
+    const removeComment = (commentId: any) => {
+        const snapshot = commentsRef.current;
+        applyComments(removeFromTree(snapshot, commentId));
+        return () => applyComments(snapshot);
+    };
+
     const doComment = async (e: any) => {
         e.preventDefault();
+        if (isLoading) return;
         setIsLoading(true);
 
-        const data = {
-            commentText: commentText,
-        };
+        try {
+            const data = {
+                commentText: commentText,
+            };
 
-        const result = await commentPost(postId, data);
+            const result = await commentPost(postId, data);
 
-        if (result.status === true) {
-            await fetchComments({
-                onSuccessFetch: () => {
-                    setCommentText('');
-                    showToast({
-                        type: 'success',
-                        message: 'Comment published',
-                    });
-                },
-            });
+            if (result.status === true) {
+                await fetchComments({
+                    onSuccessFetch: () => {
+                        setCommentText('');
+                        showToast({
+                            type: 'success',
+                            message: 'Comment published',
+                        });
+                    },
+                });
+            }
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -578,6 +638,7 @@ const PostComments = ({ postId, navigateTo, onCommentsChange }: any) => {
                         isFirstRoot={index === 0}
                         fetchComments={fetchComments}
                         patchComment={patchComment}
+                        removeComment={removeComment}
                         showToast={showToast}
                         profile={profile}
                         postId={postId}

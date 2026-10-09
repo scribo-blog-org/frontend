@@ -18,11 +18,11 @@ import { getPosts } from '../../api/posts.api';
 import { format_message_date_label } from '../../utils/format';
 
 import FilterIcon from '../../assets/svg/filter.svg';
+import ChevronDownIcon from '../../assets/svg/chevron-down.svg';
 import PlayIcon from '../../assets/svg/play.svg';
 import PauseIcon from '../../assets/svg/pause.svg';
 import RefreshIcon from '../../assets/svg/refresh.svg';
 
-import DropDown from '../../components/Ui/DropDown';
 import SearchSelect from '../../components/Ui/SearchSelect';
 import CancelButton from '../../components/Ui/CancelButton';
 import ActionButton from '../../components/Ui/ActionButton';
@@ -53,6 +53,7 @@ const ENTITY_FILTERS = [
     'conversation',
     'support_request',
     'role',
+    'request',
 ];
 
 const TYPE_OPTIONS = [
@@ -236,15 +237,49 @@ const LogsPage = () => {
         ]),
     });
     const logs = feed.items;
+    // The secondary filters are folded away on a phone; on wide screens they
+    // are always shown and these only drive the toggle there.
+    const [filtersOpen, setFiltersOpen] = useState<any>(false);
+    const [filtersSettled, setFiltersSettled] = useState<any>(false);
+    const filtersTimer = useRef<any>(0);
     const [live, setLive] = useState<any>(false);
     const [reloading, setReloading] = useState<any>(false);
     const refreshFeed = feed.refresh;
 
     const reload = async () => {
         setReloading(true);
-        await refreshFeed();
-        setReloading(false);
+        try {
+            await refreshFeed();
+        } finally {
+            setReloading(false);
+        }
     };
+
+    useEffect(() => () => window.clearTimeout(filtersTimer.current), []);
+
+    const toggleFilters = () => {
+        window.clearTimeout(filtersTimer.current);
+
+        if (filtersOpen) {
+            setFiltersSettled(false);
+            setFiltersOpen(false);
+            return;
+        }
+
+        setFiltersOpen(true);
+        // Open lists inside the folded block must not be clipped, but the
+        // block clips while it grows; it is let out once it has finished.
+        filtersTimer.current = window.setTimeout(
+            () => setFiltersSettled(true),
+            300,
+        );
+    };
+
+    const activeFilters =
+        Number(levelFilter !== 'all') +
+        Number(typeFilter !== 'all') +
+        Number(Boolean(dateFrom)) +
+        Number(Boolean(dateTo));
 
     useEffect(() => {
         if (!live) {
@@ -355,10 +390,36 @@ const LogsPage = () => {
         (log: any) => log.data?.support_request === filter.id,
     );
 
+    // Live and Reload sit beside the search on wide screens and inside the
+    // folded block on a phone, so the same buttons are rendered in both.
+    const actionButtons = (
+        <>
+            <ActionButton
+                size="lg"
+                className={live ? 'logs_live_active' : ''}
+                onClick={() => setLive((value: any) => !value)}
+            >
+                {live ? <PauseIcon /> : <PlayIcon />}
+                Live
+            </ActionButton>
+            <ActionButton
+                size="lg"
+                onClick={reload}
+                // Live refreshes the list on its own, so a manual
+                // reload is off for as long as it runs.
+                isLoading={reloading || live}
+                loaderVariant="segments"
+                className="logs_reload"
+            >
+                <RefreshIcon />
+            </ActionButton>
+        </>
+    );
+
     return (
         <div className="logs_page" ref={rootRef}>
             <div className="logs_toolbar">
-                <div className="logs_toolbar_row">
+                <div className="logs_toolbar_row logs_toolbar_row_top">
                     {filter.type ? (
                         <div className="logs_toolbar_filter">
                             <FilterIcon />
@@ -426,6 +487,13 @@ const LogsPage = () => {
                             )}
                             {filter.type === 'role' && (
                                 <RoleChip role={filter.id} />
+                            )}
+                            {filter.type === 'request' && (
+                                <span className="log_chip">
+                                    <span className="log_chip_label log_card_mono">
+                                        Request {filter.id}
+                                    </span>
+                                </span>
                             )}
                             <CancelButton
                                 size="sm"
@@ -497,60 +565,68 @@ const LogsPage = () => {
                         </div>
                     )}
 
-                    <div className="logs_toolbar_actions">
-                        <ActionButton
-                            size="lg"
-                            className={live ? 'logs_live_active' : ''}
-                            onClick={() => setLive((value: any) => !value)}
-                        >
-                            {live ? <PauseIcon /> : <PlayIcon />}
-                            Live
-                        </ActionButton>
-                        <ActionButton
-                            size="lg"
-                            onClick={reload}
-                            className={`logs_reload${reloading ? ' logs_reload_busy' : ''}`}
-                        >
-                            <RefreshIcon />
-                        </ActionButton>
+                    <ActionButton
+                        size="lg"
+                        className={`logs_filters_toggle${filtersOpen ? ' logs_filters_toggle_open' : ''}`}
+                        onClick={toggleFilters}
+                        aria-label="Filters"
+                        aria-expanded={filtersOpen}
+                    >
+                        <ChevronDownIcon />
+                        {activeFilters ? (
+                            <span className="logs_filters_dot" />
+                        ) : null}
+                    </ActionButton>
+                    <div className="logs_toolbar_actions logs_toolbar_actions_wide">
+                        {actionButtons}
                     </div>
                 </div>
 
-                <div className="logs_toolbar_row">
-                    <div className="logs_toolbar_level">
-                        <DropDown
-                            options={LEVEL_OPTIONS}
-                            value={levelFilter}
-                            placeholder="Level"
-                            onChange={(value: any) => {
-                                setLevelFilter(value);
-                            }}
-                        />
-                    </div>
-                    <div className="logs_toolbar_type">
-                        <DropDown
-                            options={TYPE_OPTIONS}
-                            value={typeFilter}
-                            placeholder="Event type"
-                            onChange={(value: any) => {
-                                setTypeFilter(value);
-                            }}
-                        />
-                    </div>
+                <div
+                    className={`logs_toolbar_filters${filtersOpen ? ' logs_toolbar_filters_open' : ''}${filtersSettled ? ' logs_toolbar_filters_settled' : ''}`}
+                >
+                    <div className="logs_toolbar_filters_inner">
+                        <div className="logs_toolbar_actions logs_toolbar_actions_folded">
+                            {actionButtons}
+                        </div>
+                        <div className="logs_toolbar_row">
+                            <div className="logs_toolbar_level">
+                                <SearchSelect
+                                    options={LEVEL_OPTIONS}
+                                    value={levelFilter}
+                                    placeholder="Level"
+                                    onChange={(value: any) => {
+                                        // Emptying the field clears the filter.
+                                        setLevelFilter(value || 'all');
+                                    }}
+                                />
+                            </div>
+                            <div className="logs_toolbar_type">
+                                <SearchSelect
+                                    options={TYPE_OPTIONS}
+                                    value={typeFilter}
+                                    placeholder="Event type"
+                                    onChange={(value: any) => {
+                                        setTypeFilter(value || 'all');
+                                    }}
+                                />
+                            </div>
 
-                    <div className="logs_toolbar_range">
-                        <DateTimePicker
-                            label="From"
-                            value={dateFrom}
-                            max={dateTo || undefined}
-                            onChange={setDateFrom}
-                        />
-                        <DateTimePicker
-                            label="To"
-                            value={dateTo}
-                            min={dateFrom || undefined}
-                            onChange={setDateTo}
-                        />
+                            <div className="logs_toolbar_range">
+                                <DateTimePicker
+                                    label="From"
+                                    value={dateFrom}
+                                    max={dateTo || undefined}
+                                    onChange={setDateFrom}
+                                />
+                                <DateTimePicker
+                                    label="To"
+                                    value={dateTo}
+                                    min={dateFrom || undefined}
+                                    onChange={setDateTo}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

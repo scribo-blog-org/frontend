@@ -7,6 +7,19 @@
     position: relative;
     padding: var(--space-6) 0;
     border-bottom: 1px solid var(--line-color);
+    animation: posts_item_enter 260ms ease backwards;
+    transition:
+        color 300ms ease,
+        background-color 300ms ease,
+        border-color 300ms ease,
+        opacity 240ms ease,
+        transform 240ms ease;
+
+    &_leaving {
+        opacity: 0;
+        transform: translateY(-6px);
+        pointer-events: none;
+    }
 
     &:last-child {
         border-bottom: none;
@@ -73,5 +86,19 @@
         .post_actions_button {
             padding: 6px;
         }
+    }
+}
+
+@keyframes posts_item_enter {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .posts_item {
+        animation: none;
+        transition: none;
     }
 }

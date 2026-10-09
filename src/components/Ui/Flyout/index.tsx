@@ -12,12 +12,17 @@ import {
     useHover,
     useInteractions,
     useRole,
+    useTransitionStyles,
     safePolygon,
 } from '@floating-ui/react';
 
 import './Flyout.scss';
 
 const PORTAL_ROOT = 'app-layout';
+
+const prefersReducedMotion = () =>
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const Flyout = ({
     children,
@@ -57,6 +62,14 @@ const Flyout = ({
         });
     }, [refs, virtualAnchor]);
 
+    const { isMounted, styles: transitionStyles } = useTransitionStyles(
+        context,
+        {
+            duration: prefersReducedMotion() ? 0 : 200,
+            initial: { opacity: 0, transform: 'scale(0.97)' },
+        },
+    );
+
     const hover = useHover(context, {
         enabled: !isControlled && !virtualAnchor,
         handleClose: safePolygon({ buffer: 6 }),
@@ -93,15 +106,20 @@ const Flyout = ({
                     {children}
                 </span>
             ) : null}
-            {open ? (
+            {isMounted ? (
                 <FloatingPortal root={virtualAnchor ? undefined : portalRoot}>
                     <div
                         ref={refs.setFloating}
                         style={floatingStyles}
-                        className="flyout float_section blurred"
+                        className="flyout_shell"
                         {...getFloatingProps()}
                     >
-                        {content}
+                        <div
+                            className="flyout float_section blurred"
+                            style={transitionStyles}
+                        >
+                            {content}
+                        </div>
                     </div>
                 </FloatingPortal>
             ) : null}

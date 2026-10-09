@@ -16,6 +16,7 @@
     &_hint {
         font-size: var(--text-md);
         color: var(--light-text-color);
+        animation: search_group_enter 240ms ease backwards;
     }
 
     &_field {
@@ -39,6 +40,7 @@
         padding: 0;
         border-radius: 6px;
         color: var(--light-text-color);
+        @include use-transition();
 
         svg {
             width: 16px;
@@ -61,6 +63,15 @@
         display: flex;
         flex-direction: column;
         gap: var(--space-3);
+        animation: search_group_enter 240ms ease backwards;
+
+        &:nth-child(2) {
+            animation-delay: 50ms;
+        }
+
+        &:nth-child(3) {
+            animation-delay: 100ms;
+        }
     }
 
     &_group_head {
@@ -314,5 +325,19 @@
             width: 88px;
             height: 56px;
         }
+    }
+}
+
+@keyframes search_group_enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .search_page_group,
+    .search_page_hint {
+        animation: none;
     }
 }

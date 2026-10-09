@@ -159,6 +159,7 @@ const RestoreDialog = ({ item, info, onCancel, onStarted, showToast }: any) => {
     const [isStarting, setIsStarting] = useState<any>(false);
 
     const start = async () => {
+        if (isStarting) return;
         setIsStarting(true);
         try {
             const result = await restoreBackup(item._id);
@@ -204,6 +205,7 @@ const RestoreDialog = ({ item, info, onCancel, onStarted, showToast }: any) => {
             <InputField
                 value={word}
                 placeholder={CONFIRM_WORD}
+                disabled={isStarting}
                 onChange={(event: any) => setWord(event.target.value)}
             />
             <div className="backup_restore_dialog_bottom">
@@ -294,9 +296,14 @@ const BackupsPage = () => {
     }, [running, restoring, load]);
 
     const start = async () => {
+        if (starting || uploading) return;
         setStarting(true);
-        const result = await runBackup();
-        setStarting(false);
+        let result;
+        try {
+            result = await runBackup();
+        } finally {
+            setStarting(false);
+        }
 
         if (!result.status) {
             showToast({ type: 'error', message: result.message });
@@ -324,9 +331,15 @@ const BackupsPage = () => {
             return;
         }
 
+        if (starting || uploading) return;
+
         setUploading(true);
-        const result = await uploadBackup(file);
-        setUploading(false);
+        let result;
+        try {
+            result = await uploadBackup(file);
+        } finally {
+            setUploading(false);
+        }
 
         if (!result.status) {
             showToast({ type: 'error', message: result.message });
@@ -355,8 +368,12 @@ const BackupsPage = () => {
 
     const download = async (item: any) => {
         setDownloadingId(item._id);
-        const result = await downloadBackup(item._id);
-        setDownloadingId(null);
+        let result;
+        try {
+            result = await downloadBackup(item._id);
+        } finally {
+            setDownloadingId(null);
+        }
 
         if (!result.status) {
             showToast({ type: 'error', message: result.message });
@@ -390,11 +407,21 @@ const BackupsPage = () => {
 
     const last = info?.last_restore;
     const job = info?.restore_job;
-    const busy = running || restoring;
+    const busy = running || restoring || starting || uploading;
 
     return (
         <div className="admin_panel_content_backups_page">
             <div className="admin_panel_content_backups_page_header">
+                {info?.app_version ? (
+                    <p className="admin_panel_content_backups_page_version">
+                        <span className="admin_panel_content_backups_page_version_label">
+                            Version
+                        </span>
+                        v{info.app_version}
+                        {info.app_sha ? ` · ${info.app_sha}` : ''}
+                        {info.db_version ? ` · data ${info.db_version}` : ''}
+                    </p>
+                ) : null}
                 <div className="admin_panel_content_backups_page_header_info">
                     {info?.enabled ? (
                         <>

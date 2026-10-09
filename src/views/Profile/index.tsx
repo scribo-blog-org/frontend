@@ -34,6 +34,7 @@ import UserBadge from '../../components/UserBadge/index';
 import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
 import { imageSrc } from '../../utils/image';
 import FollowButton from '../../components/FollowButton';
+import { setIdPresent } from '../../utils/ids';
 import ActionButton from '../../components/Ui/ActionButton';
 import Tabs from '../../components/Ui/Tabs';
 import Tooltip from '../../components/Ui/Tooltip/index';
@@ -56,6 +57,8 @@ const Profile = ({
     const [user, setUser] = useState<Record<string, any> | null>(initialUser);
     const [followThisUser, setFollowThisUser] = useState<any>(null);
     const [followAnotherUser, setFollowAnotherUser] = useState<any>(null);
+    const [isOpeningFollows, setIsOpeningFollows] = useState<any>(false);
+    const [isStartingChat, setIsStartingChat] = useState<any>(false);
 
     useEffect(() => {
         if (!followThisUser) return;
@@ -191,8 +194,26 @@ const Profile = ({
     };
 
     const fetchUsers = async (query: any) => {
-        const response = await getUsers(query);
-        return response.status === true ? response.data : [];
+        setIsOpeningFollows(true);
+        try {
+            const response = await getUsers(query);
+            return response.status === true ? response.data : [];
+        } finally {
+            setIsOpeningFollows(false);
+        }
+    };
+
+    const startChat = async () => {
+        if (isStartingChat) {
+            return;
+        }
+
+        setIsStartingChat(true);
+        try {
+            await startConversationWithUser(user?._id, navigate, showToast);
+        } finally {
+            setIsStartingChat(false);
+        }
     };
 
     const open_follows = async () => {
@@ -400,6 +421,7 @@ const Profile = ({
                                 <button
                                     type="button"
                                     className="profile_info_stat app-transition"
+                                    disabled={isOpeningFollows}
                                     onClick={open_followers}
                                 >
                                     <span className="profile_info_stat_value">
@@ -418,6 +440,7 @@ const Profile = ({
                                 <button
                                     type="button"
                                     className="profile_info_stat app-transition"
+                                    disabled={isOpeningFollows}
                                     onClick={open_follows}
                                 >
                                     <span className="profile_info_stat_value">
@@ -448,18 +471,29 @@ const Profile = ({
                                 <FollowButton
                                     setNewData={setFollowThisUser}
                                     authorId={user?._id}
+                                    onOptimisticChange={(
+                                        isFollowing: boolean,
+                                    ) =>
+                                        setUser((prev: any) =>
+                                            prev && profile?._id
+                                                ? {
+                                                      ...prev,
+                                                      followers: setIdPresent(
+                                                          prev.followers,
+                                                          profile._id,
+                                                          isFollowing,
+                                                      ),
+                                                  }
+                                                : prev,
+                                        )
+                                    }
                                     className="profile_info_action"
                                 />
                                 {profile ? (
                                     <ActionButton
                                         className="profile_info_action"
-                                        onClick={() =>
-                                            startConversationWithUser(
-                                                user?._id,
-                                                navigate,
-                                                showToast,
-                                            )
-                                        }
+                                        isLoading={isStartingChat}
+                                        onClick={startChat}
                                     >
                                         <MessageIcon className="profile_info_action_icon" />
                                         Start a conversation

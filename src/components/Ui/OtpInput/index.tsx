@@ -5,7 +5,14 @@ import './OtpInput.scss';
 import { useRef } from 'react';
 import InputField from '../InputField';
 
-const OtpInput = ({ length = 6, value, onChange, error, onFocus }: any) => {
+const OtpInput = ({
+    length = 6,
+    value,
+    onChange,
+    error,
+    onFocus,
+    disabled = false,
+}: any) => {
     const inputsRef = useRef<any[]>([]);
 
     const handleChange = (e: any, index: any) => {
@@ -126,6 +133,7 @@ const OtpInput = ({ length = 6, value, onChange, error, onFocus }: any) => {
                     maxLength={length}
                     value={digit}
                     error={error}
+                    disabled={disabled}
                     placeholder=""
                     onFocus={(e: any) => {
                         e.target.select();

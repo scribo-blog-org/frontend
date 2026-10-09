@@ -16,6 +16,7 @@
     }
 
     .pagination_content > .posts_item:first-child,
+    .infinite-scroll > .posts_item:first-child,
     > .posts_item:first-child {
         padding-top: 0;
     }

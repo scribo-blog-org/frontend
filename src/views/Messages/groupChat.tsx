@@ -89,6 +89,7 @@ export function UserSearchSelect({
     onPick,
     placeholder = 'Search by nickname',
     className = '',
+    disabled = false,
 }: any) {
     const [options, setOptions] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -171,6 +172,7 @@ export function UserSearchSelect({
             placeholder={placeholder}
             emptyLabel="Nothing found"
             loading={loading}
+            disabled={disabled}
             minSearchLength={2}
             clearOnSelect
             onInput={handleInput}
@@ -218,9 +220,13 @@ export function JoinGroupPrompt({ invite, onAccept, onDecline }: any) {
                 <PrimaryButton
                     isLoading={isJoining}
                     onClick={async () => {
+                        if (isJoining) return;
                         setIsJoining(true);
-                        await onAccept();
-                        setIsJoining(false);
+                        try {
+                            await onAccept();
+                        } finally {
+                            setIsJoining(false);
+                        }
                     }}
                 >
                     Join chat
@@ -250,23 +256,23 @@ export function CreateGroupForm({
     const handleCreate = async () => {
         const title = name.trim();
         if (title.length < FIELD_LIMITS.groupName.min || isSaving) {
-            showToast?.({
-                type: 'error',
-                message: 'Enter a group name',
-            });
             return;
         }
 
         setIsSaving(true);
-        const result = await createGroup(
-            {
-                name: title,
-                description: description.trim(),
-                memberIds: members.map((member) => member._id),
-            },
-            photo,
-        );
-        setIsSaving(false);
+        let result;
+        try {
+            result = await createGroup(
+                {
+                    name: title,
+                    description: description.trim(),
+                    memberIds: members.map((member) => member._id),
+                },
+                photo,
+            );
+        } finally {
+            setIsSaving(false);
+        }
 
         if (!result?.status) {
             showToast?.({
@@ -282,10 +288,16 @@ export function CreateGroupForm({
 
     return (
         <div className="messages_group_form">
-            <DropFile value={photo} setValue={setPhoto} {...imageDropProps} />
+            <DropFile
+                value={photo}
+                setValue={setPhoto}
+                disabled={isSaving}
+                {...imageDropProps}
+            />
             <InputField
                 value={name}
                 placeholder="Group name"
+                disabled={isSaving}
                 length={FIELD_LIMITS.groupName.max}
                 onChange={(event: any) => setName(event.target.value)}
             />
@@ -294,11 +306,13 @@ export function CreateGroupForm({
                 placeholder="Description (optional)"
                 isMultiline
                 multilineRows={3}
+                disabled={isSaving}
                 length={FIELD_LIMITS.groupDescription.max}
                 onChange={(event: any) => setDescription(event.target.value)}
             />
             <UserSearchSelect
                 excludeIds={excludeIds}
+                disabled={isSaving}
                 onPick={(user: any) =>
                     setMembers((current) =>
                         current.some(
@@ -317,6 +331,7 @@ export function CreateGroupForm({
                             <button
                                 type="button"
                                 className="messages_group_member_remove app-transition"
+                                disabled={isSaving}
                                 onClick={() =>
                                     setMembers((current) =>
                                         current.filter(
@@ -337,7 +352,11 @@ export function CreateGroupForm({
                 <ActionButton onClick={onClose} disabled={isSaving}>
                     Cancel
                 </ActionButton>
-                <PrimaryButton isLoading={isSaving} onClick={handleCreate}>
+                <PrimaryButton
+                    isLoading={isSaving}
+                    disabled={name.trim().length < FIELD_LIMITS.groupName.min}
+                    onClick={handleCreate}
+                >
                     Create
                 </PrimaryButton>
             </div>
@@ -363,6 +382,8 @@ export function GroupSettings({
     const [photo, setPhoto] = useState<any>(null);
     const [removePhoto, setRemovePhoto] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
+    const isLocked = isSaving || isAdding;
     const isAdmin = group?.my_role === 'admin';
 
     const apply = (data: any) => {
@@ -387,20 +408,24 @@ export function GroupSettings({
     };
 
     const handleSave = async () => {
-        if (isSaving) {
+        if (isLocked) {
             return;
         }
         setIsSaving(true);
-        const result = await updateGroup(
-            group._id,
-            {
-                name: name.trim(),
-                description: description.trim(),
-                removePhoto: removePhoto && !(photo instanceof File),
-            },
-            photo instanceof File ? photo : null,
-        );
-        setIsSaving(false);
+        let result;
+        try {
+            result = await updateGroup(
+                group._id,
+                {
+                    name: name.trim(),
+                    description: description.trim(),
+                    removePhoto: removePhoto && !(photo instanceof File),
+                },
+                photo instanceof File ? photo : null,
+            );
+        } finally {
+            setIsSaving(false);
+        }
         if (!result?.status) {
             fail(result, 'Could not update the group');
             return;
@@ -411,7 +436,16 @@ export function GroupSettings({
     };
 
     const handleAdd = async (user: any) => {
-        const result = await addGroupMember(group._id, user._id);
+        if (isLocked) {
+            return;
+        }
+        setIsAdding(true);
+        let result;
+        try {
+            result = await addGroupMember(group._id, user._id);
+        } finally {
+            setIsAdding(false);
+        }
         if (!result?.status) {
             fail(result, 'Could not add this person');
             return;
@@ -419,9 +453,38 @@ export function GroupSettings({
         apply(result.data);
     };
 
+    // Both changes show in the list at once and are undone for that member
+    // only if the server refuses.
     const handleRemove = async (userId: any) => {
+        const list = Array.isArray(group?.members) ? group.members : [];
+        const index = list.findIndex(
+            (item: any) => String(item._id) === String(userId),
+        );
+        const member = list[index];
+
+        setGroup((current: any) => ({
+            ...current,
+            members: (current?.members || []).filter(
+                (item: any) => String(item._id) !== String(userId),
+            ),
+        }));
+
         const result = await removeGroupMember(group._id, userId);
         if (!result?.status) {
+            if (member) {
+                setGroup((current: any) => {
+                    const next = [...(current?.members || [])];
+                    if (
+                        next.some(
+                            (item: any) => String(item._id) === String(userId),
+                        )
+                    ) {
+                        return current;
+                    }
+                    next.splice(Math.min(index, next.length), 0, member);
+                    return { ...current, members: next };
+                });
+            }
             fail(result, 'Could not remove this person');
             return;
         }
@@ -429,8 +492,23 @@ export function GroupSettings({
     };
 
     const handleRole = async (userId: any, role: string) => {
+        const previous = (group?.members || []).find(
+            (item: any) => String(item._id) === String(userId),
+        )?.role;
+        const setRole = (value: any) =>
+            setGroup((current: any) => ({
+                ...current,
+                members: (current?.members || []).map((item: any) =>
+                    String(item._id) === String(userId)
+                        ? { ...item, role: value }
+                        : item,
+                ),
+            }));
+
+        setRole(role);
         const result = await updateGroupMemberRole(group._id, userId, role);
         if (!result?.status) {
+            setRole(previous);
             fail(result, 'Could not change the role');
             return;
         }
@@ -482,11 +560,13 @@ export function GroupSettings({
                     setPhoto(null);
                     setRemovePhoto(true);
                 }}
+                disabled={isLocked}
                 {...imageDropProps}
             />
             <InputField
                 value={name}
                 placeholder="Group name"
+                disabled={isLocked}
                 length={FIELD_LIMITS.groupName.max}
                 onChange={(event: any) => setName(event.target.value)}
             />
@@ -495,10 +575,17 @@ export function GroupSettings({
                 placeholder="Description (optional)"
                 isMultiline
                 multilineRows={3}
+                disabled={isLocked}
                 length={FIELD_LIMITS.groupDescription.max}
                 onChange={(event: any) => setDescription(event.target.value)}
             />
-            <PrimaryButton isLoading={isSaving} onClick={handleSave}>
+            <PrimaryButton
+                isLoading={isSaving}
+                disabled={
+                    isAdding || name.trim().length < FIELD_LIMITS.groupName.min
+                }
+                onClick={handleSave}
+            >
                 Save
             </PrimaryButton>
             <div className="messages_group_members_head">
@@ -509,12 +596,14 @@ export function GroupSettings({
                     className="messages_group_add_search"
                     excludeIds={excludeIds}
                     placeholder="Add people"
+                    disabled={isLocked}
                     onPick={handleAdd}
                 />
                 <button
                     type="button"
                     className="messages_group_share app-transition"
                     aria-label="Share"
+                    disabled={isLocked}
                     onClick={openShare}
                 >
                     <ShareIcon />
@@ -538,32 +627,41 @@ export function GroupSettings({
                             </span>
                             {isAdmin && !isSelf ? (
                                 <Popup
-                                    body={[
-                                        [
-                                            {
-                                                title:
-                                                    member.role === 'admin'
-                                                        ? 'Make participant'
-                                                        : 'Make administrator',
-                                                onClick: () =>
-                                                    handleRole(
-                                                        member._id,
-                                                        member.role === 'admin'
-                                                            ? 'member'
-                                                            : 'admin',
-                                                    ),
-                                            },
-                                            {
-                                                title: 'Remove',
-                                                type: 'danger',
-                                                onClick: () =>
-                                                    handleRemove(member._id),
-                                            },
-                                        ],
-                                    ]}
+                                    body={
+                                        isLocked
+                                            ? []
+                                            : [
+                                                  [
+                                                      {
+                                                          title:
+                                                              member.role ===
+                                                              'admin'
+                                                                  ? 'Make participant'
+                                                                  : 'Make administrator',
+                                                          onClick: () =>
+                                                              handleRole(
+                                                                  member._id,
+                                                                  member.role ===
+                                                                      'admin'
+                                                                      ? 'member'
+                                                                      : 'admin',
+                                                              ),
+                                                      },
+                                                      {
+                                                          title: 'Remove',
+                                                          type: 'danger',
+                                                          onClick: () =>
+                                                              handleRemove(
+                                                                  member._id,
+                                                              ),
+                                                      },
+                                                  ],
+                                              ]
+                                    }
                                 >
                                     <button
                                         type="button"
+                                        disabled={isLocked}
                                         className="messages_group_member_menu app-transition"
                                         aria-label="Member actions"
                                     >
