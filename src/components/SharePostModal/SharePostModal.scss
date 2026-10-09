@@ -93,18 +93,6 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
-        max-height: 240px;
-        overflow-y: auto;
-        -webkit-mask-image: linear-gradient(
-            to bottom,
-            #000 calc(100% - 20px),
-            transparent
-        );
-        mask-image: linear-gradient(
-            to bottom,
-            #000 calc(100% - 20px),
-            transparent
-        );
     }
 
     &_chat {

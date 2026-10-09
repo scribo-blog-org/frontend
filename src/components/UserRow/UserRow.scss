@@ -1,0 +1,13 @@
+@use '../../styles/helpers' as *;
+
+// The status sits under the name, not under the avatar: badge padding, avatar
+// and the gap before the name.
+.user_row {
+    .panel_row_description {
+        padding-left: 34px;
+
+        @include screen() {
+            padding-left: 28px;
+        }
+    }
+}
