@@ -27,6 +27,8 @@ import SettingsIcon from '../../assets/svg/settings.svg';
 import MessageIcon from '../../assets/svg/message.svg';
 import { startConversationWithUser } from '../Messages/index';
 
+import PeoplesIcon from '../../assets/svg/peoples.svg';
+import { Panel, PanelRow, Banner } from '../../components/Ui';
 import Sceleton from '../../components/Ui/Sceleton/Sceleton';
 
 import Posts from '../../components/Posts/index';
@@ -216,79 +218,75 @@ const Profile = ({
         }
     };
 
-    const open_follows = async () => {
-        const ids = (user?.follows || [])
+    const showFollowList = (title: string, subtitle: string, users: any[]) => {
+        showModalWindow({
+            title,
+            subtitle,
+            icon: <PeoplesIcon />,
+            content: users.length ? (
+                <Panel>
+                    {users.map((authorData: any) => (
+                        <PanelRow
+                            key={authorData._id}
+                            className="profile_follow_row"
+                            title={<UserBadge data={authorData} />}
+                            description={
+                                <UserActivityStatus
+                                    user={authorData}
+                                    viewerId={profile?._id}
+                                />
+                            }
+                            trailing={
+                                profile &&
+                                profile._id === authorData._id ? null : (
+                                    <FollowButton
+                                        size="sm"
+                                        setNewData={setFollowAnotherUser}
+                                        authorId={authorData._id}
+                                    />
+                                )
+                            }
+                        />
+                    ))}
+                </Panel>
+            ) : (
+                <Banner tone="neutral">No one yet</Banner>
+            ),
+        });
+    };
+
+    const openFollowList = async (
+        title: string,
+        subtitle: (count: number) => string,
+        source: any[],
+    ) => {
+        const ids = (source || [])
             .map((item: any) => ({ _id: item }))
             .filter((item: any) => item._id);
 
         if (!ids.length) {
-            showModalWindow({
-                title: 'Following',
-                content: <p className="profile_follow_empty">No one yet</p>,
-            });
+            showFollowList(title, 'Nobody here yet', []);
             return;
         }
 
         const result = await fetchUsers(ids);
 
-        showModalWindow({
-            title: `Following`,
-            content: result.map((authorData: any) => (
-                <div
-                    key={authorData._id}
-                    className="modal_window_body_content_user"
-                >
-                    <UserBadge data={authorData} />
-                    {profile && profile._id === authorData._id ? (
-                        <></>
-                    ) : (
-                        <FollowButton
-                            size="sm"
-                            setNewData={setFollowAnotherUser}
-                            authorId={authorData._id}
-                        />
-                    )}
-                </div>
-            )),
-        });
+        showFollowList(title, subtitle(result.length), result);
     };
 
-    const open_followers = async () => {
-        const ids = (user?.followers || [])
-            .map((item: any) => ({ _id: item }))
-            .filter((item: any) => item._id);
+    const open_follows = () =>
+        openFollowList(
+            'Following',
+            (count) => `${count} ${count === 1 ? 'account' : 'accounts'}`,
+            user?.follows,
+        );
 
-        if (!ids.length) {
-            showModalWindow({
-                title: 'Followers',
-                content: <p className="profile_follow_empty">No one yet</p>,
-            });
-            return;
-        }
-
-        const result = await fetchUsers(ids);
-
-        showModalWindow({
-            title: `Followers`,
-            content: result.map((authorData: any) => (
-                <div
-                    key={authorData?._id}
-                    className="modal_window_body_content_user"
-                >
-                    <UserBadge data={authorData} />
-                    {profile && profile._id === authorData._id ? (
-                        <></>
-                    ) : (
-                        <FollowButton
-                            size="sm"
-                            setNewData={setFollowAnotherUser}
-                            authorId={authorData._id}
-                        />
-                    )}
-                </div>
-            )),
-        });
-    };
+    const open_followers = () =>
+        openFollowList(
+            'Followers',
+            (count) => `${count} ${count === 1 ? 'person' : 'people'}`,
+            user?.followers,
+        );
 
     return (
         <div className="profile">

@@ -74,17 +74,21 @@
 .modal_window_body_content {
     .modal_delete_post_content {
         display: flex;
-        gap: 24px;
+        gap: var(--space-3);
         flex-direction: column;
-        justify-content: space-between;
 
         &_post {
             display: flex;
             flex-direction: column;
             gap: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--line-color);
+            border-radius: 12px;
+            background: var(--panel-row-color);
 
             &_title {
-                font-size: 18px;
+                font-size: var(--text-lg);
+                overflow-wrap: anywhere;
             }
 
             &_header {
@@ -99,17 +103,12 @@
 
             &_image {
                 width: 100%;
-                max-height: 500px;
-                border-radius: 6px;
+                max-height: 240px;
+                border-radius: 8px;
                 object-fit: cover;
                 background-size: cover;
                 background-position: center;
             }
-        }
-        &_bottom {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
         }
     }
 }

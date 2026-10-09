@@ -25,6 +25,8 @@ import LikeFilledIcon from '../../assets/svg/like-filled.svg';
 import LikeOutlineIcon from '../../assets/svg/like-outline.svg';
 import ThreeDotsVeritcalIcon from '../../assets/svg/three-dots-vertical.svg';
 import RedirectIcon from '../../assets/svg/redirect.svg';
+import CommentIcon from '../../assets/svg/comment.svg';
+import InfoIcon from '../../assets/svg/info.svg';
 
 import CurrentUserBadge from '../CurrentUserBadge/index';
 import UserBadge from '../UserBadge/index';
@@ -34,6 +36,7 @@ import CancelButton from '../../components/Ui/CancelButton/index';
 import Tooltip from '../Ui/Tooltip/index';
 import Popup from '../Ui/Popup/index';
 import RichText from '../RichText';
+import { Banner } from '../Ui';
 
 const CommentForm = ({
     value,
@@ -47,22 +50,43 @@ const CommentForm = ({
     placeholder = 'Write a comment...',
     isLoading = false,
 }: any) => {
+    const { requestCloseModal } = useContext(AppContext);
+
     const handleInputMouseDown = (e: any) => {
         if (!profile) {
             e.preventDefault();
             showModalWindow({
-                title: `Log in to leave a comment`,
+                title: 'Log in to leave a comment',
+                subtitle: 'Join the conversation',
+                icon: <CommentIcon />,
+                size: 'small',
                 content: (
-                    <PrimaryButton
-                        onClick={() => {
-                            navigate('/auth/login');
-                        }}
-                        className="modal_login_link"
-                        size="sm"
-                    >
-                        <RedirectIcon />
-                        Log in
-                    </PrimaryButton>
+                    <Banner icon={<InfoIcon />}>
+                        Comments, likes and replies are available to signed-in
+                        readers.
+                    </Banner>
+                ),
+                footer: (
+                    <>
+                        <span>It only takes a moment</span>
+                        <div className="modal_window_body_footer_actions">
+                            <CancelButton
+                                size="sm"
+                                onClick={() => requestCloseModal()}
+                            >
+                                Not now
+                            </CancelButton>
+                            <PrimaryButton
+                                size="sm"
+                                onClick={() => {
+                                    navigate('/auth/login');
+                                }}
+                            >
+                                <RedirectIcon />
+                                Log in
+                            </PrimaryButton>
+                        </div>
+                    </>
                 ),
             });
         }

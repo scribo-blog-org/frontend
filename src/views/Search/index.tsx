@@ -7,6 +7,7 @@ import { searchSite } from '../../api/search.api';
 import Category from '../../components/Category';
 import UserBadge from '../../components/UserBadge';
 import InputField from '../../components/Ui/InputField';
+import { Panel, PanelRow } from '../../components/Ui';
 import { format_back } from '../../utils/format';
 import { CATEGORY_COLORS } from '../../styles/constants';
 
@@ -20,11 +21,8 @@ import './Search.scss';
 
 const emptyResults = { posts: [], users: [], categories: [] };
 
-const GroupHead = ({ title, count }: any) => (
-    <header className="search_page_group_head">
-        <h2 className="kicker">{title}</h2>
-        <span className="search_page_group_count">{count}</span>
-    </header>
+const Count = ({ value }: any) => (
+    <span className="search_page_group_count">{value}</span>
 );
 
 const SearchPage = () => {
@@ -132,92 +130,106 @@ const SearchPage = () => {
                 <div className="search_page_groups">
                     {people.length ? (
                         <section className="search_page_group">
-                            <GroupHead title="People" count={people.length} />
-                            <ul className="search_page_people">
+                            <Panel
+                                title="People"
+                                action={<Count value={people.length} />}
+                            >
                                 {people.map((user: any) => (
-                                    <li key={user._id}>
-                                        <Link
-                                            className="search_page_person section app-transition"
-                                            href={`/users/${user.nick_name}`}
-                                        >
-                                            <img
-                                                className="search_page_person_avatar"
-                                                src={imageSrc(
-                                                    user.avatar,
-                                                    DefaultProfileAvatar,
-                                                )}
-                                                alt=""
-                                            />
-                                            <span className="search_page_person_copy">
+                                    <Link
+                                        key={user._id}
+                                        className="search_page_link"
+                                        href={`/users/${user.nick_name}`}
+                                    >
+                                        <PanelRow
+                                            className="search_page_person"
+                                            icon={
+                                                <img
+                                                    className="search_page_person_avatar"
+                                                    src={imageSrc(
+                                                        user.avatar,
+                                                        DefaultProfileAvatar,
+                                                    )}
+                                                    alt=""
+                                                />
+                                            }
+                                            title={
                                                 <span className="search_page_person_name">
                                                     {user.nick_name}
                                                     {user.is_verified ? (
                                                         <Verified className="search_page_person_verified verified-icon" />
                                                     ) : null}
                                                 </span>
-                                                {user.description ? (
-                                                    <span className="search_page_person_bio">
-                                                        {user.description}
-                                                    </span>
-                                                ) : (
-                                                    <span className="search_page_person_bio">
-                                                        Profile on the site
-                                                    </span>
-                                                )}
-                                            </span>
-                                            <ChevronRightIcon
-                                                className="search_page_chevron"
-                                                aria-hidden="true"
-                                            />
-                                        </Link>
-                                    </li>
+                                            }
+                                            description={
+                                                <span className="search_page_person_bio">
+                                                    {user.description ||
+                                                        'Profile on the site'}
+                                                </span>
+                                            }
+                                            trailing={
+                                                <ChevronRightIcon
+                                                    className="search_page_chevron"
+                                                    aria-hidden="true"
+                                                />
+                                            }
+                                        />
+                                    </Link>
                                 ))}
-                            </ul>
+                            </Panel>
                         </section>
                     ) : null}
 
                     {categories.length ? (
                         <section className="search_page_group">
-                            <GroupHead
+                            <Panel
                                 title="Categories"
-                                count={categories.length}
-                            />
-                            <ul className="search_page_cats">
+                                action={<Count value={categories.length} />}
+                            >
                                 {categories.map((category: any) => (
-                                    <li key={category._id}>
-                                        <Link
-                                            className="search_page_cat app-transition"
-                                            href={`/posts?filter=${category._id}`}
-                                        >
-                                            <span
-                                                className={`search_page_cat_mark ${CATEGORY_COLORS[category.color]?.className ?? ''}`}
-                                            >
+                                    <Link
+                                        key={category._id}
+                                        className="search_page_link"
+                                        href={`/posts?filter=${category._id}`}
+                                    >
+                                        <PanelRow
+                                            className="search_page_cat"
+                                            title={
                                                 <span
-                                                    className="search_page_cat_dot"
-                                                    aria-hidden="true"
-                                                />
-                                                {category.name}
-                                            </span>
-                                            <span className="search_page_cat_hint">
-                                                In the feed
-                                            </span>
-                                            <ChevronRightIcon
-                                                className="search_page_chevron"
-                                                aria-hidden="true"
-                                            />
-                                        </Link>
-                                    </li>
+                                                    className={`search_page_cat_mark ${CATEGORY_COLORS[category.color]?.className ?? ''}`}
+                                                >
+                                                    <span
+                                                        className="search_page_cat_dot"
+                                                        aria-hidden="true"
+                                                    />
+                                                    {category.name}
+                                                </span>
+                                            }
+                                            trailing={
+                                                <>
+                                                    <span className="search_page_cat_hint">
+                                                        In the feed
+                                                    </span>
+                                                    <ChevronRightIcon
+                                                        className="search_page_chevron"
+                                                        aria-hidden="true"
+                                                    />
+                                                </>
+                                            }
+                                        />
+                                    </Link>
                                 ))}
-                            </ul>
+                            </Panel>
                         </section>
                     ) : null}
 
                     {posts.length ? (
                         <section className="search_page_group">
-                            <GroupHead title="Posts" count={posts.length} />
-                            <ul className="search_page_posts">
+                            <Panel
+                                title="Posts"
+                                action={<Count value={posts.length} />}
+                            >
                                 {posts.map((post: any) => (
-                                    <li
+                                    <article
                                         key={post._id}
                                         className="search_page_post"
                                     >
@@ -261,9 +273,9 @@ const SearchPage = () => {
                                                 />
                                             ) : null}
                                         </Link>
-                                    </li>
+                                    </article>
                                 ))}
-                            </ul>
+                            </Panel>
                         </section>
                     ) : null}
                 </div>

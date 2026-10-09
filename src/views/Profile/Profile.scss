@@ -241,29 +241,16 @@
     }
 }
 
-.modal_window {
-    &_body {
-        &_content {
-            display: flex;
-            width: 100%;
-            flex-direction: column;
-            gap: 20px;
+.profile_follow_row {
+    .user_badge {
+        padding-left: 0;
+    }
 
-            .profile_follow_empty {
-                font-size: var(--text-md);
-                color: var(--light-text-color);
-                margin: 0;
-            }
+    .panel_row_title {
+        font-weight: 400;
+    }
 
-            &_user {
-                display: flex;
-                width: 100%;
-                justify-content: space-between;
-
-                .follow_button {
-                    flex-shrink: 0;
-                }
-            }
-        }
+    .follow_button {
+        flex-shrink: 0;
     }
 }
