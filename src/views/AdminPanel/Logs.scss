@@ -103,6 +103,7 @@
 }
 
 .logs_empty {
+    animation: logs_fade_in 260ms ease backwards;
     padding: 24px;
     font-size: 14px;
     color: var(--light-text-color);
@@ -238,6 +239,7 @@
         width: 16px;
         height: 16px;
         color: var(--light-text-color);
+        transition: transform 0.25s ease;
         @include screen() {
             display: none;
         }
@@ -393,7 +395,9 @@
 }
 
 .log_item {
+    animation: logs_fade_in 260ms ease backwards;
     border-bottom: 1px solid var(--line-color);
+    @include use-transition();
 
     &:last-child {
         border-bottom: 0;
@@ -741,7 +745,9 @@
     padding: 3px 8px;
 }
 
-.logs_live_active {
+// Doubled with the button's own class so the accent wins whatever order the
+// stylesheets end up in.
+.action_button.logs_live_active {
     color: var(--accent-color);
     border-color: var(--accent-color);
 }
@@ -751,16 +757,133 @@
     padding: 0;
 }
 
-.logs_reload_busy {
-    pointer-events: none;
-
-    svg {
-        animation: logs_reload_spin 0.8s linear infinite;
+@keyframes logs_fade_in {
+    from {
+        opacity: 0;
     }
 }
 
-@keyframes logs_reload_spin {
-    to {
-        transform: rotate(360deg);
+@media (prefers-reduced-motion: reduce) {
+    .log_row_chevron {
+        transition: none;
+    }
+
+    .logs_empty,
+    .log_item {
+        animation: none;
+    }
+}
+
+.action_button.logs_filters_toggle {
+    display: none;
+    width: var(--button-height-lg);
+    padding: 0;
+    flex-shrink: 0;
+
+    @include screen() {
+        display: flex;
+    }
+
+    svg {
+        transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    &_open svg {
+        transform: rotate(180deg);
+    }
+}
+
+// Marks that a filter is active while the filters are folded away.
+.logs_filters_dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-color);
+}
+
+// Live and Reload sit beside the search on wide screens and move into the
+// folded block on a phone.
+.logs_toolbar_actions_wide {
+    @include screen() {
+        display: none;
+    }
+}
+
+.logs_toolbar_actions_folded {
+    display: none;
+
+    @include screen() {
+        display: flex;
+    }
+}
+
+.logs_toolbar_row_top {
+    @include screen() {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+// On a phone the secondary filters fold away behind the Filters button and
+// open with a height animation; on wide screens they are plain content.
+.logs_toolbar_filters {
+    @include screen() {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: 0fr;
+        min-width: 0;
+        margin-top: calc(var(--space-3) * -1);
+        visibility: hidden;
+        transition:
+            grid-template-rows 300ms cubic-bezier(0.16, 1, 0.3, 1),
+            margin-top 300ms cubic-bezier(0.16, 1, 0.3, 1),
+            visibility 0s linear 300ms;
+    }
+
+    &_inner {
+        @include screen() {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+            min-height: 0;
+            min-width: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 300ms ease;
+        }
+    }
+
+    &_open {
+        @include screen() {
+            grid-template-rows: 1fr;
+            margin-top: 0;
+            visibility: visible;
+            transition:
+                grid-template-rows 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                margin-top 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0s;
+        }
+
+        .logs_toolbar_filters_inner {
+            opacity: 1;
+        }
+    }
+
+    // Once fully open, lists that drop down from the filters must not be
+    // clipped by the folding block.
+    &_settled .logs_toolbar_filters_inner {
+        @include screen() {
+            overflow: visible;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .logs_toolbar_filters,
+    .logs_toolbar_filters_inner {
+        transition: none;
     }
 }
