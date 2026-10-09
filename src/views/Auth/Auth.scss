@@ -38,6 +38,7 @@
     }
 
     .form_input {
+        animation: auth_form_enter 260ms ease backwards;
         display: flex;
         flex-direction: column;
         gap: 24px;
@@ -110,13 +111,19 @@
         a {
             font-size: 13px;
             color: var(--light-text-color);
-            transition: none;
+            @include use-transition();
 
             @include hover {
                 color: var(--text-color);
                 text-decoration: underline;
             }
         }
+    }
+
+    a[aria-disabled='true'] {
+        opacity: 0.5;
+        pointer-events: none;
+        cursor: not-allowed;
     }
 
     .top_side {
@@ -247,5 +254,18 @@
                 text-align: center;
             }
         }
+    }
+}
+
+@keyframes auth_form_enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth_page .form_input {
+        animation: none;
     }
 }

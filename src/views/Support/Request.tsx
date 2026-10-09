@@ -104,6 +104,9 @@ const SupportRequestPage = () => {
     }, [key, showToast, profile?.role]);
 
     const handleReply = async () => {
+        if (sending) {
+            return;
+        }
         if (!reply.trim()) {
             setError('Write a message');
             return;
@@ -152,11 +155,16 @@ const SupportRequestPage = () => {
             return;
         }
 
+        // Show the new status right away; the server response replaces it, and
+        // a failure restores the previous one.
+        const previous = item;
+        setItem({ ...item, status });
         setStatusSaving(true);
         try {
             const result = await updateSupportRequestStatus(item._id, status);
 
             if (!result.status) {
+                setItem(previous);
                 showToast({
                     type: 'error',
                     message: result.message || 'Could not update the status',
@@ -167,6 +175,7 @@ const SupportRequestPage = () => {
             setItem(result.data);
             showToast({ type: 'success', message: 'Status updated' });
         } catch {
+            setItem(previous);
             showToast({
                 type: 'error',
                 message: 'Could not update the status',
@@ -216,6 +225,7 @@ const SupportRequestPage = () => {
                             options={SUPPORT_STATUSES}
                             value={item.status}
                             onChange={handleStatus}
+                            disabled={sending || statusSaving}
                             renderOption={(option: any) => (
                                 <StatusBadge status={option.value} />
                             )}
@@ -285,6 +295,7 @@ const SupportRequestPage = () => {
                             }
                             onFocus={() => setError(null)}
                             error={error}
+                            disabled={sending}
                         />
                     </Field>
                     <PrimaryButton

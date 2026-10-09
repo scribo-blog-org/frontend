@@ -50,6 +50,7 @@
     }
 
     &_item {
+        animation: admin_staff_enter 260ms ease backwards;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -101,6 +102,7 @@
                 }
 
                 > svg {
+                    @include use-transition();
                     width: 12px;
                     height: 12px;
                     color: var(--light-text-color);
@@ -110,9 +112,24 @@
     }
 
     &_empty {
+        animation: admin_staff_enter 260ms ease backwards;
         padding: 24px 0;
         text-align: center;
         font-size: 14px;
         color: var(--light-text-color);
+    }
+}
+
+@keyframes admin_staff_enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin_staff_item,
+    .admin_staff_empty {
+        animation: none;
     }
 }

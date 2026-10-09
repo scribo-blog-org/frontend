@@ -115,7 +115,16 @@ const RegisterForm = ({
         return !is_error;
     };
 
+    const guardLink = (e: any) => {
+        if (isLoading) {
+            e.preventDefault();
+        }
+    };
+
     const handleRegister = async () => {
+        if (isLoading) {
+            return;
+        }
         setIsLoading(true);
         if (!field_validation()) {
             setIsLoading(false);
@@ -131,12 +140,16 @@ const RegisterForm = ({
         formData.append('userEmail', email);
         var result;
 
-        if (google_token) {
-            formData.append('googleToken', google_token);
-            result = await googleRegister(formData);
-        } else {
-            formData.append('emailCode', gmail_code);
-            result = await emailRegister(formData);
+        try {
+            if (google_token) {
+                formData.append('googleToken', google_token);
+                result = await googleRegister(formData);
+            } else {
+                formData.append('emailCode', gmail_code);
+                result = await emailRegister(formData);
+            }
+        } finally {
+            setIsLoading(false);
         }
 
         if (result.status === true) {
@@ -153,7 +166,6 @@ const RegisterForm = ({
                 );
             }
             showToast({ message: 'Error!', type: 'error' });
-            setIsLoading(false);
             return result;
         }
     };
@@ -192,6 +204,7 @@ const RegisterForm = ({
                                 addNewErrors={add_errors_to_image}
                                 clearErrors={clear_errors_from_image}
                                 onRemove={handleClick}
+                                disabled={isLoading}
                             />
                         </div>
                         <Field title="Email">
@@ -204,6 +217,7 @@ const RegisterForm = ({
                                 error={errors?.userEmail ?? null}
                                 confirmed={Boolean(email)}
                                 length={FIELD_LIMITS.email.max}
+                                disabled={isLoading}
                             />
                         </Field>
                         <Field
@@ -224,6 +238,7 @@ const RegisterForm = ({
                                 value={fields.userNickName}
                                 error={errors?.userNickName ?? null}
                                 length={FIELD_LIMITS.nick.max}
+                                disabled={isLoading}
                             />
                         </Field>
                         <Field
@@ -245,6 +260,7 @@ const RegisterForm = ({
                                 placeholder="Description of profile"
                                 value={fields.userDescription}
                                 error={errors?.userDescription ?? null}
+                                disabled={isLoading}
                             />
                         </Field>
                     </div>
@@ -270,6 +286,7 @@ const RegisterForm = ({
                                 value={fields.userPassword}
                                 error={errors?.userPassword ?? null}
                                 length={FIELD_LIMITS.password.max}
+                                disabled={isLoading}
                             />
                         </Field>
                         <PrimaryButton type="submit" isLoading={isLoading}>
@@ -279,7 +296,13 @@ const RegisterForm = ({
                 </div>
                 <p className="redirect_object">
                     Already have an account?
-                    <Link href={'/auth/login'}>Log in</Link>
+                    <Link
+                        href={'/auth/login'}
+                        aria-disabled={isLoading}
+                        onClick={guardLink}
+                    >
+                        Log in
+                    </Link>
                 </p>
             </form>
         </div>
@@ -297,6 +320,9 @@ const VerifyGmailCode = ({ email }: any) => {
     if (!email) return null;
 
     const handleSubmit = async () => {
+        if (isLoading) {
+            return;
+        }
         setIsLoading(true);
         const fullCode = code.join('');
 
@@ -353,6 +379,7 @@ const VerifyGmailCode = ({ email }: any) => {
                                     onChange={setCode}
                                     error={errors?.emailCode}
                                     onFocus={() => setErrors({})}
+                                    disabled={isLoading}
                                 />
                             </div>
                         </div>
@@ -454,8 +481,15 @@ const Register = () => {
         return true;
     };
 
+    const locked = Boolean(pendingAuth);
+    const guardLink = (e: any) => {
+        if (locked) {
+            e.preventDefault();
+        }
+    };
+
     const handleRegister = async () => {
-        if (!field_validation()) {
+        if (locked || !field_validation()) {
             return;
         }
 
@@ -518,11 +552,12 @@ const Register = () => {
                                 error={errors?.userEmail ?? null}
                                 confirmed={Boolean(email)}
                                 length={FIELD_LIMITS.email.max}
+                                disabled={locked}
                             />
                         </Field>
                         <PrimaryButton
                             isLoading={pendingAuth === 'email'}
-                            disabled={Boolean(pendingAuth)}
+                            disabled={locked}
                             type="submit"
                         >
                             Continue
@@ -533,13 +568,19 @@ const Register = () => {
                 <GoogleAuthButton
                     setGoogleToken={setGoogleToken}
                     isLoading={pendingAuth === 'google'}
-                    disabled={pendingAuth === 'email'}
+                    disabled={locked}
                     onClickStart={() => setPendingAuth('google')}
                     onAuthEnd={() => setPendingAuth(null)}
                 />
                 <p className="redirect_object">
                     Already have an account?
-                    <Link href={'/auth/login'}>Log in</Link>
+                    <Link
+                        href={'/auth/login'}
+                        aria-disabled={locked}
+                        onClick={guardLink}
+                    >
+                        Log in
+                    </Link>
                 </p>
             </form>
         </div>

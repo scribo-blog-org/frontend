@@ -60,9 +60,14 @@ const JoinChat = ({ conversationId }: { conversationId: string }) => {
             return;
         }
 
+        if (joining) return;
         setJoining(true);
-        const result = await joinGroup(conversationId);
-        setJoining(false);
+        let result;
+        try {
+            result = await joinGroup(conversationId);
+        } finally {
+            setJoining(false);
+        }
 
         if (!result?.status) {
             showToast?.({

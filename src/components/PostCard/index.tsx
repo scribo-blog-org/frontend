@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Link } from '@/navigation';
 
 import './PostCard.scss';
@@ -29,11 +29,24 @@ const PostCard = ({ isLoading = false, post, setPosts }: any) => {
         [setPosts, post._id],
     );
 
+    const [isLeaving, setIsLeaving] = useState(false);
+
+    // The card fades out first so the feed does not jump when a post is
+    // removed; users who prefer reduced motion get an immediate removal.
     const deletePost = useCallback(
         (id: any) => {
-            setPosts((prev: any) =>
-                prev.filter((item: any) => item._id !== id),
-            );
+            const remove = () =>
+                setPosts((prev: any) =>
+                    prev.filter((item: any) => item._id !== id),
+                );
+
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                remove();
+                return;
+            }
+
+            setIsLeaving(true);
+            window.setTimeout(remove, 240);
         },
         [setPosts],
     );
@@ -57,7 +70,9 @@ const PostCard = ({ isLoading = false, post, setPosts }: any) => {
     );
 
     return (
-        <article className="posts_item app-transition">
+        <article
+            className={`posts_item app-transition${isLeaving ? ' posts_item_leaving' : ''}`}
+        >
             <PostHeader
                 post={post}
                 isLoading={isLoading}

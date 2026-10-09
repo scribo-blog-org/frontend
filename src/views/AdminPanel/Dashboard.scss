@@ -64,6 +64,7 @@
     }
 
     &_scope {
+        animation: analytics_enter 260ms ease backwards;
         display: flex;
         flex-direction: column;
         gap: var(--space-5);
@@ -228,6 +229,12 @@
 
         &_chart {
             min-height: 280px;
+
+            // The chart scales with the width, so on a phone it is shorter
+            // than the reserved height and would leave an empty strip.
+            @include screen() {
+                min-height: 0;
+            }
         }
     }
 
@@ -458,5 +465,18 @@
         font-size: 13px;
         color: var(--light-text-color);
         padding: 12px 0;
+    }
+}
+
+@keyframes analytics_enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .analytics_scope {
+        animation: none;
     }
 }

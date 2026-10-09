@@ -12,6 +12,7 @@
         }
 
         &_edit_categories_page {
+            animation: admin_categories_enter 260ms ease backwards;
             display: flex;
             flex-direction: column;
             gap: 50px;
@@ -144,6 +145,7 @@
                                 border-radius: 8px;
                                 color: var(--section-light-color);
                                 padding: 20px 6px;
+                                @include use-transition();
 
                                 @include screen() {
                                     padding: 8px 12px;
@@ -173,6 +175,16 @@
                     }
                 }
 
+                // Pickers are plain divs, so they are locked by ignoring the
+                // pointer while the form is being saved.
+                &_locked {
+                    .admin_panel_content_edit_categories_page_settings_color_content,
+                    .admin_panel_content_edit_categories_page_settings_icon_content {
+                        pointer-events: none;
+                        opacity: 0.5;
+                    }
+                }
+
                 .primary_button {
                     margin-top: auto;
                 }
@@ -190,6 +202,7 @@
             }
 
             .admin_panel_content_categories_page_category {
+                animation: admin_categories_enter 260ms ease backwards;
                 display: flex;
                 align-items: center;
                 width: 100%;
@@ -296,6 +309,7 @@
                         width: 16px;
 
                         color: var(--section-light-color);
+                        @include use-transition();
 
                         @include hover {
                             color: var(--section-light-hover-color);
@@ -334,5 +348,19 @@
                 color: var(--category-color);
             }
         }
+    }
+}
+
+@keyframes admin_categories_enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin_panel_content_categories_page .admin_panel_content_categories_page_category,
+    .admin_panel_content_edit_categories_page {
+        animation: none;
     }
 }

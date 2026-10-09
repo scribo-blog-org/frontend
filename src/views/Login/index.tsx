@@ -120,8 +120,15 @@ const Login = () => {
         return !is_error;
     };
 
+    const locked = Boolean(pendingAuth);
+    const guardLink = (e: any) => {
+        if (locked) {
+            e.preventDefault();
+        }
+    };
+
     const handleLogin = async () => {
-        if (!field_validation()) {
+        if (locked || !field_validation()) {
             return;
         }
 
@@ -180,6 +187,7 @@ const Login = () => {
                                 value={fields.userName}
                                 error={errors?.userName ?? null}
                                 length={FIELD_LIMITS.login.max}
+                                disabled={locked}
                             />
                         </Field>
                         <Field
@@ -200,17 +208,22 @@ const Login = () => {
                                 value={fields.userPassword}
                                 error={errors?.userPassword ?? null}
                                 length={FIELD_LIMITS.password.max}
+                                disabled={locked}
                             />
                         </Field>
                         <div className="auth_page_forgot">
-                            <Link href="/auth/forgot-password">
+                            <Link
+                                href="/auth/forgot-password"
+                                aria-disabled={locked}
+                                onClick={guardLink}
+                            >
                                 Forgot password?
                             </Link>
                         </div>
                         <PrimaryButton
                             type="submit"
                             isLoading={pendingAuth === 'password'}
-                            disabled={Boolean(pendingAuth)}
+                            disabled={locked}
                         >
                             Log in
                         </PrimaryButton>
@@ -220,13 +233,19 @@ const Login = () => {
                 <GoogleAuthButton
                     setGoogleToken={setGoogleToken}
                     isLoading={pendingAuth === 'google'}
-                    disabled={pendingAuth === 'password'}
+                    disabled={locked}
                     onClickStart={() => setPendingAuth('google')}
                     onAuthEnd={() => setPendingAuth(null)}
                 />
                 <p className="redirect_object">
                     No account?
-                    <Link href={'/auth/register'}>Sign up</Link>
+                    <Link
+                        href={'/auth/register'}
+                        aria-disabled={locked}
+                        onClick={guardLink}
+                    >
+                        Sign up
+                    </Link>
                 </p>
             </form>
         </div>

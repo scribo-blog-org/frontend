@@ -8,9 +8,22 @@
     text-align: center;
     color: var(--background-text-color);
     user-select: none;
+    animation: no_posts_enter 300ms ease backwards;
 
     @include screen() {
         font-size: 48px;
         margin: 50px auto;
+    }
+}
+
+@keyframes no_posts_enter {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .no_posts {
+        animation: none;
     }
 }

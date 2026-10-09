@@ -106,15 +106,22 @@ const UsersPage = () => {
             ),
         );
 
+    // The change shows at once and is rolled back to the previous value if the
+    // server refuses.
     const changeRole = async (user: any, role: string) => {
+        const previous = user.role;
+        if (role === previous) {
+            return;
+        }
+        patchUser(user._id, { role });
         const result = await updateRole(user._id, role);
         if (result?.status) {
-            patchUser(user._id, { role });
             showToast({
                 type: 'success',
                 message: `${user.nick_name} is now ${roleLabel(role).toLowerCase()}`,
             });
         } else {
+            patchUser(user._id, { role: previous });
             showToast({
                 type: 'error',
                 message: result?.message || 'Could not change the role',
@@ -123,10 +130,11 @@ const UsersPage = () => {
     };
 
     const toggleVerified = async (user: any) => {
-        const next = !user.is_verified;
+        const previous = Boolean(user.is_verified);
+        const next = !previous;
+        patchUser(user._id, { is_verified: next });
         const result = await setVerified(user._id, next);
         if (result?.status) {
-            patchUser(user._id, { is_verified: next });
             showToast({
                 type: 'success',
                 message: next
@@ -134,6 +142,7 @@ const UsersPage = () => {
                     : `Verification removed from ${user.nick_name}`,
             });
         } else {
+            patchUser(user._id, { is_verified: previous });
             showToast({
                 type: 'error',
                 message: result?.message || 'Could not update verification',
