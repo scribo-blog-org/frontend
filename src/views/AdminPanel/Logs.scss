@@ -1084,3 +1084,21 @@
     font-size: 12px;
     line-height: 1.45;
 }
+
+.log_timing_queries_row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line-color);
+    font-size: 13px;
+
+    .log_timing_legend_label {
+        flex: 1;
+    }
+
+    &_many {
+        color: var(--log-update-color);
+        font-weight: 600;
+    }
+}

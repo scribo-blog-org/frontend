@@ -23,7 +23,7 @@ const summary = (timing: Timing) => {
     return [
         `Database ${formatDuration(timing.db)}`,
         `Own processing ${formatDuration(app)}`,
-        timing.queries ? `${timing.queries} queries` : null,
+        timing.queries ? `${timing.queries} database queries` : null,
     ]
         .filter(Boolean)
         .join(' · ');
@@ -48,7 +48,8 @@ export const TimingPlate = ({ timing }: { timing: Timing }) => {
                     <span
                         className={`log_timing_queries${timing.queries >= MANY_QUERIES ? ' log_timing_queries_many' : ''}`}
                     >
-                        {timing.queries} q
+                        {timing.queries}{' '}
+                        {timing.queries === 1 ? 'query' : 'queries'}
                     </span>
                 ) : null}
             </span>
@@ -146,6 +147,20 @@ export const TimingBreakdown = ({ timing }: { timing: Timing }) => {
                     </button>
                 ))}
             </div>
+
+            {timing.queries ? (
+                <div className="log_timing_queries_row">
+                    <span className="log_timing_legend_label">
+                        Database queries
+                    </span>
+                    <span
+                        className={`log_timing_legend_value${timing.queries >= MANY_QUERIES ? ' log_timing_queries_row_many' : ''}`}
+                        title="How many times the server asked the database while handling this request"
+                    >
+                        {timing.queries}
+                    </span>
+                </div>
+            ) : null}
 
             <p className="log_timing_hint">
                 {current
