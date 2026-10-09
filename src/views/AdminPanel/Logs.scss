@@ -887,3 +887,200 @@
         transition: none;
     }
 }
+
+.log_repeats {
+    margin-left: 2px;
+}
+
+.log_timing {
+    --timing-color: var(--log-update-color);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 8px;
+    border: 1px solid rgb(from var(--timing-color) r g b / 0.4);
+    border-radius: 6px;
+    background: rgb(from var(--timing-color) r g b / 0.08);
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: nowrap;
+    cursor: default;
+    @include use-transition();
+
+    @include hover {
+        background: rgb(from var(--timing-color) r g b / 0.16);
+    }
+
+    &_error {
+        --timing-color: var(--log-error-color);
+    }
+
+    &_value {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        color: var(--timing-color);
+    }
+
+    &_bar {
+        display: inline-flex;
+        width: 44px;
+        height: 4px;
+        overflow: hidden;
+        border-radius: 2px;
+        background: var(--text-color);
+        opacity: 0.55;
+
+        &_db {
+            height: 100%;
+            background: var(--light-text-color);
+        }
+    }
+
+    &_queries {
+        color: var(--light-text-color);
+
+        &_many {
+            color: var(--timing-color);
+            font-weight: 600;
+        }
+    }
+}
+
+.log_timing_panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: 12px 14px;
+    border: 1px solid var(--line-color);
+    border-radius: 10px;
+    background: var(--input-background-color);
+
+    &_total {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        font-size: 13px;
+    }
+
+    &_label {
+        color: var(--light-text-color);
+    }
+
+    &_value {
+        font-size: 20px;
+        font-weight: 600;
+
+        &_warn {
+            color: var(--log-update-color);
+        }
+
+        &_error {
+            color: var(--log-error-color);
+        }
+    }
+}
+
+.log_timing_split {
+    display: flex;
+    gap: 3px;
+    height: 14px;
+}
+
+.log_timing_segment {
+    min-width: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    @include use-transition();
+
+    &_db {
+        background: var(--light-text-color);
+    }
+
+    &_app {
+        background: var(--text-color);
+    }
+
+    &_dim {
+        opacity: 0.3;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--input-outline-active-color);
+        outline-offset: 2px;
+    }
+}
+
+.log_timing_legend {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    &_item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 8px;
+        margin: 0 -8px;
+        border: 0;
+        border-radius: 6px;
+        background: none;
+        font-size: 13px;
+        text-align: left;
+        color: var(--text-color);
+        cursor: pointer;
+        @include use-transition();
+
+        &_active {
+            background: var(--section-item-hover-background-color);
+        }
+    }
+
+    &_label {
+        flex: 1;
+        color: var(--light-text-color);
+    }
+
+    &_value {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+    }
+
+    &_share {
+        display: inline-block;
+        min-width: 40px;
+        text-align: right;
+        color: var(--light-text-color);
+    }
+}
+
+.log_timing_dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+
+    &_db {
+        background: var(--light-text-color);
+    }
+
+    &_app {
+        background: var(--text-color);
+    }
+}
+
+.log_timing_hint {
+    margin: 0;
+    font-size: 12px;
+    color: var(--light-text-color);
+}
+
+.log_timing_warning {
+    margin: 0;
+    padding: 8px 10px;
+    border: 1px solid rgb(from var(--log-update-color) r g b / 0.4);
+    border-radius: 8px;
+    background: rgb(from var(--log-update-color) r g b / 0.08);
+    font-size: 12px;
+    line-height: 1.45;
+}

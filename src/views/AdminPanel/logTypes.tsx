@@ -16,6 +16,7 @@ export type LogObject =
     | 'system'
     | 'group'
     | 'method'
+    | 'route'
     | null;
 
 export type LogTypeConfig = {
@@ -358,6 +359,54 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
         tone: 'register',
         text: () => 'Server started',
         object: 'system',
+    },
+    slow_request: {
+        title: 'Slow request',
+        tone: 'update',
+        text: () => 'Request took too long',
+        object: 'route',
+    },
+    slow_query: {
+        title: 'Slow database query',
+        tone: 'update',
+        text: () => 'Database query took too long',
+        object: 'system',
+    },
+    login_failed: {
+        title: 'Failed sign-in',
+        tone: 'delete',
+        text: () => 'Failed to sign in',
+        object: 'method',
+    },
+    rate_limited: {
+        title: 'Rate limit',
+        tone: 'delete',
+        text: () => 'Hit a rate limit',
+        object: 'route',
+    },
+    access_denied: {
+        title: 'Access denied',
+        tone: 'delete',
+        text: () => 'Was denied access',
+        object: 'route',
+    },
+    external_failed: {
+        title: 'External service failed',
+        tone: 'error',
+        text: () => 'An external service failed',
+        object: 'system',
+    },
+    session_failed: {
+        title: 'Session refresh failed',
+        tone: 'update',
+        text: () => 'Could not refresh a session',
+        object: null,
+    },
+    logout: {
+        title: 'Sign-out',
+        tone: 'info',
+        text: () => 'Signed out',
+        object: null,
     },
     server_error: {
         title: 'Server error',

@@ -53,6 +53,7 @@ const ENTITY_FILTERS = [
     'conversation',
     'support_request',
     'role',
+    'request',
 ];
 
 const TYPE_OPTIONS = [
@@ -486,6 +487,13 @@ const LogsPage = () => {
                             )}
                             {filter.type === 'role' && (
                                 <RoleChip role={filter.id} />
+                            )}
+                            {filter.type === 'request' && (
+                                <span className="log_chip">
+                                    <span className="log_chip_label log_card_mono">
+                                        Request {filter.id}
+                                    </span>
+                                </span>
                             )}
                             <CancelButton
                                 size="sm"

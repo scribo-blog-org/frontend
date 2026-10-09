@@ -100,6 +100,8 @@ export type LogDetails = {
     request: DetailRow[];
     error: DetailRow[];
     stack: string | null;
+    timing: Timing | null;
+    requestId: string | null;
 };
 
 const KNOWN_KEYS = new Set([
@@ -182,7 +184,39 @@ const KNOWN_KEYS = new Set([
     'migration_from',
     'migration_to',
     'sessions_closed',
+    'reason',
+    'rule',
+    'service',
+    'route',
+    'collection',
+    'operation',
+    'duration_ms',
+    'filter',
+    'total_ms',
+    'db_ms',
+    'db_queries',
+    'repeats',
 ]);
+
+export const formatDuration = (value: any) => {
+    const ms = Number(value || 0);
+    return ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`;
+};
+
+const REASONS: Record<string, string> = {
+    no_user: 'No account with this login',
+    bad_password: 'Wrong password',
+    google_invalid: 'Google token was rejected',
+    'Session has expired': 'Session has expired',
+};
+
+export const reasonLabel = (reason: any) => REASONS[reason] ?? String(reason);
+
+export type Timing = {
+    total: number;
+    db: number;
+    queries: number;
+};
 
 const present = (value: any) =>
     value !== null && value !== undefined && value !== '';
@@ -334,6 +368,19 @@ export function describeDetails(
         add('Own message', yesNo(data.own_message));
     }
     add('Login method', log?.type === 'login' ? data.method : null);
+    add('Sign-in method', log?.type === 'login_failed' ? data.method : null);
+    add('Reason', present(data.reason) ? reasonLabel(data.reason) : null);
+    add('Limit', data.rule);
+    add('Service', data.service);
+    add('Route', log?.type === 'slow_request' ? null : data.route, true);
+    add('Collection', data.collection, true);
+    add('Operation', data.operation, true);
+    add(
+        'Duration',
+        present(data.duration_ms) ? formatDuration(data.duration_ms) : null,
+    );
+    add('Query shape', data.filter, true);
+    add('Similar events skipped', data.repeats);
     if (log?.type === 'password_reset' && data.sessions_closed) {
         add('Sessions', 'all closed');
     }
@@ -407,5 +454,13 @@ export function describeDetails(
         request,
         error,
         stack: present(data.stack) ? String(data.stack) : null,
+        timing: present(data.total_ms)
+            ? {
+                  total: Number(data.total_ms),
+                  db: Number(data.db_ms || 0),
+                  queries: Number(data.db_queries || 0),
+              }
+            : null,
+        requestId: present(meta.id) ? String(meta.id) : null,
     };
 }

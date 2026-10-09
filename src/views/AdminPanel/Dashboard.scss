@@ -480,3 +480,72 @@
         animation: none;
     }
 }
+
+.analytics_health_card {
+    align-items: flex-start;
+    font: inherit;
+    text-align: left;
+    color: inherit;
+    cursor: pointer;
+    outline: 1px solid transparent;
+    outline-offset: -1px;
+
+    @include hover {
+        background: var(--section-item-hover-background-color);
+    }
+
+    &:focus-visible {
+        outline-color: var(--input-outline-active-color);
+    }
+
+    &_active {
+        outline-color: var(--text-color);
+    }
+
+    &_hot .analytics_stat_value {
+        color: var(--log-error-color);
+    }
+
+    .analytics_stat_delta_bad {
+        color: var(--log-error-color);
+    }
+}
+
+.analytics_health_list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.analytics_health_row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 8px 0;
+    font-size: 13px;
+
+    & + & {
+        border-top: 1px solid var(--line-color);
+    }
+}
+
+.analytics_health_message {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.analytics_health_repeats {
+    margin-left: 6px;
+    color: var(--light-text-color);
+}
+
+.analytics_health_time {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--light-text-color);
+}

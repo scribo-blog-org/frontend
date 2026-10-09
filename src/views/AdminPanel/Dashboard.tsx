@@ -5,6 +5,9 @@ import { Link } from '@/navigation';
 
 import { AppContext } from '@/providers/AppProviders';
 import { getDashboard } from '../../api/analytics.api';
+import { getAllLogs } from '../../api/logs.api';
+import { format_back } from '../../utils/format';
+import { TimingPlate } from './LogTiming';
 import { hashtagSearchPath } from '../../utils/hashtags';
 
 import Tabs from '../../components/Ui/Tabs';
@@ -89,6 +92,44 @@ const formatPercent = (share: any) => {
     }
     return `${Math.round(percent)}%`;
 };
+
+const HEALTH_ITEMS = [
+    {
+        type: 'server_error',
+        label: 'Server errors',
+        hint: 'Requests that failed on our side',
+    },
+    {
+        type: 'slow_request',
+        label: 'Slow requests',
+        hint: 'Took more than a second to answer',
+    },
+    {
+        type: 'login_failed',
+        label: 'Failed sign-ins',
+        hint: 'Wrong password or unknown account',
+    },
+    {
+        type: 'rate_limited',
+        label: 'Rate limits',
+        hint: 'Someone sent too many requests',
+    },
+    {
+        type: 'access_denied',
+        label: 'Denied access',
+        hint: 'Actions refused for lack of rights',
+    },
+    {
+        type: 'external_failed',
+        label: 'Service failures',
+        hint: 'Mail, push or Google did not answer',
+    },
+    {
+        type: 'session_failed',
+        label: 'Session failures',
+        hint: 'Refreshing a sign-in did not work',
+    },
+];
 
 const routeLabel = (route: string) => route.replace(' /api', ' ');
 
@@ -416,6 +457,98 @@ const AnalyticsScope = ({ title, hint, className, children }: any) => (
     </section>
 );
 
+const HealthCard = ({ item, counter, active, onSelect }: any) => {
+    const current = counter?.current ?? 0;
+    const previous = counter?.previous ?? 0;
+    const diff = current - previous;
+
+    return (
+        <button
+            type="button"
+            className={`analytics_stat analytics_health_card app-transition${active ? ' analytics_health_card_active' : ''}${current ? ' analytics_health_card_hot' : ''}`}
+            aria-pressed={active}
+            onClick={onSelect}
+        >
+            <span className="analytics_stat_label">{item.label}</span>
+            <span className="analytics_stat_value">
+                {formatNumber(current)}
+            </span>
+            <span className="analytics_stat_hint">{item.hint}</span>
+            <span
+                className={`analytics_stat_delta analytics_stat_delta_${diff > 0 ? 'bad' : 'flat'}`}
+            >
+                {diff === 0
+                    ? 'same as the day before'
+                    : `${diff > 0 ? '+' : ''}${formatNumber(diff)} against the day before`}
+            </span>
+        </button>
+    );
+};
+
+const HealthEvents = ({ type, from }: any) => {
+    const [items, setItems] = useState<any[] | null>(null);
+
+    useEffect(() => {
+        let cancelled = false;
+        setItems(null);
+        getAllLogs({ type, limit: 6, from }).then((result: any) => {
+            if (!cancelled) setItems(result?.data?.items || []);
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [type, from]);
+
+    return (
+        <section className="analytics_block analytics_health_events app-transition">
+            <h3 className="analytics_block_title">
+                {HEALTH_ITEMS.find((item) => item.type === type)?.label}
+            </h3>
+            <p className="analytics_block_hint">
+                Latest events of this kind in the last 24 hours
+            </p>
+            {items === null ? (
+                <p className="analytics_empty">Loading…</p>
+            ) : !items.length ? (
+                <p className="analytics_empty">Nothing in the last 24 hours</p>
+            ) : (
+                <ul className="analytics_health_list">
+                    {items.map((log: any) => (
+                        <li key={log._id} className="analytics_health_row">
+                            <span
+                                className="analytics_health_message"
+                                title={log.message}
+                            >
+                                {log.message}
+                                {log.data?.repeats ? (
+                                    <span className="analytics_health_repeats">
+                                        +{log.data.repeats}
+                                    </span>
+                                ) : null}
+                            </span>
+                            {log.type === 'slow_request' &&
+                            log.data?.total_ms != null ? (
+                                <TimingPlate
+                                    timing={{
+                                        total: Number(log.data.total_ms),
+                                        db: Number(log.data.db_ms || 0),
+                                        queries: Number(
+                                            log.data.db_queries || 0,
+                                        ),
+                                    }}
+                                />
+                            ) : null}
+                            <span className="analytics_health_time">
+                                {format_back(log.date_time)}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
+    );
+};
+
 const StatCard = ({ label, value, display, previous, hint }: any) => {
     const delta = previous == null ? null : deltaLabel(value, previous);
 
@@ -551,6 +684,7 @@ const DashboardPage = () => {
         };
     }, [range, showToast]);
 
+    const [healthType, setHealthType] = useState<any>(null);
     const totals = data?.totals || {};
     const series = data?.series || [];
     const audience = data?.audience || {};
@@ -576,6 +710,69 @@ const DashboardPage = () => {
                 count: item.avg_ms,
                 valueLabel: formatMs(item.avg_ms),
                 note: `p95 ${formatMs(item.p95_ms)} · DB ${formatMs(item.db_avg_ms)}`,
+            })),
+        [timings],
+    );
+
+    const health = data?.health || {};
+    const dayAgo = useMemo(
+        () => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        // The window moves with every reload of the dashboard data.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [data],
+    );
+    const topErrors = useMemo(
+        () =>
+            (health.top_errors || []).map((item: any) => ({
+                key: `${item.method} ${item.path} ${item.error}`,
+                label: `${item.method ?? ''} ${(item.path ?? '').replace('/api', '')}`.trim(),
+                count: item.count,
+                valueLabel: `×${formatNumber(item.count)}`,
+                note: `${item.error} · last ${format_back(item.last_at)}`,
+            })),
+        [health],
+    );
+    const slowQueries = useMemo(
+        () =>
+            (health.slow_queries || []).map((item: any) => ({
+                key: `${item.collection}.${item.operation}`,
+                label: `${item.collection}.${item.operation}`,
+                count: item.count,
+                valueLabel: `×${formatNumber(item.count)}`,
+                note: `up to ${formatMs(item.max_ms)}`,
+            })),
+        [health],
+    );
+    const heaviest = useMemo(
+        () =>
+            (timings.heaviest || []).map((item: any) => ({
+                key: item.route,
+                label: routeLabel(item.route),
+                count: item.total_ms,
+                valueLabel: formatMs(item.total_ms),
+                note: `${formatNumber(item.requests)} requests · avg ${formatMs(item.avg_ms)}`,
+            })),
+        [timings],
+    );
+    const chatty = useMemo(
+        () =>
+            (timings.chatty || []).map((item: any) => ({
+                key: item.route,
+                label: routeLabel(item.route),
+                count: item.queries_avg,
+                valueLabel: `${item.queries_avg} per request`,
+                note: `DB ${formatMs(item.db_avg_ms)}`,
+            })),
+        [timings],
+    );
+    const failing = useMemo(
+        () =>
+            (timings.failing || []).map((item: any) => ({
+                key: item.route,
+                label: routeLabel(item.route),
+                count: item.errors * 4 + item.client_errors,
+                valueLabel: `${item.errors} server · ${item.client_errors} client`,
+                note: `of ${formatNumber(item.requests)}`,
             })),
         [timings],
     );
@@ -631,6 +828,88 @@ const DashboardPage = () => {
                 <Loading size={40} />
             ) : (
                 <>
+                    <AnalyticsScope
+                        title="Health"
+                        hint="The last 24 hours against the 24 hours before. Click a card to see the latest events"
+                        className="analytics_scope_period"
+                    >
+                        <div className="analytics_stats">
+                            {HEALTH_ITEMS.map((item: any) => (
+                                <HealthCard
+                                    key={item.type}
+                                    item={item}
+                                    counter={health.counters?.[item.type]}
+                                    active={healthType === item.type}
+                                    onSelect={() =>
+                                        setHealthType((value: any) =>
+                                            value === item.type
+                                                ? null
+                                                : item.type,
+                                        )
+                                    }
+                                />
+                            ))}
+                        </div>
+                        {healthType ? (
+                            <HealthEvents type={healthType} from={dayAgo} />
+                        ) : null}
+                        <div className="analytics_grid">
+                            <AnalyticsGroup
+                                title="Repeating errors"
+                                hint="Server errors in the selected period"
+                            >
+                                <section className="analytics_block app-transition">
+                                    <RankedBars
+                                        items={topErrors}
+                                        wideLabel
+                                        empty="No server errors in this period"
+                                    />
+                                </section>
+                            </AnalyticsGroup>
+                            <AnalyticsGroup
+                                title="Slow database queries"
+                                hint="Collections that answered slowly"
+                            >
+                                <section className="analytics_block app-transition">
+                                    <RankedBars
+                                        items={slowQueries}
+                                        wideLabel
+                                        empty="No slow queries in this period"
+                                    />
+                                </section>
+                            </AnalyticsGroup>
+                        </div>
+                        <div className="analytics_stats">
+                            <StatCard
+                                label="Last backup"
+                                display={
+                                    health.last_backup
+                                        ? health.last_backup.type ===
+                                          'backup_failed'
+                                            ? 'Failed'
+                                            : 'Done'
+                                        : '—'
+                                }
+                                hint={
+                                    health.last_backup
+                                        ? format_back(
+                                              health.last_backup.date_time,
+                                          )
+                                        : 'No backups yet'
+                                }
+                            />
+                            <StatCard
+                                label="Deploys"
+                                value={(health.deploys || []).length}
+                                hint={
+                                    health.deploys?.[0]
+                                        ? `Latest v${health.deploys[0].data?.version ?? '?'} ${format_back(health.deploys[0].date_time)}`
+                                        : 'None in this period'
+                                }
+                            />
+                        </div>
+                    </AnalyticsScope>
+
                     <AnalyticsScope
                         title="For the selected period"
                         hint={`The metrics below count only ${activeRange?.label?.toLowerCase() || 'period'}`}
@@ -753,6 +1032,47 @@ const DashboardPage = () => {
                                             items={slowest}
                                             wideLabel
                                             empty="Not enough requests yet"
+                                        />
+                                    </section>
+                                    <div className="analytics_grid">
+                                        <section className="analytics_block app-transition">
+                                            <h3 className="analytics_block_title">
+                                                Takes the most time overall
+                                            </h3>
+                                            <p className="analytics_block_hint">
+                                                Request count times average
+                                                time, so busy routes count more
+                                            </p>
+                                            <RankedBars
+                                                items={heaviest}
+                                                wideLabel
+                                                empty="Not enough requests yet"
+                                            />
+                                        </section>
+                                        <section className="analytics_block app-transition">
+                                            <h3 className="analytics_block_title">
+                                                Most database queries
+                                            </h3>
+                                            <p className="analytics_block_hint">
+                                                Per request. A high number is
+                                                often a query repeated for every
+                                                item
+                                            </p>
+                                            <RankedBars
+                                                items={chatty}
+                                                wideLabel
+                                                empty="Not enough requests yet"
+                                            />
+                                        </section>
+                                    </div>
+                                    <section className="analytics_block app-transition">
+                                        <h3 className="analytics_block_title">
+                                            Routes that return errors
+                                        </h3>
+                                        <RankedBars
+                                            items={failing}
+                                            wideLabel
+                                            empty="No failed requests"
                                         />
                                     </section>
                                 </>

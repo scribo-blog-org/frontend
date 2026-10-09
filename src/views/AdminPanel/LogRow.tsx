@@ -25,7 +25,8 @@ import { useEffect, useRef } from 'react';
 import { useOverlayPresence } from '../../components/Ui/useOverlayEnter';
 
 import LogDetails from './LogDetails';
-import { describeChanges } from './logFormat';
+import { describeChanges, reasonLabel } from './logFormat';
+import { TimingPlate } from './LogTiming';
 import { LEVELS, levelOf, typeOf } from './logTypes';
 
 const Changes = ({ changes }: any) => (
@@ -125,6 +126,12 @@ const objectOf = (log: any, config: any, ctx: any) => {
                     {data.method === 'google' ? 'Google' : 'Password'}
                 </TextEntity>
             ) : null;
+        case 'route':
+            return data.route ? (
+                <TextEntity>
+                    {String(data.route).replace(' /api', ' ')}
+                </TextEntity>
+            ) : null;
         case 'system': {
             if (log.type === 'server_start') {
                 return (
@@ -145,11 +152,15 @@ const objectOf = (log: any, config: any, ctx: any) => {
                     ? `v${data.app_version ?? '?'} · data ${data.to_version ?? '?'}`
                     : log.type === 'server_error'
                       ? `${data.method ?? ''} ${data.path ?? ''}`.trim()
-                      : log.type === 'backup_rotated'
-                        ? data.removed_files
-                            ? `${data.removed_files} ${data.removed_files === 1 ? 'file' : 'files'}`
-                            : ''
-                        : (data.trigger ?? '');
+                      : log.type === 'slow_query'
+                        ? `${data.collection ?? '?'}.${data.operation ?? '?'}`
+                        : log.type === 'external_failed'
+                          ? (data.service ?? '')
+                          : log.type === 'backup_rotated'
+                            ? data.removed_files
+                                ? `${data.removed_files} ${data.removed_files === 1 ? 'file' : 'files'}`
+                                : ''
+                            : (data.trigger ?? '');
 
             return text ? <TextEntity>{text}</TextEntity> : null;
         }
@@ -233,6 +244,45 @@ const detailsOf = (log: any, setFilter?: any) => {
                 node: <ErrorText text={data.error} />,
                 title: data.stack || data.error,
             };
+        case 'slow_request':
+            return data.total_ms != null
+                ? {
+                      node: (
+                          <TimingPlate
+                              timing={{
+                                  total: Number(data.total_ms),
+                                  db: Number(data.db_ms || 0),
+                                  queries: Number(data.db_queries || 0),
+                              }}
+                          />
+                      ),
+                  }
+                : {};
+        case 'slow_query':
+            return data.duration_ms != null
+                ? {
+                      node: (
+                          <TimingPlate
+                              timing={{
+                                  total: Number(data.duration_ms),
+                                  db: Number(data.duration_ms),
+                                  queries: 0,
+                              }}
+                          />
+                      ),
+                  }
+                : {};
+        case 'rate_limited':
+            return { node: <Quote text={data.rule} /> };
+        case 'login_failed':
+        case 'session_failed':
+            return {
+                node: (
+                    <Quote text={data.reason ? reasonLabel(data.reason) : ''} />
+                ),
+            };
+        case 'external_failed':
+            return { node: <ErrorText text={data.error} /> };
         case 'backup_failed':
         case 'backup_upload_failed':
         case 'backup_restore_result':
@@ -341,6 +391,14 @@ const LogRow = ({
                 </div>
                 <div className="log_row_details" title={details.title}>
                     {details.node}
+                    {data.repeats ? (
+                        <span
+                            className="log_badge log_badge_mono log_repeats"
+                            title={`${data.repeats} similar events were skipped`}
+                        >
+                            +{data.repeats}
+                        </span>
+                    ) : null}
                 </div>
                 <Tooltip
                     text={format_date_time(log.date_time)}
@@ -378,6 +436,7 @@ const LogRow = ({
                                     (c: any) => c._id === data.category,
                                 )?.name,
                             }}
+                            setFilter={setFilter}
                             onPrev={onPrev}
                             onNext={onNext}
                         />

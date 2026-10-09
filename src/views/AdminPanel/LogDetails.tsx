@@ -9,6 +9,7 @@ import CopyIcon from '../../assets/svg/copy.svg';
 
 import { Arrow, RoleChange, StatusChange } from './LogEntities';
 import { describeDetails, type DetailRow } from './logFormat';
+import { TimingBreakdown } from './LogTiming';
 import { LEVELS } from './logTypes';
 
 const formatMoment = (date: any) =>
@@ -178,6 +179,19 @@ const LogDetails = ({
                     <Card rows={details.facts} setFilter={setFilter} />
                 </Step>
 
+                {details.timing ? (
+                    <Step
+                        title="Timing"
+                        meta={
+                            details.requestId
+                                ? `request ${details.requestId}`
+                                : undefined
+                        }
+                    >
+                        <TimingBreakdown timing={details.timing} />
+                    </Step>
+                ) : null}
+
                 {details.changes.length ? (
                     <Step title="What changed">
                         <Card>
@@ -217,6 +231,20 @@ const LogDetails = ({
             </div>
 
             <div className="log_details_footer">
+                {details.requestId && setFilter ? (
+                    <button
+                        type="button"
+                        className="log_text_button"
+                        onClick={() =>
+                            setFilter({
+                                type: 'request',
+                                id: details.requestId,
+                            })
+                        }
+                    >
+                        All events of this request
+                    </button>
+                ) : null}
                 <button
                     type="button"
                     className="log_text_button"
