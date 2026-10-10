@@ -18,26 +18,14 @@
         min-width: 0;
     }
 
-    // Every section is one block with its title inside; what lies in it is
-    // lighter than the block, so the rows and fields stand out.
     .settings_section {
         display: flex;
         flex-direction: column;
         gap: var(--space-5, 20px);
         min-width: 0;
-        padding: var(--space-5);
+        padding: var(--space-6);
         border: 1px solid var(--line-color);
-        border-radius: 18px;
-        background: var(--panel-frame-color);
-
-        @include screen() {
-            padding: var(--space-4);
-        }
-
-        .input_field {
-            border-color: var(--panel-row-border-color);
-            background: var(--panel-row-color);
-        }
+        border-radius: var(--radius-md, 12px);
 
         > h1 {
             font-size: 20px;
@@ -85,7 +73,25 @@
         flex-direction: column;
         gap: var(--space-3);
         width: 100%;
-        padding: var(--space-4);
+    }
+
+    .settings_password_preview {
+        animation: settings_enter 260ms ease backwards;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+        width: 100%;
+
+        .input_field {
+            letter-spacing: 2px;
+            cursor: default;
+        }
+
+        .action_button {
+            align-self: flex-start;
+            white-space: nowrap;
+        }
     }
 
     .field {
@@ -181,49 +187,155 @@
         margin-top: 8px;
     }
 
+    .settings_switch {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        width: 100%;
+        padding: var(--space-3) 0;
+        border-bottom: 1px solid var(--line-color);
+        box-sizing: border-box;
+
+        &:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        &:first-of-type {
+            padding-top: 0;
+        }
+
+        .toggle {
+            flex-shrink: 0;
+            margin-top: 0;
+        }
+    }
+
+    .settings_switch_copy {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+
+    .settings_switch_title {
+        font-size: 14px;
+        line-height: 1.35;
+    }
+
+    .settings_switch_hint {
+        font-size: 12px;
+        color: var(--light-text-color);
+        line-height: 1.4;
+    }
+
     .settings_push_blocked {
         animation: settings_enter 260ms ease backwards;
         display: flex;
         flex-direction: column;
+        align-items: flex-start;
         gap: var(--space-3);
+        padding: var(--space-3) 0 0;
+
+        &_title {
+            font-size: 13px;
+            line-height: 1.4;
+        }
 
         &_steps {
             margin: 0;
             padding-left: 18px;
-            font-size: var(--text-xs);
+            font-size: 12px;
             line-height: 1.5;
             color: var(--light-text-color);
         }
     }
 
-    .settings_sessions_empty {
-        animation: settings_enter 260ms ease backwards;
-        padding: var(--space-3) var(--space-4);
-        font-size: var(--text-sm);
-        color: var(--light-text-color);
-    }
+    .settings_sessions {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
 
-    .settings_sessions_item {
-        animation: settings_enter 260ms ease backwards;
+        &_empty {
+            animation: settings_enter 260ms ease backwards;
+            font-size: 13px;
+            color: var(--light-text-color);
+            padding: 4px 0;
+        }
 
-        .danger_button {
-            width: auto;
-            flex: 0 0 auto;
+        &_badge {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 6px;
             white-space: nowrap;
+            @include use-transition();
+            color: var(--success-color);
+            background: rgb(from var(--success-color) r g b / 0.12);
         }
 
-        &_head {
-            display: inline-flex;
+        &_item {
+            animation: settings_enter 260ms ease backwards;
+            display: flex;
+            flex-direction: row;
             align-items: center;
-            flex-wrap: wrap;
-            gap: var(--space-2);
-        }
+            justify-content: space-between;
+            gap: var(--space-4);
+            width: 100%;
+            padding: var(--space-3) 0;
+            border-bottom: 1px solid var(--line-color);
+            box-sizing: border-box;
 
-        &_meta {
-            display: inline-flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
+            &:last-child {
+                border-bottom: none;
+                padding-bottom: 0;
+            }
+
+            &:first-child {
+                padding-top: 0;
+            }
+
+            .danger_button {
+                width: auto;
+                flex: 0 0 auto;
+                white-space: nowrap;
+            }
+
+            &_info {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                min-width: 0;
+            }
+
+            &_head {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            &_device {
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            &_meta {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 6px;
+                font-size: 12px;
+                color: var(--light-text-color);
+                line-height: 1.4;
+            }
+
+            &_time {
+                font-size: 12px;
+                color: var(--light-text-color);
+            }
         }
     }
 
@@ -247,6 +359,7 @@
 
 @media (prefers-reduced-motion: reduce) {
     .settings .settings_password,
+    .settings .settings_password_preview,
     .settings .settings_push_blocked,
     .settings .settings_sessions_empty,
     .settings .settings_sessions_item {

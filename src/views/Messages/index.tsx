@@ -63,6 +63,7 @@ import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import { messagePreviewText, quotePreviewText } from '../../utils/chatMessage';
 
 import CopyIcon from '../../assets/svg/copy.svg';
+import ShareIcon from '../../assets/svg/share.svg';
 import ReplyIcon from '../../assets/svg/reply.svg';
 import PeoplesIcon from '../../assets/svg/peoples.svg';
 import DeleteIcon from '../../assets/svg/delete.svg';
@@ -86,6 +87,7 @@ import {
     CreateGroupForm,
     GroupFace,
     GroupSettings,
+    openGroupShareModal,
     JoinGroupPrompt,
     ModalAvatar,
     TypingDots,
@@ -2874,14 +2876,9 @@ const MessagesPage = () => {
             return;
         }
 
-        const count = Array.isArray(group.members)
-            ? group.members.length
-            : Number(group.member_count) || 0;
-
         showModalWindow({
             title: group.title || 'Group',
-            subtitle: `Group · ${count} ${count === 1 ? 'participant' : 'participants'}`,
-            icon: <ModalAvatar src={group.photo} />,
+            hideHeader: true,
             size: 'small',
             showCloseButton: true,
             closeFunc: () => {},
@@ -3276,6 +3273,22 @@ const MessagesPage = () => {
                                                           icon: <InfoIcon />,
                                                           onClick:
                                                               openGroupSettings,
+                                                      },
+                                                      {
+                                                          title: 'Share',
+                                                          icon: <ShareIcon />,
+                                                          onClick: () =>
+                                                              openGroupShareModal(
+                                                                  {
+                                                                      group: activeConversation,
+                                                                      showModalWindow,
+                                                                      showToast,
+                                                                      onClose:
+                                                                          requestCloseModal,
+                                                                      onBackToInfo:
+                                                                          undefined,
+                                                                  },
+                                                              ),
                                                       },
                                                   ],
                                                   [

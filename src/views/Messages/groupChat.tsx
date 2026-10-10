@@ -13,6 +13,8 @@ import { searchUsers } from '../../api/search.api';
 import UserBadge from '../../components/UserBadge';
 import UserRow from '../../components/UserRow';
 import ActionButton from '../../components/Ui/ActionButton';
+import CancelButton from '../../components/Ui/CancelButton';
+import DangerButton from '../../components/Ui/DangerButton';
 import {
     MetaGrid,
     ModalFooter,
@@ -405,6 +407,35 @@ export function CreateGroupForm({
     );
 }
 
+export function openGroupShareModal({
+    group,
+    showModalWindow,
+    showToast,
+    onClose,
+    onBackToInfo,
+}: any) {
+    showModalWindow?.({
+        title: 'Share',
+        size: 'small',
+        showCloseButton: true,
+        closeFunc: () => {},
+        content: (
+            <SharePostModal
+                sharePath={`/messages/${group._id}`}
+                postTitle={group.title || 'Group'}
+                linkLabel="Link to the chat"
+                excludeConversationId={group._id}
+                sentLabel="Link sent to the chat"
+                failLabel="Could not send the link"
+                loginHint="Log in to send this chat as a message."
+                showToast={showToast}
+                requestCloseModal={onClose}
+                onBack={onBackToInfo}
+            />
+        ),
+    });
+}
+
 export function GroupSettings({
     conversation,
     profileId,
@@ -560,36 +591,16 @@ export function GroupSettings({
     const members = Array.isArray(group?.members) ? group.members : [];
     const excludeIds = [profileId, ...members.map((member: any) => member._id)];
 
-    const openShare = () => {
-        showModalWindow?.({
-            title: 'Share',
-            size: 'small',
-            showCloseButton: true,
-            closeFunc: () => {},
-            content: (
-                <SharePostModal
-                    sharePath={`/messages/${group._id}`}
-                    postTitle={group.title || 'Group'}
-                    linkLabel="Link to the chat"
-                    excludeConversationId={group._id}
-                    sentLabel="Link sent to the chat"
-                    failLabel="Could not send the link"
-                    loginHint="Log in to send this chat as a message."
-                    showToast={showToast}
-                    requestCloseModal={onClose}
-                    onBack={onBackToInfo}
-                />
-            ),
+    const openShare = () =>
+        openGroupShareModal({
+            group,
+            showModalWindow,
+            showToast,
+            onClose,
+            onBackToInfo,
         });
-    };
 
-    const handleLeave = async () => {
-        if (isLocked || isLeaving) {
-            return;
-        }
-        if (!window.confirm('Leave this group?')) {
-            return;
-        }
+    const leaveGroup = async () => {
         setIsLeaving(true);
         let result;
         try {
@@ -602,6 +613,38 @@ export function GroupSettings({
             return;
         }
         apply({ left: true });
+    };
+
+    const handleLeave = () => {
+        if (isLocked || isLeaving) {
+            return;
+        }
+        showModalWindow?.({
+            title: 'Leave this group?',
+            subtitle: group.title || 'Group',
+            icon: <LogoutIcon />,
+            size: 'small',
+            showCloseButton: false,
+            closeFunc: () => {},
+            content: (
+                <p className="messages_modal_text">
+                    You will stop receiving messages from it.
+                </p>
+            ),
+            footer: (
+                <>
+                    <span />
+                    <div className="modal_window_body_footer_actions">
+                        <CancelButton onClick={onBackToInfo}>
+                            Cancel
+                        </CancelButton>
+                        <DangerButton onClick={() => void leaveGroup()}>
+                            Leave
+                        </DangerButton>
+                    </div>
+                </>
+            ),
+        });
     };
 
     return (
@@ -646,6 +689,14 @@ export function GroupSettings({
                             setDescription(event.target.value)
                         }
                     />
+                    <ActionButton
+                        className="messages_group_share"
+                        disabled={isLocked}
+                        onClick={openShare}
+                    >
+                        <ShareIcon />
+                        Share
+                    </ActionButton>
                 </div>
             </Panel>
             <Panel title={`Participants · ${members.length}`}>
@@ -726,24 +777,15 @@ export function GroupSettings({
                     );
                 })}
             </Panel>
-            <Panel title="Actions">
-                <PanelRow
-                    icon={<ShareIcon />}
-                    title="Share"
-                    description="Send the link to this chat"
+            <ModalFooter>
+                <DangerButton
+                    isLoading={isLeaving}
                     disabled={isLocked}
-                    onClick={openShare}
-                />
-                <PanelRow
-                    icon={<LogoutIcon />}
-                    title="Leave group"
-                    description="You will stop receiving messages from it"
-                    danger
-                    disabled={isLocked || isLeaving}
                     onClick={handleLeave}
-                />
-            </Panel>
-            <ModalFooter hint="Changes apply to everyone in the chat">
+                >
+                    <LogoutIcon />
+                    Leave group
+                </DangerButton>
                 <PrimaryButton
                     isLoading={isSaving}
                     disabled={

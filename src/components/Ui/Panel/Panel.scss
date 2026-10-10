@@ -39,16 +39,15 @@
     color: var(--light-text-color);
 }
 
-// A tray holds the group and every row is its own card inside it, so rows
-// stay apart even when the tray and the page are close in colour.
+// Rows sit one under another, divided by thin lines, with no frame around them.
 .panel {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 6px;
-    border: 1px solid var(--line-color);
-    border-radius: 18px;
-    background: var(--panel-frame-color);
+    gap: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
 }
 
 .panel_row {
@@ -57,20 +56,24 @@
     gap: var(--space-3);
     width: 100%;
     min-width: 0;
-    padding: 12px 14px;
-    border: 1px solid var(--panel-row-border-color);
-    border-radius: 12px;
-    background: var(--panel-row-color);
+    padding: 12px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     font: inherit;
     color: var(--text-color);
     text-align: left;
     @include use-transition();
 
+    & + & {
+        border-top: 1px solid var(--line-color);
+    }
+
     &_action {
         cursor: pointer;
 
         @include hover {
-            background: var(--panel-row-hover-color);
+            opacity: 0.75;
         }
 
         &:focus-visible {

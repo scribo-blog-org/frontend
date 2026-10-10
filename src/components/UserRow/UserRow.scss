@@ -1,13 +1,14 @@
 @use '../../styles/helpers' as *;
 
-// The status sits under the name, not under the avatar: badge padding, avatar
-// and the gap before the name.
+// The status sits on the same line as the name and wraps under it only when
+// the row is too narrow.
 .user_row {
-    .panel_row_description {
-        padding-left: 34px;
-
-        @include screen() {
-            padding-left: 28px;
-        }
+    .user_row_line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: var(--space-3);
+        row-gap: 2px;
+        font-weight: 400;
     }
 }

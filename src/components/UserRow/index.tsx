@@ -20,8 +20,8 @@ type UserRowProps = {
     className?: string;
 };
 
-// A person as a row of a Panel: avatar and name, a line of status and
-// something on the right (a role, a button, a menu).
+// A person as a row of a Panel: avatar and name with the status next to it,
+// and something on the right (a role, a button, a menu).
 const UserRow = ({
     user,
     viewerId,
@@ -34,16 +34,18 @@ const UserRow = ({
 }: UserRowProps) => (
     <PanelRow
         className={`user_row ${className}`.trim()}
-        title={<UserBadge data={user} asLink={asLink && !onClick} />}
-        description={
-            description ??
-            (status ? (
-                <UserActivityStatus
-                    user={user}
-                    viewerId={viewerId}
-                    className="user_row_status"
-                />
-            ) : null)
+        title={
+            <span className="user_row_line">
+                <UserBadge data={user} asLink={asLink && !onClick} />
+                {description ??
+                    (status ? (
+                        <UserActivityStatus
+                            user={user}
+                            viewerId={viewerId}
+                            className="user_row_status"
+                        />
+                    ) : null)}
+            </span>
         }
         trailing={trailing}
         onClick={onClick}

@@ -1752,7 +1752,18 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-    padding: 10px;
+}
+
+.messages_group_share {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    svg {
+        width: 16px;
+        height: 16px;
+    }
 }
 
 .messages_group_form .search_select {
@@ -1840,4 +1851,10 @@
     .messages_group_member {
         animation: none;
     }
+}
+
+.messages_modal_text {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: 1.45;
 }

@@ -27,18 +27,12 @@ import PrimaryButton from '../../components/Ui/PrimaryButton';
 import ActionButton from '../../components/Ui/ActionButton';
 import DangerButton from '../../components/Ui/DangerButton';
 import Field from '../../components/Ui/Field';
-import { Banner, Panel, PanelRow, Pill } from '../../components/Ui/Panel';
 import Tooltip from '../../components/Ui/Tooltip';
 
 import './Settings.scss';
 
 import AvatarIcon from '../../assets/svg/avatar-icon.svg';
 import LogoutIcon from '../../assets/svg/logout.svg';
-import SecurityIcon from '../../assets/svg/security.svg';
-import NotificationIcon from '../../assets/svg/notification.svg';
-import WarningIcon from '../../assets/svg/warning-icon.svg';
-import MoonIcon from '../../assets/svg/moon.svg';
-import GlobalIcon from '../../assets/svg/global.svg';
 
 const Settings = () => {
     const {
@@ -714,53 +708,65 @@ const Settings = () => {
                                             />
                                         </Field>
                                     </div>
-                                    <Panel title="Privacy" flat>
-                                        <PanelRow
-                                            title="Show email"
-                                            description="The address will be visible on the profile page"
-                                            trailing={
-                                                <Toggle
-                                                    checked={
-                                                        fields.isEmailPublic
-                                                    }
-                                                    onChange={
-                                                        set_email_visibility
-                                                    }
-                                                    disabled={isLoading}
-                                                />
-                                            }
-                                        />
-                                        <PanelRow
-                                            title="Public saved posts"
-                                            description="Visitors of the profile will see saved posts"
-                                            trailing={
-                                                <Toggle
-                                                    checked={
-                                                        fields.isSavedPostsPublic
-                                                    }
-                                                    onChange={
-                                                        set_saved_posts_visibility
-                                                    }
-                                                    disabled={isLoading}
-                                                />
-                                            }
-                                        />
-                                        <PanelRow
-                                            title="Show last activity"
-                                            description="The date and time will be visible on the profile page"
-                                            trailing={
-                                                <Toggle
-                                                    checked={
-                                                        fields.isLastActivityPublic
-                                                    }
-                                                    onChange={
-                                                        set_last_activity_visibility
-                                                    }
-                                                    disabled={isLoading}
-                                                />
-                                            }
-                                        />
-                                    </Panel>
+                                    <div className="settings_group">
+                                        <p className="kicker">Privacy</p>
+                                        <div className="settings_switch">
+                                            <div className="settings_switch_copy">
+                                                <p className="settings_switch_title">
+                                                    Show email
+                                                </p>
+                                                <p className="settings_switch_hint">
+                                                    The address will be visible
+                                                    on the profile page
+                                                </p>
+                                            </div>
+                                            <Toggle
+                                                checked={fields.isEmailPublic}
+                                                onChange={set_email_visibility}
+                                                disabled={isLoading}
+                                            />
+                                        </div>
+                                        <div className="settings_switch">
+                                            <div className="settings_switch_copy">
+                                                <p className="settings_switch_title">
+                                                    Public saved posts
+                                                </p>
+                                                <p className="settings_switch_hint">
+                                                    Visitors of the profile will
+                                                    see saved posts
+                                                </p>
+                                            </div>
+                                            <Toggle
+                                                checked={
+                                                    fields.isSavedPostsPublic
+                                                }
+                                                onChange={
+                                                    set_saved_posts_visibility
+                                                }
+                                                disabled={isLoading}
+                                            />
+                                        </div>
+                                        <div className="settings_switch">
+                                            <div className="settings_switch_copy">
+                                                <p className="settings_switch_title">
+                                                    Show last activity
+                                                </p>
+                                                <p className="settings_switch_hint">
+                                                    The date and time will be
+                                                    visible on the profile page
+                                                </p>
+                                            </div>
+                                            <Toggle
+                                                checked={
+                                                    fields.isLastActivityPublic
+                                                }
+                                                onChange={
+                                                    set_last_activity_visibility
+                                                }
+                                                disabled={isLoading}
+                                            />
+                                        </div>
+                                    </div>
                                     <div className="settings_panel_actions">
                                         <PrimaryButton
                                             type="submit"
@@ -774,12 +780,131 @@ const Settings = () => {
                         ),
                     },
                     {
+                        title: 'Preferences',
+                        key: 'preferences',
+                        content: (
+                            <div className="settings_panel">
+                                <div className="settings_stack">
+                                    <div className="settings_group">
+                                        <p className="kicker">Appearance</p>
+                                        <div className="settings_switch">
+                                            <div className="settings_switch_copy">
+                                                <p className="settings_switch_title">
+                                                    Dark theme
+                                                </p>
+                                            </div>
+                                            <Toggle
+                                                checked={isDarkTheme}
+                                                onChange={setIsDarkTheme}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="settings_group">
+                                        <p className="kicker">Notifications</p>
+                                        <div className="settings_switch">
+                                            <div className="settings_switch_copy">
+                                                <p className="settings_switch_title">
+                                                    Push notifications
+                                                </p>
+                                                <p className="settings_switch_hint">
+                                                    {pushSupportState ===
+                                                    'needs-install'
+                                                        ? 'On iPhone, add Scribo to the Home Screen first, then open it from there'
+                                                        : pushSupportState ===
+                                                            'unsupported'
+                                                          ? 'This browser does not support notifications'
+                                                          : pushDenied
+                                                            ? 'Blocked in the browser, allow notifications for this site in its settings'
+                                                            : 'New messages and activity on this device, even when Scribo is closed'}
+                                                </p>
+                                            </div>
+                                            <Toggle
+                                                checked={pushOn}
+                                                onChange={
+                                                    pushSupportState ===
+                                                        'supported' &&
+                                                    !pushDenied &&
+                                                    !pushBusy
+                                                        ? togglePush
+                                                        : () => undefined
+                                                }
+                                            />
+                                        </div>
+                                        {pushSupportState === 'supported' &&
+                                            pushDenied && (
+                                                <div className="settings_push_blocked">
+                                                    <p className="settings_push_blocked_title">
+                                                        Notifications are
+                                                        blocked for this site
+                                                    </p>
+                                                    <ol className="settings_push_blocked_steps">
+                                                        <li>
+                                                            Click the icon left
+                                                            of the address bar
+                                                            (lock or settings)
+                                                        </li>
+                                                        <li>
+                                                            Set Notifications to
+                                                            Allow
+                                                        </li>
+                                                        <li>
+                                                            Come back here, this
+                                                            page updates on its
+                                                            own
+                                                        </li>
+                                                    </ol>
+                                                    <ActionButton
+                                                        type="button"
+                                                        isLoading={pushBusy}
+                                                        onClick={() =>
+                                                            void retryPush()
+                                                        }
+                                                    >
+                                                        Enable notifications
+                                                    </ActionButton>
+                                                </div>
+                                            )}
+                                    </div>
+                                    {installMode === 'prompt' ||
+                                    installMode === 'ios' ? (
+                                        <div className="settings_group">
+                                            <p className="kicker">App</p>
+                                            <div className="settings_switch">
+                                                <div className="settings_switch_copy">
+                                                    <p className="settings_switch_title">
+                                                        Install the app
+                                                    </p>
+                                                    <p className="settings_switch_hint">
+                                                        {installMode === 'ios'
+                                                            ? 'Tap Share in Safari, choose Add to Home Screen, then open Scribo from the new icon. iPhone only offers notifications to an installed app'
+                                                            : 'Open Scribo in its own window, right from your home screen or desktop'}
+                                                    </p>
+                                                </div>
+                                                {installMode === 'prompt' ? (
+                                                    <ActionButton
+                                                        type="button"
+                                                        onClick={() =>
+                                                            void install()
+                                                        }
+                                                    >
+                                                        Install
+                                                    </ActionButton>
+                                                ) : null}
+                                            </div>
+                                        </div>
+                                    ) : null}
+                                </div>
+                            </div>
+                        ),
+                    },
+                    {
                         title: 'Security',
                         key: 'security',
                         content: (
                             <div className="settings_panel">
                                 <div className="settings_stack">
-                                    <Panel bare>
+                                    <div className="settings_group">
+                                        <p className="kicker">Password</p>
                                         {changingPassword ? (
                                             <form
                                                 className="settings_password"
@@ -933,219 +1058,78 @@ const Settings = () => {
                                                 </div>
                                             </form>
                                         ) : (
-                                            <PanelRow
-                                                icon={<SecurityIcon />}
-                                                title="Password"
-                                                description="••••••••"
-                                                trailing={
-                                                    <ActionButton
-                                                        type="button"
-                                                        onClick={
-                                                            openPasswordForm
-                                                        }
-                                                    >
-                                                        Change password
-                                                    </ActionButton>
-                                                }
-                                            />
-                                        )}
-                                    </Panel>
-                                </div>
-                            </div>
-                        ),
-                    },
-                    {
-                        title: 'Notifications',
-                        key: 'notifications',
-                        content: (
-                            <div className="settings_panel">
-                                <div className="settings_stack">
-                                    <Panel bare>
-                                        <PanelRow
-                                            icon={<NotificationIcon />}
-                                            title="Push notifications"
-                                            description={
-                                                pushSupportState ===
-                                                'needs-install'
-                                                    ? 'On iPhone, add Scribo to the Home Screen first, then open it from there'
-                                                    : pushSupportState ===
-                                                        'unsupported'
-                                                      ? 'This browser does not support notifications'
-                                                      : pushDenied
-                                                        ? 'Blocked in the browser, allow notifications for this site in its settings'
-                                                        : 'New messages and activity on this device, even when Scribo is closed'
-                                            }
-                                            trailing={
-                                                <Toggle
-                                                    checked={pushOn}
-                                                    onChange={
-                                                        pushSupportState ===
-                                                            'supported' &&
-                                                        !pushDenied &&
-                                                        !pushBusy
-                                                            ? togglePush
-                                                            : () => undefined
-                                                    }
+                                            <div className="settings_password_preview">
+                                                <InputField
+                                                    type="password"
+                                                    value="********"
+                                                    readOnly
+                                                    tabIndex={-1}
+                                                    onChange={() => {}}
                                                 />
-                                            }
-                                        />
-                                    </Panel>
-                                    {pushSupportState === 'supported' &&
-                                        pushDenied && (
-                                            <div className="settings_push_blocked">
-                                                <Banner
-                                                    tone="warning"
-                                                    icon={<WarningIcon />}
-                                                    action={
-                                                        <ActionButton
-                                                            type="button"
-                                                            isLoading={pushBusy}
-                                                            onClick={() =>
-                                                                void retryPush()
-                                                            }
-                                                        >
-                                                            Enable
-                                                        </ActionButton>
-                                                    }
+                                                <ActionButton
+                                                    type="button"
+                                                    onClick={openPasswordForm}
                                                 >
-                                                    Notifications are blocked
-                                                    for this site
-                                                </Banner>
-                                                <ol className="settings_push_blocked_steps">
-                                                    <li>
-                                                        Click the icon left of
-                                                        the address bar (lock or
-                                                        settings)
-                                                    </li>
-                                                    <li>
-                                                        Set Notifications to
-                                                        Allow
-                                                    </li>
-                                                    <li>
-                                                        Come back here, this
-                                                        page updates on its own
-                                                    </li>
-                                                </ol>
+                                                    Change password
+                                                </ActionButton>
                                             </div>
                                         )}
-                                </div>
-                            </div>
-                        ),
-                    },
-                    {
-                        title: 'App',
-                        key: 'app',
-                        content: (
-                            <div className="settings_panel">
-                                <div className="settings_stack">
-                                    {installMode === 'prompt' ||
-                                    installMode === 'ios' ? (
-                                        <Panel bare>
-                                            <PanelRow
-                                                title="Install the app"
-                                                description={
-                                                    installMode === 'ios'
-                                                        ? 'Tap Share in Safari, choose Add to Home Screen, then open Scribo from the new icon. iPhone only offers notifications to an installed app'
-                                                        : 'Open Scribo in its own window, right from your home screen or desktop'
-                                                }
-                                                trailing={
-                                                    installMode === 'prompt' ? (
-                                                        <ActionButton
-                                                            type="button"
-                                                            onClick={() =>
-                                                                void install()
-                                                            }
-                                                        >
-                                                            Install
-                                                        </ActionButton>
-                                                    ) : null
-                                                }
-                                            />
-                                        </Panel>
-                                    ) : null}
-                                </div>
-                            </div>
-                        ),
-                    },
-                    {
-                        title: 'Appearance',
-                        key: 'appearance',
-                        content: (
-                            <div className="settings_panel">
-                                <div className="settings_stack">
-                                    <Panel bare>
-                                        <PanelRow
-                                            icon={<MoonIcon />}
-                                            title="Dark theme"
-                                            trailing={
-                                                <Toggle
-                                                    checked={isDarkTheme}
-                                                    onChange={setIsDarkTheme}
-                                                />
-                                            }
-                                        />
-                                    </Panel>
-                                </div>
-                            </div>
-                        ),
-                    },
-                    {
-                        title: 'Sessions',
-                        key: 'sessions',
-                        content: (
-                            <div className="settings_panel">
-                                <div className="settings_stack">
-                                    <Panel bare>
-                                        {sessionsLoading ? (
-                                            <p className="settings_sessions_empty">
-                                                Loading…
-                                            </p>
-                                        ) : sessions.length === 0 ? (
-                                            <p className="settings_sessions_empty">
-                                                No active sessions
-                                            </p>
-                                        ) : (
-                                            sessions.map((session: any) => (
-                                                <PanelRow
-                                                    className="settings_sessions_item"
-                                                    key={session._id}
-                                                    icon={<GlobalIcon />}
-                                                    title={
-                                                        <span className="settings_sessions_item_head">
-                                                            {session.device}
-                                                            {session.isCurrent ? (
-                                                                <Pill tone="success">
-                                                                    Current
-                                                                </Pill>
-                                                            ) : null}
-                                                        </span>
-                                                    }
-                                                    description={
-                                                        <span className="settings_sessions_item_meta">
-                                                            <span>
-                                                                {session.location ||
-                                                                    '—'}
-                                                            </span>
-                                                            <span aria-hidden="true">
-                                                                ·
-                                                            </span>
-                                                            <Tooltip
-                                                                text={format_date_time(
-                                                                    session.lastSeen,
-                                                                )}
-                                                            >
+                                    </div>
+                                    <div className="settings_group">
+                                        <p className="kicker">Sessions</p>
+                                        <div className="settings_sessions">
+                                            {sessionsLoading ? (
+                                                <p className="settings_sessions_empty">
+                                                    Loading…
+                                                </p>
+                                            ) : sessions.length === 0 ? (
+                                                <p className="settings_sessions_empty">
+                                                    No active sessions
+                                                </p>
+                                            ) : (
+                                                sessions.map((session: any) => (
+                                                    <div
+                                                        className="settings_sessions_item app-transition"
+                                                        key={session._id}
+                                                    >
+                                                        <div className="settings_sessions_item_info">
+                                                            <div className="settings_sessions_item_head">
+                                                                <p className="settings_sessions_item_device">
+                                                                    {
+                                                                        session.device
+                                                                    }
+                                                                </p>
+                                                                {session.isCurrent ? (
+                                                                    <span className="settings_sessions_badge app-transition">
+                                                                        This
+                                                                        session
+                                                                    </span>
+                                                                ) : null}
+                                                            </div>
+                                                            <div className="settings_sessions_item_meta">
                                                                 <span>
-                                                                    {format_back(
-                                                                        session.lastSeen,
-                                                                    ) ||
-                                                                        format_date_time(
-                                                                            session.lastSeen,
-                                                                        )}
+                                                                    {session.location ||
+                                                                        '—'}
                                                                 </span>
-                                                            </Tooltip>
-                                                        </span>
-                                                    }
-                                                    trailing={
+                                                                <span aria-hidden="true">
+                                                                    ·
+                                                                </span>
+                                                                <Tooltip
+                                                                    text={format_date_time(
+                                                                        session.lastSeen,
+                                                                    )}
+                                                                >
+                                                                    <span className="settings_sessions_item_time">
+                                                                        {format_back(
+                                                                            session.lastSeen,
+                                                                        ) ||
+                                                                            format_date_time(
+                                                                                session.lastSeen,
+                                                                            )}
+                                                                    </span>
+                                                                </Tooltip>
+                                                            </div>
+                                                        </div>
                                                         <DangerButton
                                                             type="button"
                                                             isLoading={
@@ -1164,13 +1148,13 @@ const Settings = () => {
                                                                 )
                                                             }
                                                         >
-                                                            Sign out
+                                                            End
                                                         </DangerButton>
-                                                    }
-                                                />
-                                            ))
-                                        )}
-                                    </Panel>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
                                     <div className="settings_logout app-transition">
                                         <DangerButton
                                             className="logout_button"
@@ -1187,19 +1171,12 @@ const Settings = () => {
                             </div>
                         ),
                     },
-                ]
-                    .filter(
-                        (section: any) =>
-                            section.key !== 'app' ||
-                            installMode === 'prompt' ||
-                            installMode === 'ios',
-                    )
-                    .map((section: any) => (
-                        <section key={section.key} className="settings_section">
-                            <h1>{section.title}</h1>
-                            {section.content}
-                        </section>
-                    ))}
+                ].map((section: any) => (
+                    <section key={section.key} className="settings_section">
+                        <h1>{section.title}</h1>
+                        {section.content}
+                    </section>
+                ))}
             </div>
         </div>
     );
