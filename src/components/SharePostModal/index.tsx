@@ -1,14 +1,20 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from '@/navigation';
 
 import { AppContext } from '@/providers/AppProviders';
 import { getConversations, sendMessage } from '../../api/chat.api';
-import ActionButton from '../Ui/ActionButton';
-import PrimaryButton from '../Ui/PrimaryButton';
 import Loading from '../Ui/Loading';
-import UserBadge from '../UserBadge';
+import {
+    ActionButton,
+    Banner,
+    InputField,
+    ModalFooter,
+    Panel,
+    PanelRow,
+    PrimaryButton,
+} from '../Ui';
 import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
 import { absoluteUrl } from '../../seo/site';
 import { imageSrc } from '../../utils/image';
@@ -19,8 +25,8 @@ import {
 } from '../../utils/share';
 
 import ArrowLeftIcon from '../../assets/svg/arrow-left.svg';
-import RedirectIcon from '../../assets/svg/redirect.svg';
-import CopyIcon from '../../assets/svg/copy.svg';
+import LinkIcon from '../../assets/svg/link-icon.svg';
+import CheckIcon from '../../assets/svg/tick.svg';
 import ShareIcon from '../../assets/svg/share.svg';
 
 import './SharePostModal.scss';
@@ -45,22 +51,13 @@ const SharePostModal = ({
     const [sendingId, setSendingId] = useState<any>(null);
     const [isCopying, setIsCopying] = useState<any>(false);
     const [isSharing, setIsSharing] = useState<any>(false);
+    const [isCopied, setIsCopied] = useState<any>(false);
+    const copiedTimer = useRef<any>(null);
     const shareUrl = absoluteUrl(sharePath || `/posts/${postId}`);
     const chats = conversations.filter(
         (item) => String(item._id) !== String(excludeConversationId || ''),
     );
     const nativeShareAvailable = canUseNativeShare();
-
-    useEffect(() => {
-        const field = document.getElementById('share_post_modal_link');
-        if (!field) {
-            return;
-        }
-
-        const input = field as HTMLInputElement;
-        input.focus();
-        input.select();
-    }, [shareUrl]);
 
     useEffect(() => {
         if (!profile) {
@@ -84,12 +81,17 @@ const SharePostModal = ({
         };
     }, [profile]);
 
+    useEffect(() => () => clearTimeout(copiedTimer.current), []);
+
     const handleCopy = async () => {
         if (isCopying) return;
         setIsCopying(true);
         try {
             await copyText(shareUrl);
             showToast?.({ message: 'Link copied', type: 'success' });
+            setIsCopied(true);
+            clearTimeout(copiedTimer.current);
+            copiedTimer.current = setTimeout(() => setIsCopied(false), 2000);
         } catch (error: any) {
             console.error(error);
             showToast?.({
@@ -172,103 +174,121 @@ const SharePostModal = ({
                     {linkLabel}
                 </label>
                 <div className="share_post_modal_link_row">
-                    <input
+                    <InputField
                         id="share_post_modal_link"
-                        className="share_post_modal_link input_field app-transition"
+                        className="share_post_modal_link"
                         type="text"
                         readOnly
+                        length={1000}
                         value={shareUrl}
-                        onFocus={(event: any) => event.target.select()}
                         onClick={(event: any) => event.target.select()}
                     />
                     <PrimaryButton
-                        type="button"
-                        isLoading={isCopying}
+                        className="share_post_modal_copy"
                         disabled={Boolean(sendingId)}
+                        isLoading={isCopying}
                         onClick={handleCopy}
                     >
-                        <CopyIcon />
-                        Copy
+                        {isCopied ? <CheckIcon /> : <LinkIcon />}
+                        {isCopied ? 'Copied' : 'Copy'}
                     </PrimaryButton>
                 </div>
             </div>
 
-            <div className="share_post_modal_group">
-                <p className="share_post_modal_kicker">Send to chat</p>
+            <Panel title="Send to chat">
                 {!profile ? (
-                    <>
-                        <p className="share_post_modal_hint">{loginHint}</p>
-                        <PrimaryButton
-                            type="button"
-                            className="share_post_modal_login"
-                            onClick={() => {
-                                requestCloseModal?.();
-                                navigate('/auth/login');
-                            }}
-                        >
-                            <RedirectIcon />
-                            Log in
-                        </PrimaryButton>
-                    </>
+                    <PanelRow
+                        title="Log in to send"
+                        description={loginHint}
+                        trailing={
+                            <ActionButton
+                                size="sm"
+                                onClick={() => {
+                                    requestCloseModal?.();
+                                    navigate('/auth/login');
+                                }}
+                            >
+                                Log in
+                            </ActionButton>
+                        }
+                    />
                 ) : isLoadingChats ? (
-                    <div className="share_post_modal_loader">
+                    <div className="share_post_modal_loader panel_row">
                         <Loading size={24} />
                     </div>
                 ) : chats.length ? (
                     <div className="share_post_modal_chats">
-                        {chats.map((item: any) => (
-                            <button
-                                key={item._id}
-                                type="button"
-                                className="share_post_modal_chat_item app-transition"
-                                disabled={Boolean(sendingId)}
-                                onClick={() => handleShareToChat(item._id)}
-                            >
-                                {item.kind === 'group' ? (
-                                    <span className="share_post_modal_chat_face">
+                        {chats.map((item: any) => {
+                            const isGroup = item.kind === 'group';
+                            const count =
+                                item.member_count ?? item.members?.length;
+                            const isSending = sendingId === item._id;
+
+                            return (
+                                <PanelRow
+                                    key={item._id}
+                                    className="share_post_modal_chat"
+                                    icon={
                                         <img
                                             src={imageSrc(
-                                                item.photo,
+                                                isGroup
+                                                    ? item.photo
+                                                    : item.participant?.avatar,
                                                 DefaultProfileAvatar,
                                             )}
                                             alt=""
                                         />
-                                        <span>{item.title || 'Group'}</span>
-                                    </span>
-                                ) : (
-                                    <UserBadge
-                                        data={item.participant}
-                                        asLink={false}
-                                    />
-                                )}
-                                {sendingId === item._id ? (
-                                    <span className="share_post_modal_chat_status">
-                                        Sending…
-                                    </span>
-                                ) : null}
-                            </button>
-                        ))}
+                                    }
+                                    title={
+                                        isGroup
+                                            ? item.title || 'Group'
+                                            : item.participant?.nick_name
+                                    }
+                                    description={
+                                        isGroup
+                                            ? count
+                                                ? `Group · ${count} members`
+                                                : 'Group'
+                                            : 'Direct message'
+                                    }
+                                    trailing={
+                                        <ActionButton
+                                            size="sm"
+                                            isLoading={isSending}
+                                            disabled={Boolean(sendingId)}
+                                            onClick={() =>
+                                                handleShareToChat(item._id)
+                                            }
+                                        >
+                                            Send
+                                        </ActionButton>
+                                    }
+                                />
+                            );
+                        })}
                     </div>
                 ) : (
-                    <p className="share_post_modal_hint">
-                        {conversations.length
-                            ? 'No other chats to send this to.'
-                            : 'No chats yet. Write to someone from their profile — the conversation will show up here.'}
-                    </p>
+                    <div className="share_post_modal_empty">
+                        <Banner tone="info">
+                            {conversations.length
+                                ? 'No other chats to send this to.'
+                                : 'No chats yet. Write to someone from their profile — the conversation will show up here.'}
+                        </Banner>
+                    </div>
                 )}
-            </div>
+            </Panel>
 
             {nativeShareAvailable ? (
-                <ActionButton
-                    type="button"
-                    className="share_post_modal_native"
-                    isLoading={isSharing}
-                    disabled={Boolean(sendingId)}
-                    onClick={handleNativeShare}
-                >
-                    <ShareIcon />
-                    Share
-                </ActionButton>
+                <ModalFooter hint="Use the share menu of your device">
+                    <ActionButton
+                        isLoading={isSharing}
+                        disabled={Boolean(sendingId)}
+                        onClick={handleNativeShare}
+                    >
+                        <ShareIcon />
+                        Share via…
+                    </ActionButton>
+                </ModalFooter>
             ) : null}
         </div>
     );

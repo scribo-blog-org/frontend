@@ -87,7 +87,7 @@
     }
 
     &_filter {
-        flex: 1 1 0%;
+        flex: 0 1 auto;
         display: flex;
         align-items: center;
         gap: var(--space-2);
@@ -192,11 +192,13 @@
     &_level_warn {
         --level: var(--log-update-color);
         box-shadow: inset 2px 0 0 var(--level);
+        background: rgb(from var(--level) r g b / 0.05);
     }
 
     &_level_error {
         --level: var(--log-error-color);
         box-shadow: inset 2px 0 0 var(--level);
+        background: rgb(from var(--level) r g b / 0.08);
     }
 
     &_level_warn &_level,
@@ -445,13 +447,17 @@
 
     &_header {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         gap: var(--space-2);
+        row-gap: var(--space-2);
         min-width: 0;
     }
 
     &_path {
-        min-width: 0;
+        flex: 0 1 auto;
+        max-width: 100%;
+        min-width: 80px;
         overflow: hidden;
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 13px;
@@ -1100,5 +1106,52 @@
     &_many {
         color: var(--log-update-color);
         font-weight: 600;
+    }
+}
+
+.log_id_chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border: 1px solid var(--line-color);
+    border-radius: 6px;
+    background: none;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--light-text-color);
+    cursor: pointer;
+    @include use-transition();
+
+    svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    @include hover {
+        color: var(--text-color);
+        background: var(--section-item-hover-background-color);
+    }
+}
+
+.log_details_counter {
+    margin-right: 4px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--light-text-color);
+    white-space: nowrap;
+}
+
+// The details column shrinks with the window, so the plate gives up its extras
+// before it gets cut off: first the bar, then the query count.
+@media (max-width: 1360px) {
+    .log_timing_bar {
+        display: none;
+    }
+}
+
+@media (max-width: 1120px) {
+    .log_timing_queries {
+        display: none;
     }
 }

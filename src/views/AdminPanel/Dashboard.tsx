@@ -11,6 +11,7 @@ import { TimingPlate } from './LogTiming';
 import { hashtagSearchPath } from '../../utils/hashtags';
 
 import Tabs from '../../components/Ui/Tabs';
+import { Pill } from '../../components/Ui';
 import Loading from '../../components/Ui/Loading';
 
 import './Dashboard.scss';
@@ -446,6 +447,7 @@ const HealthCard = ({ item, counter, active, onSelect }: any) => {
     const current = counter?.current ?? 0;
     const previous = counter?.previous ?? 0;
     const diff = current - previous;
+    const peak = Math.max(current, previous, 1);
 
     return (
         <button
@@ -455,16 +457,35 @@ const HealthCard = ({ item, counter, active, onSelect }: any) => {
             onClick={onSelect}
         >
             <span className="analytics_stat_label">{item.label}</span>
-            <span className="analytics_stat_value">
-                {formatNumber(current)}
+            <span className="analytics_health_figure">
+                <span className="analytics_stat_value">
+                    {formatNumber(current)}
+                </span>
+                <Pill
+                    tone={
+                        diff > 0 ? 'danger' : diff < 0 ? 'success' : 'neutral'
+                    }
+                >
+                    {diff === 0
+                        ? 'same'
+                        : `${diff > 0 ? '+' : '−'}${formatNumber(Math.abs(diff))}`}
+                </Pill>
+            </span>
+            <span className="analytics_health_bars" aria-hidden="true">
+                <span
+                    className="analytics_health_bar analytics_health_bar_now"
+                    style={{ width: `${Math.max(3, (current / peak) * 100)}%` }}
+                />
+                <span
+                    className="analytics_health_bar analytics_health_bar_before"
+                    style={{
+                        width: `${Math.max(3, (previous / peak) * 100)}%`,
+                    }}
+                />
             </span>
             <span className="analytics_stat_hint">{item.hint}</span>
-            <span
-                className={`analytics_stat_delta analytics_stat_delta_${diff > 0 ? 'bad' : 'flat'}`}
-            >
-                {diff === 0
-                    ? 'same as the day before'
-                    : `${diff > 0 ? '+' : ''}${formatNumber(diff)} against the day before`}
+            <span className="analytics_stat_hint">
+                {formatNumber(previous)} the day before
             </span>
         </button>
     );

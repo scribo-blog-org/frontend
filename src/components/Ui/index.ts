@@ -23,3 +23,5 @@ export { default as TextEditorField } from './TextEditorField';
 export { default as Toast } from './Toast';
 export { default as Toggle } from './Toggle';
 export { default as Tooltip } from './Tooltip';
+export { Panel, PanelRow, Pill, Banner, MetaGrid } from './Panel';
+export { default as ModalFooter } from './ModalFooter';

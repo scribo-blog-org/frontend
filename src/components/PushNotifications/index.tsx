@@ -15,10 +15,13 @@ import {
 
 import PrimaryButton from '../Ui/PrimaryButton';
 import CancelButton from '../Ui/CancelButton';
+import { Panel, PanelRow, Pill, Banner } from '../Ui';
 
 import NotificationIcon from '../../assets/svg/notification.svg';
-
-import './PushNotifications.scss';
+import MessageIcon from '../../assets/svg/message.svg';
+import InfoIcon from '../../assets/svg/info.svg';
+import ShareIcon from '../../assets/svg/share.svg';
+import PlusIcon from '../../assets/svg/plus-icon.svg';
 
 const DISMISSED_KEY = 'push_prompt_dismissed';
 const INSTALL_DISMISSED_KEY = 'install_prompt_dismissed';
@@ -57,7 +60,28 @@ const readDismissed = (userId: string) => {
     }
 };
 
-const PromptContent = ({
+const PromptContent = () => (
+    <>
+        <Banner icon={<InfoIcon />}>
+            Know right away when someone writes to you or something new happens
+            on your account.
+        </Banner>
+        <Panel title="You will get">
+            <PanelRow
+                icon={<MessageIcon />}
+                title="Messages"
+                description="New messages in your chats"
+            />
+            <PanelRow
+                icon={<NotificationIcon />}
+                title="Notifications"
+                description="Likes, comments, replies, mentions, follows and answers to your support requests"
+            />
+        </Panel>
+    </>
+);
+
+const PromptFooter = ({
     userId,
     requestCloseModal,
     showToast,
@@ -88,26 +112,9 @@ const PromptContent = ({
     };
 
     return (
-        <div className="push_prompt">
-            <div className="push_prompt_icon">
-                <NotificationIcon />
-            </div>
-            <p className="push_prompt_text">
-                Know right away when someone writes to you or something new
-                happens on your account.
-            </p>
-            <ul className="push_prompt_list">
-                <li>New messages in your chats</li>
-                <li>
-                    Notifications: likes, comments, replies, mentions, follows
-                    and answers to your support requests
-                </li>
-            </ul>
-            <p className="push_prompt_hint">
-                Only these two, nothing else. You can turn it off any time in
-                Settings.
-            </p>
-            <div className="push_prompt_actions">
+        <>
+            <span>You can turn it off any time in Settings</span>
+            <div className="modal_window_body_footer_actions">
                 <CancelButton disabled={loading} onClick={requestCloseModal}>
                     Not now
                 </CancelButton>
@@ -115,33 +122,50 @@ const PromptContent = ({
                     Enable
                 </PrimaryButton>
             </div>
-        </div>
+        </>
     );
 };
 
 // Safari on iPhone only offers notifications to a site opened from the Home
 // Screen, and there is no API to install it, so all we can do is explain.
-const InstallHintContent = ({
+const INSTALL_STEPS = [
+    { title: 'Tap Share in Safari', icon: <ShareIcon /> },
+    { title: 'Choose Add to Home Screen', icon: <PlusIcon /> },
+    {
+        title: 'Open Scribo from the new icon and turn on notifications',
+        icon: <NotificationIcon />,
+    },
+];
+
+const InstallHintContent = () => (
+    <>
+        <Banner icon={<InfoIcon />}>
+            To get notifications on iPhone, add Scribo to your Home Screen.
+        </Banner>
+        <Panel title="How to install">
+            {INSTALL_STEPS.map((step, index) => (
+                <PanelRow
+                    key={step.title}
+                    icon={step.icon}
+                    title={step.title}
+                    trailing={<Pill>Step {index + 1}</Pill>}
+                />
+            ))}
+        </Panel>
+    </>
+);
+
+const InstallHintFooter = ({
     requestCloseModal,
 }: {
     requestCloseModal: () => void;
 }) => (
-    <div className="push_prompt">
-        <div className="push_prompt_icon">
-            <NotificationIcon />
-        </div>
-        <p className="push_prompt_text">
-            To get notifications on iPhone, add Scribo to your Home Screen.
-        </p>
-        <ol className="push_prompt_list">
-            <li>Tap Share in Safari</li>
-            <li>Choose Add to Home Screen</li>
-            <li>Open Scribo from the new icon and turn on notifications</li>
-        </ol>
-        <div className="push_prompt_actions">
+    <>
+        <span>Works in Safari on iPhone</span>
+        <div className="modal_window_body_footer_actions">
             <PrimaryButton onClick={requestCloseModal}>Got it</PrimaryButton>
         </div>
-    </div>
+    </>
 );
 
 const PushNotifications = () => {
@@ -191,9 +215,12 @@ const PushNotifications = () => {
         ) {
             showModalWindow({
                 title: 'Install Scribo',
+                subtitle: 'Add it to your Home Screen',
+                icon: <ShareIcon />,
                 size: 'small',
-                content: (
-                    <InstallHintContent requestCloseModal={requestCloseModal} />
+                content: <InstallHintContent />,
+                footer: (
+                    <InstallHintFooter requestCloseModal={requestCloseModal} />
                 ),
                 closeFunc: () => markInstallDismissed(userId),
             });
@@ -227,9 +254,12 @@ const PushNotifications = () => {
             ) {
                 showModalWindow({
                     title: 'Turn on notifications?',
+                    subtitle: 'Messages and account updates',
+                    icon: <NotificationIcon />,
                     size: 'small',
-                    content: (
-                        <PromptContent
+                    content: <PromptContent />,
+                    footer: (
+                        <PromptFooter
                             userId={userId}
                             requestCloseModal={requestCloseModal}
                             showToast={showToast}

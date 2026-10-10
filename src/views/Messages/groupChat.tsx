@@ -10,9 +10,18 @@ import {
     updateGroupMemberRole,
 } from '../../api/chat.api';
 import { searchUsers } from '../../api/search.api';
-import UserActivityStatus from '../../components/UserActivityStatus';
 import UserBadge from '../../components/UserBadge';
+import UserRow from '../../components/UserRow';
 import ActionButton from '../../components/Ui/ActionButton';
+import CancelButton from '../../components/Ui/CancelButton';
+import DangerButton from '../../components/Ui/DangerButton';
+import {
+    MetaGrid,
+    ModalFooter,
+    Panel,
+    PanelRow,
+    Pill,
+} from '../../components/Ui';
 import DropFile from '../../components/Ui/DropFile';
 import InputField from '../../components/Ui/InputField';
 import SharePostModal from '../../components/SharePostModal';
@@ -22,6 +31,9 @@ import SearchSelect from '../../components/Ui/SearchSelect';
 import ShareIcon from '../../assets/svg/share.svg';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
+import InfoIcon from '../../assets/svg/info.svg';
+import LogoutIcon from '../../assets/svg/logout.svg';
+import PeoplesIcon from '../../assets/svg/peoples.svg';
 import ThreeDotsIcon from '../../assets/svg/three-dots.svg';
 import { imageSrc } from '../../utils/image';
 
@@ -191,29 +203,44 @@ const imageDropProps = {
     fileTypes: 'SVG, PNG, JPEG, JPG, and others',
 };
 
+export const ModalAvatar = ({ src }: any) => (
+    <img
+        className="messages_modal_avatar"
+        src={imageSrc(src, DefaultProfileAvatar)}
+        alt=""
+    />
+);
+
 export function JoinGroupPrompt({ invite, onAccept, onDecline }: any) {
     const [isJoining, setIsJoining] = useState(false);
     const count = Number(invite?.member_count) || 0;
 
     return (
-        <div className="messages_join_prompt">
-            <img
-                className="messages_join_prompt_photo"
-                src={imageSrc(invite?.photo, DefaultProfileAvatar)}
-                alt=""
-            />
-            <p className="messages_join_prompt_title">
-                {invite?.title || 'Group'}
-            </p>
-            <p className="messages_join_prompt_muted">
-                {`${count} ${count === 1 ? 'person' : 'people'}`}
-            </p>
+        <div className="messages_modal_body">
             {invite?.description ? (
-                <p className="messages_join_prompt_description">
-                    {invite.description}
-                </p>
+                <Panel title="About">
+                    <PanelRow>
+                        <span className="messages_join_description">
+                            {invite.description}
+                        </span>
+                    </PanelRow>
+                </Panel>
             ) : null}
-            <div className="messages_join_prompt_actions">
+            <MetaGrid
+                items={[
+                    {
+                        label: 'Participants',
+                        value: count,
+                        icon: <PeoplesIcon />,
+                    },
+                    {
+                        label: 'Type',
+                        value: 'Group chat',
+                        icon: <InfoIcon />,
+                    },
+                ]}
+            />
+            <ModalFooter hint="You will join as a participant">
                 <ActionButton onClick={onDecline} disabled={isJoining}>
                     Decline
                 </ActionButton>
@@ -231,7 +258,7 @@ export function JoinGroupPrompt({ invite, onAccept, onDecline }: any) {
                 >
                     Join chat
                 </PrimaryButton>
-            </div>
+            </ModalFooter>
         </div>
     );
 }
@@ -287,50 +314,66 @@ export function CreateGroupForm({
     };
 
     return (
-        <div className="messages_group_form">
-            <DropFile
-                value={photo}
-                setValue={setPhoto}
-                disabled={isSaving}
-                {...imageDropProps}
-            />
-            <InputField
-                value={name}
-                placeholder="Group name"
-                disabled={isSaving}
-                length={FIELD_LIMITS.groupName.max}
-                onChange={(event: any) => setName(event.target.value)}
-            />
-            <InputField
-                value={description}
-                placeholder="Description (optional)"
-                isMultiline
-                multilineRows={3}
-                disabled={isSaving}
-                length={FIELD_LIMITS.groupDescription.max}
-                onChange={(event: any) => setDescription(event.target.value)}
-            />
-            <UserSearchSelect
-                excludeIds={excludeIds}
-                disabled={isSaving}
-                onPick={(user: any) =>
-                    setMembers((current) =>
-                        current.some(
-                            (member) => String(member._id) === String(user._id),
-                        )
-                            ? current
-                            : [...current, user],
-                    )
-                }
-            />
-            {members.length ? (
-                <ul className="messages_group_members">
-                    {members.map((member) => (
-                        <li key={member._id} className="messages_group_member">
-                            <UserBadge data={member} asLink={false} />
+        <div className="messages_group_form messages_modal_body">
+            <Panel title="About">
+                <div className="messages_panel_fields">
+                    <DropFile
+                        value={photo}
+                        setValue={setPhoto}
+                        disabled={isSaving}
+                        {...imageDropProps}
+                    />
+                    <InputField
+                        value={name}
+                        placeholder="Group name"
+                        disabled={isSaving}
+                        length={FIELD_LIMITS.groupName.max}
+                        onChange={(event: any) => setName(event.target.value)}
+                    />
+                    <InputField
+                        value={description}
+                        placeholder="Description (optional)"
+                        isMultiline
+                        multilineRows={3}
+                        disabled={isSaving}
+                        length={FIELD_LIMITS.groupDescription.max}
+                        onChange={(event: any) =>
+                            setDescription(event.target.value)
+                        }
+                    />
+                </div>
+            </Panel>
+            <Panel
+                title={`Participants${members.length ? ` · ${members.length}` : ''}`}
+            >
+                <div className="messages_panel_fields">
+                    <UserSearchSelect
+                        excludeIds={excludeIds}
+                        placeholder="Add people"
+                        disabled={isSaving}
+                        onPick={(user: any) =>
+                            setMembers((current) =>
+                                current.some(
+                                    (member) =>
+                                        String(member._id) === String(user._id),
+                                )
+                                    ? current
+                                    : [...current, user],
+                            )
+                        }
+                    />
+                </div>
+                {members.map((member) => (
+                    <UserRow
+                        key={member._id}
+                        className="messages_group_member"
+                        user={member}
+                        asLink={false}
+                        status={false}
+                        trailing={
                             <button
                                 type="button"
-                                className="messages_group_member_remove app-transition"
+                                className="messages_panel_text_button app-transition"
                                 disabled={isSaving}
                                 onClick={() =>
                                     setMembers((current) =>
@@ -344,11 +387,11 @@ export function CreateGroupForm({
                             >
                                 Remove
                             </button>
-                        </li>
-                    ))}
-                </ul>
-            ) : null}
-            <div className="messages_group_form_actions">
+                        }
+                    />
+                ))}
+            </Panel>
+            <ModalFooter hint="You will be the administrator">
                 <ActionButton onClick={onClose} disabled={isSaving}>
                     Cancel
                 </ActionButton>
@@ -359,9 +402,38 @@ export function CreateGroupForm({
                 >
                     Create
                 </PrimaryButton>
-            </div>
+            </ModalFooter>
         </div>
     );
+}
+
+export function openGroupShareModal({
+    group,
+    showModalWindow,
+    showToast,
+    onClose,
+    onBackToInfo,
+}: any) {
+    showModalWindow?.({
+        title: 'Share',
+        size: 'small',
+        showCloseButton: true,
+        closeFunc: () => {},
+        content: (
+            <SharePostModal
+                sharePath={`/messages/${group._id}`}
+                postTitle={group.title || 'Group'}
+                linkLabel="Link to the chat"
+                excludeConversationId={group._id}
+                sentLabel="Link sent to the chat"
+                failLabel="Could not send the link"
+                loginHint="Log in to send this chat as a message."
+                showToast={showToast}
+                requestCloseModal={onClose}
+                onBack={onBackToInfo}
+            />
+        ),
+    });
 }
 
 export function GroupSettings({
@@ -383,6 +455,7 @@ export function GroupSettings({
     const [removePhoto, setRemovePhoto] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isAdding, setIsAdding] = useState(false);
+    const [isLeaving, setIsLeaving] = useState(false);
     const isLocked = isSaving || isAdding;
     const isAdmin = group?.my_role === 'admin';
 
@@ -518,161 +591,213 @@ export function GroupSettings({
     const members = Array.isArray(group?.members) ? group.members : [];
     const excludeIds = [profileId, ...members.map((member: any) => member._id)];
 
-    const openShare = () => {
+    const openShare = () =>
+        openGroupShareModal({
+            group,
+            showModalWindow,
+            showToast,
+            onClose,
+            onBackToInfo,
+        });
+
+    const leaveGroup = async () => {
+        setIsLeaving(true);
+        let result;
+        try {
+            result = await removeGroupMember(group._id, profileId);
+        } finally {
+            setIsLeaving(false);
+        }
+        if (!result?.status) {
+            fail(result, 'Could not leave the group');
+            return;
+        }
+        apply({ left: true });
+    };
+
+    const handleLeave = () => {
+        if (isLocked || isLeaving) {
+            return;
+        }
         showModalWindow?.({
-            title: 'Share',
+            title: 'Leave this group?',
+            subtitle: group.title || 'Group',
+            icon: <LogoutIcon />,
             size: 'small',
-            showCloseButton: true,
+            showCloseButton: false,
             closeFunc: () => {},
             content: (
-                <SharePostModal
-                    sharePath={`/messages/${group._id}`}
-                    postTitle={group.title || 'Group'}
-                    linkLabel="Link to the chat"
-                    excludeConversationId={group._id}
-                    sentLabel="Link sent to the chat"
-                    failLabel="Could not send the link"
-                    loginHint="Log in to send this chat as a message."
-                    showToast={showToast}
-                    requestCloseModal={onClose}
-                    onBack={onBackToInfo}
-                />
+                <p className="messages_modal_text">
+                    You will stop receiving messages from it.
+                </p>
+            ),
+            footer: (
+                <>
+                    <span />
+                    <div className="modal_window_body_footer_actions">
+                        <CancelButton onClick={onBackToInfo}>
+                            Cancel
+                        </CancelButton>
+                        <DangerButton onClick={() => void leaveGroup()}>
+                            Leave
+                        </DangerButton>
+                    </div>
+                </>
             ),
         });
     };
 
     return (
-        <div className="messages_group_form">
-            <DropFile
-                value={
-                    photo instanceof File
-                        ? photo
-                        : removePhoto
-                          ? null
-                          : group?.photo
-                }
-                previewUrl={removePhoto ? null : group?.photo}
-                setValue={(file: any) => {
-                    setPhoto(file instanceof File ? file : null);
-                    setRemovePhoto(!(file instanceof File));
-                }}
-                onRemove={() => {
-                    setPhoto(null);
-                    setRemovePhoto(true);
-                }}
-                disabled={isLocked}
-                {...imageDropProps}
-            />
-            <InputField
-                value={name}
-                placeholder="Group name"
-                disabled={isLocked}
-                length={FIELD_LIMITS.groupName.max}
-                onChange={(event: any) => setName(event.target.value)}
-            />
-            <InputField
-                value={description}
-                placeholder="Description (optional)"
-                isMultiline
-                multilineRows={3}
-                disabled={isLocked}
-                length={FIELD_LIMITS.groupDescription.max}
-                onChange={(event: any) => setDescription(event.target.value)}
-            />
-            <PrimaryButton
-                isLoading={isSaving}
-                disabled={
-                    isAdding || name.trim().length < FIELD_LIMITS.groupName.min
-                }
-                onClick={handleSave}
-            >
-                Save
-            </PrimaryButton>
-            <div className="messages_group_members_head">
-                <p>Participants</p>
-            </div>
-            <div className="messages_group_add_row">
-                <UserSearchSelect
-                    className="messages_group_add_search"
-                    excludeIds={excludeIds}
-                    placeholder="Add people"
-                    disabled={isLocked}
-                    onPick={handleAdd}
-                />
-                <button
-                    type="button"
-                    className="messages_group_share app-transition"
-                    aria-label="Share"
-                    disabled={isLocked}
-                    onClick={openShare}
-                >
-                    <ShareIcon />
-                </button>
-            </div>
-            <ul className="messages_group_members">
+        <div className="messages_group_form messages_modal_body">
+            <Panel title="About">
+                <div className="messages_panel_fields">
+                    <DropFile
+                        value={
+                            photo instanceof File
+                                ? photo
+                                : removePhoto
+                                  ? null
+                                  : group?.photo
+                        }
+                        previewUrl={removePhoto ? null : group?.photo}
+                        setValue={(file: any) => {
+                            setPhoto(file instanceof File ? file : null);
+                            setRemovePhoto(!(file instanceof File));
+                        }}
+                        onRemove={() => {
+                            setPhoto(null);
+                            setRemovePhoto(true);
+                        }}
+                        disabled={isLocked}
+                        {...imageDropProps}
+                    />
+                    <InputField
+                        value={name}
+                        placeholder="Group name"
+                        disabled={isLocked}
+                        length={FIELD_LIMITS.groupName.max}
+                        onChange={(event: any) => setName(event.target.value)}
+                    />
+                    <InputField
+                        value={description}
+                        placeholder="Description (optional)"
+                        isMultiline
+                        multilineRows={3}
+                        disabled={isLocked}
+                        length={FIELD_LIMITS.groupDescription.max}
+                        onChange={(event: any) =>
+                            setDescription(event.target.value)
+                        }
+                    />
+                    <ActionButton
+                        className="messages_group_share"
+                        disabled={isLocked}
+                        onClick={openShare}
+                    >
+                        <ShareIcon />
+                        Share
+                    </ActionButton>
+                </div>
+            </Panel>
+            <Panel title={`Participants · ${members.length}`}>
+                <div className="messages_panel_fields">
+                    <UserSearchSelect
+                        excludeIds={excludeIds}
+                        placeholder="Add people"
+                        disabled={isLocked}
+                        onPick={handleAdd}
+                    />
+                </div>
                 {members.map((member: any) => {
                     const isSelf = String(member._id) === String(profileId);
                     return (
-                        <li key={member._id} className="messages_group_member">
-                            <div className="messages_group_member_main">
-                                <UserBadge data={member} />
-                                <UserActivityStatus
-                                    user={member}
-                                    viewerId={profileId}
-                                    className="messages_activity_status"
-                                />
-                            </div>
-                            <span className="messages_group_role">
-                                {roleLabel(member.role)}
-                            </span>
-                            {isAdmin && !isSelf ? (
-                                <Popup
-                                    body={
-                                        isLocked
-                                            ? []
-                                            : [
-                                                  [
-                                                      {
-                                                          title:
-                                                              member.role ===
-                                                              'admin'
-                                                                  ? 'Make participant'
-                                                                  : 'Make administrator',
-                                                          onClick: () =>
-                                                              handleRole(
-                                                                  member._id,
-                                                                  member.role ===
-                                                                      'admin'
-                                                                      ? 'member'
-                                                                      : 'admin',
-                                                              ),
-                                                      },
-                                                      {
-                                                          title: 'Remove',
-                                                          type: 'danger',
-                                                          onClick: () =>
-                                                              handleRemove(
-                                                                  member._id,
-                                                              ),
-                                                      },
-                                                  ],
-                                              ]
-                                    }
-                                >
-                                    <button
-                                        type="button"
-                                        disabled={isLocked}
-                                        className="messages_group_member_menu app-transition"
-                                        aria-label="Member actions"
+                        <UserRow
+                            key={member._id}
+                            className="messages_group_member"
+                            user={member}
+                            viewerId={profileId}
+                            trailing={
+                                <>
+                                    <Pill
+                                        tone={
+                                            member.role === 'admin'
+                                                ? 'info'
+                                                : 'neutral'
+                                        }
                                     >
-                                        <ThreeDotsIcon />
-                                    </button>
-                                </Popup>
-                            ) : null}
-                        </li>
+                                        {roleLabel(member.role)}
+                                    </Pill>
+                                    {isAdmin && !isSelf ? (
+                                        <Popup
+                                            body={
+                                                isLocked
+                                                    ? []
+                                                    : [
+                                                          [
+                                                              {
+                                                                  title:
+                                                                      member.role ===
+                                                                      'admin'
+                                                                          ? 'Make participant'
+                                                                          : 'Make administrator',
+                                                                  onClick: () =>
+                                                                      handleRole(
+                                                                          member._id,
+                                                                          member.role ===
+                                                                              'admin'
+                                                                              ? 'member'
+                                                                              : 'admin',
+                                                                      ),
+                                                              },
+                                                              {
+                                                                  title: 'Remove',
+                                                                  type: 'danger',
+                                                                  onClick: () =>
+                                                                      handleRemove(
+                                                                          member._id,
+                                                                      ),
+                                                              },
+                                                          ],
+                                                      ]
+                                            }
+                                        >
+                                            <button
+                                                type="button"
+                                                disabled={isLocked}
+                                                className="messages_group_member_menu app-transition"
+                                                aria-label="Member actions"
+                                            >
+                                                <ThreeDotsIcon />
+                                            </button>
+                                        </Popup>
+                                    ) : null}
+                                </>
+                            }
+                        />
                     );
                 })}
-            </ul>
+            </Panel>
+            <ModalFooter>
+                <DangerButton
+                    isLoading={isLeaving}
+                    disabled={isLocked}
+                    onClick={handleLeave}
+                >
+                    <LogoutIcon />
+                    Leave group
+                </DangerButton>
+                <PrimaryButton
+                    isLoading={isSaving}
+                    disabled={
+                        isAdding ||
+                        isLeaving ||
+                        name.trim().length < FIELD_LIMITS.groupName.min
+                    }
+                    onClick={handleSave}
+                >
+                    Save
+                </PrimaryButton>
+            </ModalFooter>
         </div>
     );
 }

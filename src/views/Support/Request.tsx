@@ -10,9 +10,15 @@ import {
     updateSupportRequestStatus,
 } from '../../api/support.api';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
-import { SUPPORT_STATUSES, kindLabel, statusLabel } from './constants';
+import {
+    SUPPORT_STATUSES,
+    kindLabel,
+    statusLabel,
+    statusTone,
+} from './constants';
 import { format_date_time } from '../../utils/format';
 
+import { MetaGrid, Pill } from '../../components/Ui/Panel';
 import Field from '../../components/Ui/Field/index';
 import RichInputField from '../../components/RichInputField';
 import RichText from '../../components/RichText';
@@ -25,17 +31,19 @@ import Loading from '../../components/Ui/Loading';
 import UserBadge from '../../components/UserBadge/index';
 
 import ArrowLeftIcon from '../../assets/svg/arrow-left.svg';
+import CalendarIcon from '../../assets/svg/calendar-icon.svg';
+import ClockIcon from '../../assets/svg/clock.svg';
+import TagIcon from '../../assets/svg/tag.svg';
 
 import '../AdminPanel/Requests.scss';
 import '../AdminPanel/RequestDetail.scss';
+import './Support.scss';
 
 const canManageSupport = (profile: any) =>
     ['admin', 'tech_admin'].includes(profile?.role);
 
 const StatusBadge = ({ status }: any) => (
-    <span className={`support_status support_status_${status}`}>
-        {statusLabel(status)}
-    </span>
+    <Pill tone={statusTone(status)}>{statusLabel(status)}</Pill>
 );
 
 const EntryTime = ({ date }: any) => (
@@ -218,7 +226,11 @@ const SupportRequestPage = () => {
                     Support
                 </ActionButton>
                 <div className="support_request_detail_tags">
-                    <span className="support_kind">{kindLabel(item.kind)}</span>
+                    {item._id ? (
+                        <span className="support_request_detail_reference">
+                            #{String(item._id).slice(-6).toUpperCase()}
+                        </span>
+                    ) : null}
                     {showStatus && isStaff ? (
                         <DropDown
                             className="support_request_detail_status"
@@ -235,6 +247,28 @@ const SupportRequestPage = () => {
                     ) : null}
                 </div>
             </div>
+
+            <MetaGrid
+                items={[
+                    {
+                        label: 'Kind',
+                        icon: <TagIcon />,
+                        value: kindLabel(item.kind),
+                    },
+                    {
+                        label: 'Created',
+                        icon: <CalendarIcon />,
+                        value: format_date_time(item.created_date),
+                    },
+                    {
+                        label: 'Last update',
+                        icon: <ClockIcon />,
+                        value: item.updated_date
+                            ? format_date_time(item.updated_date)
+                            : null,
+                    },
+                ]}
+            />
 
             <div className="support_request_detail_thread">
                 <div className="support_request_detail_entry">
@@ -262,6 +296,9 @@ const SupportRequestPage = () => {
                             ) : (
                                 requesterName
                             )}
+                            {entry.author_type === 'staff' ? (
+                                <Pill tone="info">Staff</Pill>
+                            ) : null}
                             <EntryTime date={entry.created_date} />
                         </div>
                         <RichText
