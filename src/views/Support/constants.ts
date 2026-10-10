@@ -15,3 +15,11 @@ export const kindLabel = (kind: any) =>
 
 export const statusLabel = (status: any) =>
     SUPPORT_STATUSES.find((item: any) => item.value === status)?.name ?? status;
+
+const STATUS_TONES: Record<string, any> = {
+    new: 'info',
+    in_review: 'warning',
+    reviewed: 'success',
+};
+
+export const statusTone = (status: any) => STATUS_TONES[status] ?? 'neutral';

@@ -37,6 +37,7 @@ import {
     format_time,
     is_same_calendar_day,
 } from '../../utils/format';
+import { ModalFooter } from '../../components/Ui';
 import UserBadge from '../../components/UserBadge';
 import UserActivityStatus from '../../components/UserActivityStatus';
 import {
@@ -50,6 +51,7 @@ import {
 } from '../../sockets/typing';
 import MessageStatus from '../../components/MessageStatus';
 import ActionButton from '../../components/Ui/ActionButton';
+import { Banner } from '../../components/Ui/Panel';
 import DangerButton from '../../components/Ui/DangerButton';
 import Popup from '../../components/Ui/Popup';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
@@ -61,7 +63,9 @@ import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import { messagePreviewText, quotePreviewText } from '../../utils/chatMessage';
 
 import CopyIcon from '../../assets/svg/copy.svg';
+import ShareIcon from '../../assets/svg/share.svg';
 import ReplyIcon from '../../assets/svg/reply.svg';
+import PeoplesIcon from '../../assets/svg/peoples.svg';
 import DeleteIcon from '../../assets/svg/delete.svg';
 import EditIcon from '../../assets/svg/edit.svg';
 import CrossIcon from '../../assets/svg/cross-icon.svg';
@@ -83,7 +87,9 @@ import {
     CreateGroupForm,
     GroupFace,
     GroupSettings,
+    openGroupShareModal,
     JoinGroupPrompt,
+    ModalAvatar,
     TypingDots,
     groupListPatch,
     isGroupChat,
@@ -307,12 +313,11 @@ const DeleteChatModalActions = ({
     };
 
     return (
-        <div className="modal_delete_post_content_bottom">
+        <ModalFooter hint="This cannot be undone">
             <ActionButton
                 type="button"
                 disabled={isDeleting}
                 onClick={requestCloseModal}
-                className="modal_delete_post_content_button"
             >
                 Cancel
             </ActionButton>
@@ -322,11 +327,10 @@ const DeleteChatModalActions = ({
                 isLoading={isDeleting}
                 disabled={disabled}
                 onClick={handleDelete}
-                className="modal_delete_post_content_button"
             >
                 Delete
             </DangerButton>
-        </div>
+        </ModalFooter>
     );
 };
 
@@ -380,12 +384,12 @@ const getDeleteChatModalContent = ({
     onDeleted,
     disabled,
 }: any) => (
-    <div className="messages_delete_modal">
-        <p className="messages_delete_modal_text">
+    <div className="messages_delete_modal messages_modal_body">
+        <Banner tone="danger">
             {participant
-                ? `Conversation with ${participant.nick_name || 'user'} and all messages will be deleted permanently. This cannot be undone.`
-                : 'This group and all messages will be deleted permanently. This cannot be undone.'}
-        </p>
+                ? `Conversation with ${participant.nick_name || 'user'} and all messages will be deleted permanently.`
+                : 'This group and all messages will be deleted permanently.'}
+        </Banner>
         <DeleteChatModalActions
             conversationId={conversationId}
             profile={profile}
@@ -2838,6 +2842,8 @@ const MessagesPage = () => {
     const openCreateGroup = useCallback(() => {
         showModalWindow({
             title: 'New group',
+            subtitle: 'Add a name, a photo and people',
+            icon: <PeoplesIcon />,
             size: 'small',
             showCloseButton: true,
             closeFunc: () => {},
@@ -2872,6 +2878,7 @@ const MessagesPage = () => {
 
         showModalWindow({
             title: group.title || 'Group',
+            hideHeader: true,
             size: 'small',
             showCloseButton: true,
             closeFunc: () => {},
@@ -2907,7 +2914,9 @@ const MessagesPage = () => {
             let accepted = false;
 
             showModalWindow({
-                title: 'Join this chat?',
+                title: invite?.title || 'Join this chat?',
+                subtitle: `Invitation · ${Number(invite?.member_count) || 0} people`,
+                icon: <ModalAvatar src={invite?.photo} />,
                 size: 'small',
                 showCloseButton: false,
                 closeFunc: () => {
@@ -2961,6 +2970,10 @@ const MessagesPage = () => {
 
         showModalWindow({
             title: 'Delete chat?',
+            subtitle: participant
+                ? `With ${participant.nick_name || 'user'}`
+                : 'Group chat',
+            icon: <DeleteIcon />,
             size: 'small',
             showCloseButton: false,
             closeFunc: () => {},
@@ -3260,6 +3273,22 @@ const MessagesPage = () => {
                                                           icon: <InfoIcon />,
                                                           onClick:
                                                               openGroupSettings,
+                                                      },
+                                                      {
+                                                          title: 'Share',
+                                                          icon: <ShareIcon />,
+                                                          onClick: () =>
+                                                              openGroupShareModal(
+                                                                  {
+                                                                      group: activeConversation,
+                                                                      showModalWindow,
+                                                                      showToast,
+                                                                      onClose:
+                                                                          requestCloseModal,
+                                                                      onBackToInfo:
+                                                                          undefined,
+                                                                  },
+                                                              ),
                                                       },
                                                   ],
                                                   [

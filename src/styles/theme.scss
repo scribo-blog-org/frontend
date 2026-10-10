@@ -111,6 +111,11 @@ body {
     --modal-window-button-color: var(--gray-63);
     --modal-window-button-hover-color: var(--gray-1e);
     --modal-window-title-text-color: var(--gray-1e);
+    --modal-window-shadow: 0 24px 64px rgba(0, 0, 0, 0.16);
+    --panel-frame-color: var(--gray-f7);
+    --panel-row-color: var(--gray-ff);
+    --panel-row-hover-color: var(--gray-f1);
+    --panel-row-border-color: var(--gray-e7);
 
     --post-card-description-color: #6b6b6b;
     --post-card-hover-background-color: var(--gray-f9);
@@ -308,6 +313,11 @@ body.dark-theme {
     --modal-window-button-color: var(--gray-b5);
     --modal-window-button-hover-color: var(--gray-1e);
     --modal-window-title-text-color: var(--gray-d7);
+    --modal-window-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+    --panel-frame-color: var(--gray-25);
+    --panel-row-color: var(--gray-2f);
+    --panel-row-hover-color: var(--gray-33);
+    --panel-row-border-color: var(--gray-33);
 
     --post-card-description-color: var(--gray-b5);
     --post-card-hover-background-color: var(--gray-25);

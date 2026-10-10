@@ -157,10 +157,19 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
         text: () => 'Started a chat with',
         object: 'user',
     },
+    create_group: {
+        title: 'Group created',
+        tone: 'create',
+        text: () => 'Created the group chat',
+        object: 'group',
+    },
     delete_conversation: {
         title: 'Chat deletion',
         tone: 'delete',
-        text: () => 'Deleted the chat with',
+        text: (log) =>
+            log.data?.group
+                ? `Deleted the group chat${log.data?.title ? ` “${log.data.title}”` : ''}`
+                : 'Deleted the chat with',
         object: 'user',
     },
     create_category: {

@@ -9,6 +9,8 @@ import CopyIcon from '../../assets/svg/copy.svg';
 
 import { Arrow, RoleChange, StatusChange } from './LogEntities';
 import { describeDetails, type DetailRow } from './logFormat';
+import { Pill } from '../../components/Ui';
+
 import { TimingBreakdown } from './LogTiming';
 import { LEVELS } from './logTypes';
 
@@ -90,12 +92,26 @@ const LogDetails = ({
     setFilter,
     onPrev,
     onNext,
+    position,
+    total,
+    hasMore,
 }: any) => {
     const { showToast } = useContext(AppContext);
     const [showRaw, setShowRaw] = useState<any>(false);
     const details = describeDetails(log, formatMoment, names);
     const raw = JSON.stringify(log, null, 2);
     const isError = log.type === 'server_error';
+
+    const recordId = details.requestId ?? String(log._id ?? '').slice(-8);
+
+    const copyId = async () => {
+        try {
+            await navigator.clipboard.writeText(recordId);
+            showToast({ type: 'success', message: 'ID copied' });
+        } catch {
+            showToast({ type: 'error', message: 'Could not copy' });
+        }
+    };
 
     const copy = async () => {
         try {
@@ -124,17 +140,35 @@ const LogDetails = ({
                     </span>
                 )}
                 {level && level !== 'info' ? (
-                    <span className={`log_badge log_badge_${level}`}>
+                    <Pill tone={level === 'error' ? 'danger' : 'warning'}>
                         {LEVELS[level as keyof typeof LEVELS]}
-                    </span>
+                    </Pill>
+                ) : null}
+                {log.data?.status && !isError ? (
+                    <Pill tone="neutral">{log.data.status}</Pill>
                 ) : null}
                 {isError && log.data?.status ? (
-                    <span className="log_badge log_badge_error">
-                        {log.data.status}
-                    </span>
+                    <Pill tone="danger">{log.data.status}</Pill>
+                ) : null}
+                {recordId ? (
+                    <button
+                        type="button"
+                        className="log_id_chip"
+                        title="Copy the ID"
+                        onClick={copyId}
+                    >
+                        <span>{recordId}</span>
+                        <CopyIcon />
+                    </button>
                 ) : null}
 
                 <span className="log_details_actions">
+                    {position ? (
+                        <span className="log_details_counter">
+                            {position} of {total}
+                            {hasMore ? '+' : ''}
+                        </span>
+                    ) : null}
                     <button
                         type="button"
                         className="log_icon_button log_icon_button_up"

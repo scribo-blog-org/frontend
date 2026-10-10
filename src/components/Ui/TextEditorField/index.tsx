@@ -95,81 +95,123 @@ function InitialHtmlPlugin({ html }: any) {
 
 const EditorToolbar = () => {
     const [editor] = useLexicalComposerContext();
+    const [linkOpen, setLinkOpen] = useState(false);
+    const [linkUrl, setLinkUrl] = useState('');
+
+    const closeLink = () => {
+        setLinkOpen(false);
+        setLinkUrl('');
+    };
+
+    const applyLink = () => {
+        const url = linkUrl.trim();
+        if (url) {
+            editor.dispatchCommand(TOGGLE_LINK_COMMAND, {
+                url,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+            });
+        }
+        closeLink();
+        editor.focus();
+    };
 
     return (
-        <div className="text_editor_body_top_side_toolbar app-transition">
-            <Tooltip text="Bold">
-                <button
-                    type="button"
-                    className="text_editor_body_top_side_toolbar_bold app-transition"
-                    onClick={() =>
-                        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')
-                    }
-                >
-                    <BoldText />
-                </button>
-            </Tooltip>
-
-            <Tooltip text="Italic">
-                <button
-                    type="button"
-                    className="app-transition"
-                    onClick={() =>
-                        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')
-                    }
-                >
-                    <ItalicText />
-                </button>
-            </Tooltip>
-
-            <Tooltip text="Bulleted list">
-                <button
-                    type="button"
-                    className="app-transition"
-                    onClick={() =>
-                        editor.dispatchCommand(
-                            INSERT_UNORDERED_LIST_COMMAND,
-                            undefined,
-                        )
-                    }
-                >
-                    <MarkList />
-                </button>
-            </Tooltip>
-
-            <Tooltip text="Numbered list">
-                <button
-                    type="button"
-                    className="app-transition"
-                    onClick={() =>
-                        editor.dispatchCommand(
-                            INSERT_ORDERED_LIST_COMMAND,
-                            undefined,
-                        )
-                    }
-                >
-                    <NumList />
-                </button>
-            </Tooltip>
-
-            <Tooltip text="Add a link">
-                <button
-                    type="button"
-                    className="app-transition"
-                    onClick={() => {
-                        const url = prompt('Enter a link');
-                        if (url) {
-                            editor.dispatchCommand(TOGGLE_LINK_COMMAND, {
-                                url,
-                                target: '_blank',
-                                rel: 'noopener noreferrer',
-                            });
+        <div className="text_editor_body_top_side_tools">
+            <div className="text_editor_body_top_side_toolbar app-transition">
+                <Tooltip text="Bold">
+                    <button
+                        type="button"
+                        className="text_editor_body_top_side_toolbar_bold app-transition"
+                        onClick={() =>
+                            editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')
                         }
-                    }}
-                >
-                    <LinkText />
-                </button>
-            </Tooltip>
+                    >
+                        <BoldText />
+                    </button>
+                </Tooltip>
+
+                <Tooltip text="Italic">
+                    <button
+                        type="button"
+                        className="app-transition"
+                        onClick={() =>
+                            editor.dispatchCommand(
+                                FORMAT_TEXT_COMMAND,
+                                'italic',
+                            )
+                        }
+                    >
+                        <ItalicText />
+                    </button>
+                </Tooltip>
+
+                <Tooltip text="Bulleted list">
+                    <button
+                        type="button"
+                        className="app-transition"
+                        onClick={() =>
+                            editor.dispatchCommand(
+                                INSERT_UNORDERED_LIST_COMMAND,
+                                undefined,
+                            )
+                        }
+                    >
+                        <MarkList />
+                    </button>
+                </Tooltip>
+
+                <Tooltip text="Numbered list">
+                    <button
+                        type="button"
+                        className="app-transition"
+                        onClick={() =>
+                            editor.dispatchCommand(
+                                INSERT_ORDERED_LIST_COMMAND,
+                                undefined,
+                            )
+                        }
+                    >
+                        <NumList />
+                    </button>
+                </Tooltip>
+
+                <Tooltip text="Add a link">
+                    <button
+                        type="button"
+                        className="app-transition"
+                        onClick={() =>
+                            linkOpen ? closeLink() : setLinkOpen(true)
+                        }
+                    >
+                        <LinkText />
+                    </button>
+                </Tooltip>
+            </div>
+            {linkOpen ? (
+                <div className="text_editor_body_top_side_link">
+                    <input
+                        autoFocus
+                        type="url"
+                        value={linkUrl}
+                        placeholder="https://"
+                        onChange={(event: any) =>
+                            setLinkUrl(event.target.value)
+                        }
+                        onKeyDown={(event: any) => {
+                            if (event.key === 'Enter') {
+                                event.preventDefault();
+                                applyLink();
+                            } else if (event.key === 'Escape') {
+                                closeLink();
+                            }
+                        }}
+                    />
+                    <button type="button" onClick={applyLink}>
+                        Add
+                    </button>
+                </div>
+            ) : null}
         </div>
     );
 };

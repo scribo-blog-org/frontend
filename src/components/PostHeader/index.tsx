@@ -12,20 +12,22 @@ import { deletePost } from '../../api/posts.api';
 import ThreeDotsIcon from '../../assets/svg/three-dots.svg';
 import EditIcon from '../../assets/svg/edit.svg';
 import DeleteIcon from '../../assets/svg/delete.svg';
+import WarningIcon from '../../assets/svg/warning-icon.svg';
 
 import { format_back, format_date_time } from '../../utils/format';
 
 import UserBadge from '../UserBadge';
 import Popup from '../Ui/Popup';
+import { Panel, Banner, ModalFooter } from '../Ui';
+import PostPreview from '../PostPreview';
 import ActionButton from '../Ui/ActionButton';
 import DangerButton from '../Ui/DangerButton';
 import Tooltip from '../Ui/Tooltip/index';
 import Category from '../Category';
 
 import Sceleton from '../Ui/Sceleton/Sceleton';
-import { mediaUrl } from '../../utils/image';
 
-const DeletePostActions = ({
+const DeletePostContent = ({
     post,
     requestCloseModal,
     onDeletePost,
@@ -53,57 +55,28 @@ const DeletePostActions = ({
     };
 
     return (
-        <div className="modal_delete_post_content_bottom">
-            <ActionButton
-                disabled={isDeleting}
-                onClick={requestCloseModal}
-                className="modal_delete_post_content_button"
-            >
-                Cancel
-            </ActionButton>
-            <DangerButton
-                onClick={handleDelete}
-                className="modal_delete_post_content_button"
-                isActive={true}
-                isLoading={isDeleting}
-            >
-                Delete
-            </DangerButton>
+        <div className="modal_delete_post_content">
+            <Banner tone="danger" icon={<WarningIcon />}>
+                This post will be removed and cannot be restored.
+            </Banner>
+            <Panel>
+                <PostPreview post={post} media="side" showDate />
+            </Panel>
+            <ModalFooter hint="Deleting is permanent">
+                <ActionButton disabled={isDeleting} onClick={requestCloseModal}>
+                    Cancel
+                </ActionButton>
+                <DangerButton
+                    onClick={handleDelete}
+                    isActive={true}
+                    isLoading={isDeleting}
+                >
+                    Delete
+                </DangerButton>
+            </ModalFooter>
         </div>
     );
 };
-
-const getDeleteModalContent = (
-    post: any,
-    requestCloseModal: any,
-    onDeletePost: any,
-    showToast: any,
-) => (
-    <div className="modal_delete_post_content">
-        <div className="modal_delete_post_content_post">
-            <div className="modal_delete_post_content_post_header">
-                <PostHeader post={post} />
-                <Category tag category={post.category} />
-            </div>
-            <h2 className="modal_delete_post_content_post_title">
-                {post.title}
-            </h2>
-            {post.featured_image && (
-                <img
-                    className="modal_delete_post_content_post_image"
-                    src={mediaUrl(post.featured_image)}
-                    alt="post_image"
-                />
-            )}
-        </div>
-        <DeletePostActions
-            post={post}
-            requestCloseModal={requestCloseModal}
-            onDeletePost={onDeletePost}
-            showToast={showToast}
-        />
-    </div>
-);
 
 const PostHeader = memo(
     ({
@@ -119,12 +92,17 @@ const PostHeader = memo(
 
         const handleDeletePost = async () => {
             showModalWindow({
-                title: `Are you sure you want to delete this post?`,
-                content: getDeleteModalContent(
-                    post,
-                    requestCloseModal,
-                    onDeletePost,
-                    showToast,
+                title: 'Delete this post?',
+                subtitle: 'This action cannot be undone',
+                icon: <DeleteIcon />,
+                size: 'small',
+                content: (
+                    <DeletePostContent
+                        post={post}
+                        requestCloseModal={requestCloseModal}
+                        onDeletePost={onDeletePost}
+                        showToast={showToast}
+                    />
                 ),
                 showCloseButton: false,
                 closeFunc: () => {},

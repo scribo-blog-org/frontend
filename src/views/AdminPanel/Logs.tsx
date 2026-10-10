@@ -11,7 +11,7 @@ import {
 
 import { AppContext } from '@/providers/AppProviders';
 
-import { getAllLogs, getLogEntities } from '../../api/logs.api';
+import { getAllLogs } from '../../api/logs.api';
 import { getUsers } from '../../api/users.api';
 import { getCategories } from '../../api/categories.api';
 import { getPosts } from '../../api/posts.api';
@@ -24,6 +24,7 @@ import PauseIcon from '../../assets/svg/pause.svg';
 import RefreshIcon from '../../assets/svg/refresh.svg';
 
 import SearchSelect from '../../components/Ui/SearchSelect';
+import InputField from '../../components/Ui/InputField';
 import CancelButton from '../../components/Ui/CancelButton';
 import ActionButton from '../../components/Ui/ActionButton';
 import DateTimePicker from '../../components/Ui/DateTimePicker';
@@ -34,7 +35,6 @@ import { usePagedList } from '../../hooks/usePagedList';
 import {
     CategoryEntity,
     ConversationEntity,
-    EntityView,
     PostEntity,
     RoleChip,
     SupportEntity,
@@ -72,15 +72,8 @@ const LEVEL_OPTIONS = [
     { value: 'info', name: 'Info' },
 ];
 
-const ENTITY_LABELS: any = {
-    user: 'User',
-    post: 'Post',
-    category: 'Category',
-    conversation: 'Chat',
-};
 const LIVE_MS = 3000;
 const SEARCH_DELAY_MS = 250;
-const SEARCH_PAGE_SIZE = 20;
 const POSTS_BATCH = 50;
 
 const dayKey = (date: any) => new Date(date).toDateString();
@@ -111,57 +104,16 @@ const LogsPage = () => {
         });
 
     const [searchText, setSearchText] = useState<any>('');
-    const [searchActive, setSearchActive] = useState<any>(false);
-    const [entities, setEntities] = useState<any[]>([]);
-    const [entitiesPage, setEntitiesPage] = useState<any>(0);
-    const [entitiesPages, setEntitiesPages] = useState<any>(0);
-    const [entitiesLoading, setEntitiesLoading] = useState<any>(false);
-    const entitiesRequest = useRef<any>(0);
-
-    const loadEntities = useCallback(
-        async (text: any, nextPage: any) => {
-            const request = ++entitiesRequest.current;
-            setEntitiesLoading(true);
-
-            const result = await getLogEntities({
-                search: text,
-                page: nextPage,
-                limit: SEARCH_PAGE_SIZE,
-            });
-
-            if (request !== entitiesRequest.current) {
-                return;
-            }
-
-            setEntitiesLoading(false);
-
-            if (!result.status) {
-                showToast({ type: 'error', message: result.message });
-                return;
-            }
-
-            const items = result.data?.items || [];
-            setEntities((prev: any) =>
-                nextPage === 1 ? items : [...prev, ...items],
-            );
-            setEntitiesPage(nextPage);
-            setEntitiesPages(result.data?.pagination?.pages || 0);
-        },
-        [showToast],
-    );
+    const [search, setSearch] = useState<any>('');
 
     useEffect(() => {
-        if (!searchActive || !searchText.trim()) {
-            return;
-        }
-
         const timer = setTimeout(
-            () => loadEntities(searchText, 1),
+            () => setSearch(searchText.trim()),
             SEARCH_DELAY_MS,
         );
 
         return () => clearTimeout(timer);
-    }, [searchText, searchActive, loadEntities]);
+    }, [searchText]);
 
     const applyFilter = (next: any) => {
         const type = next?.type ?? null;
@@ -194,6 +146,10 @@ const LogsPage = () => {
                 query.to = new Date(dateTo).toISOString();
             }
 
+            if (search) {
+                query.search = search;
+            }
+
             if (
                 filter.type &&
                 filter.id &&
@@ -219,6 +175,7 @@ const LogsPage = () => {
             levelFilter,
             dateFrom,
             dateTo,
+            search,
             filter.type,
             filter.id,
             showToast,
@@ -232,6 +189,7 @@ const LogsPage = () => {
             levelFilter,
             dateFrom,
             dateTo,
+            search,
             filter.type,
             filter.id,
         ]),
@@ -384,7 +342,15 @@ const LogsPage = () => {
     useEffect(() => {
         rootRef.current?.querySelector('.logs_list')?.scrollTo({ top: 0 });
         setExpanded(new Set());
-    }, [filter.type, filter.id, typeFilter, levelFilter, dateFrom, dateTo]);
+    }, [
+        filter.type,
+        filter.id,
+        typeFilter,
+        levelFilter,
+        dateFrom,
+        dateTo,
+        search,
+    ]);
 
     const supportLog = logs.find(
         (log: any) => log.data?.support_request === filter.id,
@@ -504,66 +470,18 @@ const LogsPage = () => {
                                 Reset
                             </CancelButton>
                         </div>
-                    ) : (
-                        <div className="logs_toolbar_search">
-                            <SearchSelect
-                                options={entities.map((entity: any) => ({
-                                    value: {
-                                        type: entity.type,
-                                        value: entity.id,
-                                    },
-                                    name: entity.name,
-                                    render: () => (
-                                        <>
-                                            <EntityView
-                                                kind={entity.type}
-                                                name={entity.name}
-                                                deleted={entity.deleted}
-                                            />
-                                            <span className="logs_option_type">
-                                                {ENTITY_LABELS[entity.type]}
-                                            </span>
-                                        </>
-                                    ),
-                                }))}
-                                placeholder="Find a user, post, category, or chat"
-                                emptyLabel="Nothing in the log"
-                                loading={entitiesLoading}
-                                minSearchLength={1}
-                                hasMore={entitiesPage < entitiesPages}
-                                onFocus={() => setSearchActive(true)}
-                                onInput={(text: any) => {
-                                    entitiesRequest.current++;
-                                    setSearchText(text);
-
-                                    if (text.trim()) {
-                                        setEntitiesLoading(true);
-                                    } else {
-                                        setEntitiesLoading(false);
-                                        setEntities([]);
-                                        setEntitiesPage(0);
-                                        setEntitiesPages(0);
-                                    }
-                                }}
-                                onLoadMore={() =>
-                                    loadEntities(searchText, entitiesPage + 1)
-                                }
-                                onChange={(value: any) => {
-                                    if (!value?.type) {
-                                        return;
-                                    }
-
-                                    setSearchActive(false);
-                                    setSearchText('');
-                                    setEntities([]);
-                                    applyFilter({
-                                        type: value.type,
-                                        id: value.value,
-                                    });
-                                }}
-                            />
-                        </div>
-                    )}
+                    ) : null}
+                    <div className="logs_toolbar_search">
+                        <InputField
+                            type="text"
+                            value={searchText}
+                            placeholder="Search by message, user, route, error, IP or request id"
+                            onChange={(event: any) =>
+                                setSearchText(event.target.value)
+                            }
+                            length={100}
+                        />
+                    </div>
 
                     <ActionButton
                         size="lg"
@@ -657,6 +575,9 @@ const LogsPage = () => {
                                     posts={posts}
                                     categories={categories}
                                     setFilter={applyFilter}
+                                    position={index + 1}
+                                    total={logs.length}
+                                    hasMore={feed.hasNext}
                                     expanded={expanded.has(log._id)}
                                     onToggle={() => toggle(log._id)}
                                     onPrev={
