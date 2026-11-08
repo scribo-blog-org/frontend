@@ -29,15 +29,13 @@ const INSTALL_DISMISSED_KEY = 'install_prompt_dismissed';
 const markDismissed = (userId: string) => {
     try {
         localStorage.setItem(`${DISMISSED_KEY}:${userId}`, '1');
-    } catch {
-    }
+    } catch {}
 };
 
 const markInstallDismissed = (userId: string) => {
     try {
         localStorage.setItem(`${INSTALL_DISMISSED_KEY}:${userId}`, '1');
-    } catch {
-    }
+    } catch {}
 };
 
 const readInstallDismissed = (userId: string) => {

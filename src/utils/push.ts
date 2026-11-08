@@ -23,8 +23,7 @@ const setPushPreference = (userId: string, enabled: boolean) => {
             `${PREFERENCE_KEY}:${userId}`,
             enabled ? '1' : '0',
         );
-    } catch {
-    }
+    } catch {}
 };
 
 export type PushSupport = 'supported' | 'needs-install' | 'unsupported';

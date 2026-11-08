@@ -88,9 +88,7 @@ const LogsPage = () => {
     const [filter, setFilter] = useState<any>(() => {
         const userId = searchParams.get('user');
 
-        return userId
-            ? { type: 'user', id: userId }
-            : { type: null, id: null };
+        return userId ? { type: 'user', id: userId } : { type: null, id: null };
     });
     const [typeFilter, setTypeFilter] = useState<any>('all');
     const [levelFilter, setLevelFilter] = useState<any>('all');

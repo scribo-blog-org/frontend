@@ -432,8 +432,7 @@ const DashboardPage = () => {
                             ) : (
                                 <Block>
                                     <p className="analytics_empty">
-                                        No requests were measured in this
-                                        period
+                                        No requests were measured in this period
                                     </p>
                                 </Block>
                             )}
@@ -493,7 +492,6 @@ const DashboardPage = () => {
                             />
                         </Block>
                     </Group>
-
                 </div>
             )}
         </div>

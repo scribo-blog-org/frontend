@@ -64,9 +64,8 @@ const ModalWindow = ({
         }
 
         if (!document.body.classList.contains('no-scroll')) {
-            const scroller = document.querySelector<HTMLElement>(
-                '.app-shell_content',
-            );
+            const scroller =
+                document.querySelector<HTMLElement>('.app-shell_content');
             const hadScrollbar = Boolean(
                 scroller && scroller.offsetWidth - scroller.clientWidth > 0,
             );
