@@ -68,6 +68,7 @@ const MessageContextMenu = ({
     const [bubbleHtml, setBubbleHtml] = useState('');
     const [touchPlace, setTouchPlace] = useState<any>(null);
     const isTouch = source === 'touch' && anchor;
+    const anchored = Boolean(anchor);
 
     useLayoutEffect(() => {
         openedAtRef.current = Date.now();
@@ -98,12 +99,12 @@ const MessageContextMenu = ({
     });
 
     useEffect(() => {
-        if (isTouch) {
+        if (anchored) {
             return;
         }
 
         refs.setPositionReference(virtualAnchor);
-    }, [refs, virtualAnchor, isTouch]);
+    }, [refs, virtualAnchor, anchored]);
 
     useLayoutEffect(() => {
         if (!anchor || !messageId) {
@@ -116,7 +117,7 @@ const MessageContextMenu = ({
             setBubbleHtml(bubble.outerHTML);
         }
 
-        if (!isTouch) {
+        if (!anchored) {
             return;
         }
 
@@ -138,9 +139,9 @@ const MessageContextMenu = ({
 
             return next;
         });
-    }, [isTouch, anchor, messageId, items.length, refs]);
+    }, [anchored, anchor, messageId, items.length, refs]);
 
-    const touchLayout = isTouch
+    const touchLayout = anchored
         ? touchPlace ||
           placeTouchMenu(anchor, 188, estimateMenuHeight(items.length))
         : null;
@@ -256,7 +257,7 @@ const MessageContextMenu = ({
         <FloatingPortal root={portalRoot || undefined}>
             <div
                 className={`messages_menu_layer${
-                    isTouch ? ' messages_menu_layer_touch' : ''
+                    anchored ? ' messages_menu_layer_touch' : ''
                 }`}
             >
                 <button

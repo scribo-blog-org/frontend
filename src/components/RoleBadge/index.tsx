@@ -18,10 +18,6 @@ const BADGES: Record<string, { label: string; Icon: any }> = {
     tech_admin: { label: 'Technical administrator', Icon: TechAdminIcon },
 };
 
-/**
- * Plain users get no badge on profiles and posts, so `withUser` is opt-in
- * for screens that need to show every role, such as the admin panel.
- */
 const RoleBadge = ({
     user,
     withUser = false,

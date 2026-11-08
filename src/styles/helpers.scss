@@ -1,5 +1,3 @@
-// Hover and state transition for colors. Theme changes are applied with
-// transitions disabled (see `theme-switching` in common.scss).
 @mixin use-transition() {
     transition:
         color 300ms ease,
@@ -15,6 +13,21 @@
     @media screen and (max-width: 768px) {
         @content;
     }
+}
+
+@mixin page-column($width: var(--page-width-narrow)) {
+    width: 100%;
+    max-width: $width;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@mixin empty-note {
+    padding: 40px 16px;
+    text-align: center;
+    font-size: var(--text-md);
+    line-height: 1.5;
+    color: var(--light-text-color);
 }
 
 @mixin field-font {

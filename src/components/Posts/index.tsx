@@ -43,6 +43,7 @@ const Posts = ({
     isLoading: controlledLoading = false,
     initialPosts = [],
     initialPagesCount = 0,
+    empty = null,
 }: any) => {
     const isControlled = Boolean(controlledFeed);
     const { profile } = useContext(AppContext);
@@ -235,7 +236,7 @@ const Posts = ({
                     />
                 ))
             ) : feed.items.length === 0 ? (
-                <NoPosts />
+                (empty ?? <NoPosts />)
             ) : (
                 <InfiniteScroll
                     hasNext={feed.hasNext}

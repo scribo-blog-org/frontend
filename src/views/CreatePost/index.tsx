@@ -9,7 +9,7 @@ import DropFile from '../../components/Ui/DropFile/index';
 import InputFiled from '../../components/Ui/InputField';
 import TextEditorField from '../../components/Ui/TextEditorField';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
-import DangerButton from '../../components/Ui/DangerButton';
+import ActionButton from '../../components/Ui/ActionButton';
 import SearchSelect from '../../components/Ui/SearchSelect/index';
 import Field from '../../components/Ui/Field/index';
 
@@ -242,15 +242,15 @@ const CreatePost = () => {
                 />
             </Field>
             <div className="create_post_buttons">
-                <PrimaryButton onClick={handleSubmit} isLoading={isLoading}>
-                    Create post
-                </PrimaryButton>
-                <DangerButton
+                <ActionButton
                     disabled={isLoading}
                     onClick={() => navigate('/')}
                 >
                     Cancel
-                </DangerButton>
+                </ActionButton>
+                <PrimaryButton onClick={handleSubmit} isLoading={isLoading}>
+                    Create post
+                </PrimaryButton>
             </div>
         </form>
     );

@@ -31,8 +31,6 @@ const PostCard = ({ isLoading = false, post, setPosts }: any) => {
 
     const [isLeaving, setIsLeaving] = useState(false);
 
-    // The card fades out first so the feed does not jump when a post is
-    // removed; users who prefer reduced motion get an immediate removal.
     const deletePost = useCallback(
         (id: any) => {
             const remove = () =>

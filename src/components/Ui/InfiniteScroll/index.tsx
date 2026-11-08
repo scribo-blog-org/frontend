@@ -44,9 +44,6 @@ const InfiniteScroll = ({
 
     onLoadNextRef.current = onLoadNext;
 
-    // The observer is recreated whenever loading finishes, which makes it
-    // report the current state again and keeps loading while the sentinel is
-    // still in view.
     useEffect(() => {
         if (!hasNext || loadingNext || !bottomRef.current) {
             return;

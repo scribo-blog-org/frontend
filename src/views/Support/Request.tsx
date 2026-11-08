@@ -54,8 +54,6 @@ const EntryTime = ({ date }: any) => (
     </Tooltip>
 );
 
-// A signed-in requester shows as a user badge; a guest shows as the email,
-// which only staff receive from the API.
 const RequesterName = ({ item, showEmail }: any) => {
     if (item.requester) {
         return <UserBadge data={item.requester} />;
@@ -163,8 +161,6 @@ const SupportRequestPage = () => {
             return;
         }
 
-        // Show the new status right away; the server response replaces it, and
-        // a failure restores the previous one.
         const previous = item;
         setItem({ ...item, status });
         setStatusSaving(true);
@@ -284,7 +280,11 @@ const SupportRequestPage = () => {
                 {item.replies?.map((entry: any) => (
                     <div
                         key={entry._id}
-                        className="support_request_detail_entry"
+                        className={`support_request_detail_entry${
+                            entry.author_type === 'staff'
+                                ? ' support_request_detail_entry_staff'
+                                : ''
+                        }`}
                     >
                         <div className="support_request_detail_entry_head">
                             {entry.author_type === 'staff' && entry.admin ? (

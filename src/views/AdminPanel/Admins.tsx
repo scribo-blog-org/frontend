@@ -13,6 +13,7 @@ import { AppContext } from '@/providers/AppProviders';
 import { getAdminUsers, updateRole } from '../../api/users.api';
 
 import ChevronDownIcon from '../../assets/svg/chevron-down.svg';
+import PeoplesIcon from '../../assets/svg/peoples.svg';
 import UserBadge from '../../components/UserBadge/index';
 import RoleBadge from '../../components/RoleBadge/index';
 import UserActivityStatus from '../../components/UserActivityStatus/index';
@@ -20,6 +21,8 @@ import DropDown from '../../components/Ui/DropDown';
 import Popup from '../../components/Ui/Popup';
 import Loading from '../../components/Ui/Loading';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
+import ActionButton from '../../components/Ui/ActionButton';
+import ModalFooter from '../../components/Ui/ModalFooter';
 import SearchSelect from '../../components/Ui/SearchSelect';
 
 import {
@@ -41,7 +44,7 @@ const roleOptions = (roles: string[]) =>
         icon: roleIcon(role),
     }));
 
-const GrantRole = ({ profile, onGranted }: any) => {
+const GrantRoleForm = ({ profile, onGranted, onClose }: any) => {
     const { showToast } = useContext(AppContext);
     const [found, setFound] = useState<any[]>([]);
     const [searching, setSearching] = useState<any>(false);
@@ -63,10 +66,15 @@ const GrantRole = ({ profile, onGranted }: any) => {
         const current = ++requestId.current;
         if (query.length < 2) {
             setFound([]);
+            setSearching(false);
             return;
         }
         setSearching(true);
-        const result = await getAdminUsers({ search: query, limit: 8 });
+        const result = await getAdminUsers({
+            search: query,
+            limit: 8,
+            roles: 'user',
+        });
         if (current !== requestId.current) {
             return;
         }
@@ -78,40 +86,27 @@ const GrantRole = ({ profile, onGranted }: any) => {
         if (!picked || !role || saving) {
             return;
         }
-        // The list and the form update at once; both go back if the server
-        // refuses.
-        const user = picked;
-        const chosen = role;
-        const undo = onGranted({ ...user, role: chosen });
-        setPicked(null);
-        setRole('');
-        setFound([]);
         setSaving(true);
         let result;
         try {
-            result = await updateRole(user._id, chosen);
+            result = await updateRole(picked._id, role);
         } finally {
             setSaving(false);
         }
         if (result?.status) {
+            onGranted({ ...picked, role });
             showToast({
                 type: 'success',
-                message: `${user.nick_name} is now ${roleLabel(chosen).toLowerCase()}`,
+                message: `${picked.nick_name} is now ${roleLabel(role).toLowerCase()}`,
             });
+            onClose();
         } else {
-            undo();
-            setPicked(user);
-            setRole(chosen);
             showToast({
                 type: 'error',
                 message: result?.message || 'Could not change the role',
             });
         }
     };
-
-    if (!grantable.length) {
-        return null;
-    }
 
     const options = found
         .filter((user: any) => roleChoices(profile, user).length > 0)
@@ -122,57 +117,49 @@ const GrantRole = ({ profile, onGranted }: any) => {
         }));
 
     return (
-        <section className="admin_staff_grant">
-            <div className="admin_staff_grant_text">
-                <h3>Give a role</h3>
-                <p>Find a user by nickname and choose what they can do.</p>
-            </div>
-            <div className="admin_staff_grant_form">
-                <SearchSelect
-                    options={options}
-                    value={picked?._id ?? ''}
-                    placeholder="Search user"
-                    emptyLabel="No users found"
-                    loading={searching}
-                    disabled={saving}
-                    minSearchLength={2}
-                    onInput={search}
-                    onSelect={(option: any) => {
-                        setPicked(option.user);
-                        setRole(
-                            grantable.includes(option.user.role)
-                                ? option.user.role
-                                : '',
-                        );
-                    }}
-                    onChange={(value: any) => {
-                        if (!value) {
-                            setPicked(null);
-                            setRole('');
-                        }
-                    }}
-                />
-                <DropDown
-                    options={roleOptions(grantable)}
-                    value={role}
-                    onChange={setRole}
-                    placeholder="Role"
-                    disabled={saving}
-                />
+        <div className="admin_staff_grant">
+            <SearchSelect
+                options={options}
+                value={picked?._id ?? ''}
+                placeholder="Nickname or email"
+                emptyLabel="No users found"
+                loading={searching}
+                disabled={saving}
+                minSearchLength={2}
+                onInput={search}
+                onSelect={(option: any) => setPicked(option.user)}
+                onChange={(value: any) => {
+                    if (!value) {
+                        setPicked(null);
+                    }
+                }}
+            />
+            <DropDown
+                options={roleOptions(grantable)}
+                value={role}
+                onChange={setRole}
+                placeholder="Role"
+                disabled={saving}
+            />
+            <ModalFooter>
+                <ActionButton onClick={onClose} disabled={saving}>
+                    Cancel
+                </ActionButton>
                 <PrimaryButton
                     onClick={grant}
                     isLoading={saving}
-                    disabled={!picked || !role || role === picked?.role}
+                    disabled={!picked || !role}
                 >
-                    Assign
+                    Save
                 </PrimaryButton>
-            </div>
-        </section>
+            </ModalFooter>
+        </div>
     );
 };
 
 const AdminsPage = () => {
-    const { profile, showToast } = useContext(AppContext);
+    const { profile, showToast, showModalWindow, requestCloseModal } =
+        useContext(AppContext);
     const [staff, setStaff] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState<any>(true);
 
@@ -210,8 +197,6 @@ const AdminsPage = () => {
         if (role === user.role) {
             return;
         }
-        // Applied before the answer; a refused change puts the row back as it
-        // was, at the same position.
         const index = staff.findIndex((item: any) => item._id === user._id);
         setStaff((previous: any[]) =>
             role === 'user'
@@ -251,27 +236,44 @@ const AdminsPage = () => {
         });
     };
 
-    // Returns a function that reverts the addition.
-    const handleGranted = (user: any) => {
-        const before = staff.find((item: any) => item._id === user._id);
+    const handleGranted = (user: any) =>
         setStaff((previous: any[]) => [
             user,
             ...previous.filter((item: any) => item._id !== user._id),
         ]);
-        return () =>
-            setStaff((previous: any[]) => {
-                const rest = previous.filter(
-                    (item: any) => item._id !== user._id,
-                );
-                return before ? [before, ...rest] : rest;
-            });
-    };
+
+    const canGrant = (profile?.role_management || []).some(
+        (item: string) => item !== 'user',
+    );
+
+    const openGrantModal = () =>
+        showModalWindow({
+            title: 'Add administrator',
+            subtitle: 'Find a user by nickname or email and choose a role',
+            icon: <PeoplesIcon />,
+            size: 'small',
+            showCloseButton: true,
+            closeFunc: () => {},
+            content: (
+                <GrantRoleForm
+                    profile={profile}
+                    onGranted={handleGranted}
+                    onClose={requestCloseModal}
+                />
+            ),
+        });
 
     const manageable = canManageRoles(profile);
 
     return (
         <div className="admin_staff">
-            <GrantRole profile={profile} onGranted={handleGranted} />
+            {canGrant ? (
+                <div className="admin_staff_toolbar">
+                    <PrimaryButton onClick={openGrantModal}>
+                        Add administrator
+                    </PrimaryButton>
+                </div>
+            ) : null}
 
             {isLoading ? (
                 <Loading size={40} />

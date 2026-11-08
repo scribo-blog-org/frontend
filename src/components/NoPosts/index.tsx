@@ -2,8 +2,10 @@
 
 import './NoPosts.scss';
 
-const NoPosts = () => {
-    return <p className="no_posts">There is no posts</p>;
-};
+const NoPosts = ({ title = 'No posts yet' }: { title?: string }) => (
+    <div className="no_posts">
+        <p className="no_posts_title">{title}</p>
+    </div>
+);
 
 export default NoPosts;

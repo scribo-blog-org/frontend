@@ -28,6 +28,7 @@ import ActionButton from '../../components/Ui/ActionButton';
 import DangerButton from '../../components/Ui/DangerButton';
 import Field from '../../components/Ui/Field';
 import Tooltip from '../../components/Ui/Tooltip';
+import ThemePicker from '../../components/ThemePicker';
 
 import './Settings.scss';
 
@@ -40,8 +41,8 @@ const Settings = () => {
         setProfile,
         profileLoading,
         showToast,
-        isDarkTheme,
-        setIsDarkTheme,
+        themeMode,
+        setThemeMode,
     } = useContext(AppContext);
     const [initialized, setInitialized] = useState<any>(false);
     const [pushOn, setPushOn] = useState<boolean>(false);
@@ -65,8 +66,6 @@ const Settings = () => {
         }
         void refreshPush();
 
-        // Picks up the user allowing notifications in the browser settings
-        // without reloading the page.
         let status: PermissionStatus | null = null;
         const onChange = () => void refreshPush();
         navigator.permissions
@@ -85,8 +84,6 @@ const Settings = () => {
     }, []);
 
     const togglePush = async (next: boolean) => {
-        // The switch follows the click immediately; it goes back if the device
-        // could not be (un)subscribed.
         setPushBusy(true);
         setPushOn(next);
         try {
@@ -117,9 +114,6 @@ const Settings = () => {
         }
     };
 
-    // Browsers cannot open a site's permission settings from a page, so the
-    // button re-reads the permission and turns notifications on as soon as the
-    // user has allowed them there.
     const retryPush = async () => {
         if (Notification.permission === 'denied') {
             setPushDenied(true);
@@ -483,9 +477,6 @@ const Settings = () => {
     const handleDeleteSession = async (session: any) => {
         setEndingSessionId(session._id);
 
-        // Another device's session leaves the list at once and comes back at
-        // its place if the server refuses. Ending the current one signs the
-        // user out, so that row stays until the server answers.
         const index = sessions.findIndex(
             (item: any) => item._id === session._id,
         );
@@ -787,17 +778,10 @@ const Settings = () => {
                                 <div className="settings_stack">
                                     <div className="settings_group">
                                         <p className="kicker">Appearance</p>
-                                        <div className="settings_switch">
-                                            <div className="settings_switch_copy">
-                                                <p className="settings_switch_title">
-                                                    Dark theme
-                                                </p>
-                                            </div>
-                                            <Toggle
-                                                checked={isDarkTheme}
-                                                onChange={setIsDarkTheme}
-                                            />
-                                        </div>
+                                        <ThemePicker
+                                            value={themeMode}
+                                            onChange={setThemeMode}
+                                        />
                                     </div>
                                     <div className="settings_group">
                                         <p className="kicker">Notifications</p>

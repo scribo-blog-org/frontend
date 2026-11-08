@@ -45,7 +45,6 @@ export const canManageRoles = (profile: any) =>
 export const canGiveVerification = (profile: any) =>
     (profile?.permissions || []).includes('manage_verification');
 
-/** Roles the viewer may switch this user between, current role included. */
 export const roleChoices = (profile: any, user: any) => {
     const allowed = new Set<string>(profile?.role_management || []);
     if (!allowed.has(user.role)) {

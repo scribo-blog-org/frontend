@@ -3,8 +3,6 @@ import { useEffect, useState } from 'react';
 import { getSupportRequests } from '../api/support.api';
 import { socketService } from '../sockets/socket.service';
 
-// Each admin sub-page that can need attention adds one entry here. The sidebar
-// shows a dot on the admin panel item while any of them is true.
 export type AdminAttention = {
     support: boolean;
     any: boolean;
@@ -44,7 +42,6 @@ export function useAdminAttention(profile: any): AdminAttention {
             'admin:support-new',
             (count: any) => setNewSupport(Number(count) || 0),
         );
-        // Covers whatever was missed while the socket was reconnecting.
         window.addEventListener('focus', load);
 
         return () => {

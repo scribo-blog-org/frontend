@@ -27,6 +27,18 @@
     --gray-f9: #f9f9f9;
     --gray-ff: #ffffff;
 
+    --font-sans:
+        'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono:
+        ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono',
+        monospace;
+
+    --page-width: 872px;
+    --page-width-medium: 720px;
+    --page-width-narrow: 560px;
+
     --radius: 12px;
     --radius-sm: 8px;
     --space-1: 4px;

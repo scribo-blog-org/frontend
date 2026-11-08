@@ -90,6 +90,7 @@
     }
 
     .popup_menu_item {
+        position: relative;
         display: flex;
         align-items: center;
         white-space: nowrap;
@@ -105,6 +106,12 @@
         transition:
             background-color 300ms ease,
             color 300ms ease;
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset: -1px 0;
+        }
 
         @include hover {
             background-color: var(--section-item-hover-background-color);
@@ -167,8 +174,6 @@
         }
     }
 
-    // Levels sit in one grid cell, so the stack is as wide as the widest of
-    // them; its height is set from the active level and animated.
     .popup_menu_stack {
         display: grid;
         overflow: hidden;
@@ -217,7 +222,6 @@
         }
     }
 
-    // Placed after the hover variants so an unavailable item never highlights.
     .popup_menu_item_disabled,
     .popup_menu_item_disabled:hover {
         cursor: not-allowed;

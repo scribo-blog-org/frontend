@@ -11,91 +11,55 @@
         margin: 32px auto;
     }
 
-    &_period_panel {
+    &_bar {
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        gap: var(--space-3);
-        padding-bottom: var(--space-5);
-        border-bottom: 1px solid var(--line-color);
+        gap: var(--space-4);
     }
 
-    &_period_controls {
+    &_period {
         display: flex;
         align-items: center;
         gap: var(--space-3);
         flex-wrap: wrap;
-        width: 100%;
-    }
 
-    &_period_label {
-        margin: 0;
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text-color);
-        flex-shrink: 0;
-    }
+        .switcher_bar {
+            flex-shrink: 0;
+        }
 
-    &_period_ranges {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
+        .switcher_bar_item {
+            padding: 6px 16px;
+            white-space: nowrap;
+        }
 
-    &_period_bounds {
-        display: flex;
-        align-items: baseline;
-        gap: 10px;
-        margin: 0;
-        padding: 8px 12px;
-        border: 1px solid var(--input-outline-color);
-        border-radius: 8px;
-        font-size: 13px;
-        line-height: 1.4;
-        color: var(--text-color);
-        max-width: 100%;
-    }
-
-    &_period_bounds_label {
-        flex-shrink: 0;
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--light-text-color);
-    }
-
-    &_scope {
-        animation: analytics_enter 260ms ease backwards;
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-5);
-        min-width: 0;
-
-        &_head {
+        &_dates {
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            align-items: center;
+            gap: var(--space-2);
+            flex-wrap: wrap;
         }
 
-        &_head > .kicker {
-            margin: 0;
-        }
-
-        &_hint {
-            margin: 0;
-            font-size: 13px;
+        &_dash {
             color: var(--light-text-color);
         }
 
-        &_body {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-6);
-            min-width: 0;
+        &_error {
+            margin: 0;
+            font-size: 13px;
+            color: var(--error-color);
         }
+    }
 
-        &_overall {
-            padding-top: var(--space-2);
-            border-top: 1px solid var(--line-color);
+    &_body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-6);
+        min-width: 0;
+        transition: opacity 300ms ease;
+
+        &_loading {
+            opacity: 0.5;
+            pointer-events: none;
         }
     }
 
@@ -226,64 +190,6 @@
             font-size: 12px;
             color: var(--light-text-color);
         }
-
-        &_chart {
-            min-height: 280px;
-
-            // The chart scales with the width, so on a phone it is shorter
-            // than the reserved height and would leave an empty strip.
-            @include screen() {
-                min-height: 0;
-            }
-        }
-    }
-
-    &_activity {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: var(--space-5);
-
-        @include screen() {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        &_group {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            min-width: 0;
-        }
-
-        &_metrics {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        &_metric {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            gap: 12px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--line-color);
-
-            &:last-child {
-                padding-bottom: 0;
-                border-bottom: 0;
-            }
-
-            &_label {
-                font-size: 13px;
-                color: var(--light-text-color);
-            }
-
-            &_value {
-                font-size: 18px;
-                font-weight: 600;
-                letter-spacing: -0.02em;
-            }
-        }
     }
 
     &_legend {
@@ -360,7 +266,7 @@
         &_ytick,
         &_tick {
             fill: var(--light-text-color);
-            font-size: 10px;
+            font-size: 11px;
         }
 
         &_tooltip {
@@ -398,8 +304,6 @@
             align-items: center;
         }
 
-        // The value can carry a note (e.g. latency percentiles), so its
-        // column follows the content instead of cutting it off.
         &_wide &_row {
             grid-template-columns: 180px minmax(48px, 1fr) max-content;
         }
@@ -468,162 +372,6 @@
     }
 }
 
-@keyframes analytics_enter {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .analytics_scope {
-        animation: none;
-    }
-}
-
-.analytics_health_card {
-    align-items: flex-start;
-    font: inherit;
-    text-align: left;
-    color: inherit;
-    cursor: pointer;
-    outline: 1px solid transparent;
-    outline-offset: -1px;
-
-    @include hover {
-        background: var(--section-item-hover-background-color);
-    }
-
-    &:focus-visible {
-        outline-color: var(--input-outline-active-color);
-    }
-
-    &_active {
-        outline-color: var(--text-color);
-    }
-
-    &_hot .analytics_stat_value {
-        color: var(--log-error-color);
-    }
-}
-
-.analytics_health_figure {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    width: 100%;
-}
-
-.analytics_health_bars {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    width: 100%;
-}
-
-.analytics_health_bar {
-    height: 4px;
-    border-radius: 2px;
-
-    &_now {
-        background: var(--text-color);
-    }
-
-    &_before {
-        background: var(--light-text-color);
-        opacity: 0.45;
-    }
-}
-
-.analytics_health_list {
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.analytics_health_row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    padding: 8px 0;
-    font-size: 13px;
-
-    & + & {
-        border-top: 1px solid var(--line-color);
-    }
-}
-
-.analytics_health_message {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.analytics_health_repeats {
-    margin-left: 6px;
-    color: var(--light-text-color);
-}
-
-.analytics_health_time {
-    flex-shrink: 0;
-    font-size: 12px;
-    color: var(--light-text-color);
-}
-
-.analytics_error_row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-4);
-    padding: 10px 0;
-    font-size: 13px;
-
-    & + & {
-        border-top: 1px solid var(--line-color);
-    }
-}
-
-.analytics_error_main {
-    flex: 1;
-    min-width: 0;
-
-    p {
-        margin: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-}
-
-.analytics_error_route {
-    font-weight: 500;
-}
-
-.analytics_error_text {
-    margin-top: 2px;
-    font-size: 12px;
-    color: var(--light-text-color);
-}
-
-.analytics_error_side {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    flex-shrink: 0;
-    gap: 2px;
-}
-
-.analytics_error_count {
-    font-weight: 600;
-}
-
-// Half-width blocks are too narrow for label, bar and note in one line, so the
-// bar drops under the label there.
 .analytics_grid .analytics_bars_wide .analytics_bars_row {
     grid-template-columns: minmax(0, 1fr) max-content;
     row-gap: 4px;

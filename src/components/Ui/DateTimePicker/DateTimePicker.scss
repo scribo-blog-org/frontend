@@ -6,9 +6,9 @@
     gap: 8px;
     height: var(--control-height);
     padding: 0 10px 0 12px;
-    background-color: transparent;
+    background-color: var(--input-background-color);
     border: 1px solid var(--input-outline-color);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     color: var(--input-text-color);
     cursor: text;
     @include use-transition();

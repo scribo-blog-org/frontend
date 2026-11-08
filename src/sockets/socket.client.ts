@@ -5,12 +5,8 @@ function socketUrl() {
 }
 const AUTH_TIMEOUT_MS = 10000;
 const PING_INTERVAL_MS = 20_000;
-// The server answers every ping, so silence for this long means the
-// connection is dead even though the browser still reports it as open.
 const SILENCE_LIMIT_MS = 50_000;
 
-// Online means the app is in the foreground, like in Telegram: a minimized
-// window, a hidden tab or a window without focus is offline.
 function isAppActive() {
     return document.visibilityState === 'visible' && document.hasFocus();
 }

@@ -32,6 +32,7 @@ import { Panel, Banner } from '../../components/Ui';
 import Sceleton from '../../components/Ui/Sceleton/Sceleton';
 
 import Posts from '../../components/Posts/index';
+import NoPosts from '../../components/NoPosts';
 import UserRow from '../../components/UserRow';
 import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
 import { imageSrc } from '../../utils/image';
@@ -531,6 +532,15 @@ const Profile = ({
                         feed={postsFeed}
                         isLoading={isProfileLoading || postsFeed.loading}
                         showFilters={false}
+                        empty={
+                            <NoPosts
+                                title={
+                                    activeTab === 1
+                                        ? 'No saved posts'
+                                        : 'No posts yet'
+                                }
+                            />
+                        }
                     />
                 </div>
             </div>

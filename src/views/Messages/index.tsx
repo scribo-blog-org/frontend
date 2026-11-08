@@ -204,14 +204,8 @@ const senderColor = (id: any) => {
     return SENDER_COLORS[hash];
 };
 
-const conversationPreview = (item: any) => {
-    const text = String(item?.last_message_text || '').trim();
-    if (!text) {
-        return 'No messages';
-    }
-    const name = String(item?.last_message_sender_name || '').trim();
-    return name ? `${name}: ${text}` : text;
-};
+const conversationPreview = (item: any) =>
+    String(item?.last_message_text || '').trim() || 'No messages';
 
 const conversationStamp = (date: any) => {
     if (!date) {
@@ -408,7 +402,6 @@ const MessagesPage = () => {
         useContext(AppContext);
 
     const [conversations, setConversations] = useState<any[]>([]);
-    // Set while the chat slides out after Back, before the route changes.
     const [isLeavingChat, setIsLeavingChat] = useState<any>(false);
     const leaveTimer = useRef<any>(0);
     const [activeConversation, setActiveConversation] = useState<any>(null);
@@ -1744,8 +1737,6 @@ const MessagesPage = () => {
         setEditingMessage(null);
         setReplyTo(message);
 
-        // iOS only opens the keyboard when focus happens synchronously inside
-        // the user gesture, so the post-render effect alone is not enough.
         composerInputRef.current?.focus({ preventScroll: true });
     };
 
@@ -2109,8 +2100,6 @@ const MessagesPage = () => {
 
         try {
             if (editingMessage) {
-                // The text changes in the thread right away and goes back to the
-                // original, with the draft restored, if the server refuses.
                 const original = editingMessage;
                 setMessages((current: any) =>
                     current.map((item: any) =>
@@ -2207,6 +2196,22 @@ const MessagesPage = () => {
 
             stickToBottomRef.current = true;
             setMessages((current: any) => [...current, optimistic]);
+            setConversations((current: any) => {
+                const existing = current.find(
+                    (item: any) => item._id === conversationId,
+                );
+                if (!existing) {
+                    return current;
+                }
+
+                return upsertConversationInList(current, {
+                    ...existing,
+                    last_message_text: messagePreviewText(optimistic),
+                    last_message_at: optimistic.created_at,
+                    last_message_is_own: true,
+                    last_message_status: 'sending',
+                });
+            });
             setDraft('');
             setReplyTo(null);
             setIsSending(true);
@@ -2226,6 +2231,7 @@ const MessagesPage = () => {
                 setMessages((current: any) =>
                     current.filter((item: any) => item._id !== pendingId),
                 );
+                void loadConversations(true);
                 showToast?.({
                     type: 'error',
                     message: result?.message || 'Could not send the message',
@@ -2284,6 +2290,8 @@ const MessagesPage = () => {
                         profile.nick_name ||
                         '',
                     last_message_at: result.data.created_at,
+                    last_message_is_own: true,
+                    last_message_status: 'sent',
                     unread: 0,
                 });
             });
@@ -2415,9 +2423,6 @@ const MessagesPage = () => {
 
     beginMessageLeaveRef.current = beginMessageLeave;
 
-    // Puts messages back after a refused delete: they were already animating
-    // out, so cancel that and re-insert whatever has been removed meanwhile,
-    // in time order.
     const restoreMessages = (restored: any[]) => {
         const ids = restored.map((item: any) => String(item._id));
 
@@ -2453,7 +2458,6 @@ const MessagesPage = () => {
         });
     };
 
-    // The message starts leaving at once; a failed request brings it back.
     const handleDelete = async (messageId: any) => {
         const message = messages.find(
             (item: any) => String(item._id) === String(messageId),
@@ -3007,7 +3011,6 @@ const MessagesPage = () => {
 
     useEffect(() => () => window.clearTimeout(leaveTimer.current), []);
 
-    // The chat slides out first; the route changes once it is off screen.
     const closeChat = () => {
         if (isLeavingChat) {
             return;
@@ -3085,69 +3088,60 @@ const MessagesPage = () => {
                                                     asLink={false}
                                                 />
                                             )}
-                                            {isGroupChat(item) ? null : (
+                                            {!isGroupChat(item) &&
+                                            onlineByUserId[
+                                                String(item.participant?._id)
+                                            ] ? (
                                                 <UserActivityStatus
                                                     user={item.participant}
                                                     viewerId={profile._id}
-                                                    isOnline={
-                                                        onlineByUserId[
-                                                            String(
-                                                                item.participant
-                                                                    ?._id,
-                                                            )
-                                                        ] ?? false
-                                                    }
-                                                    activityAt={
-                                                        activityAtByUserId[
-                                                            String(
-                                                                item.participant
-                                                                    ?._id,
-                                                            )
-                                                        ]
-                                                    }
-                                                    isTyping={Boolean(
-                                                        typingByConversationId[
-                                                            String(item._id)
-                                                        ],
-                                                    )}
-                                                    typingNames={typingNamesFor(
-                                                        item._id,
-                                                    )}
+                                                    isOnline={true}
                                                     className="messages_activity_status"
                                                 />
-                                            )}
+                                            ) : null}
                                         </div>
                                         <div className="messages_conversation_copy">
-                                            {isGroupChat(item) &&
-                                            typingByConversationId[
-                                                String(item._id)
-                                            ] ? (
-                                                <p className="messages_conversation_preview messages_conversation_typing">
-                                                    <TypingDots />
-                                                    <span className="messages_conversation_typing_names">
-                                                        {typingNamesFor(
-                                                            item._id,
-                                                        )}
-                                                    </span>
-                                                </p>
-                                            ) : (
-                                                <p className="messages_conversation_preview">
-                                                    {conversationPreview(item)}
-                                                </p>
-                                            )}
                                             <div className="messages_conversation_row">
-                                                {item.last_message_at ? (
-                                                    <span className="messages_conversation_time">
-                                                        {conversationStamp(
-                                                            item.last_message_at,
+                                                {typingByConversationId[
+                                                    String(item._id)
+                                                ] ? (
+                                                    <p className="messages_conversation_preview messages_conversation_typing">
+                                                        <TypingDots />
+                                                        <span className="messages_conversation_typing_names">
+                                                            {typingNamesFor(
+                                                                item._id,
+                                                            )}
+                                                        </span>
+                                                    </p>
+                                                ) : (
+                                                    <p className="messages_conversation_preview">
+                                                        {conversationPreview(
+                                                            item,
                                                         )}
-                                                    </span>
-                                                ) : null}
-                                                {item.unread > 0 ? (
-                                                    <span className="messages_conversation_unread">
-                                                        {item.unread}
-                                                    </span>
-                                                ) : null}
+                                                    </p>
+                                                )}
+                                                <span className="messages_conversation_meta">
+                                                    {item.last_message_is_own ? (
+                                                        <MessageStatus
+                                                            status={
+                                                                item.last_message_status ||
+                                                                'sent'
+                                                            }
+                                                        />
+                                                    ) : null}
+                                                    {item.last_message_at ? (
+                                                        <span className="messages_conversation_time">
+                                                            {conversationStamp(
+                                                                item.last_message_at,
+                                                            )}
+                                                        </span>
+                                                    ) : null}
+                                                    {item.unread > 0 ? (
+                                                        <span className="messages_conversation_unread">
+                                                            {item.unread}
+                                                        </span>
+                                                    ) : null}
+                                                </span>
                                             </div>
                                         </div>
                                     </Link>

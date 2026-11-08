@@ -24,9 +24,6 @@ const svgrLoader = {
 
 const nextConfig = {
     agentRules: false,
-    // In development with a local API, uploaded files are fetched through the
-    // page's own origin, so a phone opening the site by the Mac's address does
-    // not need to reach the API host for images.
     async rewrites() {
         const api = process.env.NEXT_PUBLIC_APP_API_URL?.replace(/\/+$/, '');
 
@@ -51,7 +48,6 @@ const nextConfig = {
             },
         ];
     },
-    // Lets a phone on the home network open the dev server by LAN address.
     allowedDevOrigins: ['192.168.*.*', '10.*.*.*'],
     reactStrictMode: true,
     logging: {

@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import { AppContext } from '@/providers/AppProviders';
+import { useSearchParams } from '@/navigation';
 
 import { getAllLogs } from '../../api/logs.api';
 import { getUsers } from '../../api/users.api';
@@ -80,10 +81,15 @@ const dayKey = (date: any) => new Date(date).toDateString();
 
 const LogsPage = () => {
     const { showToast } = useContext(AppContext);
+    const [searchParams] = useSearchParams();
     const [users, setUsers] = useState<any[]>([]);
     const [posts, setPosts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
-    const [filter, setFilter] = useState<any>({ type: null, id: null });
+    const [filter, setFilter] = useState<any>(() => {
+        const userId = searchParams.get('user');
+
+        return userId ? { type: 'user', id: userId } : { type: null, id: null };
+    });
     const [typeFilter, setTypeFilter] = useState<any>('all');
     const [levelFilter, setLevelFilter] = useState<any>('all');
     const [dateFrom, setDateFrom] = useState<any>('');
@@ -195,8 +201,6 @@ const LogsPage = () => {
         ]),
     });
     const logs = feed.items;
-    // The secondary filters are folded away on a phone; on wide screens they
-    // are always shown and these only drive the toggle there.
     const [filtersOpen, setFiltersOpen] = useState<any>(false);
     const [filtersSettled, setFiltersSettled] = useState<any>(false);
     const filtersTimer = useRef<any>(0);
@@ -225,8 +229,6 @@ const LogsPage = () => {
         }
 
         setFiltersOpen(true);
-        // Open lists inside the folded block must not be clipped, but the
-        // block clips while it grows; it is let out once it has finished.
         filtersTimer.current = window.setTimeout(
             () => setFiltersSettled(true),
             300,
@@ -356,8 +358,6 @@ const LogsPage = () => {
         (log: any) => log.data?.support_request === filter.id,
     );
 
-    // Live and Reload sit beside the search on wide screens and inside the
-    // folded block on a phone, so the same buttons are rendered in both.
     const actionButtons = (
         <>
             <ActionButton
@@ -371,8 +371,6 @@ const LogsPage = () => {
             <ActionButton
                 size="lg"
                 onClick={reload}
-                // Live refreshes the list on its own, so a manual
-                // reload is off for as long as it runs.
                 isLoading={reloading || live}
                 loaderVariant="segments"
                 className="logs_reload"
@@ -514,7 +512,6 @@ const LogsPage = () => {
                                     value={levelFilter}
                                     placeholder="Level"
                                     onChange={(value: any) => {
-                                        // Emptying the field clears the filter.
                                         setLevelFilter(value || 'all');
                                     }}
                                 />

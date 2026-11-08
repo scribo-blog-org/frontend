@@ -359,9 +359,6 @@ const Comment = ({
             {
                 title: 'Delete',
                 onClick: () => {
-                    // The comment fades out right away and is only dropped
-                    // from the tree once the exit animation is over; a failed
-                    // request brings it back.
                     setIsLeaving(true);
                     const leaveDelay = window.matchMedia(
                         '(prefers-reduced-motion: reduce)',
@@ -578,8 +575,6 @@ const PostComments = ({ postId, navigateTo, onCommentsChange }: any) => {
         onCommentsChangeRef.current?.(next, countCommentTree(next));
     };
 
-    // Returns a function that puts the previous tree back if the server
-    // refuses the deletion.
     const removeComment = (commentId: any) => {
         const snapshot = commentsRef.current;
         applyComments(removeFromTree(snapshot, commentId));

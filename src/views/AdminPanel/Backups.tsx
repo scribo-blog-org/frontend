@@ -40,18 +40,6 @@ import { formatSize } from './logFormat';
 
 import './Backups.scss';
 
-const STATUS_LABELS: Record<string, string> = {
-    running: 'Running',
-    success: 'Success',
-    failed: 'Error',
-};
-
-const STATUS_TONES: Record<string, any> = {
-    running: 'warning',
-    success: 'success',
-    failed: 'danger',
-};
-
 const TRIGGER_LABELS: Record<string, string> = {
     schedule: 'Scheduled',
     manual: 'Manual',
@@ -464,37 +452,26 @@ const BackupsPage = () => {
     }
 
     const last = info?.last_restore;
+    const newestId = items.reduce(
+        (newest: any, item: any) =>
+            !newest ||
+            new Date(item.started_at).getTime() >
+                new Date(newest.started_at).getTime()
+                ? item
+                : newest,
+        null,
+    )?._id;
     const job = info?.restore_job;
     const busy = running || restoring || starting || uploading;
 
     return (
         <div className="admin_panel_content_backups_page">
             <div className="admin_panel_content_backups_page_header">
-                {info?.app_version ? (
-                    <p className="admin_panel_content_backups_page_version">
-                        <span className="admin_panel_content_backups_page_version_label">
-                            Version
-                        </span>
-                        v{info.app_version}
-                        {info.app_sha ? ` · ${info.app_sha}` : ''}
-                        {info.db_version ? ` · data ${info.db_version}` : ''}
+                {info && !info.enabled ? (
+                    <p className="admin_panel_content_backups_page_hint">
+                        Backups are disabled in this environment.
                     </p>
                 ) : null}
-                <div className="admin_panel_content_backups_page_header_info">
-                    {info?.enabled ? (
-                        <>
-                            <p>
-                                Daily at {info.schedule_at_utc} UTC — the
-                                database and uploaded files. Copies from today
-                                stay, then one a day for {info.keep_daily_days}{' '}
-                                days and one a month for {info.keep_months}{' '}
-                                months.
-                            </p>
-                        </>
-                    ) : (
-                        <p>Backups are disabled in this environment.</p>
-                    )}
-                </div>
                 <div className="admin_panel_content_backups_page_header_actions">
                     {info?.upload_enabled ? (
                         <>
@@ -536,15 +513,6 @@ const BackupsPage = () => {
                 </Banner>
             ) : null}
 
-            {!restoring && info?.current ? (
-                <Banner tone="info" icon={<InfoIcon />}>
-                    <b>The system is currently on the backup from </b>
-                    {format_date_time(info.current.taken_at)}. Restored{' '}
-                    {format_date_time(info.current.restored_at)}. Anything that
-                    changed after that is already new data on top of the backup.
-                </Banner>
-            ) : null}
-
             {!restoring &&
             last &&
             (last.status === 'failed' || last.status === 'interrupted') ? (
@@ -580,9 +548,6 @@ const BackupsPage = () => {
                                 key={item._id}
                                 className="admin_panel_content_backups_page_item"
                             >
-                                <Pill tone={STATUS_TONES[item.status]}>
-                                    {STATUS_LABELS[item.status] || item.status}
-                                </Pill>
                                 <Tooltip
                                     text={format_date_time(item.started_at)}
                                 >
@@ -605,7 +570,7 @@ const BackupsPage = () => {
                                     >
                                         {kindLabel(item)}
                                     </Pill>
-                                    {info?.current?.backup_id === item._id ? (
+                                    {item._id === newestId ? (
                                         <Pill tone="info">Current</Pill>
                                     ) : null}
                                 </p>
@@ -633,38 +598,33 @@ const BackupsPage = () => {
                                             <DownloadIcon />
                                             Download
                                         </ActionButton>
-                                    ) : item.file_removed_at ? (
-                                        <p className="admin_panel_content_backups_page_hint">
-                                            {item.file_removed_reason ===
-                                            'replaced'
-                                                ? 'Deleted: replaced by a newer one for this day'
-                                                : item.file_removed_reason ===
-                                                    'restored'
-                                                  ? 'Deleted: the restore succeeded, so the snapshot is no longer needed'
-                                                  : 'Deleted because it expired'}
-                                        </p>
                                     ) : null}
-                                    {item.restore_blocked ? (
-                                        <p className="admin_panel_content_backups_page_hint">
-                                            {item.restore_blocked}
-                                        </p>
-                                    ) : null}
-                                    {info?.restore_enabled &&
-                                    item.can_restore ? (
-                                        <DangerButton
-                                            onClick={() => askRestore(item)}
-                                            disabled={busy}
-                                        >
-                                            <RestoreIcon />
-                                            Restore
-                                        </DangerButton>
+                                    {info?.restore_enabled ? (
+                                        item.can_restore ? (
+                                            <DangerButton
+                                                onClick={() => askRestore(item)}
+                                                disabled={busy}
+                                            >
+                                                <RestoreIcon />
+                                                Restore
+                                            </DangerButton>
+                                        ) : (
+                                            <Tooltip
+                                                text={
+                                                    item.restore_blocked ||
+                                                    'This backup cannot be restored'
+                                                }
+                                            >
+                                                <span className="admin_panel_content_backups_page_item_restore">
+                                                    <DangerButton disabled>
+                                                        <RestoreIcon />
+                                                        Restore
+                                                    </DangerButton>
+                                                </span>
+                                            </Tooltip>
+                                        )
                                     ) : null}
                                 </div>
-                                {item.error ? (
-                                    <p className="admin_panel_content_backups_page_item_error">
-                                        {item.error}
-                                    </p>
-                                ) : null}
                             </div>
                         ))
                     ) : (

@@ -363,6 +363,15 @@ export const LOG_TYPES: Record<string, LogTypeConfig> = {
         text: () => 'The database version was not synced',
         object: 'system',
     },
+    seed_admin: {
+        title: 'Seed administrator',
+        tone: 'register',
+        text: (log: any) =>
+            log?.data?.created === false
+                ? 'Restored the development administrator'
+                : 'Created the development administrator',
+        object: 'user',
+    },
     server_start: {
         title: 'Server start',
         tone: 'register',

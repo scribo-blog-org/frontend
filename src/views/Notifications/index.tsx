@@ -86,10 +86,6 @@ const Notifications = () => {
         }
 
         const markAsRead = async () => {
-            // The socket may have been asleep while notifications arrived, for
-            // instance when the page is opened from a push, so the profile in
-            // memory can be stale. Show the server's list, with its unread
-            // marks, before marking everything read.
             const fresh = await getProfile();
 
             if (

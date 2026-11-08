@@ -6,7 +6,6 @@ import './DateTimePicker.scss';
 
 import CrossIcon from '../../../assets/svg/cross-icon.svg';
 
-// value is a local "YYYY-MM-DDTHH:mm" string, '' when nothing is picked.
 const DateTimePicker = forwardRef(
     (
         {
@@ -17,6 +16,7 @@ const DateTimePicker = forwardRef(
             max,
             disabled = false,
             clearable = true,
+            type = 'datetime-local',
             className = '',
         }: any,
         ref: any,
@@ -32,7 +32,7 @@ const DateTimePicker = forwardRef(
             <input
                 ref={ref}
                 className="date_time_picker_input"
-                type="datetime-local"
+                type={type}
                 value={value}
                 min={min}
                 max={max}

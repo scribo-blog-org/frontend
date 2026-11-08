@@ -6,8 +6,6 @@ import Tooltip from '../../components/Ui/Tooltip';
 
 import { formatDuration, type Timing } from './logFormat';
 
-// A request that fires this many queries is almost never doing one job: it is
-// usually a query repeated per item.
 export const MANY_QUERIES = 30;
 const VERY_SLOW_MS = 3000;
 

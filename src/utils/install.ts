@@ -17,8 +17,6 @@ export const isIos = () => {
         return false;
     }
 
-    // iPadOS reports a desktop Safari user agent, only the touch points give
-    // it away.
     return (
         /iPad|iPhone|iPod/.test(navigator.userAgent) ||
         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
@@ -36,8 +34,6 @@ export const isStandalone = () => {
     );
 };
 
-// The browser fires `beforeinstallprompt` once, early in the page load, so the
-// listener has to exist before any screen that offers the install.
 export const captureInstallPrompt = () => {
     if (listening || typeof window === 'undefined') {
         return;

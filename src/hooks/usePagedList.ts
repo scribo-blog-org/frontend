@@ -10,7 +10,6 @@ type Options = {
     keepStale?: boolean;
 };
 
-// Holds the server pages loaded so far; the next page is appended on demand.
 export function usePagedList({
     fetchPage,
     resetKey,
@@ -109,8 +108,6 @@ export function usePagedList({
         }
     }, []);
 
-    // Re-requests the first page without the loading state. Items already shown
-    // stay in place, only the ones that are new get added on top.
     const refresh = useCallback(async () => {
         if (refreshingRef.current) {
             return;
