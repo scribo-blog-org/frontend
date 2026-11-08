@@ -51,13 +51,6 @@
         }
     }
 
-    &_note {
-        margin: 0;
-        font-size: var(--text-xs);
-        line-height: 1.5;
-        color: var(--light-text-color);
-    }
-
     &_list {
         display: flex;
         flex-direction: column;
@@ -73,8 +66,8 @@
         animation: admin_users_enter 260ms ease backwards;
         display: grid;
         grid-template-columns:
-            minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr)
-            auto;
+            minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr)
+            18px;
         align-items: center;
         column-gap: clamp(8px, 2vw, 20px);
         padding: 12px 18px;
@@ -90,6 +83,66 @@
 
         @include hover {
             background: var(--section-item-hover-background-color);
+        }
+
+        // Column titles. Same grid as a row, so every title sits over its
+        // column.
+        &.admin_users_head {
+            animation: none;
+            padding-top: 4px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--line-color);
+            border-radius: 0;
+            font-size: var(--text-xs);
+            font-weight: 500;
+            color: var(--light-text-color);
+
+            @include hover {
+                background: transparent;
+            }
+
+            @include screen() {
+                display: none;
+            }
+        }
+
+        &_action {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            font-size: 13px;
+
+            @include screen() {
+                grid-column: 1 / -1;
+            }
+
+            &_text {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            &_meta,
+            &_none {
+                display: flex;
+                align-items: center;
+                gap: var(--space-2);
+                font-size: var(--text-xs);
+                color: var(--light-text-color);
+            }
+
+            &_logs {
+                padding: 0;
+                font-size: var(--text-xs);
+                color: var(--accent-color);
+                cursor: pointer;
+                @include use-transition();
+
+                @include hover {
+                    text-decoration: underline;
+                }
+            }
         }
 
         &_user {

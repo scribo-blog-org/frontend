@@ -5,7 +5,7 @@ import { useNavigate } from '@/navigation';
 
 import { AppContext } from '@/providers/AppProviders';
 import { getAdminUsers, setVerified, updateRole } from '../../api/users.api';
-import { format_date_time } from '../../utils/format';
+import { format_back, format_date_time } from '../../utils/format';
 
 import ThreeDotsIcon from '../../assets/svg/three-dots.svg';
 import RedirectIcon from '../../assets/svg/redirect.svg';
@@ -26,6 +26,7 @@ import {
     roleIcon,
     roleLabel,
 } from './adminRoles';
+import { typeOf } from './logTypes';
 
 import './Users.scss';
 
@@ -76,7 +77,6 @@ const UsersPage = () => {
             limit: PAGE_SIZE,
             sort,
             search,
-            roles: 'user,author',
         });
         if (current !== requestId.current) {
             return;
@@ -149,6 +149,9 @@ const UsersPage = () => {
         }
     };
 
+    const openLogs = (user: any) =>
+        navigate(`/admin-panel?tab=logs&user=${user._id}`);
+
     const getPopupBody = (user: any) => {
         const sections: any[] = [
             [
@@ -156,6 +159,11 @@ const UsersPage = () => {
                     title: 'Go to profile',
                     icon: <RedirectIcon />,
                     onClick: () => navigate(`/users/${user.nick_name}`),
+                },
+                {
+                    title: 'View logs',
+                    icon: <RedirectIcon />,
+                    onClick: () => openLogs(user),
                 },
             ],
         ];
@@ -235,11 +243,6 @@ const UsersPage = () => {
                 />
             </div>
 
-            <p className="admin_users_note">
-                This list shows users and authors. Staff accounts are in the
-                Administrators tab, but they count toward “All users”.
-            </p>
-
             {isLoading && !users.length ? (
                 <Loading size={40} />
             ) : (
@@ -254,6 +257,16 @@ const UsersPage = () => {
                             <div
                                 className={`admin_users_list${isLoading ? ' admin_users_list_loading' : ''}`}
                             >
+                                <div
+                                    className="admin_users_item admin_users_head"
+                                    aria-hidden="true"
+                                >
+                                    <span>User</span>
+                                    <span>Last seen</span>
+                                    <span>Last action</span>
+                                    <span>Registered</span>
+                                    <span className="admin_users_head_spacer" />
+                                </div>
                                 {visible.map((user: any) => (
                                     <div
                                         className="admin_users_item app-transition"
@@ -270,6 +283,38 @@ const UsersPage = () => {
                                                 }}
                                                 viewerId={profile?._id}
                                             />
+                                        </div>
+                                        <div className="admin_users_item_action">
+                                            {user.last_action ? (
+                                                <>
+                                                    <p className="admin_users_item_action_text">
+                                                        {
+                                                            typeOf(
+                                                                user.last_action,
+                                                            ).title
+                                                        }
+                                                    </p>
+                                                    <p className="admin_users_item_action_meta">
+                                                        {format_back(
+                                                            user.last_action
+                                                                .date_time,
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            className="admin_users_item_action_logs"
+                                                            onClick={() =>
+                                                                openLogs(user)
+                                                            }
+                                                        >
+                                                            View logs
+                                                        </button>
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <p className="admin_users_item_action_none">
+                                                    No actions yet
+                                                </p>
+                                            )}
                                         </div>
                                         <p className="admin_users_item_registered">
                                             {format_date_time(

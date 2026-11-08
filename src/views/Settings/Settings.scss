@@ -49,8 +49,8 @@
     // column 1 and every other child is auto-placed down column 2.
     .settings_group {
         display: grid;
-        grid-template-columns: 180px minmax(0, 1fr);
-        column-gap: var(--space-6);
+        grid-template-columns: 128px minmax(0, 1fr);
+        column-gap: var(--space-5);
         row-gap: 0;
         min-width: 0;
 

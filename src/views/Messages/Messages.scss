@@ -267,8 +267,10 @@
         min-width: 0;
     }
 
-    .messages_activity_status {
-        flex: 0 1 auto;
+    // The time of the last message, right after the name.
+    .messages_conversation_time {
+        flex: 0 0 auto;
+        margin-left: var(--space-1);
     }
 }
 
@@ -284,7 +286,7 @@
 .messages_conversation_row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 8px;
     min-width: 0;
 }

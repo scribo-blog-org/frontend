@@ -24,6 +24,8 @@ const ModalWindow = ({
     const [activeModal, setActiveModal] = useState<any>(modalWindow || null);
     const [isSwapping, setIsSwapping] = useState<any>(false);
     const [contentHeight, setContentHeight] = useState<any>(null);
+    // True while the body is animating to a new height.
+    const [isResizing, setIsResizing] = useState<boolean>(false);
     const closeTimeoutRef = useRef<any>(null);
     const contentRef = useRef<any>(null);
 
@@ -38,7 +40,7 @@ const ModalWindow = ({
         const closeFunc = modalWindow?.closeFunc;
 
         closeTimeoutRef.current = setTimeout(() => {
-            document.body.classList.remove('no-scroll');
+            document.body.classList.remove('no-scroll', 'no-scroll-bar');
 
             if (closeFunc) {
                 try {
@@ -60,6 +62,20 @@ const ModalWindow = ({
         if (closeTimeoutRef.current) {
             clearTimeout(closeTimeoutRef.current);
             closeTimeoutRef.current = null;
+        }
+
+        // Hiding the page scrollbar must not move the page. The space of a
+        // scrollbar is kept only when there was one; a page without one has
+        // nothing to keep, and reserving an empty strip would push it sideways.
+        if (!document.body.classList.contains('no-scroll')) {
+            const scroller = document.querySelector<HTMLElement>(
+                '.app-shell_content',
+            );
+            const hadScrollbar = Boolean(
+                scroller && scroller.offsetWidth - scroller.clientWidth > 0,
+            );
+
+            document.body.classList.toggle('no-scroll-bar', hadScrollbar);
         }
 
         document.body.classList.add('no-scroll');
@@ -140,6 +156,20 @@ const ModalWindow = ({
         return () => observer.disconnect();
     }, [activeModal]);
 
+    // The body grows to its content over 300 ms. For that time the content is
+    // taller than the body, which would flash a scrollbar and re-wrap
+    // everything inside; scrolling is off until the new height is reached.
+    useEffect(() => {
+        if (contentHeight == null) {
+            return;
+        }
+
+        setIsResizing(true);
+        const timer = setTimeout(() => setIsResizing(false), 340);
+
+        return () => clearTimeout(timer);
+    }, [contentHeight]);
+
     return (
         <div
             className={`modal_window ${isVisible && activeModal ? 'visible' : ''}`}
@@ -203,7 +233,9 @@ const ModalWindow = ({
                 )}
 
                 <div
-                    className="modal_window_body_content"
+                    className={`modal_window_body_content${
+                        isResizing ? ' modal_window_body_content_resizing' : ''
+                    }`}
                     style={
                         contentHeight == null
                             ? undefined

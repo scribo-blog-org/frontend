@@ -10,9 +10,10 @@ import ChartIcon from '../../assets/svg/chart.svg';
 import BackupIcon from '../../assets/svg/backup.svg';
 
 import { useNavigate } from '@/navigation';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { AppContext } from '@/providers/AppProviders';
+import { getAppInfo } from '../../api/analytics.api';
 
 import { useAdminAttention } from '../../hooks/useAdminAttention';
 import TabsPage from '../../components/TabsPage/index';
@@ -29,6 +30,26 @@ const AdminPanel = () => {
     const navigate = useNavigate();
     const { profile, profileLoading } = useContext(AppContext);
     const adminAttention = useAdminAttention(profile);
+    const [version, setVersion] = useState<string | null>(null);
+    const isAdmin = ['admin', 'tech_admin'].includes(profile?.role);
+
+    useEffect(() => {
+        if (!isAdmin) {
+            return;
+        }
+
+        let cancelled = false;
+
+        getAppInfo().then((result: any) => {
+            if (!cancelled && result?.status && result.data?.version) {
+                setVersion(result.data.version);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [isAdmin]);
 
     useEffect(() => {
         if (
@@ -91,7 +112,11 @@ const AdminPanel = () => {
 
     return (
         <div className="admin_panel_page">
-            <TabsPage label="Admin panel" pages={pages} />
+            <TabsPage
+                label="Admin panel"
+                pages={pages}
+                aside={version ? `v${version}` : null}
+            />
         </div>
     );
 };

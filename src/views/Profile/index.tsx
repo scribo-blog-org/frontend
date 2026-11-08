@@ -137,11 +137,6 @@ const Profile = ({
         };
     }, [id, navigate]);
 
-    const isOwnProfile = Boolean(profile && profile._id === user?._id);
-    const canCreatePost = Boolean(
-        profile?.permissions?.includes('create_post'),
-    );
-
     const savedPostsIds = useMemo(() => {
         if (!user?._id) {
             return [];
@@ -543,26 +538,6 @@ const Profile = ({
                                     activeTab === 1
                                         ? 'No saved posts'
                                         : 'No posts yet'
-                                }
-                                hint={
-                                    isOwnProfile
-                                        ? activeTab === 1
-                                            ? 'Save a post and it will show up here.'
-                                            : canCreatePost
-                                              ? 'Your posts will appear here.'
-                                              : undefined
-                                        : undefined
-                                }
-                                action={
-                                    isOwnProfile &&
-                                    activeTab === 0 &&
-                                    canCreatePost
-                                        ? {
-                                              label: 'Create your first post',
-                                              onClick: () =>
-                                                  navigate('/create-post'),
-                                          }
-                                        : null
                                 }
                             />
                         }

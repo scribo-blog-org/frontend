@@ -107,7 +107,7 @@
             color 300ms ease;
 
         @include hover {
-            background-color: var(--section-item-hover-background-color);
+            background-color: var(--menu-item-hover-background);
         }
     }
 
@@ -202,7 +202,7 @@
     }
 
     .popup_menu_item_active {
-        background-color: var(--section-item-hover-background-color);
+        background-color: var(--menu-item-hover-background);
     }
 
     .popup_menu_item_danger {

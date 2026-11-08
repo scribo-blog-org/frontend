@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from '@/navigation';
 
 import { AppContext } from '@/providers/AppProviders';
@@ -31,6 +31,11 @@ import ShareIcon from '../../assets/svg/share.svg';
 
 import './SharePostModal.scss';
 
+const chatTitle = (item: any) =>
+    item.kind === 'group'
+        ? item.title || 'Group'
+        : item.participant?.nick_name || 'User';
+
 const SharePostModal = ({
     postId,
     postTitle,
@@ -48,11 +53,10 @@ const SharePostModal = ({
     const navigate = useNavigate();
     const [conversations, setConversations] = useState<any[]>([]);
     const [isLoadingChats, setIsLoadingChats] = useState<any>(Boolean(profile));
-    const [sendingId, setSendingId] = useState<any>(null);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [isSending, setIsSending] = useState<boolean>(false);
     const [isCopying, setIsCopying] = useState<any>(false);
     const [isSharing, setIsSharing] = useState<any>(false);
-    const [isCopied, setIsCopied] = useState<any>(false);
-    const copiedTimer = useRef<any>(null);
     const shareUrl = absoluteUrl(sharePath || `/posts/${postId}`);
     const chats = conversations.filter(
         (item) => String(item._id) !== String(excludeConversationId || ''),
@@ -81,17 +85,12 @@ const SharePostModal = ({
         };
     }, [profile]);
 
-    useEffect(() => () => clearTimeout(copiedTimer.current), []);
-
     const handleCopy = async () => {
         if (isCopying) return;
         setIsCopying(true);
         try {
             await copyText(shareUrl);
             showToast?.({ message: 'Link copied', type: 'success' });
-            setIsCopied(true);
-            clearTimeout(copiedTimer.current);
-            copiedTimer.current = setTimeout(() => setIsCopied(false), 2000);
         } catch (error: any) {
             console.error(error);
             showToast?.({
@@ -123,34 +122,67 @@ const SharePostModal = ({
         }
     };
 
-    const handleShareToChat = async (conversationId: any) => {
-        if (!profile || sendingId) {
+    const toggleChat = (id: string) =>
+        setSelectedIds((current) =>
+            current.includes(id)
+                ? current.filter((item) => item !== id)
+                : [...current, id],
+        );
+
+    // Sends the link to every chosen chat, one after another, and reports the
+    // outcome once. With a single chat the page goes to that chat, as before.
+    const handleSend = async () => {
+        if (!profile || isSending || !selectedIds.length) {
             return;
         }
 
-        setSendingId(conversationId);
+        setIsSending(true);
 
-        let result: any;
+        const sentTo: string[] = [];
+        let lastMessage: string | undefined;
+
         try {
-            result = await sendMessage(conversationId, {
-                text: shareUrl,
-            });
+            for (const id of selectedIds) {
+                const result: any = await sendMessage(id, { text: shareUrl });
+
+                if (result?.status) {
+                    sentTo.push(id);
+                } else {
+                    lastMessage = result?.message;
+                }
+            }
         } finally {
-            setSendingId(null);
+            setIsSending(false);
         }
 
-        if (!result?.status) {
+        if (!sentTo.length) {
+            showToast?.({ type: 'error', message: lastMessage || failLabel });
+            return;
+        }
+
+        if (sentTo.length < selectedIds.length) {
             showToast?.({
                 type: 'error',
-                message: result?.message || failLabel,
+                message: `Sent to ${sentTo.length} of ${selectedIds.length} chats`,
             });
-            return;
+        } else {
+            showToast?.({
+                type: 'success',
+                message:
+                    sentTo.length === 1
+                        ? sentLabel
+                        : `Sent to ${sentTo.length} chats`,
+            });
         }
 
-        showToast?.({ type: 'success', message: sentLabel });
         requestCloseModal?.();
-        navigate(`/messages/${conversationId}`);
+
+        if (selectedIds.length === 1) {
+            navigate(`/messages/${sentTo[0]}`);
+        }
     };
+
+    const canSend = Boolean(profile) && chats.length > 0;
 
     return (
         <div className="share_post_modal">
@@ -158,7 +190,7 @@ const SharePostModal = ({
                 <button
                     type="button"
                     className="share_post_modal_back app-transition"
-                    disabled={Boolean(sendingId)}
+                    disabled={isSending}
                     onClick={onBack}
                 >
                     <ArrowLeftIcon />
@@ -185,50 +217,63 @@ const SharePostModal = ({
                     />
                     <PrimaryButton
                         className="share_post_modal_copy"
-                        disabled={Boolean(sendingId)}
+                        disabled={isSending}
                         isLoading={isCopying}
                         onClick={handleCopy}
                     >
-                        {isCopied ? <CheckIcon /> : <LinkIcon />}
-                        {isCopied ? 'Copied' : 'Copy'}
+                        <LinkIcon />
+                        Copy
                     </PrimaryButton>
                 </div>
             </div>
 
-            <Panel title="Send to chat">
+            <div className="share_post_modal_group">
+                <p className="share_post_modal_label">Send to chat</p>
+
                 {!profile ? (
-                    <PanelRow
-                        title="Log in to send"
-                        description={loginHint}
-                        trailing={
-                            <ActionButton
-                                size="sm"
-                                onClick={() => {
-                                    requestCloseModal?.();
-                                    navigate('/auth/login');
-                                }}
-                            >
-                                Log in
-                            </ActionButton>
-                        }
-                    />
+                    <Panel>
+                        <PanelRow
+                            title="Log in to send"
+                            description={loginHint}
+                            trailing={
+                                <ActionButton
+                                    size="sm"
+                                    onClick={() => {
+                                        requestCloseModal?.();
+                                        navigate('/auth/login');
+                                    }}
+                                >
+                                    Log in
+                                </ActionButton>
+                            }
+                        />
+                    </Panel>
                 ) : isLoadingChats ? (
-                    <div className="share_post_modal_loader panel_row">
+                    <div className="share_post_modal_loader">
                         <Loading size={24} />
                     </div>
                 ) : chats.length ? (
-                    <div className="share_post_modal_chats">
+                    // The only part of the dialog that scrolls.
+                    <div className="share_post_modal_chats" role="group">
                         {chats.map((item: any) => {
+                            const id = String(item._id);
                             const isGroup = item.kind === 'group';
-                            const count =
-                                item.member_count ?? item.members?.length;
-                            const isSending = sendingId === item._id;
+                            const selected = selectedIds.includes(id);
 
                             return (
-                                <PanelRow
-                                    key={item._id}
-                                    className="share_post_modal_chat"
-                                    icon={
+                                <button
+                                    key={id}
+                                    type="button"
+                                    className={`share_post_modal_chat app-transition${
+                                        selected
+                                            ? ' share_post_modal_chat_active'
+                                            : ''
+                                    }`}
+                                    aria-pressed={selected}
+                                    disabled={isSending}
+                                    onClick={() => toggleChat(id)}
+                                >
+                                    <span className="share_post_modal_chat_avatar">
                                         <img
                                             src={imageSrc(
                                                 isGroup
@@ -238,32 +283,14 @@ const SharePostModal = ({
                                             )}
                                             alt=""
                                         />
-                                    }
-                                    title={
-                                        isGroup
-                                            ? item.title || 'Group'
-                                            : item.participant?.nick_name
-                                    }
-                                    description={
-                                        isGroup
-                                            ? count
-                                                ? `Group · ${count} members`
-                                                : 'Group'
-                                            : 'Direct message'
-                                    }
-                                    trailing={
-                                        <ActionButton
-                                            size="sm"
-                                            isLoading={isSending}
-                                            disabled={Boolean(sendingId)}
-                                            onClick={() =>
-                                                handleShareToChat(item._id)
-                                            }
-                                        >
-                                            Send
-                                        </ActionButton>
-                                    }
-                                />
+                                        <span className="share_post_modal_chat_check">
+                                            <CheckIcon />
+                                        </span>
+                                    </span>
+                                    <span className="share_post_modal_chat_name">
+                                        {chatTitle(item)}
+                                    </span>
+                                </button>
                             );
                         })}
                     </div>
@@ -276,18 +303,37 @@ const SharePostModal = ({
                         </Banner>
                     </div>
                 )}
-            </Panel>
+            </div>
 
-            {nativeShareAvailable ? (
-                <ModalFooter hint="Use the share menu of your device">
-                    <ActionButton
-                        isLoading={isSharing}
-                        disabled={Boolean(sendingId)}
-                        onClick={handleNativeShare}
-                    >
-                        <ShareIcon />
-                        Share via…
-                    </ActionButton>
+            {canSend || nativeShareAvailable ? (
+                <ModalFooter
+                    hint={
+                        nativeShareAvailable
+                            ? 'Use the share menu of your device'
+                            : undefined
+                    }
+                >
+                    {nativeShareAvailable ? (
+                        <ActionButton
+                            isLoading={isSharing}
+                            disabled={isSending}
+                            onClick={handleNativeShare}
+                        >
+                            <ShareIcon />
+                            Share via…
+                        </ActionButton>
+                    ) : null}
+                    {canSend ? (
+                        <PrimaryButton
+                            isLoading={isSending}
+                            disabled={!selectedIds.length}
+                            onClick={handleSend}
+                        >
+                            {selectedIds.length > 1
+                                ? `Send to ${selectedIds.length}`
+                                : 'Send'}
+                        </PrimaryButton>
+                    ) : null}
                 </ModalFooter>
             ) : null}
         </div>

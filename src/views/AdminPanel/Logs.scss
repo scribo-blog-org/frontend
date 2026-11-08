@@ -15,7 +15,8 @@
         overflow-x: hidden;
         overflow-y: auto;
         border: 1px solid var(--line-color);
-        border-radius: var(--radius-sm);
+        border-radius: var(--radius);
+        background: var(--section-background-color);
         scrollbar-gutter: stable;
     }
 }
@@ -116,7 +117,7 @@
     font-weight: 500;
     letter-spacing: 0.02em;
     color: var(--light-text-color);
-    background: var(--main-background);
+    background: var(--panel-frame-color);
     border-bottom: 1px solid var(--line-color);
 }
 

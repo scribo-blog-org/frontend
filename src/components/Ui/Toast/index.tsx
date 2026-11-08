@@ -1,122 +1,130 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import './Toast.scss';
 
 const TOAST_DURATION = 3000;
 const ENTER_DELAY = 20;
 const EXIT_DURATION = 700;
 
-const Toast = ({ toast }: any) => {
-    const [toasts, setToasts] = useState<any[]>([]);
+type ToastItem = {
+    id: string;
+    source: unknown;
+    message: string;
+    type: string;
+    createdAt: number;
+};
 
-    const timersRef = useRef(new Map());
+type Phase = 'enter' | 'show' | 'exit' | 'gone';
+
+// Where a toast is in its life is worked out from when it was created, not
+// from timers that were started for it. Timers only wake the component up at
+// the next change. If the effects are torn down and run again with the state
+// kept (React StrictMode, hot reload in development), the timer is simply
+// planned again from the toasts, and no toast can be left on screen.
+const phaseOf = (item: ToastItem, now: number): Phase => {
+    const age = now - item.createdAt;
+
+    if (age < ENTER_DELAY) return 'enter';
+    if (age < TOAST_DURATION) return 'show';
+    if (age < TOAST_DURATION + EXIT_DURATION) return 'exit';
+    return 'gone';
+};
+
+const msUntilChange = (item: ToastItem, now: number) => {
+    const age = now - item.createdAt;
+    const edges = [ENTER_DELAY, TOAST_DURATION, TOAST_DURATION + EXIT_DURATION];
+    const next = edges.find((edge) => edge > age);
+
+    return next === undefined ? 0 : next - age;
+};
+
+const Toast = ({ toast }: any) => {
+    const [toasts, setToasts] = useState<ToastItem[]>([]);
+    const [now, setNow] = useState<number>(() => Date.now());
 
     useEffect(() => {
         if (!toast) {
             return;
         }
 
-        const id = `${Date.now()}-${Math.random()}`;
-
-        const newToast = {
-            id,
+        const item: ToastItem = {
+            id: `${Date.now()}-${Math.random()}`,
+            source: toast,
             message: toast.message,
             type: toast.type || 'info',
-            isEntering: true,
-            isExiting: false,
+            createdAt: Date.now(),
         };
 
-        setToasts((prev: any) => [...prev, newToast]);
-
-        const enterTimer = setTimeout(() => {
-            setToasts((prev: any) =>
-                prev.map((item: any) =>
-                    item.id === id
-                        ? {
-                              ...item,
-                              isEntering: false,
-                          }
-                        : item,
-                ),
-            );
-
-            timersRef.current.delete(`${id}-enter`);
-        }, ENTER_DELAY);
-
-        timersRef.current.set(`${id}-enter`, enterTimer);
-
-        const timer = setTimeout(() => {
-            setToasts((prev: any) =>
-                prev.map((item: any) =>
-                    item.id === id
-                        ? {
-                              ...item,
-                              isExiting: true,
-                          }
-                        : item,
-                ),
-            );
-
-            const exitTimer = setTimeout(() => {
-                setToasts((prev: any) =>
-                    prev.filter((item: any) => item.id !== id),
-                );
-
-                timersRef.current.delete(`${id}-exit`);
-            }, EXIT_DURATION);
-
-            timersRef.current.set(`${id}-exit`, exitTimer);
-
-            timersRef.current.delete(id);
-        }, TOAST_DURATION);
-
-        timersRef.current.set(id, timer);
+        // The same toast is added once even if this effect runs twice.
+        setToasts((prev) =>
+            prev.some((entry) => entry.source === toast)
+                ? prev
+                : [...prev, item],
+        );
+        setNow(Date.now());
     }, [toast]);
 
     useEffect(() => {
-        const timers = timersRef.current;
+        if (!toasts.length) {
+            return;
+        }
 
-        return () => {
-            timers.forEach((timer: any) => {
-                clearTimeout(timer);
-            });
+        const current = Date.now();
+        const delay = Math.max(
+            10,
+            Math.min(...toasts.map((item) => msUntilChange(item, current))),
+        );
 
-            timers.clear();
-        };
-    }, []);
+        const timer = setTimeout(() => {
+            const at = Date.now();
 
-    const visibleToasts = toasts.slice(-3);
+            setToasts((prev) =>
+                prev.filter((item) => phaseOf(item, at) !== 'gone'),
+            );
+            setNow(at);
+        }, delay);
+
+        return () => clearTimeout(timer);
+    }, [toasts, now]);
+
+    const visibleToasts = toasts
+        .filter((item) => phaseOf(item, now) !== 'gone')
+        .slice(-3);
 
     return (
         <div className="toast-container">
             {visibleToasts
                 .slice()
                 .reverse()
-                .map((toast: any, index: any) => (
-                    <div
-                        key={toast.id}
-                        className={`
+                .map((item, index) => {
+                    const phase = phaseOf(item, now);
+
+                    return (
+                        <div
+                            key={item.id}
+                            className={`
                             float_section
                             blurred
                             toast
                             toast_position_${index}
-                            ${toast.isEntering ? 'toast_enter' : ''}
-                            ${toast.isExiting ? 'toast_exit' : ''}
+                            ${phase === 'enter' ? 'toast_enter' : ''}
+                            ${phase === 'exit' ? 'toast_exit' : ''}
                         `}
-                    >
-                        <div className="toast_content">
-                            <p
-                                className={`
+                        >
+                            <div className="toast_content">
+                                <p
+                                    className={`
                                     toast_indicator
-                                    toast_indicator_${toast.type}
+                                    toast_indicator_${item.type}
                                 `}
-                            />
+                                />
 
-                            <p>{toast.message}</p>
+                                <p>{item.message}</p>
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
         </div>
     );
 };

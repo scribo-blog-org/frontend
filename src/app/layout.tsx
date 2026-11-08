@@ -23,7 +23,9 @@ import {
 
 import '@/styles/common.scss';
 
-const THEME_BOOT_SCRIPT = `(function(){var isDark=true;try{var stored=localStorage.getItem("theme");if(stored!==null)isDark=JSON.parse(stored);}catch(e){}var html=document.documentElement;html.style.backgroundColor=isDark?"#161616":"#f1f1f1";var apply=function(){var body=document.body;if(!body)return;body.style.transition="none";body.classList.toggle("dark-theme",isDark);requestAnimationFrame(function(){body.style.transition="";});};if(document.body){apply();return;}new MutationObserver(function(_,obs){if(!document.body)return;apply();obs.disconnect();}).observe(html,{childList:true});})();`;
+// Keep in step with src/theme/themeMode.ts: the stored value is a mode name
+// ("system" | "light" | "dark"); old values were a bare boolean (true = dark).
+const THEME_BOOT_SCRIPT = `(function(){var mode="system";try{var stored=localStorage.getItem("theme");if(stored!==null){var v=JSON.parse(stored);mode=v===true?"dark":v===false?"light":(v==="light"||v==="dark"||v==="system")?v:"system";}}catch(e){}var sys=true;try{if(window.matchMedia)sys=window.matchMedia("(prefers-color-scheme: dark)").matches;}catch(e){}var isDark=mode==="dark"||(mode==="system"&&sys);var html=document.documentElement;html.style.backgroundColor=isDark?"#161616":"#f1f1f1";var apply=function(){var body=document.body;if(!body)return;body.style.transition="none";body.classList.toggle("dark-theme",isDark);requestAnimationFrame(function(){body.style.transition="";});};if(document.body){apply();return;}new MutationObserver(function(_,obs){if(!document.body)return;apply();obs.disconnect();}).observe(html,{childList:true});})();`;
 
 export async function generateMetadata(): Promise<Metadata> {
     await connection();

@@ -10,6 +10,7 @@ import {
 } from 'react';
 
 import { AppContext } from '@/providers/AppProviders';
+import { useSearchParams } from '@/navigation';
 
 import { getAllLogs } from '../../api/logs.api';
 import { getUsers } from '../../api/users.api';
@@ -80,10 +81,18 @@ const dayKey = (date: any) => new Date(date).toDateString();
 
 const LogsPage = () => {
     const { showToast } = useContext(AppContext);
+    const [searchParams] = useSearchParams();
     const [users, setUsers] = useState<any[]>([]);
     const [posts, setPosts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
-    const [filter, setFilter] = useState<any>({ type: null, id: null });
+    // "View logs" in the users list opens this tab with ?user=<id>.
+    const [filter, setFilter] = useState<any>(() => {
+        const userId = searchParams.get('user');
+
+        return userId
+            ? { type: 'user', id: userId }
+            : { type: null, id: null };
+    });
     const [typeFilter, setTypeFilter] = useState<any>('all');
     const [levelFilter, setLevelFilter] = useState<any>('all');
     const [dateFrom, setDateFrom] = useState<any>('');

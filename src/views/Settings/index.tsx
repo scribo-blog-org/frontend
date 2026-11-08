@@ -28,6 +28,7 @@ import ActionButton from '../../components/Ui/ActionButton';
 import DangerButton from '../../components/Ui/DangerButton';
 import Field from '../../components/Ui/Field';
 import Tooltip from '../../components/Ui/Tooltip';
+import ThemePicker from '../../components/ThemePicker';
 
 import './Settings.scss';
 
@@ -40,8 +41,8 @@ const Settings = () => {
         setProfile,
         profileLoading,
         showToast,
-        isDarkTheme,
-        setIsDarkTheme,
+        themeMode,
+        setThemeMode,
     } = useContext(AppContext);
     const [initialized, setInitialized] = useState<any>(false);
     const [pushOn, setPushOn] = useState<boolean>(false);
@@ -787,17 +788,10 @@ const Settings = () => {
                                 <div className="settings_stack">
                                     <div className="settings_group">
                                         <p className="kicker">Appearance</p>
-                                        <div className="settings_switch">
-                                            <div className="settings_switch_copy">
-                                                <p className="settings_switch_title">
-                                                    Dark theme
-                                                </p>
-                                            </div>
-                                            <Toggle
-                                                checked={isDarkTheme}
-                                                onChange={setIsDarkTheme}
-                                            />
-                                        </div>
+                                        <ThemePicker
+                                            value={themeMode}
+                                            onChange={setThemeMode}
+                                        />
                                     </div>
                                     <div className="settings_group">
                                         <p className="kicker">Notifications</p>

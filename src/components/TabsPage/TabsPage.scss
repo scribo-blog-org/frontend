@@ -1,3 +1,5 @@
+@use '../../styles/helpers' as *;
+
 .tabs_page {
     display: flex;
     flex-direction: column;
@@ -5,6 +7,30 @@
     min-height: 0;
     min-width: 0;
     width: 100%;
+
+    &_head {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    // Sits over the right end of the tab line, which keeps running under it.
+    &_aside {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 1px;
+        display: flex;
+        align-items: center;
+        padding-left: var(--space-4);
+        background: var(--main-background);
+        font-size: var(--text-sm);
+        color: var(--light-text-color);
+
+        // Tabs scroll sideways on a phone and would run under it.
+        @include screen() {
+            display: none;
+        }
+    }
 
     &_content {
         display: flex;
@@ -22,12 +48,12 @@
 
         // A spacer rather than padding: padding at the end of a scroll
         // container is dropped by some mobile browsers, which left the last
-        // rows under the navigation bar.
+        // rows under the navigation bar. It also gives the last block some air.
         &::after {
             content: '';
             display: block;
             flex: 0 0 auto;
-            height: var(--bottom-inset, 0px);
+            height: calc(var(--bottom-inset, 0px) + var(--space-5));
         }
     }
 }

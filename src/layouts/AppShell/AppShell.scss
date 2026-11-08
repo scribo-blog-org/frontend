@@ -85,7 +85,10 @@
         }
     }
 
-    &_content:has(.messages_page) .page-layout {
+    // Pages that scroll inside themselves own their bottom edge; the page
+    // padding would only show as a dead strip under the scrollbar.
+    &_content:has(.messages_page) .page-layout,
+    &_content:has(.tabs_page) .page-layout {
         padding-bottom: 0;
     }
 
@@ -105,8 +108,12 @@
     }
 }
 
-/* Scrollbar track keeps its width, but no thumb/scrolling while a modal is open */
+/* No scrolling while a modal is open. If the page had a scrollbar, its width
+   stays reserved (`no-scroll-bar`, set by ModalWindow) so nothing shifts. */
 body.no-scroll .app-shell_content {
     overflow-y: hidden;
+}
+
+body.no-scroll-bar .app-shell_content {
     scrollbar-gutter: stable;
 }

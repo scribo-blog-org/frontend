@@ -7,40 +7,22 @@
     width: 100%;
     min-width: 0;
 
+    &_toolbar {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    // The form inside the "Add administrator" dialog.
     &_grant {
         display: flex;
         flex-direction: column;
         gap: var(--space-3);
-        padding: 18px 20px;
-        background: var(--section-background-color);
-        border-radius: var(--radius);
+        // The user and role lists open downward inside the dialog. This keeps
+        // room for them so the dialog does not start scrolling when one opens.
+        min-height: 300px;
 
-        &_text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-
-            h3 {
-                margin: 0;
-                font-size: 15px;
-                font-weight: 600;
-            }
-
-            p {
-                font-size: 13px;
-                color: var(--light-text-color);
-            }
-        }
-
-        &_form {
-            display: grid;
-            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
-            gap: var(--space-3);
-            align-items: start;
-
-            @include screen() {
-                grid-template-columns: 1fr;
-            }
+        .modal_footer {
+            margin-top: auto;
         }
     }
 

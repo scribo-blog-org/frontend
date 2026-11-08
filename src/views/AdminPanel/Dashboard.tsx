@@ -1,30 +1,51 @@
 'use client';
 
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { Link } from '@/navigation';
 
 import { AppContext } from '@/providers/AppProviders';
 import { getDashboard } from '../../api/analytics.api';
-import { getAllLogs } from '../../api/logs.api';
-import { format_back } from '../../utils/format';
-import { TimingPlate } from './LogTiming';
 import { hashtagSearchPath } from '../../utils/hashtags';
 
 import Tabs from '../../components/Ui/Tabs';
-import { Pill } from '../../components/Ui';
+import SwitchBar from '../../components/Ui/SwitchBar';
+import DateTimePicker from '../../components/Ui/DateTimePicker';
 import Loading from '../../components/Ui/Loading';
+
+import {
+    Block,
+    Group,
+    RankedBars,
+    StatCard,
+    TrendChart,
+} from './DashboardParts/parts';
+import {
+    addDays,
+    formatMs,
+    formatNumber,
+    formatPercent,
+    routeLabel,
+    toDayKey,
+} from './DashboardParts/format';
 
 import './Dashboard.scss';
 
-const RANGES = [
-    { value: '24h', label: '24 hours' },
-    { value: 7, label: '7 days' },
-    { value: 14, label: '14 days' },
-    { value: 30, label: '30 days' },
+// What is on screen. The period only exists for "activity"; the statistics are
+// for the whole life of the site and do not depend on it, so that view has no
+// period controls at all.
+const VIEWS = [
+    { key: 'activity', title: 'Activity' },
+    { key: 'totals', title: 'Statistics' },
+];
+
+const PERIODS = [
+    { key: '24h', title: '24 hours', back: 1 },
+    { key: '7', title: '7 days', back: 6 },
+    { key: '30', title: '30 days', back: 29 },
 ];
 
 const TRAFFIC_KEYS = [
-    { key: 'visits', label: 'Visits', color: 'var(--text-color)' },
+    { key: 'visits', label: 'All visits', color: 'var(--text-color)' },
+    { key: 'signed_in', label: 'Signed in', color: 'var(--accent-color)' },
 ];
 
 const TIMING_KEYS = [
@@ -36,650 +57,89 @@ const TIMING_KEYS = [
     },
 ];
 
-const formatDay = (iso: any) => {
-    const date = new Date(`${iso}T00:00:00Z`);
-    return date.toLocaleDateString('ru-RU', {
-        day: 'numeric',
-        month: 'short',
-    });
-};
+const DEFAULT_RETENTION_DAYS = 70;
 
-const formatHour = (iso: any) => {
-    const date = new Date(`${iso}:00:00Z`);
-    return date.toLocaleTimeString('ru-RU', {
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-};
-
-const formatRange = (range: any) => {
-    if (range === '24h') {
-        const end = new Date();
-        const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
-        const options: Intl.DateTimeFormatOptions = {
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit',
-        };
-        return `${start.toLocaleString('ru-RU', options)} — ${end.toLocaleString('ru-RU', options)}`;
-    }
-
-    const end = new Date();
-    const start = new Date();
-    start.setDate(end.getDate() - range + 1);
-    const options: Intl.DateTimeFormatOptions = {
-        day: 'numeric',
-        month: 'short',
-    };
-    return `${start.toLocaleDateString('ru-RU', options)} — ${end.toLocaleDateString('ru-RU', options)}`;
-};
-
-const formatNumber = (value: any) =>
-    new Intl.NumberFormat('ru-RU').format(value || 0);
-
-const formatMs = (value: any) => {
-    const ms = Number(value || 0);
-    if (ms >= 1000) {
-        return `${(ms / 1000).toFixed(1)} s`;
-    }
-    return `${Math.round(ms)} ms`;
-};
-
-const formatPercent = (share: any) => {
-    const percent = Number(share || 0) * 100;
-    if (percent > 0 && percent < 1) {
-        return '<1%';
-    }
-    return `${Math.round(percent)}%`;
-};
-
-const HEALTH_ITEMS = [
-    {
-        type: 'server_error',
-        label: 'Server errors',
-        hint: 'Requests that failed on our side',
-    },
-    {
-        type: 'slow_request',
-        label: 'Slow requests',
-        hint: 'Took more than a second to answer',
-    },
-    {
-        type: 'rate_limited',
-        label: 'Rate limits',
-        hint: 'Someone sent too many requests',
-    },
-    {
-        type: 'external_failed',
-        label: 'Service failures',
-        hint: 'Mail, push or Google did not answer',
-    },
-];
-
-const routeLabel = (route: string) => route.replace(' /api', ' ');
-
-const deltaLabel = (current: any, previous: any) => {
-    if (previous == null) {
-        return null;
-    }
-
-    const curr = Number(current || 0);
-    const prev = Number(previous || 0);
-
-    if (!prev && !curr) {
-        return null;
-    }
-
-    if (!prev) {
-        return { text: 'No data for the previous period', tone: 'flat' };
-    }
-
-    const abs = curr - prev;
-    if (abs === 0) {
-        return { text: 'no changes', tone: 'flat' };
-    }
-
-    return {
-        text: `${abs > 0 ? '+' : ''}${formatNumber(abs)} compared with the previous period`,
-        tone: abs > 0 ? 'up' : 'down',
-    };
-};
-
-const TrendChart = ({
-    series,
-    keys,
-    hourly = false,
-    format = formatNumber,
-}: any) => {
-    const formatTick = hourly ? formatHour : formatDay;
-    const [hover, setHover] = useState<any>(null);
-    const [cursor, setCursor] = useState<any>(null);
-    const width = 720;
-    const height = 248;
-    const pad = { top: 16, right: 12, bottom: 32, left: 36 };
-    const innerWidth = width - pad.left - pad.right;
-    const innerHeight = height - pad.top - pad.bottom;
-
-    const maxValue = Math.max(
-        1,
-        ...series.flatMap((point: any) =>
-            keys.map((item: any) => Number(point[item.key] || 0)),
-        ),
-    );
-
-    const moveCursor = (event: any) => {
-        const rect = event.currentTarget.getBoundingClientRect();
-        setCursor({
-            x: event.clientX - rect.left,
-            y: event.clientY - rect.top,
-            w: rect.width,
-            h: rect.height,
-        });
-    };
-
-    const toX = (index: any) => {
-        if (series.length <= 1) {
-            return pad.left;
-        }
-        return pad.left + (index / (series.length - 1)) * innerWidth;
-    };
-
-    const toY = (value: any) =>
-        pad.top + innerHeight - (value / maxValue) * innerHeight;
-
-    const polylines = keys.map((item: any) => ({
-        ...item,
-        points: series
-            .map(
-                (point: any, index: any) =>
-                    `${toX(index)},${toY(Number(point[item.key] || 0))}`,
-            )
-            .join(' '),
+const placeRows = (items: any[] = []) =>
+    items.map((item: any) => ({
+        key: item.label,
+        label: item.label,
+        count: item.count,
+        valueLabel: `${formatNumber(item.count)} · ${formatPercent(item.share)}`,
     }));
 
-    const areaPath = (() => {
-        if (!series.length) {
-            return '';
-        }
-        const first = polylines[0];
-        const start = `${toX(0)},${toY(0)}`;
-        const end = `${toX(series.length - 1)},${toY(0)}`;
-        return `M ${start} L ${first.points} L ${end} Z`;
-    })();
-
-    const ticks = series.filter((_: any, index: any) => {
-        if (series.length <= 8) {
-            return true;
-        }
-        return (
-            index === 0 ||
-            index === series.length - 1 ||
-            index % Math.ceil(series.length / 6) === 0
-        );
-    });
-
-    const yTicks = [0, 0.5, 1].map((ratio: any) =>
-        Math.round(maxValue * ratio),
-    );
-    const hitWidth = series.length ? innerWidth / series.length : innerWidth;
-    const active = hover != null ? series[hover] : null;
-
-    const tooltipStyle = cursor
-        ? {
-              left: cursor.x,
-              top: cursor.y,
-              transform: `translate(${cursor.x > cursor.w * 0.62 ? 'calc(-100% - 12px)' : '12px'}, ${
-                  cursor.y > cursor.h * 0.7 ? 'calc(-100% - 8px)' : '8px'
-              })`,
-          }
-        : undefined;
-
-    return (
-        <div
-            className="analytics_chart_wrap"
-            onMouseMove={moveCursor}
-            onMouseLeave={() => {
-                setHover(null);
-                setCursor(null);
-            }}
-        >
-            <svg
-                className="analytics_chart"
-                viewBox={`0 0 ${width} ${height}`}
-                role="img"
-            >
-                {yTicks.map((value: any) => (
-                    <g key={value}>
-                        <line
-                            className="analytics_chart_grid"
-                            x1={pad.left}
-                            y1={toY(value)}
-                            x2={pad.left + innerWidth}
-                            y2={toY(value)}
-                        />
-                        <text
-                            className="analytics_chart_ytick"
-                            x={pad.left - 8}
-                            y={toY(value) + 3}
-                            textAnchor="end"
-                        >
-                            {format(value)}
-                        </text>
-                    </g>
-                ))}
-                {areaPath ? (
-                    <path
-                        className="analytics_chart_area"
-                        d={areaPath}
-                        fill={keys[0]?.color}
-                    />
-                ) : null}
-                {polylines.map((line: any) => (
-                    <polyline
-                        key={line.key}
-                        className="analytics_chart_line"
-                        points={line.points}
-                        stroke={line.color}
-                        fill="none"
-                    />
-                ))}
-                {active ? (
-                    <g className="analytics_chart_hint">
-                        <line
-                            className="analytics_chart_guide"
-                            x1={toX(hover)}
-                            y1={pad.top}
-                            x2={toX(hover)}
-                            y2={pad.top + innerHeight}
-                        />
-                        {keys.map((item: any) => (
-                            <circle
-                                key={item.key}
-                                className="analytics_chart_dot"
-                                cx={toX(hover)}
-                                cy={toY(Number(active[item.key] || 0))}
-                                r={4}
-                                fill={item.color}
-                            />
-                        ))}
-                    </g>
-                ) : null}
-                {series.map((point: any, index: any) => (
-                    <rect
-                        className="app-transition"
-                        key={`hit-${point.date}`}
-                        x={toX(index) - hitWidth / 2}
-                        y={pad.top}
-                        width={hitWidth}
-                        height={innerHeight}
-                        fill="transparent"
-                        onMouseEnter={() => setHover(index)}
-                    />
-                ))}
-                {ticks.map((point: any) => {
-                    const index = series.indexOf(point);
-                    return (
-                        <text
-                            key={point.date}
-                            className="analytics_chart_tick"
-                            x={toX(index)}
-                            y={height - 8}
-                            textAnchor="middle"
-                        >
-                            {formatTick(point.date)}
-                        </text>
-                    );
-                })}
-            </svg>
-            {active && cursor ? (
-                <div className="analytics_chart_tooltip" style={tooltipStyle}>
-                    <p>{formatTick(active.date)}</p>
-                    {keys.map((item: any) => (
-                        <p key={item.key}>
-                            {item.label}: {format(active[item.key])}
-                        </p>
-                    ))}
-                </div>
-            ) : null}
-            {keys.length > 1 ? (
-                <div className="analytics_legend">
-                    {keys.map((item: any) => (
-                        <span className="analytics_legend_item" key={item.key}>
-                            <span
-                                className="analytics_legend_swatch"
-                                style={{ background: item.color }}
-                            />
-                            {item.label}
-                        </span>
-                    ))}
-                </div>
-            ) : null}
-        </div>
-    );
-};
-
-const RankedBars = ({ items, empty, wideLabel }: any) => {
-    const maxValue = Math.max(
-        1,
-        ...items.map((item: any) => item.count || item.visits || 0),
-    );
-
-    if (!items.length) {
-        return (
-            <p className="analytics_empty">
-                {empty || 'No data for this period'}
-            </p>
-        );
-    }
-
-    return (
-        <div
-            className={`analytics_bars${wideLabel ? ' analytics_bars_wide' : ''}`}
-        >
-            {items.map((item: any) => {
-                const label =
-                    item.label ||
-                    item.type ||
-                    item.path ||
-                    item.query ||
-                    item.tag ||
-                    item.title;
-                const value =
-                    item.count ?? item.visits ?? item.views_count ?? 0;
-                const note = item.note || null;
-
-                return (
-                    <div className="analytics_bars_row" key={item.key || label}>
-                        {item.href ? (
-                            <Link
-                                className={`analytics_bars_label${item.hashtag ? ' hashtag' : ''}`}
-                                href={item.href}
-                                title={label}
-                            >
-                                {label}
-                            </Link>
-                        ) : (
-                            <p className="analytics_bars_label" title={label}>
-                                {label}
-                            </p>
-                        )}
-                        <div className="analytics_bars_track">
-                            <div
-                                className="analytics_bars_fill app-transition"
-                                style={{
-                                    width: `${Math.max(6, (value / maxValue) * 100)}%`,
-                                }}
-                            />
-                        </div>
-                        <p className="analytics_bars_value">
-                            {item.valueLabel || formatNumber(value)}
-                            {note ? <span> · {note}</span> : null}
-                        </p>
-                    </div>
-                );
-            })}
-        </div>
-    );
-};
-
-const AnalyticsGroup = ({ title, hint, className, children }: any) => (
-    <section className={`analytics_group ${className || ''}`.trim()}>
-        <div className="analytics_group_head">
-            <h2 className="kicker">{title}</h2>
-            {hint ? <p className="analytics_group_hint">{hint}</p> : null}
-        </div>
-        {children}
-    </section>
-);
-
-const AnalyticsScope = ({ title, hint, className, children }: any) => (
-    <section className={`analytics_scope ${className || ''}`.trim()}>
-        <header className="analytics_scope_head">
-            <h2 className="kicker">{title}</h2>
-            {hint ? <p className="analytics_scope_hint">{hint}</p> : null}
-        </header>
-        <div className="analytics_scope_body">{children}</div>
-    </section>
-);
-
-const HealthCard = ({ item, counter, active, onSelect }: any) => {
-    const current = counter?.current ?? 0;
-    const previous = counter?.previous ?? 0;
-    const diff = current - previous;
-    const peak = Math.max(current, previous, 1);
-    // Nothing now and nothing before: no comparison is worth drawing.
-    const quiet = current === 0 && previous === 0;
-
-    return (
-        <button
-            type="button"
-            className={`analytics_stat analytics_health_card app-transition${active ? ' analytics_health_card_active' : ''}${current ? ' analytics_health_card_hot' : ''}`}
-            aria-pressed={active}
-            onClick={onSelect}
-        >
-            <span className="analytics_stat_label">{item.label}</span>
-            <span className="analytics_health_figure">
-                <span className="analytics_stat_value">
-                    {formatNumber(current)}
-                </span>
-                <Pill
-                    tone={
-                        quiet
-                            ? 'success'
-                            : diff > 0
-                              ? 'danger'
-                              : diff < 0
-                                ? 'success'
-                                : 'neutral'
-                    }
-                >
-                    {quiet
-                        ? 'OK'
-                        : diff === 0
-                          ? 'same'
-                          : `${diff > 0 ? '+' : '−'}${formatNumber(Math.abs(diff))}`}
-                </Pill>
-            </span>
-            {quiet ? null : (
-                <span className="analytics_health_bars" aria-hidden="true">
-                    <span
-                        className="analytics_health_bar analytics_health_bar_now"
-                        style={{
-                            width: `${Math.max(3, (current / peak) * 100)}%`,
-                        }}
-                    />
-                    <span
-                        className="analytics_health_bar analytics_health_bar_before"
-                        style={{
-                            width: `${Math.max(3, (previous / peak) * 100)}%`,
-                        }}
-                    />
-                </span>
-            )}
-            <span className="analytics_stat_hint">{item.hint}</span>
-            {quiet ? null : (
-                <span className="analytics_stat_hint">
-                    {formatNumber(previous)} the day before
-                </span>
-            )}
-        </button>
-    );
-};
-
-const HealthEvents = ({ type, from }: any) => {
-    const [items, setItems] = useState<any[] | null>(null);
-
-    useEffect(() => {
-        let cancelled = false;
-        setItems(null);
-        getAllLogs({ type, limit: 6, from }).then((result: any) => {
-            if (!cancelled) setItems(result?.data?.items || []);
-        });
-        return () => {
-            cancelled = true;
-        };
-    }, [type, from]);
-
-    return (
-        <section className="analytics_block analytics_health_events app-transition">
-            <h3 className="analytics_block_title">
-                {HEALTH_ITEMS.find((item) => item.type === type)?.label}
-            </h3>
-            <p className="analytics_block_hint">
-                Latest events of this kind in the last 24 hours
-            </p>
-            {items === null ? (
-                <p className="analytics_empty">Loading…</p>
-            ) : !items.length ? (
-                <p className="analytics_empty">Nothing in the last 24 hours</p>
-            ) : (
-                <ul className="analytics_health_list">
-                    {items.map((log: any) => (
-                        <li key={log._id} className="analytics_health_row">
-                            <span
-                                className="analytics_health_message"
-                                title={log.message}
-                            >
-                                {log.message}
-                                {log.data?.repeats ? (
-                                    <span className="analytics_health_repeats">
-                                        +{log.data.repeats}
-                                    </span>
-                                ) : null}
-                            </span>
-                            {log.type === 'slow_request' &&
-                            log.data?.total_ms != null ? (
-                                <TimingPlate
-                                    timing={{
-                                        total: Number(log.data.total_ms),
-                                        db: Number(log.data.db_ms || 0),
-                                        queries: Number(
-                                            log.data.db_queries || 0,
-                                        ),
-                                    }}
-                                />
-                            ) : null}
-                            <span className="analytics_health_time">
-                                {format_back(log.date_time)}
-                            </span>
-                        </li>
-                    ))}
-                </ul>
-            )}
-        </section>
-    );
-};
-
-const StatCard = ({ label, value, display, previous, hint }: any) => {
-    const delta = previous == null ? null : deltaLabel(value, previous);
-
-    return (
-        <div className="analytics_stat app-transition">
-            <p className="analytics_stat_label">{label}</p>
-            <p className="analytics_stat_value">
-                {display ?? formatNumber(value)}
-            </p>
-            {hint ? <p className="analytics_stat_hint">{hint}</p> : null}
-            {delta ? (
-                <p
-                    className={`analytics_stat_delta analytics_stat_delta_${delta.tone}`}
-                >
-                    {delta.text}
-                </p>
-            ) : null}
-        </div>
-    );
-};
-
-const ActivityMetric = ({ label, value }: any) => (
-    <div className="analytics_activity_metric">
-        <p className="analytics_activity_metric_label">{label}</p>
-        <p className="analytics_activity_metric_value">{formatNumber(value)}</p>
-    </div>
-);
-
-const ActivityPanel = ({ activity }: any) => (
-    <section className="analytics_block analytics_activity app-transition">
-        <div className="analytics_activity_group">
-            <h3 className="analytics_block_title">Posts</h3>
-            <div className="analytics_activity_metrics">
-                <ActivityMetric
-                    label="Written"
-                    value={activity?.posts?.created}
-                />
-                <ActivityMetric
-                    label="Updated"
-                    value={activity?.posts?.updated}
-                />
-                <ActivityMetric
-                    label="Deleted"
-                    value={activity?.posts?.deleted}
-                />
-            </div>
-        </div>
-        <div className="analytics_activity_group">
-            <h3 className="analytics_block_title">Users</h3>
-            <div className="analytics_activity_metrics">
-                <ActivityMetric
-                    label="New"
-                    value={activity?.users?.registered}
-                />
-                <ActivityMetric
-                    label="Sign-ins"
-                    value={activity?.users?.logins}
-                />
-            </div>
-        </div>
-        <div className="analytics_activity_group">
-            <h3 className="analytics_block_title">Comments</h3>
-            <div className="analytics_activity_metrics">
-                <ActivityMetric
-                    label="Written"
-                    value={activity?.comments?.created}
-                />
-                <ActivityMetric
-                    label="Updated"
-                    value={activity?.comments?.updated}
-                />
-                <ActivityMetric
-                    label="Deleted"
-                    value={activity?.comments?.deleted}
-                />
-            </div>
-        </div>
-        <div className="analytics_activity_group">
-            <h3 className="analytics_block_title">Likes</h3>
-            <div className="analytics_activity_metrics">
-                <ActivityMetric
-                    label="On posts"
-                    value={activity?.likes?.posts}
-                />
-            </div>
-        </div>
-    </section>
-);
-
-const PlacesList = ({ title, hint, items, empty }: any) => (
-    <section className="analytics_block app-transition">
-        <h3 className="analytics_block_title">{title}</h3>
-        {hint ? <p className="analytics_block_hint">{hint}</p> : null}
-        <RankedBars items={items} wideLabel empty={empty} />
-    </section>
-);
+const categoryRows = (items: any[] = []) =>
+    items.map((item: any) => ({
+        key: String(item._id),
+        label: item.name,
+        count: item.count,
+    }));
 
 const DashboardPage = () => {
     const { showToast } = useContext(AppContext);
-    const [range, setRange] = useState<any>(14);
+    const today = toDayKey(new Date());
+
+    const [view, setView] = useState<string>('activity');
+    const [period, setPeriod] = useState<string>('7');
+    const [from, setFrom] = useState<string>(addDays(today, -6));
+    const [to, setTo] = useState<string>(today);
     const [data, setData] = useState<any>(null);
-    const [isLoading, setIsLoading] = useState<any>(true);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+
+    const retention = data?.period?.retention_days ?? DEFAULT_RETENTION_DAYS;
+    const earliest = addDays(today, -(retention - 1));
+
+    // A preset also fills the date pickers, so they always show the range that
+    // is on screen. Touching a picker switches to a custom range.
+    const pickPeriod = (index: number) => {
+        const preset = PERIODS[index];
+        setPeriod(preset.key);
+        setFrom(addDays(today, -preset.back));
+        setTo(today);
+    };
+
+    const pickFrom = (value: string) => {
+        setPeriod('custom');
+        setFrom(value);
+    };
+
+    const pickTo = (value: string) => {
+        setPeriod('custom');
+        setTo(value);
+    };
+
+    const rangeError = useMemo(() => {
+        if (period !== 'custom') {
+            return null;
+        }
+        if (!from || !to) {
+            return 'Pick both dates';
+        }
+        if (from > to) {
+            return 'The start is after the end';
+        }
+        if (from < earliest) {
+            return `Only the last ${retention} days are kept`;
+        }
+        if (from > today) {
+            return 'The period is in the future';
+        }
+        return null;
+    }, [period, from, to, earliest, today, retention]);
+
+    // Only the activity view asks for a period, and only when it is valid.
+    const skip = view !== 'activity' || Boolean(rangeError);
+    const requestKey = period === 'custom' ? `custom:${from}:${to}` : period;
 
     useEffect(() => {
+        if (skip) {
+            return;
+        }
+
         let cancelled = false;
 
         const load = async () => {
             setIsLoading(true);
-            const result = await getDashboard(range);
+            const result = await getDashboard({ period, from, to });
 
             if (cancelled) {
                 return;
@@ -690,7 +150,6 @@ const DashboardPage = () => {
                     type: 'error',
                     message: result?.message || 'Could not load analytics',
                 });
-                setData(null);
                 setIsLoading(false);
                 return;
             }
@@ -704,93 +163,45 @@ const DashboardPage = () => {
         return () => {
             cancelled = true;
         };
-    }, [range, showToast]);
+        // The key stands for period, from and to.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [requestKey, skip, showToast]);
 
-    const [healthType, setHealthType] = useState<any>(null);
-    const totals = data?.totals || {};
-    const series = data?.series || [];
-    const audience = data?.audience || {};
+    // The totals do not depend on the period, so they come from the first
+    // answer and need no request of their own.
+    const hourly = data?.period?.granularity === 'hour';
+    const traffic = data?.traffic || {};
+    const people = data?.people || {};
+    const content = data?.content || {};
     const places = data?.places || {};
-    const timings = data?.timings || {};
-    const isHourlyRange = range === '24h';
-
-    const placeRows = (items: any[] = []) =>
-        items.map((item: any) => ({
-            key: item.label,
-            label: item.label,
-            count: item.count,
-            valueLabel: `${formatNumber(item.count)} · ${formatPercent(item.share)}`,
-        }));
-    const topPlaces = useMemo(() => placeRows(places.top), [places]);
-    const bottomPlaces = useMemo(() => placeRows(places.bottom), [places]);
+    const performance = data?.performance || {};
+    const overview = data?.overview || {};
 
     const slowest = useMemo(
         () =>
-            (timings.slowest || []).map((item: any) => ({
+            (data?.performance?.slowest || []).map((item: any) => ({
                 key: item.route,
                 label: routeLabel(item.route),
                 count: item.avg_ms,
                 valueLabel: formatMs(item.avg_ms),
                 note: `p95 ${formatMs(item.p95_ms)} · DB ${formatMs(item.db_avg_ms)}`,
             })),
-        [timings],
-    );
-
-    const health = data?.health || {};
-    const dayAgo = useMemo(
-        () => new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        // The window moves with every reload of the dashboard data.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         [data],
-    );
-    const slowQueries = useMemo(
-        () =>
-            (health.slow_queries || []).map((item: any) => ({
-                key: `${item.collection}.${item.operation}`,
-                label: `${item.collection}.${item.operation}`,
-                count: item.count,
-                valueLabel: `×${formatNumber(item.count)}`,
-                note: `up to ${formatMs(item.max_ms)}`,
-            })),
-        [health],
     );
     const heaviest = useMemo(
         () =>
-            (timings.heaviest || []).map((item: any) => ({
+            (data?.performance?.heaviest || []).map((item: any) => ({
                 key: item.route,
                 label: routeLabel(item.route),
                 count: item.total_ms,
                 valueLabel: formatMs(item.total_ms),
                 note: `${formatNumber(item.requests)} requests · avg ${formatMs(item.avg_ms)}`,
             })),
-        [timings],
+        [data],
     );
-    const chatty = useMemo(
-        () =>
-            (timings.chatty || []).map((item: any) => ({
-                key: item.route,
-                label: routeLabel(item.route),
-                count: item.queries_avg,
-                valueLabel: `${item.queries_avg} per request`,
-                note: `DB ${formatMs(item.db_avg_ms)}`,
-            })),
-        [timings],
-    );
-    const failing = useMemo(
-        () =>
-            (timings.failing || []).map((item: any) => ({
-                key: item.route,
-                label: routeLabel(item.route),
-                count: item.errors * 4 + item.client_errors,
-                valueLabel: `${item.errors} server · ${item.client_errors} client`,
-                note: `of ${formatNumber(item.requests)}`,
-            })),
-        [timings],
-    );
-
     const topPosts = useMemo(
         () =>
-            (data?.top_posts || []).map((item: any) => ({
+            (data?.overview?.top_posts || []).map((item: any) => ({
                 key: String(item._id),
                 title: item.title,
                 count: item.views_count || 0,
@@ -800,7 +211,7 @@ const DashboardPage = () => {
     );
     const topHashtags = useMemo(
         () =>
-            (data?.top_hashtags || []).map((item: any) => ({
+            (data?.overview?.top_hashtags || []).map((item: any) => ({
                 key: item.tag,
                 tag: item.tag,
                 count: item.uses || 0,
@@ -810,395 +221,289 @@ const DashboardPage = () => {
         [data],
     );
 
-    const activeRange = RANGES.find((item: any) => item.value === range);
-    const hasTimings = Number(timings.requests || 0) > 0;
-    const apps = Number(timings.avg_ms || 0) - Number(timings.db_avg_ms || 0);
+    const hasTimings = Number(performance.requests || 0) > 0;
+    const ownTime = Math.max(
+        0,
+        Number(performance.avg_ms || 0) - Number(performance.db_avg_ms || 0),
+    );
+    const periodIndex = PERIODS.findIndex((item) => item.key === period);
 
     return (
         <div className="analytics">
-            <div className="analytics_period_panel">
-                <div className="analytics_period_controls">
-                    <p className="analytics_period_label">Period</p>
-                    <Tabs
-                        label="Period"
-                        items={RANGES.map((item: any) => ({
-                            key: item.value,
-                            title: item.label,
-                        }))}
-                        activeKey={range}
-                        onChange={setRange}
-                    />
-                </div>
-                <p className="analytics_period_bounds">
-                    <span className="analytics_period_bounds_label">Range</span>
-                    {formatRange(range)}
-                </p>
-                {data?.app?.version ? (
-                    <p className="analytics_period_bounds">
-                        <span className="analytics_period_bounds_label">
-                            Version
-                        </span>
-                        v{data.app.version}
-                        {data.app.sha ? ` · ${data.app.sha}` : ''}
-                        {data.app.started_at
-                            ? ` · started ${format_back(data.app.started_at)}`
-                            : ''}
-                    </p>
+            <div className="analytics_bar">
+                <Tabs
+                    label="Dashboard view"
+                    items={VIEWS}
+                    activeKey={view}
+                    onChange={setView}
+                />
+                {view === 'activity' ? (
+                    <div className="analytics_period">
+                        <SwitchBar
+                            items={PERIODS.map((item) => item.title)}
+                            activeIndex={periodIndex}
+                            onChange={pickPeriod}
+                        />
+                        <div className="analytics_period_dates">
+                            <DateTimePicker
+                                type="date"
+                                value={from}
+                                min={earliest}
+                                max={to || today}
+                                clearable={false}
+                                onChange={pickFrom}
+                            />
+                            <span className="analytics_period_dash">—</span>
+                            <DateTimePicker
+                                type="date"
+                                value={to}
+                                min={from || earliest}
+                                max={today}
+                                clearable={false}
+                                onChange={pickTo}
+                            />
+                        </div>
+                        {rangeError ? (
+                            <p className="analytics_period_error">
+                                {rangeError}
+                            </p>
+                        ) : null}
+                    </div>
                 ) : null}
             </div>
 
-            {isLoading ? (
-                <Loading size={40} />
-            ) : (
-                <>
-                    <AnalyticsScope
-                        title="Health"
-                        hint="The last 24 hours against the 24 hours before. Click a card to see the latest events"
-                        className="analytics_scope_period"
+            {view === 'activity' ? (
+                !data ? (
+                    <Loading size={40} />
+                ) : (
+                    <div
+                        className={`analytics_body${isLoading ? ' analytics_body_loading' : ''}`}
                     >
-                        <div className="analytics_stats">
-                            {HEALTH_ITEMS.map((item: any) => (
-                                <HealthCard
-                                    key={item.type}
-                                    item={item}
-                                    counter={health.counters?.[item.type]}
-                                    active={healthType === item.type}
-                                    onSelect={() =>
-                                        setHealthType((value: any) =>
-                                            value === item.type
-                                                ? null
-                                                : item.type,
-                                        )
-                                    }
-                                />
-                            ))}
-                        </div>
-                        {healthType ? (
-                            <HealthEvents type={healthType} from={dayAgo} />
-                        ) : null}
-                        <div className="analytics_grid">
-                            <AnalyticsGroup
-                                title="Repeating errors"
-                                hint="Server errors in the selected period"
-                            >
-                                <section className="analytics_block app-transition">
-                                    {health.top_errors?.length ? (
-                                        <ul className="analytics_health_list">
-                                            {health.top_errors.map(
-                                                (item: any) => (
-                                                    <li
-                                                        key={`${item.method} ${item.path} ${item.error}`}
-                                                        className="analytics_error_row"
-                                                    >
-                                                        <div className="analytics_error_main">
-                                                            <p
-                                                                className="analytics_error_route"
-                                                                title={`${item.method} ${item.path}`}
-                                                            >
-                                                                {item.method}{' '}
-                                                                {String(
-                                                                    item.path ??
-                                                                        '',
-                                                                ).replace(
-                                                                    '/api',
-                                                                    '',
-                                                                )}
-                                                            </p>
-                                                            <p
-                                                                className="analytics_error_text"
-                                                                title={
-                                                                    item.error
-                                                                }
-                                                            >
-                                                                {item.error}
-                                                            </p>
-                                                        </div>
-                                                        <div className="analytics_error_side">
-                                                            <span className="analytics_error_count">
-                                                                ×
-                                                                {formatNumber(
-                                                                    item.count,
-                                                                )}
-                                                            </span>
-                                                            <span className="analytics_health_time">
-                                                                {format_back(
-                                                                    item.last_at,
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                    </li>
-                                                ),
-                                            )}
-                                        </ul>
-                                    ) : (
-                                        <p className="analytics_empty">
-                                            No server errors in this period
-                                        </p>
-                                    )}
-                                </section>
-                            </AnalyticsGroup>
-                            <AnalyticsGroup
-                                title="Slow database queries"
-                                hint="Collections that answered slowly"
-                            >
-                                <section className="analytics_block app-transition">
-                                    <RankedBars
-                                        items={slowQueries}
-                                        wideLabel
-                                        empty="No slow queries in this period"
-                                    />
-                                </section>
-                            </AnalyticsGroup>
-                        </div>
-                        <div className="analytics_stats">
-                            <StatCard
-                                label="Last backup"
-                                display={
-                                    health.last_backup
-                                        ? health.last_backup.type ===
-                                          'backup_failed'
-                                            ? 'Failed'
-                                            : 'Done'
-                                        : '—'
-                                }
-                                hint={
-                                    health.last_backup
-                                        ? format_back(
-                                              health.last_backup.date_time,
-                                          )
-                                        : 'No backups yet'
-                                }
-                            />
-                            <StatCard
-                                label="Deploys"
-                                value={(health.deploys || []).length}
-                                hint={
-                                    health.deploys?.[0]
-                                        ? `Latest v${health.deploys[0].data?.version ?? '?'} ${format_back(health.deploys[0].date_time)}`
-                                        : 'None in this period'
-                                }
-                            />
-                        </div>
-                    </AnalyticsScope>
-
-                    <AnalyticsScope
-                        title="For the selected period"
-                        hint={`The metrics below count only ${activeRange?.label?.toLowerCase() || 'period'}`}
-                        className="analytics_scope_period"
-                    >
-                        <AnalyticsGroup
-                            title="Visits"
-                            hint="By day, and by hour for the last 24 hours"
-                        >
+                        <Group title="Traffic">
                             <div className="analytics_stats">
                                 <StatCard
                                     label="Visits"
-                                    value={totals.visits}
-                                    previous={totals.visits_prev}
+                                    value={traffic.visits}
+                                    previous={traffic.visits_prev}
                                 />
                                 <StatCard
                                     label="Signed-in visits"
-                                    value={audience.authorized_visits}
                                     display={formatPercent(
-                                        audience.authorized_share,
+                                        traffic.signed_in_share,
                                     )}
-                                    hint={`${formatNumber(audience.authorized_visits)} of ${formatNumber(totals.visits)} visits`}
+                                    hint={`${formatNumber(traffic.signed_in)} of ${formatNumber(traffic.visits)} visits`}
                                 />
                                 <StatCard
-                                    label="Unique signed-in users"
-                                    value={audience.unique_authorized}
+                                    label="Active users"
+                                    value={traffic.unique_signed_in}
                                     hint="Different accounts that visited"
                                 />
                             </div>
-                            <section className="analytics_block analytics_block_chart app-transition">
-                                {series.length ? (
+                            <Block chart>
+                                {traffic.series?.length ? (
                                     <TrendChart
-                                        series={series}
+                                        series={traffic.series}
                                         keys={TRAFFIC_KEYS}
-                                        hourly={isHourlyRange}
+                                        hourly={hourly}
                                     />
                                 ) : (
                                     <p className="analytics_empty">
-                                        No visits for this period
+                                        No visits in this period
                                     </p>
                                 )}
-                            </section>
-                        </AnalyticsGroup>
+                            </Block>
+                        </Group>
 
-                        <AnalyticsGroup
+                        <Group title="Users">
+                            <div className="analytics_stats">
+                                <StatCard
+                                    label="New users"
+                                    value={people.registered}
+                                    previous={people.registered_prev}
+                                    hint="Registered"
+                                />
+                                <StatCard
+                                    label="Sign-ins"
+                                    value={people.logins}
+                                    previous={people.logins_prev}
+                                />
+                            </div>
+                        </Group>
+
+                        <Group title="Content">
+                            <div className="analytics_stats">
+                                <StatCard
+                                    label="Posts"
+                                    value={content.posts}
+                                    previous={content.posts_prev}
+                                />
+                                <StatCard
+                                    label="Comments"
+                                    value={content.comments}
+                                    previous={content.comments_prev}
+                                />
+                                <StatCard
+                                    label="Post likes"
+                                    value={content.likes}
+                                    previous={content.likes_prev}
+                                />
+                            </div>
+                            <Block title="New posts by category">
+                                <RankedBars
+                                    items={categoryRows(content.by_category)}
+                                    wideLabel
+                                    empty="No posts were published in this period"
+                                />
+                            </Block>
+                        </Group>
+
+                        <Group
                             title="Where visitors come from"
                             hint="Cities, by number of visits"
                         >
-                            <div className="analytics_grid">
-                                <PlacesList
-                                    title="Most active"
-                                    items={topPlaces}
-                                    empty="Locations are collected from the moment this update is live"
+                            <Block>
+                                <RankedBars
+                                    items={placeRows(places.top)}
+                                    wideLabel
+                                    empty="No locations in this period"
                                 />
-                                <PlacesList
-                                    title="Least active"
-                                    items={bottomPlaces}
-                                    empty={
-                                        places.total_places
-                                            ? 'All cities are listed in the most active column'
-                                            : 'No locations yet'
-                                    }
-                                />
-                            </div>
+                            </Block>
                             {places.unknown_visits ? (
                                 <p className="analytics_group_note">
                                     {formatNumber(places.unknown_visits)} visits
                                     without a known location are not included
                                 </p>
                             ) : null}
-                        </AnalyticsGroup>
+                        </Group>
 
-                        <AnalyticsGroup
-                            title="Response time"
-                            hint="From the moment the server gets a request until it answers"
-                        >
+                        <Group title="Response time">
                             {hasTimings ? (
                                 <>
                                     <div className="analytics_stats">
                                         <StatCard
                                             label="Typical wait"
-                                            display={formatMs(timings.p50_ms)}
+                                            display={formatMs(
+                                                performance.p50_ms,
+                                            )}
                                             hint="Half of the requests are faster"
                                         />
                                         <StatCard
                                             label="Slow requests"
-                                            display={formatMs(timings.p95_ms)}
+                                            display={formatMs(
+                                                performance.p95_ms,
+                                            )}
                                             hint="95% of requests are faster"
                                         />
                                         <StatCard
                                             label="Average"
-                                            display={formatMs(timings.avg_ms)}
-                                            hint={`${formatMs(timings.db_avg_ms)} of it is waiting for the database (${formatPercent(timings.db_share)})`}
+                                            display={formatMs(
+                                                performance.avg_ms,
+                                            )}
+                                            hint={`${formatMs(performance.db_avg_ms)} of it is waiting for the database (${formatPercent(performance.db_share)})`}
                                         />
                                         <StatCard
                                             label="Requests"
-                                            value={timings.requests}
-                                            hint={`Slowest took ${formatMs(timings.max_ms)}`}
+                                            value={performance.requests}
+                                            hint={`Slowest took ${formatMs(performance.max_ms)}`}
                                         />
                                     </div>
-                                    <section className="analytics_block analytics_block_chart app-transition">
+                                    <Block chart>
                                         <TrendChart
-                                            series={timings.series || []}
+                                            series={performance.series || []}
                                             keys={TIMING_KEYS}
-                                            hourly={isHourlyRange}
+                                            hourly={hourly}
                                             format={formatMs}
                                         />
-                                    </section>
-                                    <section className="analytics_block app-transition">
-                                        <h3 className="analytics_block_title">
-                                            Where users wait the longest
-                                        </h3>
-                                        <p className="analytics_block_hint">
-                                            Average per request. Own processing
-                                            is about{' '}
-                                            {formatMs(Math.max(0, apps))}, the
-                                            rest is the database.
-                                        </p>
-                                        <RankedBars
-                                            items={slowest}
-                                            wideLabel
-                                            empty="Not enough requests yet"
-                                        />
-                                    </section>
+                                    </Block>
                                     <div className="analytics_grid">
-                                        <section className="analytics_block app-transition">
-                                            <h3 className="analytics_block_title">
-                                                Takes the most time overall
-                                            </h3>
-                                            <p className="analytics_block_hint">
-                                                Request count times average
-                                                time, so busy routes count more
-                                            </p>
+                                        <Block
+                                            title="Where users wait the longest"
+                                            hint={`Average per request. Own processing is about ${formatMs(ownTime)}, the rest is the database.`}
+                                        >
+                                            <RankedBars
+                                                items={slowest}
+                                                wideLabel
+                                                empty="Not enough requests yet"
+                                            />
+                                        </Block>
+                                        <Block
+                                            title="Takes the most time overall"
+                                            hint="Request count times average time"
+                                        >
                                             <RankedBars
                                                 items={heaviest}
                                                 wideLabel
                                                 empty="Not enough requests yet"
                                             />
-                                        </section>
-                                        <section className="analytics_block app-transition">
-                                            <h3 className="analytics_block_title">
-                                                Most database queries
-                                            </h3>
-                                            <p className="analytics_block_hint">
-                                                Per request. A high number is
-                                                often a query repeated for every
-                                                item
-                                            </p>
-                                            <RankedBars
-                                                items={chatty}
-                                                wideLabel
-                                                empty="Not enough requests yet"
-                                            />
-                                        </section>
+                                        </Block>
                                     </div>
-                                    <section className="analytics_block app-transition">
-                                        <h3 className="analytics_block_title">
-                                            Routes that return errors
-                                        </h3>
-                                        <RankedBars
-                                            items={failing}
-                                            wideLabel
-                                            empty="No failed requests"
-                                        />
-                                    </section>
                                 </>
                             ) : (
-                                <section className="analytics_block app-transition">
+                                <Block>
                                     <p className="analytics_empty">
-                                        Response times are collected from the
-                                        moment this update is live
+                                        No requests were measured in this
+                                        period
                                     </p>
-                                </section>
+                                </Block>
                             )}
-                        </AnalyticsGroup>
-
-                        <AnalyticsGroup
-                            title="Activity"
-                            hint="Posts, users, comments, and likes"
-                        >
-                            <ActivityPanel activity={data?.activity} />
-                        </AnalyticsGroup>
-                    </AnalyticsScope>
-
-                    <AnalyticsScope
-                        title="Overview"
-                        hint="Does not depend on the selected period"
-                        className="analytics_scope_overall"
-                    >
-                        <div className="analytics_grid">
-                            <AnalyticsGroup
-                                title="Top posts"
-                                hint="Total post views"
-                            >
-                                <section className="analytics_block app-transition">
-                                    <RankedBars
-                                        items={topPosts}
-                                        wideLabel
-                                        empty="No post views yet"
-                                    />
-                                </section>
-                            </AnalyticsGroup>
-
-                            <AnalyticsGroup
-                                title="Tags"
-                                hint="Across all content on the site"
-                            >
-                                <section className="analytics_block app-transition">
-                                    <RankedBars
-                                        items={topHashtags}
-                                        wideLabel
-                                        empty="This content has no tags yet"
-                                    />
-                                </section>
-                            </AnalyticsGroup>
+                        </Group>
+                    </div>
+                )
+            ) : !data ? (
+                <Loading size={40} />
+            ) : (
+                <div className="analytics_body">
+                    <Group title="Totals">
+                        <div className="analytics_stats">
+                            <StatCard label="Users" value={overview.users} />
+                            <StatCard label="Posts" value={overview.posts} />
+                            <StatCard
+                                label="Comments"
+                                value={overview.comments}
+                            />
+                            <StatCard
+                                label="Likes"
+                                value={overview.likes}
+                                hint="On posts and comments"
+                            />
                         </div>
-                    </AnalyticsScope>
-                </>
+                    </Group>
+
+                    <div className="analytics_grid">
+                        <Group title="Top posts" hint="By total views">
+                            <Block>
+                                <RankedBars
+                                    items={topPosts}
+                                    wideLabel
+                                    empty="No post views yet"
+                                />
+                            </Block>
+                        </Group>
+                        <Group title="Tags" hint="Posts and comments">
+                            <Block>
+                                <RankedBars
+                                    items={topHashtags}
+                                    wideLabel
+                                    empty="This content has no tags yet"
+                                />
+                            </Block>
+                        </Group>
+                    </div>
+
+                    <Group
+                        title="Posts by category"
+                        hint={`${formatNumber(overview.categories)} categories`}
+                    >
+                        <Block>
+                            <RankedBars
+                                items={categoryRows(overview.by_category)}
+                                wideLabel
+                                empty="No posts yet"
+                            />
+                        </Block>
+                    </Group>
+
+                </div>
             )}
         </div>
     );

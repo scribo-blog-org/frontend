@@ -52,7 +52,8 @@
         min-height: var(--control-height);
         box-sizing: border-box;
         border: 1px solid var(--input-outline-color);
-        border-radius: 8px;
+        border-radius: var(--radius-sm);
+        background: var(--input-background-color);
         padding: 0 12px;
         @include use-transition();
 

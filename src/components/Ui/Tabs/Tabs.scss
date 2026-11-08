@@ -50,7 +50,7 @@
     padding: 12px 14px;
     border: 0;
     background: none;
-    color: var(--section-light-color);
+    color: var(--tab-item-color, var(--section-light-color));
     white-space: nowrap;
     @include use-transition();
 

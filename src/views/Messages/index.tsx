@@ -3085,41 +3085,16 @@ const MessagesPage = () => {
                                                     asLink={false}
                                                 />
                                             )}
-                                            {isGroupChat(item) ? null : (
-                                                <UserActivityStatus
-                                                    user={item.participant}
-                                                    viewerId={profile._id}
-                                                    isOnline={
-                                                        onlineByUserId[
-                                                            String(
-                                                                item.participant
-                                                                    ?._id,
-                                                            )
-                                                        ] ?? false
-                                                    }
-                                                    activityAt={
-                                                        activityAtByUserId[
-                                                            String(
-                                                                item.participant
-                                                                    ?._id,
-                                                            )
-                                                        ]
-                                                    }
-                                                    isTyping={Boolean(
-                                                        typingByConversationId[
-                                                            String(item._id)
-                                                        ],
+                                            {item.last_message_at ? (
+                                                <span className="messages_conversation_time">
+                                                    {conversationStamp(
+                                                        item.last_message_at,
                                                     )}
-                                                    typingNames={typingNamesFor(
-                                                        item._id,
-                                                    )}
-                                                    className="messages_activity_status"
-                                                />
-                                            )}
+                                                </span>
+                                            ) : null}
                                         </div>
                                         <div className="messages_conversation_copy">
-                                            {isGroupChat(item) &&
-                                            typingByConversationId[
+                                            {typingByConversationId[
                                                 String(item._id)
                                             ] ? (
                                                 <p className="messages_conversation_preview messages_conversation_typing">
@@ -3135,20 +3110,13 @@ const MessagesPage = () => {
                                                     {conversationPreview(item)}
                                                 </p>
                                             )}
-                                            <div className="messages_conversation_row">
-                                                {item.last_message_at ? (
-                                                    <span className="messages_conversation_time">
-                                                        {conversationStamp(
-                                                            item.last_message_at,
-                                                        )}
-                                                    </span>
-                                                ) : null}
-                                                {item.unread > 0 ? (
+                                            {item.unread > 0 ? (
+                                                <div className="messages_conversation_row">
                                                     <span className="messages_conversation_unread">
                                                         {item.unread}
                                                     </span>
-                                                ) : null}
-                                            </div>
+                                                </div>
+                                            ) : null}
                                         </div>
                                     </Link>
                                 </li>

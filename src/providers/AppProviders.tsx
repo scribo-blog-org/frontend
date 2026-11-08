@@ -3,8 +3,8 @@
 import {
     createContext,
     Suspense,
+    useCallback,
     useEffect,
-    useRef,
     useState,
     type Dispatch,
     type SetStateAction,
@@ -31,12 +31,23 @@ import {
 } from '../api/http';
 import SessionBootstrap from '../session/SessionBootstrap';
 import PushNotifications from '../components/PushNotifications';
+import {
+    SYSTEM_DARK_FALLBACK,
+    getSystemDarkQuery,
+    readStoredThemeMode,
+    resolveIsDark,
+    storeThemeMode,
+    type ThemeMode,
+} from '../theme/themeMode';
 
 export type AppContextValue = {
     profile: any;
     setProfile: Dispatch<SetStateAction<any>>;
+    // What is on screen right now, after resolving "system".
     isDarkTheme: boolean;
-    setIsDarkTheme: Dispatch<SetStateAction<boolean>>;
+    // What the viewer chose: follow the device, or force light or dark.
+    themeMode: ThemeMode;
+    setThemeMode: (mode: ThemeMode) => void;
     profileLoading: boolean;
     setProfileLoading: Dispatch<SetStateAction<boolean>>;
     toast: any;
@@ -138,28 +149,42 @@ export default function AppProviders({
 }) {
     const [profile, setProfile] = useState<any>(null);
     const [profileLoading, setProfileLoading] = useState<any>(true);
-    const [isDarkTheme, setIsDarkTheme] = useState<any>(true);
+    const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
+    const [systemDark, setSystemDark] = useState<boolean>(SYSTEM_DARK_FALLBACK);
+    const [themeReady, setThemeReady] = useState<boolean>(false);
     const [toast, showToast] = useState<any>(false);
     const [modalWindow, showModalWindow] = useState<any>(false);
     const [modalCloseRequest, setModalCloseRequest] = useState<any>(0);
     const [accessToken, setAccessTokenState] = useState<any>(getAccessToken());
     const requestCloseModal = () =>
         setModalCloseRequest((count: any) => count + 1);
-    const skipThemePersist = useRef(true);
+
+    const isDarkTheme = resolveIsDark(themeMode, systemDark);
+
+    // The choice is saved only when the viewer makes it, never as a side
+    // effect of the device switching, so "system" keeps following the device.
+    const setThemeMode = useCallback((mode: ThemeMode) => {
+        setThemeModeState(mode);
+        storeThemeMode(mode);
+    }, []);
 
     useEffect(() => {
-        let dark = true;
+        const query = getSystemDarkQuery();
 
-        try {
-            const stored = localStorage.getItem('theme');
+        setThemeModeState(readStoredThemeMode());
+        setSystemDark(query ? query.matches : SYSTEM_DARK_FALLBACK);
+        setThemeReady(true);
 
-            if (stored !== null) {
-                dark = JSON.parse(stored);
-            }
-        } catch {}
+        if (!query) {
+            return;
+        }
 
-        setIsDarkTheme(dark);
-        document.body.classList.toggle('dark-theme', dark);
+        const onChange = (event: MediaQueryListEvent) =>
+            setSystemDark(event.matches);
+
+        query.addEventListener('change', onChange);
+
+        return () => query.removeEventListener('change', onChange);
     }, []);
 
     useEffect(() => {
@@ -167,31 +192,28 @@ export default function AppProviders({
     }, []);
 
     useEffect(() => {
-        if (skipThemePersist.current) {
-            skipThemePersist.current = false;
+        if (!themeReady) {
             return;
         }
 
-        localStorage.setItem('theme', JSON.stringify(isDarkTheme));
+        const body = document.body;
+        const changed = body.classList.contains('dark-theme') !== isDarkTheme;
 
-        // Transitions stay off until the new theme has been painted.
-        document.body.classList.add('theme-switching');
-        document.body.classList.toggle('dark-theme', isDarkTheme);
-        requestAnimationFrame(() =>
+        if (changed) {
+            // Transitions stay off until the new theme has been painted.
+            body.classList.add('theme-switching');
+            body.classList.toggle('dark-theme', isDarkTheme);
             requestAnimationFrame(() =>
-                document.body.classList.remove('theme-switching'),
-            ),
-        );
+                requestAnimationFrame(() =>
+                    body.classList.remove('theme-switching'),
+                ),
+            );
+        }
 
-        const metaThemeColor = document.querySelector(
-            'meta[name="theme-color"]',
-        );
-
-        metaThemeColor?.setAttribute(
-            'content',
-            isDarkTheme ? '#1e1e1e' : '#ffffff',
-        );
-    }, [isDarkTheme]);
+        document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute('content', isDarkTheme ? '#1e1e1e' : '#ffffff');
+    }, [isDarkTheme, themeReady]);
 
     useEffect(() => {
         Object.values(CATEGORY_COLORS).forEach((color: any) => {
@@ -213,7 +235,8 @@ export default function AppProviders({
                 profile,
                 setProfile,
                 isDarkTheme,
-                setIsDarkTheme,
+                themeMode,
+                setThemeMode,
                 profileLoading,
                 setProfileLoading,
                 toast,
