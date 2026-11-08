@@ -8,12 +8,13 @@
     flex-direction: column;
     flex: 1;
     min-height: calc(100dvh - var(--header-height));
-    padding-top: 20px;
-    padding-bottom: 20px;
+    // The only source of vertical page spacing. Pages add none of their own.
+    padding-top: 24px;
+    padding-bottom: 48px;
 
     @include screen() {
         padding-top: 20px;
-        padding-bottom: 20px;
+        padding-bottom: 32px;
         min-height: calc(100dvh - var(--header-height-mobile));
     }
 }

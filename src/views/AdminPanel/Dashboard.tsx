@@ -448,6 +448,8 @@ const HealthCard = ({ item, counter, active, onSelect }: any) => {
     const previous = counter?.previous ?? 0;
     const diff = current - previous;
     const peak = Math.max(current, previous, 1);
+    // Nothing now and nothing before: no comparison is worth drawing.
+    const quiet = current === 0 && previous === 0;
 
     return (
         <button
@@ -463,30 +465,44 @@ const HealthCard = ({ item, counter, active, onSelect }: any) => {
                 </span>
                 <Pill
                     tone={
-                        diff > 0 ? 'danger' : diff < 0 ? 'success' : 'neutral'
+                        quiet
+                            ? 'success'
+                            : diff > 0
+                              ? 'danger'
+                              : diff < 0
+                                ? 'success'
+                                : 'neutral'
                     }
                 >
-                    {diff === 0
-                        ? 'same'
-                        : `${diff > 0 ? '+' : '−'}${formatNumber(Math.abs(diff))}`}
+                    {quiet
+                        ? 'OK'
+                        : diff === 0
+                          ? 'same'
+                          : `${diff > 0 ? '+' : '−'}${formatNumber(Math.abs(diff))}`}
                 </Pill>
             </span>
-            <span className="analytics_health_bars" aria-hidden="true">
-                <span
-                    className="analytics_health_bar analytics_health_bar_now"
-                    style={{ width: `${Math.max(3, (current / peak) * 100)}%` }}
-                />
-                <span
-                    className="analytics_health_bar analytics_health_bar_before"
-                    style={{
-                        width: `${Math.max(3, (previous / peak) * 100)}%`,
-                    }}
-                />
-            </span>
+            {quiet ? null : (
+                <span className="analytics_health_bars" aria-hidden="true">
+                    <span
+                        className="analytics_health_bar analytics_health_bar_now"
+                        style={{
+                            width: `${Math.max(3, (current / peak) * 100)}%`,
+                        }}
+                    />
+                    <span
+                        className="analytics_health_bar analytics_health_bar_before"
+                        style={{
+                            width: `${Math.max(3, (previous / peak) * 100)}%`,
+                        }}
+                    />
+                </span>
+            )}
             <span className="analytics_stat_hint">{item.hint}</span>
-            <span className="analytics_stat_hint">
-                {formatNumber(previous)} the day before
-            </span>
+            {quiet ? null : (
+                <span className="analytics_stat_hint">
+                    {formatNumber(previous)} the day before
+                </span>
+            )}
         </button>
     );
 };

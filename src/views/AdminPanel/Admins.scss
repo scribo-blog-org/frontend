@@ -113,10 +113,7 @@
 
     &_empty {
         animation: admin_staff_enter 260ms ease backwards;
-        padding: 24px 0;
-        text-align: center;
-        font-size: 14px;
-        color: var(--light-text-color);
+        @include empty-note;
     }
 }
 

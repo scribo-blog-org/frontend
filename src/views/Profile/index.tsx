@@ -32,6 +32,7 @@ import { Panel, Banner } from '../../components/Ui';
 import Sceleton from '../../components/Ui/Sceleton/Sceleton';
 
 import Posts from '../../components/Posts/index';
+import NoPosts from '../../components/NoPosts';
 import UserRow from '../../components/UserRow';
 import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png';
 import { imageSrc } from '../../utils/image';
@@ -135,6 +136,11 @@ const Profile = ({
             cancelled = true;
         };
     }, [id, navigate]);
+
+    const isOwnProfile = Boolean(profile && profile._id === user?._id);
+    const canCreatePost = Boolean(
+        profile?.permissions?.includes('create_post'),
+    );
 
     const savedPostsIds = useMemo(() => {
         if (!user?._id) {
@@ -531,6 +537,35 @@ const Profile = ({
                         feed={postsFeed}
                         isLoading={isProfileLoading || postsFeed.loading}
                         showFilters={false}
+                        empty={
+                            <NoPosts
+                                title={
+                                    activeTab === 1
+                                        ? 'No saved posts'
+                                        : 'No posts yet'
+                                }
+                                hint={
+                                    isOwnProfile
+                                        ? activeTab === 1
+                                            ? 'Save a post and it will show up here.'
+                                            : canCreatePost
+                                              ? 'Your posts will appear here.'
+                                              : undefined
+                                        : undefined
+                                }
+                                action={
+                                    isOwnProfile &&
+                                    activeTab === 0 &&
+                                    canCreatePost
+                                        ? {
+                                              label: 'Create your first post',
+                                              onClick: () =>
+                                                  navigate('/create-post'),
+                                          }
+                                        : null
+                                }
+                            />
+                        }
                     />
                 </div>
             </div>

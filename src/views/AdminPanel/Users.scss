@@ -51,6 +51,13 @@
         }
     }
 
+    &_note {
+        margin: 0;
+        font-size: var(--text-xs);
+        line-height: 1.5;
+        color: var(--light-text-color);
+    }
+
     &_list {
         display: flex;
         flex-direction: column;
@@ -145,10 +152,7 @@
 
     &_empty {
         animation: admin_users_enter 260ms ease backwards;
-        padding: 24px 0;
-        text-align: center;
-        font-size: 14px;
-        color: var(--light-text-color);
+        @include empty-note;
     }
 }
 

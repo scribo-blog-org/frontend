@@ -105,6 +105,7 @@
     }
 }
 
+/* Scrollbar track keeps its width, but no thumb/scrolling while a modal is open */
 body.no-scroll .app-shell_content {
     overflow-y: hidden;
     scrollbar-gutter: stable;

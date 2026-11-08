@@ -5,16 +5,13 @@
     flex: 1 1;
     width: 100%;
     min-width: 0;
-    margin: 0 0 40px;
 
     .settings_sections {
         display: flex;
         flex-direction: column;
         gap: var(--space-6);
         flex: 1;
-        width: 100%;
-        max-width: 560px;
-        margin: 0 auto;
+        @include page-column(var(--page-width-medium));
         min-width: 0;
     }
 
@@ -24,6 +21,7 @@
         gap: var(--space-5, 20px);
         min-width: 0;
         padding: var(--space-6);
+        background: var(--section-background-color);
         border: 1px solid var(--line-color);
         border-radius: var(--radius-md, 12px);
 
@@ -47,23 +45,65 @@
         width: 100%;
     }
 
+    // Title on the left, controls on the right. The title sits in row 1 of
+    // column 1 and every other child is auto-placed down column 2.
     .settings_group {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-3);
+        display: grid;
+        grid-template-columns: 180px minmax(0, 1fr);
+        column-gap: var(--space-6);
+        row-gap: 0;
         min-width: 0;
 
         > .kicker {
-            margin-bottom: var(--space-1);
+            grid-column: 1;
+            grid-row: 1;
+            align-self: start;
+            margin: 0;
+        }
+
+        > :not(.kicker) {
+            grid-column: 2;
+            min-width: 0;
+        }
+
+        // Spacing between neighbours; toggle rows already carry their own.
+        > :not(.kicker) ~ :not(.kicker) {
+            margin-top: var(--space-3);
+        }
+
+        > .settings_switch ~ .settings_switch {
+            margin-top: 0;
+        }
+
+        @include screen() {
+            grid-template-columns: minmax(0, 1fr);
+            row-gap: var(--space-3);
+
+            > .kicker,
+            > :not(.kicker) {
+                grid-column: 1;
+                grid-row: auto;
+            }
+
+            > :not(.kicker) ~ :not(.kicker) {
+                margin-top: 0;
+            }
         }
     }
 
+    // Stays in view at the bottom of the scroll area while the form is long.
+    // The bottom inset comes from AppShell, so it clears the mobile nav bar.
     .settings_panel_actions {
+        position: sticky;
+        bottom: calc(var(--bottom-inset, 0px) + var(--space-4));
+        z-index: 2;
         display: flex;
-        justify-content: flex-start;
+        justify-content: flex-end;
         align-items: center;
         gap: 12px;
-        padding-top: 4px;
+        padding: var(--space-3) 0 0;
+        border-top: 1px solid var(--line-color);
+        background: var(--section-background-color);
         flex-wrap: wrap;
     }
 

@@ -235,6 +235,11 @@ const UsersPage = () => {
                 />
             </div>
 
+            <p className="admin_users_note">
+                This list shows users and authors. Staff accounts are in the
+                Administrators tab, but they count toward “All users”.
+            </p>
+
             {isLoading && !users.length ? (
                 <Loading size={40} />
             ) : (

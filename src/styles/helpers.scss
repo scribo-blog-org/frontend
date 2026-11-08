@@ -17,6 +17,29 @@
     }
 }
 
+// A centered page column. This is the one place column widths are decided:
+// pages include it instead of writing their own max-width or margins.
+// Outer spacing (top, bottom, sides, mobile nav inset) comes from the layouts
+// (PageLayout, DefaultContainer, AppShell), never from the page.
+//   narrow: forms and auth, medium: threads and lists, default: the full
+//   content column of the container.
+@mixin page-column($width: var(--page-width-narrow)) {
+    width: 100%;
+    max-width: $width;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+// One look for "nothing here yet" lines in page lists, so they do not differ
+// from page to page.
+@mixin empty-note {
+    padding: 40px 16px;
+    text-align: center;
+    font-size: var(--text-md);
+    line-height: 1.5;
+    color: var(--light-text-color);
+}
+
 @mixin field-font {
     font-size: 14px;
 

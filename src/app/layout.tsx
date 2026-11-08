@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
 import { connection } from 'next/server';
 import { Suspense } from 'react';
-import '@fontsource/geist';
+import '@fontsource/geist/400.css';
+import '@fontsource/geist/500.css';
+import '@fontsource/geist/600.css';
 
 import { publicEnvBootScript } from '@/config/publicEnv';
 import AppProviders from '@/providers/AppProviders';

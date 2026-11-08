@@ -284,7 +284,11 @@ const SupportRequestPage = () => {
                 {item.replies?.map((entry: any) => (
                     <div
                         key={entry._id}
-                        className="support_request_detail_entry"
+                        className={`support_request_detail_entry${
+                            entry.author_type === 'staff'
+                                ? ' support_request_detail_entry_staff'
+                                : ''
+                        }`}
                     >
                         <div className="support_request_detail_entry_head">
                             {entry.author_type === 'staff' && entry.admin ? (
