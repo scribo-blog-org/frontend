@@ -71,8 +71,6 @@ const DeleteCategoryActions = ({
     showToast,
 }: any) => {
     const requestDelete = async () => {
-        // The row leaves the list as the dialog closes; it comes back at its
-        // place if the server refuses.
         requestCloseModal();
         const restore = removeCategory(category);
 

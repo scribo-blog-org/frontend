@@ -122,7 +122,6 @@
             }
         }
 
-        // Close button for a modal without a header, over the top corner.
         &_floating_close {
             position: absolute;
             top: 12px;
@@ -158,6 +157,10 @@
             min-height: 0;
             overflow-y: auto;
             transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1);
+
+            &_resizing {
+                overflow-y: hidden;
+            }
 
             &_inner {
                 display: flex;

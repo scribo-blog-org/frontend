@@ -16,8 +16,20 @@ const trackVisit = async (path: any) => {
     } catch {}
 };
 
-const getDashboard = async (range: any = 14) => {
-    const params = new URLSearchParams({ days: String(range) });
+const getDashboard = async ({
+    period = '7',
+    from,
+    to,
+}: {
+    period?: string;
+    from?: string;
+    to?: string;
+} = {}) => {
+    const params = new URLSearchParams({ period });
+    if (period === 'custom' && from && to) {
+        params.set('from', from);
+        params.set('to', to);
+    }
     const response = await apiFetch(
         `${apiUrl()}/api/analytics/dashboard?${params.toString()}`,
         {
@@ -29,4 +41,13 @@ const getDashboard = async (range: any = 14) => {
     return await response.json();
 };
 
-export { trackVisit, getDashboard };
+const getAppInfo = async () => {
+    const response = await apiFetch(`${apiUrl()}/api/analytics/app`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+
+    return await response.json();
+};
+
+export { trackVisit, getDashboard, getAppInfo };

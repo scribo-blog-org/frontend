@@ -4,8 +4,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-5);
-    padding: var(--space-6) 0 48px;
-    max-width: 720px;
+    @include page-column(var(--page-width-medium));
 
     h1 {
         font-size: var(--text-2xl);

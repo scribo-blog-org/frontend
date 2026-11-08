@@ -24,8 +24,6 @@ const getSlideTransform = (side: any) =>
 
 const Tooltip = ({ text, children, className, clickable = false }: any) => {
     const [open, setOpen] = useState<any>(false);
-    // After a click the tooltip stays hidden until the pointer leaves, so it
-    // does not pop up over whatever the click opened (modal, popup).
     const [suppressed, setSuppressed] = useState<any>(false);
 
     const { refs, floatingStyles, context } = useFloating({

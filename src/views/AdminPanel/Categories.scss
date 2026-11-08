@@ -175,8 +175,6 @@
                     }
                 }
 
-                // Pickers are plain divs, so they are locked by ignoring the
-                // pointer while the form is being saved.
                 &_locked {
                     .admin_panel_content_edit_categories_page_settings_color_content,
                     .admin_panel_content_edit_categories_page_settings_icon_content {

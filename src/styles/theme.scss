@@ -16,10 +16,10 @@ body {
 
     --administrator-color: red;
 
-    --line-color: var(--gray-b5);
+    --line-color: var(--gray-d7);
 
     --text-color: var(--gray-16);
-    --light-text-color: var(--gray-79);
+    --light-text-color: var(--gray-63);
 
     --text-selection-color: var(--gray-f1);
     --text-selection-background-color: var(--gray-33);
@@ -38,7 +38,7 @@ body {
     --input-background-color: var(--gray-f9);
     --input-outline-color: var(--gray-c6);
     --input-outline-active-color: var(--gray-25);
-    --input-placeholder-color: var(--gray-99);
+    --input-placeholder-color: var(--gray-79);
 
     --drop-file-background-color: transparent;
     --drop-file-hover-background-color: var(--gray-f7);
@@ -54,7 +54,7 @@ body {
     --submit-button-disabled-background-color: var(--gray-e1);
     --submit-button-disabled-color: var(--gray-99);
 
-    --secondary-button-background-color: var(--gray-f1);
+    --secondary-button-background-color: var(--gray-f9);
     --secondary-button-hover-background-color: var(--gray-e7);
     --secondary-button-disabled-background-color: var(--gray-f1);
     --secondary-button-disabled-color: var(--gray-99);
@@ -148,10 +148,12 @@ body {
     --text-editor-toolbar-item-color: var(--gray-63);
 
     --switcher-bar-border-color: var(--gray-b5);
-    --switcher-bar-item-color: var(--gray-99);
+    --switcher-bar-item-color: var(--gray-63);
     --switcher-bar-item-hover-background-color: var(--gray-d7);
-    --switcher-bar-active-item-background-color: rgb(140 140 140 / 10%);
+    --switcher-bar-active-item-background-color: var(--gray-d7);
     --switcher-bar-active-item-color: var(--gray-16);
+
+    --tab-item-color: var(--gray-63);
 
     --administrator-badge-background-color: var(--blue-de);
     --administrator-badge-color: var(--blue-39);
@@ -217,10 +219,10 @@ body.dark-theme {
 
     --administrator-color: var(--red-f5);
 
-    --line-color: var(--gray-25);
+    --line-color: var(--gray-2f);
 
     --text-color: var(--gray-f1);
-    --light-text-color: var(--gray-79);
+    --light-text-color: var(--gray-99);
 
     --text-selection-color: var(--gray-25);
     --text-selection-background-color: var(--gray-b5);
@@ -235,11 +237,11 @@ body.dark-theme {
     --user-badge-name-color: var(--gray-d7);
     --user-badge-name-hover-color: var(--gray-f1);
 
-    --input-text-color: var(--gray-d7);
-    --input-background-color: var(--gray-1e);
+    --input-text-color: var(--gray-e7);
+    --input-background-color: var(--gray-25);
     --input-outline-color: var(--gray-33);
     --input-outline-active-color: var(--gray-b5);
-    --input-placeholder-color: var(--gray-4f);
+    --input-placeholder-color: var(--gray-79);
 
     --drop-file-background-color: transparent;
     --drop-file-hover-background-color: var(--gray-25);
@@ -248,15 +250,15 @@ body.dark-theme {
 
     --avatar-icon-color: var(--drop-file-hover-background-color);
 
-    --submit-button-primary-color: var(--gray-e7);
-    --submit-button-primary-hover-color: var(--gray-b5);
+    --submit-button-primary-color: var(--gray-f1);
+    --submit-button-primary-hover-color: var(--gray-d7);
     --submit-button-secondary-color: var(--main-background);
     --submit-button-loading-background-color: var(--gray-33);
     --submit-button-disabled-background-color: var(--gray-25);
     --submit-button-disabled-color: var(--gray-79);
 
-    --secondary-button-background-color: var(--gray-1e);
-    --secondary-button-hover-background-color: var(--gray-25);
+    --secondary-button-background-color: var(--gray-25);
+    --secondary-button-hover-background-color: var(--gray-2f);
     --secondary-button-disabled-background-color: var(--gray-25);
     --secondary-button-disabled-color: var(--gray-79);
     --secondary-button-disabled-border-color: var(--gray-33);
@@ -342,7 +344,7 @@ body.dark-theme {
     --dropdown-item-hover-background-color: var(--gray-25);
 
     --toggle-track-background: var(--gray-4f);
-    --toggle-active-track-background: var(--gray-d7);
+    --toggle-active-track-background: var(--gray-b5);
     --toggle-thumb-background: var(--gray-1e);
     --toggle-active-thumb-background: var(--gray-1e);
 
@@ -354,6 +356,8 @@ body.dark-theme {
     --switcher-bar-item-hover-background-color: var(--gray-25);
     --switcher-bar-active-item-background-color: rgb(152 152 152 / 10%);
     --switcher-bar-active-item-color: var(--gray-ff);
+
+    --tab-item-color: var(--gray-79);
 
     --administrator-badge-background-color: var(--blue-2f);
     --administrator-badge-color: var(--blue-39);

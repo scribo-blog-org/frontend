@@ -175,10 +175,6 @@ function MenuBody({ sections, onItemSelect }: any) {
     ));
 }
 
-// A submenu does not open beside the menu: its items replace the current ones
-// and slide in from the right, with a back row that returns to the previous
-// level. Every visited level stays mounted next to the active one so both can
-// slide at once, and the stack height follows the active level.
 function MenuStack({ sections, onItemSelect }: any) {
     const [trail, setTrail] = useState<any[]>([]);
     const [depth, setDepth] = useState<any>(0);
@@ -208,8 +204,6 @@ function MenuStack({ sections, onItemSelect }: any) {
         push: (item: any) => {
             window.clearTimeout(timer.current);
             setTrail((current: any) => [...current.slice(0, depth), item]);
-            // The new level is first mounted off to the right, then the next
-            // frame moves it in, so it slides instead of appearing in place.
             const target = depth + 1;
             requestAnimationFrame(() =>
                 requestAnimationFrame(() => setDepth(target)),
@@ -300,10 +294,6 @@ function PopupMenu({
     open,
 }: any) {
     const { mounted, visible } = useOverlayPresence(open);
-    // The side is chosen once, when the menu opens. Flipping on every resize
-    // made the menu jump to the other side as soon as an inline submenu
-    // expanded; instead it slides along the screen to stay fully visible and
-    // only scrolls when taller than the viewport.
     const [lockedPlacement, setLockedPlacement] = useState<any>(null);
     const { refs, x, y, placement, isPositioned } = useFloating({
         elements: {

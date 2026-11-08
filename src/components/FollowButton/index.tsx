@@ -24,8 +24,6 @@ const FollowButton = ({
         profile?.follows?.some((item: any) => hasId([item], authorId)),
     );
 
-    // The button flips immediately and is restored if the server rejects the
-    // change, so a slow request never leaves the UI waiting.
     const toggleFollow = async () => {
         if (pendingRef.current) return;
         pendingRef.current = true;

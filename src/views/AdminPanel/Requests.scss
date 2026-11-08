@@ -31,8 +31,7 @@
 
     &_empty {
         animation: admin_requests_enter 260ms ease backwards;
-        font-size: 14px;
-        color: var(--light-text-color);
+        @include empty-note;
     }
 
     &_item {

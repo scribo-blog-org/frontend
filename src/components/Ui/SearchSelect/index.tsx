@@ -56,8 +56,6 @@ const SearchSelect = ({
     }, [options, value]);
 
     const filteredOptions = useMemo(() => {
-        // The field shows the chosen option's name until the user types, and
-        // that name must not hide the other options when the list opens.
         const search = isSearching ? inputValue.trim().toLowerCase() : '';
 
         if (external || !search) return options;
