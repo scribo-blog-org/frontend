@@ -17,8 +17,6 @@ export const TrendChart = ({
     const wrapRef = useRef<any>(null);
     const [width, setWidth] = useState<number>(720);
 
-    // The chart is drawn at the size it is shown, one unit per pixel: the height
-    // stays compact and the labels stay readable at any width.
     useEffect(() => {
         const element = wrapRef.current;
         if (!element) {
@@ -87,7 +85,6 @@ export const TrendChart = ({
         return `M ${start} L ${first.points} L ${end} Z`;
     })();
 
-    // As many labels as fit, counted from the last point so it always has one.
     const maxTicks = Math.max(2, Math.floor(innerWidth / 72));
     const tickStep = Math.ceil(series.length / maxTicks);
     const ticks = series.filter(
@@ -325,8 +322,6 @@ export const Block = ({ title, hint, chart = false, children }: any) => (
     </section>
 );
 
-// previous is passed only for numbers that are compared with the previous
-// period; an all-time number gets no comparison at all.
 export const StatCard = ({ label, value, display, previous, hint }: any) => {
     const delta = previous === undefined ? null : deltaLabel(value, previous);
 

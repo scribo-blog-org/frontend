@@ -18,7 +18,6 @@
     );
     animation: loader_ring_spin 0.9s linear infinite;
 
-    // The gradient ends in a flat edge; this dot rounds off the solid end.
     &::before {
         content: '';
         position: absolute;

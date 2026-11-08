@@ -452,7 +452,6 @@ const BackupsPage = () => {
     }
 
     const last = info?.last_restore;
-    // The newest backup is the copy of the data as it is now.
     const newestId = items.reduce(
         (newest: any, item: any) =>
             !newest ||
@@ -572,8 +571,6 @@ const BackupsPage = () => {
                                         {kindLabel(item)}
                                     </Pill>
                                     {item._id === newestId ? (
-                                        // The newest backup is the copy of the
-                                        // data as it is now.
                                         <Pill tone="info">Current</Pill>
                                     ) : null}
                                 </p>
@@ -603,11 +600,6 @@ const BackupsPage = () => {
                                         </ActionButton>
                                     ) : null}
                                     {info?.restore_enabled ? (
-                                        // A copy from another data version can
-                                        // still be downloaded; only the restore
-                                        // is off, and the reason is on hover. A
-                                        // copy that can be restored has no hover
-                                        // text at all.
                                         item.can_restore ? (
                                             <DangerButton
                                                 onClick={() => askRestore(item)}

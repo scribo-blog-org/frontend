@@ -47,17 +47,12 @@
         color: var(--light-text-color);
     }
 
-    // No transitions here: a reply that is appended must not flash its
-    // separator.
     &_thread {
         display: flex;
         flex-direction: column;
         gap: var(--space-3);
     }
 
-    // Each message is its own card. Replies from the team are tinted and carry
-    // an accent edge, so the two sides of the conversation read apart at a
-    // glance.
     &_entry {
         display: flex;
         flex-direction: column;
@@ -78,7 +73,6 @@
             justify-content: space-between;
             gap: 12px;
 
-            // Keep the badge next to the name; the time stays on the right.
             .pill {
                 margin-right: auto;
             }

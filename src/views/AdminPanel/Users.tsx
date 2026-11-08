@@ -105,8 +105,6 @@ const UsersPage = () => {
             ),
         );
 
-    // The change shows at once and is rolled back to the previous value if the
-    // server refuses.
     const changeRole = async (user: any, role: string) => {
         const previous = user.role;
         if (role === previous) {

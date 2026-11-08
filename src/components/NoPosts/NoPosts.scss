@@ -14,8 +14,6 @@
         margin: 50px auto;
     }
 
-    // Large and barely visible on purpose: it fills the space without
-    // competing with the page.
     &_title {
         font-size: 64px;
         font-weight: bold;
@@ -26,7 +24,6 @@
             font-size: 48px;
         }
     }
-
 }
 
 @keyframes no_posts_enter {

@@ -29,9 +29,6 @@ import {
 
 import './Dashboard.scss';
 
-// What is on screen. The period only exists for "activity"; the statistics are
-// for the whole life of the site and do not depend on it, so that view has no
-// period controls at all.
 const VIEWS = [
     { key: 'activity', title: 'Activity' },
     { key: 'totals', title: 'Statistics' },
@@ -88,8 +85,6 @@ const DashboardPage = () => {
     const retention = data?.period?.retention_days ?? DEFAULT_RETENTION_DAYS;
     const earliest = addDays(today, -(retention - 1));
 
-    // A preset also fills the date pickers, so they always show the range that
-    // is on screen. Touching a picker switches to a custom range.
     const pickPeriod = (index: number) => {
         const preset = PERIODS[index];
         setPeriod(preset.key);
@@ -126,7 +121,6 @@ const DashboardPage = () => {
         return null;
     }, [period, from, to, earliest, today, retention]);
 
-    // Only the activity view asks for a period, and only when it is valid.
     const skip = view !== 'activity' || Boolean(rangeError);
     const requestKey = period === 'custom' ? `custom:${from}:${to}` : period;
 
@@ -163,12 +157,9 @@ const DashboardPage = () => {
         return () => {
             cancelled = true;
         };
-        // The key stands for period, from and to.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [requestKey, skip, showToast]);
 
-    // The totals do not depend on the period, so they come from the first
-    // answer and need no request of their own.
     const hourly = data?.period?.granularity === 'hour';
     const traffic = data?.traffic || {};
     const people = data?.people || {};

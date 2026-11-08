@@ -122,7 +122,6 @@ const DropFile = ({
             e.stopPropagation();
             setIsDragged(false);
 
-            // A form that is being submitted must not take a new file.
             if (!disabledRef.current && e.dataTransfer.files.length > 0) {
                 setFile(e.dataTransfer.files[0]);
             }

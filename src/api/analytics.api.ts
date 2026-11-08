@@ -16,8 +16,6 @@ const trackVisit = async (path: any) => {
     } catch {}
 };
 
-// period: '24h' | '7' | '30' | 'custom'. A custom period also needs from and
-// to as YYYY-MM-DD (UTC days).
 const getDashboard = async ({
     period = '7',
     from,

@@ -6,10 +6,6 @@ import { decodeRouteParam } from '@/utils/routeParam';
 
 const CHECK_TIMEOUT_MS = 2500;
 
-// The page streams behind the app's Suspense boundary, so by the time it
-// notices an article or a profile does not exist the 200 status is already
-// sent. Deciding it here, before any rendering, gives a direct visit or a
-// crawler a real 404.
 async function isMissing(pathname: string) {
     const base = apiUrl();
     const post = pathname.match(/^\/posts\/([^/]+)\/?$/);
@@ -44,7 +40,6 @@ async function isMissing(pathname: string) {
             body.data.length === 0
         );
     } catch {
-        // An unreachable API must not turn existing pages into 404s.
         return false;
     }
 }
@@ -53,8 +48,6 @@ export async function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set('x-pathname', request.nextUrl.pathname);
 
-    // In-app navigation asks only for the page payload and shows its own
-    // not-found state; only a document request has a status worth fixing.
     if (
         request.method === 'GET' &&
         !request.headers.has('rsc') &&

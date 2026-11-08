@@ -68,9 +68,6 @@ const MessageContextMenu = ({
     const [bubbleHtml, setBubbleHtml] = useState('');
     const [touchPlace, setTouchPlace] = useState<any>(null);
     const isTouch = source === 'touch' && anchor;
-    // With the message's position known the menu always goes right under the
-    // message, and the message is lifted when there is no room below, on a
-    // phone and with a mouse alike. Without it the menu follows the pointer.
     const anchored = Boolean(anchor);
 
     useLayoutEffect(() => {

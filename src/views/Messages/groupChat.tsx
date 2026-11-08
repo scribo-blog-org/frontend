@@ -526,8 +526,6 @@ export function GroupSettings({
         apply(result.data);
     };
 
-    // Both changes show in the list at once and are undone for that member
-    // only if the server refuses.
     const handleRemove = async (userId: any) => {
         const list = Array.isArray(group?.members) ? group.members : [];
         const index = list.findIndex(

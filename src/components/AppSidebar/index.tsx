@@ -216,8 +216,6 @@ function AppSidebar() {
 
             <div className="app-sidebar_footer">
                 {isAdmin ? (
-                    // One item, like the rest of the sidebar: it stays where it
-                    // is and is highlighted while the admin panel is open.
                     <Link
                         href="/admin-panel?tab=dashboard"
                         className={navClass('/admin-panel')}

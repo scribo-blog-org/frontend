@@ -13,7 +13,6 @@
         flex-shrink: 0;
     }
 
-    // Sits over the right end of the tab line, which keeps running under it.
     &_aside {
         position: absolute;
         top: 0;
@@ -26,7 +25,6 @@
         font-size: var(--text-sm);
         color: var(--light-text-color);
 
-        // Tabs scroll sideways on a phone and would run under it.
         @include screen() {
             display: none;
         }
@@ -46,9 +44,6 @@
             animation: none;
         }
 
-        // A spacer rather than padding: padding at the end of a scroll
-        // container is dropped by some mobile browsers, which left the last
-        // rows under the navigation bar. It also gives the last block some air.
         &::after {
             content: '';
             display: block;

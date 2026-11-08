@@ -19,10 +19,6 @@ function readProcessEnv(key: PublicEnvKey) {
 
 const LOCAL_HOSTS = ['localhost', '127.0.0.1'];
 
-// In development the API and socket addresses point at localhost, which means
-// the phone itself when the site is opened from another device. There the
-// page's own host is used instead, so one env file works for the Mac and the
-// phone, and the API stays on the same site as the page for cookies.
 function followPageHost(key: string, value: string): string {
     if (
         typeof window === 'undefined' ||
@@ -61,9 +57,6 @@ export function publicEnv(key: PublicEnvKey) {
     return followPageHost(key, readProcessEnv(key));
 }
 
-// True when development points at an API on this machine. Uploaded files are
-// then served through the page's own origin (see the `/uploads` rewrite in
-// next.config.mjs), so they load on any device that can open the page.
 export function usesLocalDevApi(): boolean {
     if (process.env.NODE_ENV === 'production') {
         return false;

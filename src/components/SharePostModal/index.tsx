@@ -129,8 +129,6 @@ const SharePostModal = ({
                 : [...current, id],
         );
 
-    // Sends the link to every chosen chat, one after another, and reports the
-    // outcome once. With a single chat the page goes to that chat, as before.
     const handleSend = async () => {
         if (!profile || isSending || !selectedIds.length) {
             return;
@@ -253,7 +251,6 @@ const SharePostModal = ({
                         <Loading size={24} />
                     </div>
                 ) : chats.length ? (
-                    // The only part of the dialog that scrolls.
                     <div className="share_post_modal_chats" role="group">
                         {chats.map((item: any) => {
                             const id = String(item._id);

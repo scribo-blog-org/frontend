@@ -20,8 +20,6 @@
     width: 100%;
     overflow: hidden;
 
-    // On a phone the chat is a sheet over the list: it slides in from the
-    // right while the list stays underneath, shifted back a little.
     &_chat {
         .messages_sidebar {
             @include screen() {
@@ -61,8 +59,6 @@
     }
 }
 
-// On a wide screen the chat pane slides in from the right edge when a chat is
-// opened, and back out the same way.
 @media screen and (min-width: 769px) {
     .messages_layout_chat .messages_chat {
         animation: messages_chat_in 340ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -267,7 +263,6 @@
         min-width: 0;
     }
 
-    // "Online" after the name keeps its size.
     .messages_activity_status {
         flex: 0 0 auto;
     }
@@ -282,8 +277,6 @@
     padding-left: 28px;
 }
 
-// The message on the left, cut with "…" when it is long; on the right its time
-// or date and, for the viewer's own message, its status.
 .messages_conversation_row {
     display: flex;
     align-items: center;
@@ -1120,11 +1113,6 @@
         z-index: 2;
     }
 
-    // Every other popup is white with a little transparency because a white
-    // page is behind it. This one opens over the dark scrim, and the same
-    // translucent white turns grey there (and the hover disappears). On the
-    // light theme it takes the white of the dialogs, kept slightly see-through.
-    // The dark theme keeps the common popup surface.
     body:not(.dark-theme) & .popup_menu_surface.float_section {
         background: color-mix(
             in srgb,
@@ -1240,8 +1228,6 @@
     flex-direction: column;
     pointer-events: none;
 
-    // Same bottom offset as the mobile navigation bar so the iOS home
-    // indicator does not cover the input.
     @include screen() {
         margin-bottom: 16px;
     }
@@ -1270,10 +1256,6 @@
     &:focus-within:not(.messages_composer_loading) {
         border-color: var(--text-color);
     }
-
-    // &:has(.messages_composer_context_slot_open) {
-    //     border-radius: 14px;
-    // }
 
     &_context_slot {
         display: grid;

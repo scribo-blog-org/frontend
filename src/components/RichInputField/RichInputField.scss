@@ -51,9 +51,6 @@
         caret-color: var(--input-text-color);
         resize: none;
         outline: none;
-        // The visible text is drawn by the mirror layer, which inherits the
-        // page font. This layer holds the caret, so it has to measure text
-        // exactly like the mirror or the caret drifts away from the letters.
         font-family: inherit;
 
         &::placeholder {

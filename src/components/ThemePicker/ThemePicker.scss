@@ -63,8 +63,6 @@
     border-radius: 10px;
     @include use-transition();
 
-    // The system tile: the dark half is cut along the diagonal, so the tile
-    // reads as "light and dark".
     &_half {
         position: absolute;
         inset: 0;
@@ -72,7 +70,6 @@
     }
 }
 
-// Fixed colors on purpose: the tile always shows its own theme.
 .theme_mini {
     --mini-bg: #f1f1f1;
     --mini-surface: #ffffff;

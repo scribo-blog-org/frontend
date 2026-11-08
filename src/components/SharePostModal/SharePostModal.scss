@@ -50,12 +50,8 @@
         }
     }
 
-    // The list of chats is the one part of the dialog that scrolls, so the
-    // rest does not move when the list appears or grows.
     &_chats {
         display: grid;
-        // Always four to a row, so the width of a tile never changes when the
-        // dialog grows or a scrollbar appears.
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: var(--space-2);
         max-height: min(216px, 32vh);

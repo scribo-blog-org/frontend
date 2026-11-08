@@ -44,9 +44,6 @@ const roleOptions = (roles: string[]) =>
         icon: roleIcon(role),
     }));
 
-// The form inside the "Add administrator" dialog. Search finds only people
-// who have no role yet, so nobody who is already an administrator is offered.
-// Save stays disabled until a user and a role are both chosen.
 const GrantRoleForm = ({ profile, onGranted, onClose }: any) => {
     const { showToast } = useContext(AppContext);
     const [found, setFound] = useState<any[]>([]);
@@ -200,8 +197,6 @@ const AdminsPage = () => {
         if (role === user.role) {
             return;
         }
-        // Applied before the answer; a refused change puts the row back as it
-        // was, at the same position.
         const index = staff.findIndex((item: any) => item._id === user._id);
         setStaff((previous: any[]) =>
             role === 'user'

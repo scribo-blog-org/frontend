@@ -3,7 +3,6 @@
 .default-container {
     width: 100%;
     min-width: 0;
-    // Content column (--page-width) plus the side padding.
     max-width: calc(var(--page-width) + 2 * 60px);
     display: flex;
     flex-direction: column;

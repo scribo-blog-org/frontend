@@ -7,8 +7,6 @@
     width: 100%;
     min-width: 0;
 
-    // On a desktop only the list scrolls: the totals, search and sort stay put.
-    // A phone keeps one page scroll, a nested one is awkward to use there.
     @media (min-width: 769px) {
         flex: 1 1 0%;
         min-height: 0;
@@ -111,8 +109,6 @@
             background: var(--section-item-hover-background-color);
         }
 
-        // Column titles. Same grid as a row, so every title sits over its
-        // column.
         &.admin_users_head {
             animation: none;
             padding-top: 4px;

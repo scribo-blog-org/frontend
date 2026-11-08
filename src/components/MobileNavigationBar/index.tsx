@@ -180,8 +180,6 @@ const MobileNavigationBar = () => {
 
         return {
             slots,
-            // The admin panel already has Home in the bar, so no floating
-            // buttons are drawn over its content.
             floating: onAdminPanel
                 ? []
                 : [...(canCreate ? [create] : []), ...(isAdmin ? [admin] : [])],

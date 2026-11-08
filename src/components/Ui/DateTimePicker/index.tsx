@@ -6,8 +6,6 @@ import './DateTimePicker.scss';
 
 import CrossIcon from '../../../assets/svg/cross-icon.svg';
 
-// value is a local "YYYY-MM-DDTHH:mm" string, '' when nothing is picked. With
-// type="date" it is a "YYYY-MM-DD" string instead.
 const DateTimePicker = forwardRef(
     (
         {

@@ -8,8 +8,6 @@ import { Link } from '@/navigation';
 import UserAvatar from '../UserBadge/UserAvatar';
 import ProfileIcon from '../../assets/svg/profile.svg';
 
-// A guest is drawn as a non-existent user (the default avatar) unless the
-// place asks for the profile icon, as navigation does.
 const guestIcon = (useIcon: any) =>
     useIcon ? (
         <ProfileIcon className="user_badge_guest_icon" aria-hidden="true" />

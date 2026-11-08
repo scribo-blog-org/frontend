@@ -113,15 +113,10 @@ span::selection {
     background-color: var(--text-selection-background-color);
 }
 
-// Enter animations use `backwards`, not `both`: with `both` an animation that
-// moves the element keeps its end transform for good, and blurred menus and
-// lists inside it then stop blurring what is behind them.
 .app-transition {
     @include use-transition();
 }
 
-// Zero-specificity baseline so interactive elements without a component
-// transition still animate state changes; any class-level transition wins.
 :where(button, a, input, textarea, select) {
     transition:
         color 300ms ease,
@@ -131,14 +126,10 @@ span::selection {
         opacity 300ms ease;
 }
 
-// An icon inside an element that already animates its color inherits that
-// animation; transitioning it again would make it lag behind the parent.
 .app-transition svg.app-transition {
     transition-property: background-color, border-color, box-shadow;
 }
 
-// Set by the theme toggle for the frames in which the theme changes, so the
-// switch is instant instead of animating every color transition.
 .theme-switching,
 .theme-switching *,
 .theme-switching *::before,

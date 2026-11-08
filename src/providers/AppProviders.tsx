@@ -43,9 +43,7 @@ import {
 export type AppContextValue = {
     profile: any;
     setProfile: Dispatch<SetStateAction<any>>;
-    // What is on screen right now, after resolving "system".
     isDarkTheme: boolean;
-    // What the viewer chose: follow the device, or force light or dark.
     themeMode: ThemeMode;
     setThemeMode: (mode: ThemeMode) => void;
     profileLoading: boolean;
@@ -161,8 +159,6 @@ export default function AppProviders({
 
     const isDarkTheme = resolveIsDark(themeMode, systemDark);
 
-    // The choice is saved only when the viewer makes it, never as a side
-    // effect of the device switching, so "system" keeps following the device.
     const setThemeMode = useCallback((mode: ThemeMode) => {
         setThemeModeState(mode);
         storeThemeMode(mode);
@@ -200,7 +196,6 @@ export default function AppProviders({
         const changed = body.classList.contains('dark-theme') !== isDarkTheme;
 
         if (changed) {
-            // Transitions stay off until the new theme has been painted.
             body.classList.add('theme-switching');
             body.classList.toggle('dark-theme', isDarkTheme);
             requestAnimationFrame(() =>

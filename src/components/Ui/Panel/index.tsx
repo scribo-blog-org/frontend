@@ -4,10 +4,6 @@ import './Panel.scss';
 
 export type PillTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
 
-// A titled group: a small caption above a soft frame that holds the rows.
-// `flat` drops the frame and the row cards, for a group that already sits in a
-// bigger block: the rows are then only divided by thin lines. `bare` drops only
-// the frame and keeps the row cards, for a block that is already a frame.
 export const Panel = ({
     title,
     hint,
@@ -39,8 +35,6 @@ export const Panel = ({
     </section>
 );
 
-// One row inside a Panel: icon, title with a muted description, and a control
-// (select, toggle, button, pill) on the right. A row with onClick is a button.
 export const PanelRow = ({
     icon,
     title,
@@ -85,7 +79,6 @@ export const Pill = ({ tone = 'neutral', icon, children, className }: any) => (
     </span>
 );
 
-// A tinted strip for one important sentence (a result, a warning, a hint).
 export const Banner = ({ tone = 'info', icon, action, children }: any) => (
     <div className={`notice notice_${tone}`}>
         {icon ? <span className="notice_icon">{icon}</span> : null}
@@ -94,7 +87,6 @@ export const Banner = ({ tone = 'info', icon, action, children }: any) => (
     </div>
 );
 
-// Key and value pairs in a tidy grid, like the metadata block of a detail card.
 export const MetaGrid = ({ items }: any) => (
     <dl className="meta_grid">
         {items

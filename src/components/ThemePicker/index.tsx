@@ -10,9 +10,6 @@ const OPTIONS: { value: ThemeMode; label: string }[] = [
     { value: 'dark', label: 'Dark' },
 ];
 
-// A drawn miniature of the site: sidebar, page title, a card and a button.
-// It uses its own fixed colors, so each tile shows its theme whichever theme
-// the page itself is in.
 const Mini = ({ tone }: { tone: 'light' | 'dark' }) => (
     <span className={`theme_mini theme_mini_${tone}`} aria-hidden="true">
         <span className="theme_mini_side">

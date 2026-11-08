@@ -45,8 +45,6 @@
         width: 100%;
     }
 
-    // Title on the left, controls on the right. The title sits in row 1 of
-    // column 1 and every other child is auto-placed down column 2.
     .settings_group {
         display: grid;
         grid-template-columns: 128px minmax(0, 1fr);
@@ -66,7 +64,6 @@
             min-width: 0;
         }
 
-        // Spacing between neighbours; toggle rows already carry their own.
         > :not(.kicker) ~ :not(.kicker) {
             margin-top: var(--space-3);
         }
@@ -91,8 +88,6 @@
         }
     }
 
-    // Stays in view at the bottom of the scroll area while the form is long.
-    // The bottom inset comes from AppShell, so it clears the mobile nav bar.
     .settings_panel_actions {
         position: sticky;
         bottom: calc(var(--bottom-inset, 0px) + var(--space-4));

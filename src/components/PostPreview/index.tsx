@@ -12,11 +12,7 @@ import './PostPreview.scss';
 
 type PostPreviewProps = {
     post: any;
-    // Where the card leads. Without it the card is a plain, non-clickable view
-    // (a confirmation dialog, a log).
     href?: string;
-    // 'top' puts the picture above the text (chat), 'side' keeps it small on
-    // the right (lists and search), 'none' hides it.
     media?: 'top' | 'side' | 'none';
     showDate?: boolean;
     asLinkAuthor?: boolean;
@@ -24,9 +20,6 @@ type PostPreviewProps = {
     onMediaLoad?: () => void;
 };
 
-// One way to show a post as an object: author, category, title, a short
-// excerpt and the picture. Chat messages, search results and the delete
-// confirmation all render this card.
 const PostPreview = ({
     post,
     href,

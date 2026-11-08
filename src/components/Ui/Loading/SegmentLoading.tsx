@@ -3,8 +3,6 @@
 import './Loading.scss';
 import './SegmentLoading.scss';
 
-// The loader made of fading bars. It is kept for the logs toolbar, where it
-// marks a running reload and the live mode.
 const SegmentLoading = ({ size = 80, segments = 12 }: any) => {
     return (
         <div

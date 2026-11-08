@@ -204,7 +204,6 @@ const senderColor = (id: any) => {
     return SENDER_COLORS[hash];
 };
 
-// The message itself, with no author in front of it.
 const conversationPreview = (item: any) =>
     String(item?.last_message_text || '').trim() || 'No messages';
 
@@ -403,7 +402,6 @@ const MessagesPage = () => {
         useContext(AppContext);
 
     const [conversations, setConversations] = useState<any[]>([]);
-    // Set while the chat slides out after Back, before the route changes.
     const [isLeavingChat, setIsLeavingChat] = useState<any>(false);
     const leaveTimer = useRef<any>(0);
     const [activeConversation, setActiveConversation] = useState<any>(null);
@@ -1739,8 +1737,6 @@ const MessagesPage = () => {
         setEditingMessage(null);
         setReplyTo(message);
 
-        // iOS only opens the keyboard when focus happens synchronously inside
-        // the user gesture, so the post-render effect alone is not enough.
         composerInputRef.current?.focus({ preventScroll: true });
     };
 
@@ -2104,8 +2100,6 @@ const MessagesPage = () => {
 
         try {
             if (editingMessage) {
-                // The text changes in the thread right away and goes back to the
-                // original, with the draft restored, if the server refuses.
                 const original = editingMessage;
                 setMessages((current: any) =>
                     current.map((item: any) =>
@@ -2202,8 +2196,6 @@ const MessagesPage = () => {
 
             stickToBottomRef.current = true;
             setMessages((current: any) => [...current, optimistic]);
-            // The chat list shows the message right away, with the clock until
-            // the server confirms it.
             setConversations((current: any) => {
                 const existing = current.find(
                     (item: any) => item._id === conversationId,
@@ -2239,7 +2231,6 @@ const MessagesPage = () => {
                 setMessages((current: any) =>
                     current.filter((item: any) => item._id !== pendingId),
                 );
-                // Puts the list back to what the server has.
                 void loadConversations(true);
                 showToast?.({
                     type: 'error',
@@ -2432,9 +2423,6 @@ const MessagesPage = () => {
 
     beginMessageLeaveRef.current = beginMessageLeave;
 
-    // Puts messages back after a refused delete: they were already animating
-    // out, so cancel that and re-insert whatever has been removed meanwhile,
-    // in time order.
     const restoreMessages = (restored: any[]) => {
         const ids = restored.map((item: any) => String(item._id));
 
@@ -2470,7 +2458,6 @@ const MessagesPage = () => {
         });
     };
 
-    // The message starts leaving at once; a failed request brings it back.
     const handleDelete = async (messageId: any) => {
         const message = messages.find(
             (item: any) => String(item._id) === String(messageId),
@@ -3024,7 +3011,6 @@ const MessagesPage = () => {
 
     useEffect(() => () => window.clearTimeout(leaveTimer.current), []);
 
-    // The chat slides out first; the route changes once it is off screen.
     const closeChat = () => {
         if (isLeavingChat) {
             return;
@@ -3106,8 +3092,6 @@ const MessagesPage = () => {
                                             onlineByUserId[
                                                 String(item.participant?._id)
                                             ] ? (
-                                                // The same green dot and "Online" as in
-                                                // the header of the chat.
                                                 <UserActivityStatus
                                                     user={item.participant}
                                                     viewerId={profile._id}

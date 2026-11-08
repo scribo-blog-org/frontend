@@ -30,7 +30,6 @@ const markDismissed = (userId: string) => {
     try {
         localStorage.setItem(`${DISMISSED_KEY}:${userId}`, '1');
     } catch {
-        // The prompt simply shows again next visit.
     }
 };
 
@@ -38,7 +37,6 @@ const markInstallDismissed = (userId: string) => {
     try {
         localStorage.setItem(`${INSTALL_DISMISSED_KEY}:${userId}`, '1');
     } catch {
-        // The hint simply shows again next visit.
     }
 };
 
@@ -126,8 +124,6 @@ const PromptFooter = ({
     );
 };
 
-// Safari on iPhone only offers notifications to a site opened from the Home
-// Screen, and there is no API to install it, so all we can do is explain.
 const INSTALL_STEPS = [
     { title: 'Tap Share in Safari', icon: <ShareIcon /> },
     { title: 'Choose Add to Home Screen', icon: <PlusIcon /> },
@@ -187,13 +183,9 @@ const PushNotifications = () => {
                 navigate(event.data.url);
             }
 
-            // The service worker asks before showing a push, because it cannot
-            // tell which page this window is on after in-app navigation.
             if (event.data?.type === 'push:where') {
                 event.ports[0]?.postMessage({
                     path: window.location.pathname,
-                    // A window left behind with Alt+Tab is still "visible",
-                    // so focus is what tells that the user is looking at it.
                     visible:
                         document.visibilityState === 'visible' &&
                         document.hasFocus(),
@@ -239,8 +231,6 @@ const PushNotifications = () => {
             }
 
             if (Notification.permission === 'granted') {
-                // Re-attach this device to the current account, e.g. after
-                // signing in as another user in the same browser.
                 if (!(await isDeviceSubscribed())) {
                     await enablePush(userId);
                 }
@@ -275,7 +265,6 @@ const PushNotifications = () => {
         return () => {
             cancelled = true;
         };
-        // The prompt belongs to the sign-in, not to later context updates.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [userId]);
 

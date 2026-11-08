@@ -11,8 +11,6 @@
         margin: 32px auto;
     }
 
-    // Row of controls above the content: which view, then (for activity) the
-    // period as presets with the dates it covers right next to them.
     &_bar {
         display: flex;
         flex-direction: column;
@@ -192,7 +190,6 @@
             font-size: 12px;
             color: var(--light-text-color);
         }
-
     }
 
     &_legend {
@@ -307,8 +304,6 @@
             align-items: center;
         }
 
-        // The value can carry a note (e.g. latency percentiles), so its
-        // column follows the content instead of cutting it off.
         &_wide &_row {
             grid-template-columns: 180px minmax(48px, 1fr) max-content;
         }
@@ -377,8 +372,6 @@
     }
 }
 
-// Half-width blocks are too narrow for label, bar and note in one line, so the
-// bar drops under the label there.
 .analytics_grid .analytics_bars_wide .analytics_bars_row {
     grid-template-columns: minmax(0, 1fr) max-content;
     row-gap: 4px;

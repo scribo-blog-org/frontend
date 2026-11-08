@@ -85,7 +85,6 @@ const LogsPage = () => {
     const [users, setUsers] = useState<any[]>([]);
     const [posts, setPosts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
-    // "View logs" in the users list opens this tab with ?user=<id>.
     const [filter, setFilter] = useState<any>(() => {
         const userId = searchParams.get('user');
 
@@ -204,8 +203,6 @@ const LogsPage = () => {
         ]),
     });
     const logs = feed.items;
-    // The secondary filters are folded away on a phone; on wide screens they
-    // are always shown and these only drive the toggle there.
     const [filtersOpen, setFiltersOpen] = useState<any>(false);
     const [filtersSettled, setFiltersSettled] = useState<any>(false);
     const filtersTimer = useRef<any>(0);
@@ -234,8 +231,6 @@ const LogsPage = () => {
         }
 
         setFiltersOpen(true);
-        // Open lists inside the folded block must not be clipped, but the
-        // block clips while it grows; it is let out once it has finished.
         filtersTimer.current = window.setTimeout(
             () => setFiltersSettled(true),
             300,
@@ -365,8 +360,6 @@ const LogsPage = () => {
         (log: any) => log.data?.support_request === filter.id,
     );
 
-    // Live and Reload sit beside the search on wide screens and inside the
-    // folded block on a phone, so the same buttons are rendered in both.
     const actionButtons = (
         <>
             <ActionButton
@@ -380,8 +373,6 @@ const LogsPage = () => {
             <ActionButton
                 size="lg"
                 onClick={reload}
-                // Live refreshes the list on its own, so a manual
-                // reload is off for as long as it runs.
                 isLoading={reloading || live}
                 loaderVariant="segments"
                 className="logs_reload"
@@ -523,7 +514,6 @@ const LogsPage = () => {
                                     value={levelFilter}
                                     placeholder="Level"
                                     onChange={(value: any) => {
-                                        // Emptying the field clears the filter.
                                         setLevelFilter(value || 'all');
                                     }}
                                 />

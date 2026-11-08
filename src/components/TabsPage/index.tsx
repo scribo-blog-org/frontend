@@ -6,7 +6,6 @@ import { useSearchParams } from '@/navigation';
 
 import Tabs from '../Ui/Tabs';
 
-// aside: something that stays at the right end of the tab row on every tab.
 const TabsPage = ({ pages, label, aside = null, className = '' }: any) => {
     const [searchParams, setSearchParams] = useSearchParams();
 

@@ -9,9 +9,6 @@ import './UserRow.scss';
 type UserRowProps = {
     user: any;
     viewerId?: string;
-    // The default line under the name is the activity status ("Online",
-    // "3 hours ago"). Pass `description` to show something else, or
-    // `status={false}` to show nothing.
     status?: boolean;
     description?: any;
     trailing?: any;
@@ -20,8 +17,6 @@ type UserRowProps = {
     className?: string;
 };
 
-// A person as a row of a Panel: avatar and name with the status next to it,
-// and something on the right (a role, a button, a menu).
 const UserRow = ({
     user,
     viewerId,

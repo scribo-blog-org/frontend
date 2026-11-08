@@ -6,12 +6,8 @@ export const DEFAULT_THEME_MODE: ThemeMode = 'system';
 
 export const SYSTEM_DARK_QUERY = '(prefers-color-scheme: dark)';
 
-// What the device prefers when the browser cannot tell.
 export const SYSTEM_DARK_FALLBACK = true;
 
-// The stored value used to be a bare boolean (true = dark). It is now the
-// mode name; old values are read as an explicit choice so nobody's theme
-// changes after the update.
 export function parseThemeMode(raw: string | null | undefined): ThemeMode {
     if (raw === null || raw === undefined) {
         return DEFAULT_THEME_MODE;

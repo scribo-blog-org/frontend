@@ -17,11 +17,6 @@ type ToastItem = {
 
 type Phase = 'enter' | 'show' | 'exit' | 'gone';
 
-// Where a toast is in its life is worked out from when it was created, not
-// from timers that were started for it. Timers only wake the component up at
-// the next change. If the effects are torn down and run again with the state
-// kept (React StrictMode, hot reload in development), the timer is simply
-// planned again from the toasts, and no toast can be left on screen.
 const phaseOf = (item: ToastItem, now: number): Phase => {
     const age = now - item.createdAt;
 
@@ -56,7 +51,6 @@ const Toast = ({ toast }: any) => {
             createdAt: Date.now(),
         };
 
-        // The same toast is added once even if this effect runs twice.
         setToasts((prev) =>
             prev.some((entry) => entry.source === toast)
                 ? prev

@@ -33,9 +33,6 @@
         }
     }
 
-    // The mobile navigation bar floats over the page, so anything that scrolls
-    // has to stop short of it. Every scroll surface reserves this inset
-    // instead of guessing the bar height on its own.
     &_main:has(> .navigation_bar) {
         @include screen() {
             --bottom-inset: var(--mobile-nav-height);
@@ -85,8 +82,6 @@
         }
     }
 
-    // Pages that scroll inside themselves own their bottom edge; the page
-    // padding would only show as a dead strip under the scrollbar.
     &_content:has(.messages_page) .page-layout,
     &_content:has(.tabs_page) .page-layout {
         padding-bottom: 0;
@@ -108,8 +103,6 @@
     }
 }
 
-/* No scrolling while a modal is open. If the page had a scrollbar, its width
-   stays reserved (`no-scroll-bar`, set by ModalWindow) so nothing shifts. */
 body.no-scroll .app-shell_content {
     overflow-y: hidden;
 }

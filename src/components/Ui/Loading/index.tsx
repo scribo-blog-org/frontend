@@ -2,8 +2,6 @@
 
 import './Loading.scss';
 
-// A ring that fades out behind a rounded head, turning clockwise. The ring
-// width follows the size so it stays readable from button icons to pages.
 const Loading = ({ size = 80 }: any) => {
     return (
         <div

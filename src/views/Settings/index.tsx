@@ -66,8 +66,6 @@ const Settings = () => {
         }
         void refreshPush();
 
-        // Picks up the user allowing notifications in the browser settings
-        // without reloading the page.
         let status: PermissionStatus | null = null;
         const onChange = () => void refreshPush();
         navigator.permissions
@@ -86,8 +84,6 @@ const Settings = () => {
     }, []);
 
     const togglePush = async (next: boolean) => {
-        // The switch follows the click immediately; it goes back if the device
-        // could not be (un)subscribed.
         setPushBusy(true);
         setPushOn(next);
         try {
@@ -118,9 +114,6 @@ const Settings = () => {
         }
     };
 
-    // Browsers cannot open a site's permission settings from a page, so the
-    // button re-reads the permission and turns notifications on as soon as the
-    // user has allowed them there.
     const retryPush = async () => {
         if (Notification.permission === 'denied') {
             setPushDenied(true);
@@ -484,9 +477,6 @@ const Settings = () => {
     const handleDeleteSession = async (session: any) => {
         setEndingSessionId(session._id);
 
-        // Another device's session leaves the list at once and comes back at
-        // its place if the server refuses. Ending the current one signs the
-        // user out, so that row stays until the server answers.
         const index = sessions.findIndex(
             (item: any) => item._id === session._id,
         );

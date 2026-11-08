@@ -17,7 +17,6 @@ export const formatPercent = (share: any) => {
     return `${Math.round(percent)}%`;
 };
 
-// Days on the dashboard are UTC days, so they are written in UTC too.
 export const formatDay = (iso: any) =>
     new Date(`${iso}T00:00:00Z`).toLocaleDateString('ru-RU', {
         day: 'numeric',
@@ -33,7 +32,6 @@ export const formatHour = (iso: any) =>
 
 export const routeLabel = (route: string) => route.replace(' /api', ' ');
 
-// "26 Oct — 8 Nov" for a window of whole UTC days. `to` is exclusive.
 export const formatDayRange = (from: any, to: any) => {
     const first = new Date(from);
     const last = new Date(new Date(to).getTime() - 1);
@@ -50,8 +48,6 @@ export const addDays = (key: string, days: number) => {
     return toDayKey(date);
 };
 
-// How a number moved against the previous period. Nothing is said when both
-// are zero, and a missing previous value means there is no comparison.
 export const deltaLabel = (current: any, previous: any) => {
     if (previous === null || previous === undefined) {
         return null;

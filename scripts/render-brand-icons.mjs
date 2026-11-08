@@ -30,8 +30,6 @@ function squareIcon(markInner) {
 `;
 }
 
-// The home screen masks the icon to a rounded square, so the mark gets a safe
-// margin instead of the near full-bleed size used for the favicon.
 function paddedIcon(markInner) {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">

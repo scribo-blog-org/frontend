@@ -39,7 +39,6 @@
     color: var(--light-text-color);
 }
 
-// Rows sit one under another, divided by thin lines, with no frame around them.
 .panel {
     display: flex;
     flex-direction: column;

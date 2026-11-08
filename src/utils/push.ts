@@ -8,8 +8,6 @@ import {
 
 const PREFERENCE_KEY = 'push_enabled';
 
-// The choice belongs to the account, not the browser: signing in as another
-// user on the same device must not inherit it.
 export const getPushPreference = (userId: string): boolean | null => {
     try {
         const value = localStorage.getItem(`${PREFERENCE_KEY}:${userId}`);
@@ -26,7 +24,6 @@ const setPushPreference = (userId: string, enabled: boolean) => {
             enabled ? '1' : '0',
         );
     } catch {
-        // The preference falls back to the browser permission alone.
     }
 };
 
@@ -125,8 +122,6 @@ export const enablePush = async (
     return saved ? 'enabled' : 'unavailable';
 };
 
-// Detaches this device from the account without recording a choice, so the
-// next sign-in can offer or restore notifications again.
 export const releasePush = async () => {
     const subscription = await currentSubscription();
     if (!subscription) {

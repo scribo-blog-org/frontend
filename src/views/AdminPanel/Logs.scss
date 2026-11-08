@@ -171,7 +171,6 @@
         align-items: center;
         gap: 4px 8px;
         padding: 8px 12px;
-        // A long entry scrolls on its own instead of widening the page.
         max-width: 100%;
         overflow-x: auto;
         scrollbar-width: none;
@@ -750,8 +749,6 @@
     padding: 3px 8px;
 }
 
-// Doubled with the button's own class so the accent wins whatever order the
-// stylesheets end up in.
 .action_button.logs_live_active {
     color: var(--accent-color);
     border-color: var(--accent-color);
@@ -798,7 +795,6 @@
     }
 }
 
-// Marks that a filter is active while the filters are folded away.
 .logs_filters_dot {
     position: absolute;
     top: 6px;
@@ -809,8 +805,6 @@
     background: var(--accent-color);
 }
 
-// Live and Reload sit beside the search on wide screens and move into the
-// folded block on a phone.
 .logs_toolbar_actions_wide {
     @include screen() {
         display: none;
@@ -832,8 +826,6 @@
     }
 }
 
-// On a phone the secondary filters fold away behind the Filters button and
-// open with a height animation; on wide screens they are plain content.
 .logs_toolbar_filters {
     @include screen() {
         display: grid;
@@ -877,8 +869,6 @@
         }
     }
 
-    // Once fully open, lists that drop down from the filters must not be
-    // clipped by the folding block.
     &_settled .logs_toolbar_filters_inner {
         @include screen() {
             overflow: visible;
@@ -1141,8 +1131,6 @@
     white-space: nowrap;
 }
 
-// The details column shrinks with the window, so the plate gives up its extras
-// before it gets cut off: first the bar, then the query count.
 @media (max-width: 1360px) {
     .log_timing_bar {
         display: none;
