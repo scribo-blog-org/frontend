@@ -14,6 +14,7 @@ import { useContext, useEffect, useState } from 'react';
 
 import { AppContext } from '@/providers/AppProviders';
 import { getAppInfo } from '../../api/analytics.api';
+import { Pill } from '../../components/Ui';
 
 import { useAdminAttention } from '../../hooks/useAdminAttention';
 import TabsPage from '../../components/TabsPage/index';
@@ -115,7 +116,7 @@ const AdminPanel = () => {
             <TabsPage
                 label="Admin panel"
                 pages={pages}
-                aside={version ? `v${version}` : null}
+                aside={version ? <Pill tone="info">v{version}</Pill> : null}
             />
         </div>
     );

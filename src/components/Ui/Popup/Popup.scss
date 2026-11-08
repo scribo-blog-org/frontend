@@ -90,6 +90,7 @@
     }
 
     .popup_menu_item {
+        position: relative;
         display: flex;
         align-items: center;
         white-space: nowrap;
@@ -106,8 +107,17 @@
             background-color 300ms ease,
             color 300ms ease;
 
+        // The items are 2px apart. Without this the pointer passes through a
+        // gap where nothing is hovered, the highlight drops and comes back,
+        // and the menu looks like it flickers. It has no color of its own.
+        &::before {
+            content: '';
+            position: absolute;
+            inset: -1px 0;
+        }
+
         @include hover {
-            background-color: var(--menu-item-hover-background);
+            background-color: var(--section-item-hover-background-color);
         }
     }
 
@@ -202,7 +212,7 @@
     }
 
     .popup_menu_item_active {
-        background-color: var(--menu-item-hover-background);
+        background-color: var(--section-item-hover-background-color);
     }
 
     .popup_menu_item_danger {

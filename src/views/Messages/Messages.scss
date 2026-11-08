@@ -267,10 +267,9 @@
         min-width: 0;
     }
 
-    // The time of the last message, right after the name.
-    .messages_conversation_time {
+    // "Online" after the name keeps its size.
+    .messages_activity_status {
         flex: 0 0 auto;
-        margin-left: var(--space-1);
     }
 }
 
@@ -283,18 +282,28 @@
     padding-left: 28px;
 }
 
+// The message on the left, cut with "…" when it is long; on the right its time
+// or date and, for the viewer's own message, its status.
 .messages_conversation_row {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
     gap: 8px;
     min-width: 0;
 }
 
 .messages_conversation_preview {
+    flex: 1 1 auto;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.messages_conversation_meta {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 6px;
 }
 
 .messages_conversation_typing {
@@ -1109,6 +1118,19 @@
 
     .popup_menu {
         z-index: 2;
+    }
+
+    // Every other popup is white with a little transparency because a white
+    // page is behind it. This one opens over the dark scrim, and the same
+    // translucent white turns grey there (and the hover disappears). On the
+    // light theme it takes the white of the dialogs, kept slightly see-through.
+    // The dark theme keeps the common popup surface.
+    body:not(.dark-theme) & .popup_menu_surface.float_section {
+        background: color-mix(
+            in srgb,
+            var(--modal-window-body-background-color) 94%,
+            transparent
+        );
     }
 
     &_touch .popup_menu {

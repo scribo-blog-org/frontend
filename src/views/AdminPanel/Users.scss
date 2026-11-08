@@ -7,6 +7,32 @@
     width: 100%;
     min-width: 0;
 
+    // On a desktop only the list scrolls: the totals, search and sort stay put.
+    // A phone keeps one page scroll, a nested one is awkward to use there.
+    @media (min-width: 769px) {
+        flex: 1 1 0%;
+        min-height: 0;
+
+        .pagination {
+            flex: 1 1 0%;
+            min-height: 0;
+            justify-content: space-between;
+
+            &_content {
+                flex: 1 1 0%;
+                min-height: 0;
+                overflow-y: auto;
+            }
+        }
+
+        .admin_users_head {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: var(--main-background);
+        }
+    }
+
     &_summary {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));

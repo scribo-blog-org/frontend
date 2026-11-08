@@ -39,7 +39,6 @@ function AppSidebar() {
     const canCreate = Boolean(profile?.permissions?.includes('create_post'));
     const isAdmin = isAdminRole(profile?.role);
     const adminAttention = useAdminAttention(profile);
-    const onAdminPanel = location.pathname.startsWith('/admin-panel');
 
     useEffect(() => {
         if (!profile) {
@@ -217,16 +216,21 @@ function AppSidebar() {
 
             <div className="app-sidebar_footer">
                 {isAdmin ? (
-                    <button
-                        type="button"
-                        className={navClass(
-                            onAdminPanel ? '/' : '/admin-panel',
-                        )}
-                        onClick={() =>
-                            navigate(
-                                onAdminPanel
-                                    ? '/'
-                                    : '/admin-panel?tab=dashboard',
+                    // One item, like the rest of the sidebar: it stays where it
+                    // is and is highlighted while the admin panel is open.
+                    <Link
+                        href="/admin-panel?tab=dashboard"
+                        className={navClass('/admin-panel')}
+                        aria-current={
+                            isPathActive(location.pathname, '/admin-panel')
+                                ? 'page'
+                                : undefined
+                        }
+                        onClick={(event: any) =>
+                            handleSameRouteClick(
+                                event,
+                                location.pathname,
+                                '/admin-panel',
                             )
                         }
                     >
@@ -236,15 +240,9 @@ function AppSidebar() {
                                 aria-hidden="true"
                             />
                         ) : null}
-                        {onAdminPanel ? (
-                            <HomeIcon className="app-sidebar_item_icon" />
-                        ) : (
-                            <DashboardIcon className="app-sidebar_item_icon" />
-                        )}
-                        <span>
-                            {onAdminPanel ? 'Home' : 'To the admin panel'}
-                        </span>
-                    </button>
+                        <DashboardIcon className="app-sidebar_item_icon" />
+                        <span>Admin panel</span>
+                    </Link>
                 ) : null}
 
                 {profile ? (

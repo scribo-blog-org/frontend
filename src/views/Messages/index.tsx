@@ -204,14 +204,9 @@ const senderColor = (id: any) => {
     return SENDER_COLORS[hash];
 };
 
-const conversationPreview = (item: any) => {
-    const text = String(item?.last_message_text || '').trim();
-    if (!text) {
-        return 'No messages';
-    }
-    const name = String(item?.last_message_sender_name || '').trim();
-    return name ? `${name}: ${text}` : text;
-};
+// The message itself, with no author in front of it.
+const conversationPreview = (item: any) =>
+    String(item?.last_message_text || '').trim() || 'No messages';
 
 const conversationStamp = (date: any) => {
     if (!date) {
@@ -2207,6 +2202,24 @@ const MessagesPage = () => {
 
             stickToBottomRef.current = true;
             setMessages((current: any) => [...current, optimistic]);
+            // The chat list shows the message right away, with the clock until
+            // the server confirms it.
+            setConversations((current: any) => {
+                const existing = current.find(
+                    (item: any) => item._id === conversationId,
+                );
+                if (!existing) {
+                    return current;
+                }
+
+                return upsertConversationInList(current, {
+                    ...existing,
+                    last_message_text: messagePreviewText(optimistic),
+                    last_message_at: optimistic.created_at,
+                    last_message_is_own: true,
+                    last_message_status: 'sending',
+                });
+            });
             setDraft('');
             setReplyTo(null);
             setIsSending(true);
@@ -2226,6 +2239,8 @@ const MessagesPage = () => {
                 setMessages((current: any) =>
                     current.filter((item: any) => item._id !== pendingId),
                 );
+                // Puts the list back to what the server has.
+                void loadConversations(true);
                 showToast?.({
                     type: 'error',
                     message: result?.message || 'Could not send the message',
@@ -2284,6 +2299,8 @@ const MessagesPage = () => {
                         profile.nick_name ||
                         '',
                     last_message_at: result.data.created_at,
+                    last_message_is_own: true,
+                    last_message_status: 'sent',
                     unread: 0,
                 });
             });
@@ -3085,38 +3102,63 @@ const MessagesPage = () => {
                                                     asLink={false}
                                                 />
                                             )}
-                                            {item.last_message_at ? (
-                                                <span className="messages_conversation_time">
-                                                    {conversationStamp(
-                                                        item.last_message_at,
-                                                    )}
-                                                </span>
+                                            {!isGroupChat(item) &&
+                                            onlineByUserId[
+                                                String(item.participant?._id)
+                                            ] ? (
+                                                // The same green dot and "Online" as in
+                                                // the header of the chat.
+                                                <UserActivityStatus
+                                                    user={item.participant}
+                                                    viewerId={profile._id}
+                                                    isOnline={true}
+                                                    className="messages_activity_status"
+                                                />
                                             ) : null}
                                         </div>
                                         <div className="messages_conversation_copy">
-                                            {typingByConversationId[
-                                                String(item._id)
-                                            ] ? (
-                                                <p className="messages_conversation_preview messages_conversation_typing">
-                                                    <TypingDots />
-                                                    <span className="messages_conversation_typing_names">
-                                                        {typingNamesFor(
-                                                            item._id,
+                                            <div className="messages_conversation_row">
+                                                {typingByConversationId[
+                                                    String(item._id)
+                                                ] ? (
+                                                    <p className="messages_conversation_preview messages_conversation_typing">
+                                                        <TypingDots />
+                                                        <span className="messages_conversation_typing_names">
+                                                            {typingNamesFor(
+                                                                item._id,
+                                                            )}
+                                                        </span>
+                                                    </p>
+                                                ) : (
+                                                    <p className="messages_conversation_preview">
+                                                        {conversationPreview(
+                                                            item,
                                                         )}
-                                                    </span>
-                                                </p>
-                                            ) : (
-                                                <p className="messages_conversation_preview">
-                                                    {conversationPreview(item)}
-                                                </p>
-                                            )}
-                                            {item.unread > 0 ? (
-                                                <div className="messages_conversation_row">
-                                                    <span className="messages_conversation_unread">
-                                                        {item.unread}
-                                                    </span>
-                                                </div>
-                                            ) : null}
+                                                    </p>
+                                                )}
+                                                <span className="messages_conversation_meta">
+                                                    {item.last_message_is_own ? (
+                                                        <MessageStatus
+                                                            status={
+                                                                item.last_message_status ||
+                                                                'sent'
+                                                            }
+                                                        />
+                                                    ) : null}
+                                                    {item.last_message_at ? (
+                                                        <span className="messages_conversation_time">
+                                                            {conversationStamp(
+                                                                item.last_message_at,
+                                                            )}
+                                                        </span>
+                                                    ) : null}
+                                                    {item.unread > 0 ? (
+                                                        <span className="messages_conversation_unread">
+                                                            {item.unread}
+                                                        </span>
+                                                    ) : null}
+                                                </span>
+                                            </div>
                                         </div>
                                     </Link>
                                 </li>
