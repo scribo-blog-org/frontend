@@ -95,6 +95,74 @@ const LinkCard = ({ item }: { item: PostMediaItem }) => {
     );
 };
 
+const AutoVideo = ({
+    src,
+    poster,
+    onOpen,
+}: {
+    src: string;
+    poster?: string;
+    onOpen: () => void;
+}) => {
+    const ref = useRef<HTMLVideoElement>(null);
+    const [autoplay, setAutoplay] = useState(true);
+
+    useEffect(() => {
+        const reduced =
+            typeof window !== 'undefined' &&
+            window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        if (reduced) {
+            setAutoplay(false);
+            return;
+        }
+
+        const element = ref.current;
+        if (!element || typeof IntersectionObserver === 'undefined') {
+            return;
+        }
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+                    element.play().catch(() => undefined);
+                } else {
+                    element.pause();
+                }
+            },
+            { threshold: [0, 0.6, 1] },
+        );
+        observer.observe(element);
+
+        return () => {
+            observer.disconnect();
+            element.pause();
+        };
+    }, [src]);
+
+    return (
+        <button
+            type="button"
+            className="post_media_open post_media_open_video"
+            aria-label="Open video"
+            onClick={onOpen}
+        >
+            <video
+                ref={ref}
+                src={src}
+                poster={poster}
+                muted
+                loop
+                playsInline
+                preload="metadata"
+            />
+            {autoplay ? null : (
+                <span className="post_media_play">
+                    <PlayIcon />
+                </span>
+            )}
+        </button>
+    );
+};
 const Slide = ({
     item,
     onZoom,
@@ -119,23 +187,11 @@ const Slide = ({
 
     if (item.type === 'video') {
         return (
-            <button
-                type="button"
-                className="post_media_open post_media_open_video"
-                aria-label="Play video"
-                onClick={onZoom}
-            >
-                <video
-                    src={src}
-                    poster={item.poster ? mediaUrl(item.poster) : undefined}
-                    muted
-                    playsInline
-                    preload="metadata"
-                />
-                <span className="post_media_play">
-                    <PlayIcon />
-                </span>
-            </button>
+            <AutoVideo
+                src={src}
+                poster={item.poster ? mediaUrl(item.poster) : undefined}
+                onOpen={onZoom}
+            />
         );
     }
 
