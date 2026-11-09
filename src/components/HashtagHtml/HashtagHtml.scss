@@ -21,7 +21,7 @@
     }
 
     a:not(.hashtag):not(.mention) {
-        color: var(--accent-color);
+        color: var(--link-text-color);
         text-decoration: underline;
         text-underline-offset: 3px;
         text-decoration-color: var(--border-strong);
