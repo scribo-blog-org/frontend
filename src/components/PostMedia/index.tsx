@@ -227,6 +227,14 @@ const MediaRow = ({
         [media],
     );
     const track = useRef<HTMLDivElement>(null);
+    const drag = useRef({
+        down: false,
+        moved: false,
+        suppress: false,
+        startX: 0,
+        startLeft: 0,
+    });
+
     const [active, setActive] = useState(0);
     const [zoom, setZoom] = useState<number | null>(null);
     const [canScroll, setCanScroll] = useState(false);
@@ -309,14 +317,6 @@ const MediaRow = ({
                   ),
         );
     };
-
-    const drag = useRef({
-        down: false,
-        moved: false,
-        suppress: false,
-        startX: 0,
-        startLeft: 0,
-    });
 
     const dragStart = (event: React.PointerEvent<HTMLDivElement>) => {
         if (event.pointerType !== 'mouse' || event.button !== 0) {
