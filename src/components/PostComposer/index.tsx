@@ -495,7 +495,7 @@ const PostComposer = ({
                                                     autoFocus
                                                     type="url"
                                                     value={linkValue}
-                                                    placeholder="Paste a link to an image, video, YouTube…"
+                                                    placeholder="Any link"
                                                     onChange={(event) =>
                                                         setLinkValue(
                                                             event.target.value,
@@ -581,12 +581,14 @@ const PostComposer = ({
                                 </>
                             }
                             toolbarTrailing={
-                                <span
-                                    className={`composer_counter${overLimit ? ' composer_counter_over' : ''}`}
-                                >
-                                    {formatBytes(total)} /{' '}
-                                    {formatBytes(MAX_MEDIA_BYTES)}
-                                </span>
+                                total >= MAX_MEDIA_BYTES * 0.8 ? (
+                                    <span
+                                        className={`composer_counter${overLimit ? ' composer_counter_over' : ''}`}
+                                    >
+                                        {formatBytes(total)} /{' '}
+                                        {formatBytes(MAX_MEDIA_BYTES)}
+                                    </span>
+                                ) : null
                             }
                         />
 
@@ -608,7 +610,7 @@ const PostComposer = ({
                     <span className="composer_hint">
                         {!verdict.ok && (hasText || tiles.length)
                             ? verdict.reason
-                            : 'Anyone can see this post'}
+                            : ''}
                     </span>
                     <PrimaryButton
                         className="composer_publish"

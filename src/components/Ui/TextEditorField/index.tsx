@@ -23,7 +23,7 @@ import {
     ListItemNode,
     ListNode,
 } from '@lexical/list';
-import { LinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
+import { LinkNode } from '@lexical/link';
 import {
     $createCodeNode,
     $isCodeNode,
@@ -48,7 +48,6 @@ import BoldText from '../../../assets/svg/bold-text.svg';
 import ItalicText from '../../../assets/svg/italic-text.svg';
 import MarkList from '../../../assets/svg/mark-list-icon.svg';
 import NumList from '../../../assets/svg/num-list-icon.svg';
-import LinkText from '../../../assets/svg/link-icon.svg';
 import CodeBlockIcon from '../../../assets/svg/code-block.svg';
 
 import { useRef, useState, useEffect } from 'react';
@@ -142,8 +141,6 @@ const EditorToolbar = ({
     trailing = null,
 }: any) => {
     const [editor] = useLexicalComposerContext();
-    const [linkOpen, setLinkOpen] = useState(false);
-    const [linkUrl, setLinkUrl] = useState('');
     const [formatOpen, setFormatOpen] = useState(false);
     const [codeLanguage, setCodeLanguage] = useState<string | null>(null);
 
@@ -162,24 +159,6 @@ const EditorToolbar = ({
             });
         });
     }, [editor]);
-
-    const closeLink = () => {
-        setLinkOpen(false);
-        setLinkUrl('');
-    };
-
-    const applyLink = () => {
-        const url = linkUrl.trim();
-        if (url) {
-            editor.dispatchCommand(TOGGLE_LINK_COMMAND, {
-                url,
-                target: '_blank',
-                rel: 'noopener noreferrer',
-            });
-        }
-        closeLink();
-        editor.focus();
-    };
 
     const toggleCodeBlock = () => {
         editor.update(() => {
@@ -266,16 +245,6 @@ const EditorToolbar = ({
                     <NumList />
                 </button>
             </Tooltip>
-
-            <Tooltip text="Add a link">
-                <button
-                    type="button"
-                    className="app-transition"
-                    onClick={() => (linkOpen ? closeLink() : setLinkOpen(true))}
-                >
-                    <LinkText />
-                </button>
-            </Tooltip>
         </>
     );
 
@@ -338,30 +307,6 @@ const EditorToolbar = ({
                 ) : null}
                 {trailing}
             </div>
-            {linkOpen ? (
-                <div className="text_editor_body_top_side_link">
-                    <input
-                        autoFocus
-                        type="url"
-                        value={linkUrl}
-                        placeholder="https://"
-                        onChange={(event: any) =>
-                            setLinkUrl(event.target.value)
-                        }
-                        onKeyDown={(event: any) => {
-                            if (event.key === 'Enter') {
-                                event.preventDefault();
-                                applyLink();
-                            } else if (event.key === 'Escape') {
-                                closeLink();
-                            }
-                        }}
-                    />
-                    <button type="button" onClick={applyLink}>
-                        Add
-                    </button>
-                </div>
-            ) : null}
         </div>
     );
 };
