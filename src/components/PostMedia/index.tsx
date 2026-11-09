@@ -244,7 +244,7 @@ const PostMedia = ({
             >
                 {items.map((item, index) => (
                     <figure
-                        key={item.id || `${item.url}-${index}`}
+                        key={`${item.id || item.url}-${index}`}
                         className={`post_media_slide post_media_${item.type}`}
                     >
                         <Slide

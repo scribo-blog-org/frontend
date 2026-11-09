@@ -193,7 +193,6 @@ const createPost = async (data: any) => {
         const result = await response.json();
         const code = response.status;
 
-        console.log(result);
         return {
             statusCode: code,
             ...result,
