@@ -12,6 +12,8 @@ import {
     $getRoot,
     $getSelection,
     $isRangeSelection,
+    $isTextNode,
+    $setSelection,
     FORMAT_TEXT_COMMAND,
     TextNode,
 } from 'lexical';
@@ -23,7 +25,7 @@ import {
     ListItemNode,
     ListNode,
 } from '@lexical/list';
-import { AutoLinkNode, LinkNode } from '@lexical/link';
+import { AutoLinkNode, LinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
 import {
     AutoLinkPlugin,
     createLinkMatcherWithRegExp,
@@ -35,6 +37,8 @@ import {
     CodeNode,
 } from '@lexical/code';
 import { $setBlocksType } from '@lexical/selection';
+
+import { parseHttpUrl } from '../../../utils/embed';
 
 import { HashtagNode } from './HashtagNode';
 import { MentionNode } from './MentionNode';
@@ -92,19 +96,129 @@ const AUTO_LINK_MATCHERS = [
 function AutoLinkInCodePlugin() {
     const [editor] = useLexicalComposerContext();
 
-    useEffect(
-        () =>
-            editor.registerNodeTransform(AutoLinkNode, (node: any) => {
-                if (node.getParent()?.getType() !== 'code') {
-                    return;
+    useEffect(() => {
+        const unwrap = (node: any) => {
+            if (node.getParent()?.getType() !== 'code') {
+                return;
+            }
+            node.getChildren().forEach((child: any) =>
+                node.insertBefore(child),
+            );
+            node.remove();
+        };
+
+        const offAuto = editor.registerNodeTransform(AutoLinkNode, unwrap);
+        const offLink = editor.registerNodeTransform(LinkNode, unwrap);
+
+        return () => {
+            offAuto();
+            offLink();
+        };
+    }, [editor]);
+
+    return null;
+}
+
+type EditorApi = {
+    capture: () => boolean;
+    applyLink: (url: string) => boolean;
+    insertText: (text: string) => void;
+    focus: () => void;
+};
+
+function EditorApiPlugin({
+    apiRef,
+}: {
+    apiRef?: { current: EditorApi | null };
+}) {
+    const [editor] = useLexicalComposerContext();
+
+    useEffect(() => {
+        if (!apiRef) {
+            return;
+        }
+
+        let saved: any = null;
+
+        const restore = () => {
+            if (!saved) {
+                return;
+            }
+            try {
+                $setSelection(saved.clone());
+            } catch {
+                saved = null;
+            }
+        };
+
+        apiRef.current = {
+            capture() {
+                let selected = false;
+                saved = null;
+                editor.getEditorState().read(() => {
+                    const selection = $getSelection();
+                    if (!$isRangeSelection(selection)) {
+                        return;
+                    }
+                    saved = selection.clone();
+                    const top = selection.anchor.getNode().getTopLevelElement();
+                    selected =
+                        !selection.isCollapsed() &&
+                        selection.getTextContent().trim() !== '' &&
+                        !$isCodeNode(top);
+                });
+                return selected;
+            },
+            applyLink(url: string) {
+                const typed = String(url || '').trim();
+                const parsed = parseHttpUrl(typed);
+                if (!parsed) {
+                    return false;
                 }
-                node.getChildren().forEach((child: any) =>
-                    node.insertBefore(child),
+                editor.update(restore, { discrete: true });
+                editor.dispatchCommand(TOGGLE_LINK_COMMAND, {
+                    url: /^https?:\/\//i.test(typed) ? typed : parsed.href,
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                });
+                editor.focus();
+                return true;
+            },
+            insertText(text: string) {
+                editor.update(
+                    () => {
+                        restore();
+                        let selection = $getSelection();
+                        if (!$isRangeSelection(selection)) {
+                            $getRoot().selectEnd();
+                            selection = $getSelection();
+                        }
+                        if (!$isRangeSelection(selection)) {
+                            return;
+                        }
+                        const { anchor } = selection;
+                        const node = anchor.getNode();
+                        const previous =
+                            $isTextNode(node) && anchor.offset > 0
+                                ? node.getTextContent()[anchor.offset - 1]
+                                : '';
+                        const lead =
+                            previous && !/\s/.test(previous) ? ' ' : '';
+                        selection.insertText(`${lead}${text} `);
+                    },
+                    { discrete: true },
                 );
-                node.remove();
-            }),
-        [editor],
-    );
+                editor.focus();
+            },
+            focus() {
+                editor.focus();
+            },
+        };
+
+        return () => {
+            apiRef.current = null;
+        };
+    }, [editor, apiRef]);
 
     return null;
 }
@@ -349,6 +463,7 @@ export default function TextEditor({
     toolbarLeading = null,
     toolbarTrailing = null,
     belowEditor = null,
+    editorApiRef,
 }: any) {
     const [switcherActiveIndex, setSwitcherActiveIndex] = useState<any>(0);
     const compose = variant === 'compose';
@@ -371,6 +486,7 @@ export default function TextEditor({
             }
         >
             <InitialHtmlPlugin html={initialHtml} />
+            <EditorApiPlugin apiRef={editorApiRef} />
             <EditablePlugin
                 editable={!disabled && (compose || switcherActiveIndex === 0)}
             />
@@ -408,7 +524,16 @@ export default function TextEditor({
                     />
                     <HistoryPlugin />
                     <ListPlugin />
-                    <LinkPlugin />
+                    <LinkPlugin
+                        validateUrl={(url: string) =>
+                            /^https?:\/\//i.test(url.trim()) &&
+                            parseHttpUrl(url) !== null
+                        }
+                        attributes={{
+                            target: '_blank',
+                            rel: 'noopener noreferrer',
+                        }}
+                    />
                     <AutoLinkPlugin matchers={AUTO_LINK_MATCHERS} />
                     <AutoLinkInCodePlugin />
                     <HashtagPlugin />

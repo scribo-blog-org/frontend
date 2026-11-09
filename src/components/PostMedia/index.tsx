@@ -231,7 +231,6 @@ const MediaRow = ({
         startLeft: 0,
     });
 
-    const [active, setActive] = useState(0);
     const [zoom, setZoom] = useState<number | null>(null);
     const [canScroll, setCanScroll] = useState(false);
     const [edges, setEdges] = useState({ start: true, end: false });
@@ -280,40 +279,50 @@ const MediaRow = ({
 
     const multiple = items.length > 1;
 
-    const scrollTo = (index: number) => {
+    const slideLeft = (element: HTMLDivElement, slide: HTMLElement) =>
+        slide.offsetLeft - element.offsetLeft;
+
+    const step = (direction: 'prev' | 'next') => {
         const element = track.current;
-        const slide = element?.children[index] as HTMLElement | undefined;
-        if (element && slide) {
-            element.scrollTo({
-                left: slide.offsetLeft - element.offsetLeft,
-                behavior: 'smooth',
-            });
+        if (!element) {
+            return;
         }
+        const slides = Array.from(element.children) as HTMLElement[];
+        const current = element.scrollLeft;
+        let target = direction === 'prev' ? 0 : element.scrollWidth;
+
+        if (direction === 'prev') {
+            for (const slide of slides) {
+                const left = slideLeft(element, slide);
+                if (left < current - 2) {
+                    target = left;
+                }
+            }
+        } else {
+            for (const slide of slides) {
+                const left = slideLeft(element, slide);
+                if (left > current + 2) {
+                    target = left;
+                    break;
+                }
+            }
+        }
+
+        element.scrollTo({ left: target, behavior: 'smooth' });
     };
 
     const onScroll = () => {
         const element = track.current;
-        const first = element?.children[0] as HTMLElement | undefined;
-        if (!element || !first) {
+        if (!element) {
             return;
         }
-        const atEnd =
-            element.scrollLeft + element.clientWidth >= element.scrollWidth - 2;
-        setEdges({ start: element.scrollLeft <= 2, end: atEnd });
-        const step = first.offsetWidth + 8;
-        setActive(
-            atEnd
-                ? items.length - 1
-                : Math.max(
-                      0,
-                      Math.min(
-                          items.length - 1,
-                          Math.round(element.scrollLeft / step),
-                      ),
-                  ),
-        );
+        setEdges({
+            start: element.scrollLeft <= 2,
+            end:
+                element.scrollLeft + element.clientWidth >=
+                element.scrollWidth - 2,
+        });
     };
-
     const dragStart = (event: React.PointerEvent<HTMLDivElement>) => {
         if (event.pointerType !== 'mouse' || event.button !== 0) {
             return;
@@ -398,15 +407,12 @@ const MediaRow = ({
 
             {multiple && canScroll ? (
                 <>
-                    <span className="post_media_pill">
-                        {active + 1}/{items.length}
-                    </span>
                     {!edges.start ? (
                         <button
                             type="button"
                             className="post_media_arrow post_media_arrow_prev"
                             aria-label="Previous"
-                            onClick={() => scrollTo(active - 1)}
+                            onClick={() => step('prev')}
                         >
                             ‹
                         </button>
@@ -416,23 +422,11 @@ const MediaRow = ({
                             type="button"
                             className="post_media_arrow post_media_arrow_next"
                             aria-label="Next"
-                            onClick={() => scrollTo(active + 1)}
+                            onClick={() => step('next')}
                         >
                             ›
                         </button>
                     ) : null}
-                    <div className="post_media_dots" aria-hidden="true">
-                        {items.map((item, index) => (
-                            <span
-                                key={`${item.url}-dot-${index}`}
-                                className={
-                                    index === active
-                                        ? 'post_media_dot post_media_dot_active'
-                                        : 'post_media_dot'
-                                }
-                            />
-                        ))}
-                    </div>
                 </>
             ) : null}
 

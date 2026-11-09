@@ -20,6 +20,11 @@ import MediaTile from './MediaTile';
 
 import { fetchLinkPreview } from '../../api/linkPreview.api';
 import { classifyLink, type LinkInfo } from '../../utils/embed';
+import {
+    asDetectedMedia,
+    decideLinkAction,
+    linkHref,
+} from '../../utils/linkAction';
 import { captureVideoFrame } from '../../utils/videoFrame';
 import { mediaUrl } from '../../utils/image';
 import {
@@ -74,14 +79,11 @@ function tilesFromMedia(media: PostMediaItem[]): ComposerTile[] {
 }
 
 type UrlPreview = {
-    status: 'loading' | 'ok' | 'error';
+    status: 'loading' | 'ok' | 'text';
     kind: ComposerTile['kind'];
     label: string;
     image: string;
 };
-
-const URL_ERROR =
-    'Only image, video, YouTube, Vimeo or Twitch links can be added here. Paste other links into your text.';
 
 function directKind(info: LinkInfo): ComposerTile['kind'] {
     if (info.kind === 'video') {
@@ -149,6 +151,8 @@ const PostComposer = ({
     const [confirmDiscard, setConfirmDiscard] = useState(false);
     const [linkOpen, setLinkOpen] = useState(false);
     const [linkValue, setLinkValue] = useState('');
+    const [linkSelection, setLinkSelection] = useState(false);
+    const editorApi = useRef<any>(null);
     const [linkPreview, setLinkPreview] = useState<UrlPreview | null>(null);
     const [progress, setProgress] = useState(0);
     const [confirmAbort, setConfirmAbort] = useState(false);
@@ -297,7 +301,8 @@ const PostComposer = ({
     }, [dirty]);
 
     useEffect(() => {
-        if (!linkOpen) {
+        if (!linkOpen || linkSelection) {
+            setLinkPreview(null);
             return;
         }
 
@@ -325,12 +330,8 @@ const PostComposer = ({
                     return;
                 }
 
-                const mediaType = data?.media_type;
-                if (
-                    mediaType === 'image' ||
-                    mediaType === 'gif' ||
-                    mediaType === 'video'
-                ) {
+                const mediaType = asDetectedMedia(data?.media_type);
+                if (mediaType) {
                     setLinkPreview({
                         status: 'ok',
                         kind: mediaType,
@@ -346,7 +347,7 @@ const PostComposer = ({
                 }
 
                 setLinkPreview({
-                    status: 'error',
+                    status: 'text',
                     kind: 'embed',
                     label: '',
                     image: '',
@@ -368,14 +369,23 @@ const PostComposer = ({
             cancelled = true;
             window.clearTimeout(timer);
         };
-    }, [linkValue, linkOpen]);
-    const addLink = () => {
-        const info = classifyLink(linkValue);
+    }, [linkValue, linkOpen, linkSelection]);
+    const closeLink = () => {
+        setLinkValue('');
+        setLinkPreview(null);
+        setLinkOpen(false);
+    };
 
-        if (!info || linkPreview?.status !== 'ok') {
+    const toggleLink = () => {
+        if (linkOpen) {
+            closeLink();
             return;
         }
+        setLinkSelection(editorApi.current?.capture() ?? false);
+        setLinkOpen(true);
+    };
 
+    const addMediaTile = (info: LinkInfo, preview: UrlPreview) => {
         if (tilesRef.current.length >= MAX_MEDIA_ITEMS) {
             showToast?.({
                 message: `At most ${MAX_MEDIA_ITEMS} items per post.`,
@@ -390,14 +400,14 @@ const PostComposer = ({
             {
                 key: tileKey,
                 status: 'embed',
-                kind: linkPreview.kind,
+                kind: preview.kind,
                 size: 0,
-                previewUrl: linkPreview.image,
+                previewUrl: preview.image,
                 payload: { type: 'embed', url: info.url },
             },
         ]);
 
-        if (!linkPreview.image && info.kind === 'twitch') {
+        if (!preview.image && info.kind === 'twitch') {
             fetchLinkPreview(info.url).then((result: any) => {
                 const image = result?.status === true && result.data?.image;
                 if (image) {
@@ -411,10 +421,55 @@ const PostComposer = ({
                 }
             });
         }
+    };
 
-        setLinkValue('');
-        setLinkPreview(null);
-        setLinkOpen(false);
+    const addLink = async () => {
+        const info = classifyLink(linkValue);
+
+        if (!info) {
+            showToast?.({ message: 'Enter a valid link.', type: 'error' });
+            return;
+        }
+
+        if (linkSelection) {
+            if (editorApi.current?.applyLink(linkHref(linkValue, info))) {
+                closeLink();
+            }
+            return;
+        }
+
+        let preview = linkPreview?.status === 'ok' ? linkPreview : null;
+        let detected: unknown = preview ? preview.kind : null;
+
+        if (!preview && !previewFromInfo(info)) {
+            const result: any = await fetchLinkPreview(info.url);
+            const mediaType = asDetectedMedia(
+                result?.status === true ? result.data?.media_type : null,
+            );
+            if (mediaType) {
+                detected = mediaType;
+                preview = {
+                    status: 'ok',
+                    kind: mediaType,
+                    label: '',
+                    image:
+                        mediaType === 'video' ? '' : result.data?.image || '',
+                };
+            }
+        }
+
+        const action = decideLinkAction(false, info, detected);
+
+        if (action === 'media') {
+            addMediaTile(
+                info,
+                preview ?? (previewFromInfo(info) as UrlPreview),
+            );
+        } else {
+            editorApi.current?.insertText(linkHref(linkValue, info));
+        }
+
+        closeLink();
     };
     const total = totalUploadBytes(tiles);
     const overLimit = total > MAX_MEDIA_BYTES;
@@ -540,6 +595,7 @@ const PostComposer = ({
                             initialHtml={initialHtml}
                             disabled={submitting}
                             onChange={(value: string) => setHtml(value)}
+                            editorApiRef={editorApi}
                             belowEditor={
                                 <>
                                     {tiles.length ? (
@@ -561,14 +617,17 @@ const PostComposer = ({
                                     {linkOpen ? (
                                         <div className="composer_link">
                                             <p className="composer_link_title">
-                                                Add media from a URL
+                                                {linkSelection
+                                                    ? 'Link the selected text'
+                                                    : 'Add a link'}
                                             </p>
                                             <div className="composer_link_row">
                                                 <input
                                                     autoFocus
-                                                    type="url"
+                                                    type="text"
+                                                    inputMode="url"
                                                     value={linkValue}
-                                                    placeholder="Image, video, YouTube or Twitch link"
+                                                    placeholder="Paste a link"
                                                     onChange={(event) =>
                                                         setLinkValue(
                                                             event.target.value,
@@ -586,7 +645,8 @@ const PostComposer = ({
                                                             'Escape'
                                                         ) {
                                                             event.stopPropagation();
-                                                            setLinkOpen(false);
+                                                            closeLink();
+                                                            editorApi.current?.focus();
                                                         }
                                                     }}
                                                 />
@@ -594,44 +654,53 @@ const PostComposer = ({
                                                     type="button"
                                                     onClick={addLink}
                                                     disabled={
-                                                        linkPreview?.status !==
-                                                        'ok'
+                                                        !classifyLink(linkValue)
                                                     }
                                                 >
                                                     Add
                                                 </button>
                                             </div>
-                                            {linkPreview?.status === 'error' ? (
-                                                <p className="composer_link_error">
-                                                    {URL_ERROR}
+                                            {linkSelection ? (
+                                                <p className="composer_link_hint">
+                                                    The selected text becomes a
+                                                    link.
                                                 </p>
                                             ) : linkPreview?.status ===
                                               'loading' ? (
                                                 <p className="composer_link_hint">
                                                     Checking the linkвЂ¦
                                                 </p>
-                                            ) : linkPreview ? (
-                                                <div className="composer_link_preview">
-                                                    {linkPreview.image ? (
-                                                        <img
-                                                            src={
-                                                                linkPreview.image
-                                                            }
-                                                            alt=""
-                                                        />
-                                                    ) : null}
-                                                    <span>
-                                                        {linkPreview.label}
-                                                    </span>
-                                                </div>
+                                            ) : linkPreview?.status === 'ok' ? (
+                                                <>
+                                                    <div className="composer_link_preview">
+                                                        {linkPreview.image ? (
+                                                            <img
+                                                                src={
+                                                                    linkPreview.image
+                                                                }
+                                                                alt=""
+                                                            />
+                                                        ) : null}
+                                                        <span>
+                                                            {linkPreview.label}
+                                                        </span>
+                                                    </div>
+                                                    <p className="composer_link_hint">
+                                                        Will be added to the
+                                                        carousel
+                                                    </p>
+                                                </>
+                                            ) : linkPreview?.status ===
+                                              'text' ? (
+                                                <p className="composer_link_hint">
+                                                    Will be inserted as a link
+                                                </p>
                                             ) : (
                                                 <p className="composer_link_hint">
-                                                    Direct image or video links
-                                                    go into the carousel,
-                                                    YouTube and Twitch links
-                                                    become players. For any
-                                                    other link, just paste it
-                                                    into your text.
+                                                    YouTube, Twitch, photo and
+                                                    video links are added to the
+                                                    carousel. Other links are
+                                                    inserted into your text.
                                                 </p>
                                             )}
                                         </div>
@@ -658,16 +727,17 @@ const PostComposer = ({
                                     <button
                                         type="button"
                                         className="app-transition"
-                                        aria-label="Add media from a URL"
-                                        title="Add media from a URL"
+                                        aria-label="Add link"
+                                        title="Add link"
                                         aria-pressed={linkOpen}
                                         disabled={submitting}
-                                        onClick={() =>
-                                            setLinkOpen((open) => !open)
+                                        onMouseDown={(event) =>
+                                            event.preventDefault()
                                         }
+                                        onClick={toggleLink}
                                     >
                                         <LinkIcon />
-                                    </button>
+                                    </button>{' '}
                                 </>
                             }
                             toolbarTrailing={
