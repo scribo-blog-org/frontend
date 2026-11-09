@@ -320,7 +320,11 @@ const PostComposer = ({
             setLinkPreview(
                 result?.status === true && result.data
                     ? {
-                          title: result.data.title || info.url,
+                          title: result.data.media_type
+                              ? result.data.media_type === 'video'
+                                  ? 'Video'
+                                  : 'Image'
+                              : result.data.title || info.url,
                           image: result.data.image || '',
                       }
                     : { title: info.url, image: '' },

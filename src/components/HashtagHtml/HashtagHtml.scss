@@ -22,12 +22,11 @@
 
     a:not(.hashtag):not(.mention) {
         color: var(--link-text-color);
-        text-decoration: underline;
-        text-underline-offset: 3px;
-        text-decoration-color: var(--border-strong);
+        text-decoration: none;
 
         &:hover {
-            text-decoration-color: currentColor;
+            text-decoration: underline;
+            text-underline-offset: 3px;
         }
     }
 

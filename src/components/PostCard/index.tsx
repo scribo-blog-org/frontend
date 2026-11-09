@@ -50,6 +50,7 @@ const PostCard = ({ isLoading = false, post, setPosts }: any) => {
         [setPosts],
     );
 
+    const navigate = useNavigate();
     const media = normalizePostMedia(post);
     const ready = !isLoading && Boolean(post._id);
 
@@ -72,7 +73,22 @@ const PostCard = ({ isLoading = false, post, setPosts }: any) => {
                 </Sceleton>
             )}
             {ready && media.length ? (
-                <PostMedia media={media} variant="feed" />
+                <div
+                    className="posts_item_media"
+                    onClick={(event: any) => {
+                        if (
+                            event.defaultPrevented ||
+                            event.target.closest(
+                                '.post_media_slide, .post_media_arrow, a, button, video',
+                            )
+                        ) {
+                            return;
+                        }
+                        navigate('/posts/' + post._id);
+                    }}
+                >
+                    <PostMedia media={media} variant="feed" />
+                </div>
             ) : null}
             <PostActions
                 article={post}

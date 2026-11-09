@@ -7,9 +7,13 @@
 
     .message_link {
         color: var(--link-text-color);
-        text-decoration: underline;
-        text-underline-offset: 2px;
+        text-decoration: none;
         overflow-wrap: anywhere;
+
+        &:hover {
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
     }
 
     .messages_text {
