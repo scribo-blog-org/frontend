@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import MediaViewer from '../MediaViewer';
 import { mediaUrl } from '../../utils/image';
-import { hostLabel, isSafeEmbedUrl } from '../../utils/embed';
+import { decodeEntities, hostLabel, isSafeEmbedUrl } from '../../utils/embed';
 import type { PostMediaItem } from '../../utils/postMedia';
 
 import './PostMedia.scss';
@@ -83,11 +83,11 @@ const LinkCard = ({ item }: { item: PostMediaItem }) => {
                     {hostLabel(item.url)}
                 </span>
                 <span className="post_media_link_title">
-                    {embed.title || item.url}
+                    {decodeEntities(embed.title) || item.url}
                 </span>
                 {embed.description ? (
                     <span className="post_media_link_description">
-                        {embed.description}
+                        {decodeEntities(embed.description)}
                     </span>
                 ) : null}
             </span>

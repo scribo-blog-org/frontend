@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { classifyLink, hostLabel, isSafeEmbedUrl, parseHttpUrl } from './embed';
+import {
+    classifyLink,
+    decodeEntities,
+    hostLabel,
+    isSafeEmbedUrl,
+    parseHttpUrl,
+} from './embed';
 
 describe('classifyLink', () => {
     it('recognises YouTube watch, short and shorts links', () => {
@@ -73,5 +79,17 @@ describe('hostLabel', () => {
     it('drops the www prefix', () => {
         expect(hostLabel('https://www.example.com/path')).toBe('example.com');
         expect(hostLabel('nope')).toBe('');
+    });
+});
+
+describe('decodeEntities', () => {
+    it('decodes named and numeric entities', () => {
+        expect(decodeEntities('it&#39;s &#34;x&#34; &amp; &quot;y&quot;')).toBe(
+            'it\'s "x" & "y"',
+        );
+    });
+
+    it('is safe for empty values', () => {
+        expect(decodeEntities(undefined)).toBe('');
     });
 });

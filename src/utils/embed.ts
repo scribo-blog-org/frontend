@@ -136,3 +136,35 @@ export function hostLabel(value: unknown) {
     const url = parseHttpUrl(value);
     return url ? url.hostname.replace(/^www\./, '') : '';
 }
+
+const NAMED_ENTITIES: Record<string, string> = {
+    amp: '&',
+    lt: '<',
+    gt: '>',
+    quot: '"',
+    apos: "'",
+    nbsp: ' ',
+};
+
+export function decodeEntities(value: unknown): string {
+    return String(value ?? '').replace(
+        /&(#x[0-9a-f]+|#\d+|[a-z]+);/gi,
+        (match, entity: string) => {
+            if (entity[0] === '#') {
+                const code =
+                    entity[1].toLowerCase() === 'x'
+                        ? parseInt(entity.slice(2), 16)
+                        : parseInt(entity.slice(1), 10);
+                if (!Number.isFinite(code) || code <= 0 || code > 0x10ffff) {
+                    return match;
+                }
+                try {
+                    return String.fromCodePoint(code);
+                } catch {
+                    return match;
+                }
+            }
+            return NAMED_ENTITIES[entity.toLowerCase()] ?? match;
+        },
+    );
+}
