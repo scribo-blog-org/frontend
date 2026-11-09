@@ -168,15 +168,41 @@ function linkifyPlainMentionsInHtml(html: any) {
     return doc.body.innerHTML;
 }
 
+function openLinksInNewTab(html: any) {
+    if (!html) {
+        return '';
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    doc.querySelectorAll('a[href]').forEach((link: any) => {
+        if (link.classList.contains('mention')) {
+            return;
+        }
+        if (link.classList.contains('hashtag')) {
+            return;
+        }
+        const href = link.getAttribute('href') || '';
+        if (/^https?:\/\//i.test(href) || /^mailto:/i.test(href)) {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+        }
+    });
+
+    return doc.body.innerHTML;
+}
 export function enrichPostHtml(html: any) {
     if (!html) {
         return '';
     }
 
     const cleaned = stripLegacyMentionMarkup(html);
-    return decorateCodeBlocksHtml(
-        linkifyHashtagsInHtml(
-            linkifyPlainMentionsInHtml(linkifyPlainUrlsInHtml(cleaned)),
+    return openLinksInNewTab(
+        decorateCodeBlocksHtml(
+            linkifyHashtagsInHtml(
+                linkifyPlainMentionsInHtml(linkifyPlainUrlsInHtml(cleaned)),
+            ),
         ),
     );
 }

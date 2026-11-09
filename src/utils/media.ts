@@ -1,4 +1,8 @@
-export const MAX_MEDIA_BYTES = 100 * 1024 * 1024;
+const configuredMb = Number(process.env.NEXT_PUBLIC_POST_MEDIA_MAX_MB);
+
+export const MAX_MEDIA_MB =
+    Number.isFinite(configuredMb) && configuredMb > 0 ? configuredMb : 100;
+export const MAX_MEDIA_BYTES = Math.floor(MAX_MEDIA_MB * 1024 * 1024);
 
 export const IMAGE_MIME_TYPES = [
     'image/jpeg',

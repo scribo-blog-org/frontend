@@ -1,4 +1,4 @@
-import { MAX_MEDIA_BYTES } from './media';
+import { MAX_MEDIA_BYTES, MAX_MEDIA_MB } from './media';
 
 export const MAX_MEDIA_ITEMS = 10;
 
@@ -90,7 +90,7 @@ export function canPublish(text: string, tiles: Pick<ComposerTile, 'size'>[]) {
     }
 
     if (totalUploadBytes(tiles) > MAX_MEDIA_BYTES) {
-        return { ok: false, reason: 'Media exceeds 100 MB' };
+        return { ok: false, reason: `Media exceeds ${MAX_MEDIA_MB} MB` };
     }
 
     if (!text.trim() && tiles.length === 0) {
