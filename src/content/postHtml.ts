@@ -36,6 +36,71 @@ function stripLegacyMentionMarkup(html: any) {
     return doc.body.innerHTML;
 }
 
+const URL_IN_TEXT = /(?:https?:\/\/|www\.)[^\s<>"'`]+[^\s<>"'`.,;:!?)\]}]/gi;
+
+function linkifyPlainUrlsInHtml(html: any) {
+    if (!html) {
+        return '';
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
+    const nodes: any[] = [];
+    while (walker.nextNode()) {
+        nodes.push(walker.currentNode);
+    }
+
+    for (const node of nodes) {
+        const parent = node.parentElement;
+        if (
+            !parent ||
+            SKIP_TAGS.has(parent.tagName) ||
+            parent.closest('a, pre, code')
+        ) {
+            continue;
+        }
+
+        const text = node.nodeValue || '';
+        URL_IN_TEXT.lastIndex = 0;
+        if (!URL_IN_TEXT.test(text)) {
+            continue;
+        }
+
+        URL_IN_TEXT.lastIndex = 0;
+        const fragment = doc.createDocumentFragment();
+        let lastIndex = 0;
+        let match = URL_IN_TEXT.exec(text);
+
+        while (match) {
+            if (match.index > lastIndex) {
+                fragment.appendChild(
+                    doc.createTextNode(text.slice(lastIndex, match.index)),
+                );
+            }
+
+            const link = doc.createElement('a');
+            link.href = /^https?:\/\//i.test(match[0])
+                ? match[0]
+                : `https://${match[0]}`;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = match[0];
+            fragment.appendChild(link);
+
+            lastIndex = match.index + match[0].length;
+            match = URL_IN_TEXT.exec(text);
+        }
+
+        if (lastIndex < text.length) {
+            fragment.appendChild(doc.createTextNode(text.slice(lastIndex)));
+        }
+
+        node.replaceWith(fragment);
+    }
+
+    return doc.body.innerHTML;
+}
 function linkifyPlainMentionsInHtml(html: any) {
     if (!html) {
         return '';
@@ -110,7 +175,9 @@ export function enrichPostHtml(html: any) {
 
     const cleaned = stripLegacyMentionMarkup(html);
     return decorateCodeBlocksHtml(
-        linkifyHashtagsInHtml(linkifyPlainMentionsInHtml(cleaned)),
+        linkifyHashtagsInHtml(
+            linkifyPlainMentionsInHtml(linkifyPlainUrlsInHtml(cleaned)),
+        ),
     );
 }
 

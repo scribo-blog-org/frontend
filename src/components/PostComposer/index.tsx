@@ -483,22 +483,34 @@ const PostComposer = ({
                             onChange={(value: string) => setHtml(value)}
                             belowEditor={
                                 <>
-                                    {tiles.length ? (
-                                        <div className="composer_tiles">
-                                            {tiles.map((tile) => (
-                                                <MediaTile
-                                                    key={tile.key}
-                                                    tile={tile}
-                                                    uploading={submitting}
-                                                    progress={progress}
-                                                    disabled={submitting}
-                                                    onRemove={() =>
-                                                        removeTile(tile.key)
-                                                    }
-                                                />
-                                            ))}
-                                        </div>
-                                    ) : null}
+                                    {[
+                                        tiles.filter(
+                                            (tile) => tile.kind !== 'embed',
+                                        ),
+                                        tiles.filter(
+                                            (tile) => tile.kind === 'embed',
+                                        ),
+                                    ].map((group, index) =>
+                                        group.length ? (
+                                            <div
+                                                key={index}
+                                                className={`composer_tiles`}
+                                            >
+                                                {group.map((tile) => (
+                                                    <MediaTile
+                                                        key={tile.key}
+                                                        tile={tile}
+                                                        uploading={submitting}
+                                                        progress={progress}
+                                                        disabled={submitting}
+                                                        onRemove={() =>
+                                                            removeTile(tile.key)
+                                                        }
+                                                    />
+                                                ))}
+                                            </div>
+                                        ) : null,
+                                    )}
                                     {linkOpen ? (
                                         <div className="composer_link">
                                             <div className="composer_link_row">

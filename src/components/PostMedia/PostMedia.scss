@@ -4,6 +4,23 @@
     position: relative;
     width: 100%;
 
+    &_stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        width: 100%;
+    }
+
+    &_links &_slide {
+        align-self: flex-start;
+    }
+
+    &_track.post_media_track_dragging {
+        scroll-snap-type: none;
+        cursor: grabbing;
+        user-select: none;
+    }
+
     &_track {
         display: flex;
         gap: 8px;
@@ -160,7 +177,7 @@
     &_arrow {
         position: absolute;
         top: 50%;
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
         width: 36px;
@@ -180,12 +197,6 @@
 
         &_next {
             right: 8px;
-        }
-    }
-
-    @media (hover: hover) {
-        &:hover &_arrow {
-            display: flex;
         }
     }
 

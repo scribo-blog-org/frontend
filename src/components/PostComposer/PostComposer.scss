@@ -102,9 +102,14 @@
         }
     }
 
+    &_tiles_links &_tile {
+        flex-basis: 224px;
+        aspect-ratio: 16 / 10;
+    }
+
     &_tile {
         position: relative;
-        flex: 0 0 calc(50% - 4px);
+        flex: 0 0 168px;
         aspect-ratio: 4 / 5;
         max-height: 280px;
         overflow: hidden;

@@ -1,5 +1,6 @@
 'use client';
 
+import type React from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import MediaViewer from '../MediaViewer';
@@ -166,9 +167,11 @@ const AutoVideo = ({
 const Slide = ({
     item,
     onZoom,
+    eager = false,
 }: {
     item: PostMediaItem;
     onZoom: () => void;
+    eager?: boolean;
 }) => {
     const src = mediaUrl(item.url);
 
@@ -180,7 +183,12 @@ const Slide = ({
                 aria-label="Open image"
                 onClick={onZoom}
             >
-                <img src={src} alt="" loading="lazy" draggable={false} />
+                <img
+                    src={src}
+                    alt=""
+                    loading={eager ? 'eager' : 'lazy'}
+                    draggable={false}
+                />
             </button>
         );
     }
@@ -206,7 +214,7 @@ const Slide = ({
     return null;
 };
 
-const PostMedia = ({
+const MediaRow = ({
     media,
     variant = 'feed',
     className = '',
@@ -302,6 +310,62 @@ const PostMedia = ({
         );
     };
 
+    const drag = useRef({
+        down: false,
+        moved: false,
+        suppress: false,
+        startX: 0,
+        startLeft: 0,
+    });
+
+    const dragStart = (event: React.PointerEvent<HTMLDivElement>) => {
+        if (event.pointerType !== 'mouse' || event.button !== 0) {
+            return;
+        }
+        drag.current = {
+            down: true,
+            moved: false,
+            suppress: false,
+            startX: event.clientX,
+            startLeft: track.current?.scrollLeft ?? 0,
+        };
+    };
+
+    const dragMove = (event: React.PointerEvent<HTMLDivElement>) => {
+        const element = track.current;
+        if (!drag.current.down || !element) {
+            return;
+        }
+        const delta = event.clientX - drag.current.startX;
+        if (!drag.current.moved && Math.abs(delta) > 5) {
+            drag.current.moved = true;
+            element.classList.add('post_media_track_dragging');
+        }
+        if (drag.current.moved) {
+            element.scrollLeft = drag.current.startLeft - delta;
+        }
+    };
+
+    const dragEnd = () => {
+        const element = track.current;
+        if (drag.current.down && drag.current.moved) {
+            drag.current.suppress = true;
+            window.setTimeout(() => {
+                drag.current.suppress = false;
+            }, 0);
+        }
+        drag.current.down = false;
+        drag.current.moved = false;
+        element?.classList.remove('post_media_track_dragging');
+    };
+
+    const swallowClick = (event: React.MouseEvent) => {
+        if (drag.current.suppress) {
+            event.preventDefault();
+            event.stopPropagation();
+            drag.current.suppress = false;
+        }
+    };
     return (
         <div
             className={`post_media post_media_${variant}${multiple ? ' post_media_multiple' : ''} ${className}`.trim()}
@@ -310,6 +374,11 @@ const PostMedia = ({
                 className="post_media_track"
                 ref={track}
                 onScroll={multiple ? onScroll : undefined}
+                onPointerDown={multiple ? dragStart : undefined}
+                onPointerMove={multiple ? dragMove : undefined}
+                onPointerUp={multiple ? dragEnd : undefined}
+                onPointerLeave={multiple ? dragEnd : undefined}
+                onClickCapture={swallowClick}
             >
                 {items.map((item, index) => (
                     <figure
@@ -318,6 +387,7 @@ const PostMedia = ({
                     >
                         <Slide
                             item={item}
+                            eager={multiple}
                             onZoom={() =>
                                 setZoom(
                                     zoomable.findIndex(
@@ -379,6 +449,45 @@ const PostMedia = ({
                     }))}
                     index={zoom}
                     onClose={closeZoom}
+                />
+            ) : null}
+        </div>
+    );
+};
+
+const PostMedia = ({
+    media,
+    variant = 'feed',
+    className = '',
+}: PostMediaProps) => {
+    const items = useMemo(
+        () =>
+            (Array.isArray(media) ? media : []).filter(
+                (item) => item && item.url && item.type,
+            ),
+        [media],
+    );
+    const files = useMemo(
+        () => items.filter((item) => item.type !== 'embed'),
+        [items],
+    );
+    const links = useMemo(
+        () => items.filter((item) => item.type === 'embed'),
+        [items],
+    );
+
+    if (!items.length) {
+        return null;
+    }
+
+    return (
+        <div className={`post_media_stack ${className}`.trim()}>
+            {files.length ? <MediaRow media={files} variant={variant} /> : null}
+            {links.length ? (
+                <MediaRow
+                    media={links}
+                    variant={variant}
+                    className="post_media_links"
                 />
             ) : null}
         </div>

@@ -23,7 +23,11 @@ import {
     ListItemNode,
     ListNode,
 } from '@lexical/list';
-import { LinkNode } from '@lexical/link';
+import { AutoLinkNode, LinkNode } from '@lexical/link';
+import {
+    AutoLinkPlugin,
+    createLinkMatcherWithRegExp,
+} from '@lexical/react/LexicalAutoLinkPlugin';
 import {
     $createCodeNode,
     $isCodeNode,
@@ -77,6 +81,33 @@ const CODE_LANGUAGES = [
     ['php', 'PHP'],
 ];
 
+const URL_REGEX = /(?:https?:\/\/|www\.)[^\s<>"'`]+[^\s<>"'`.,;:!?)\]}]/i;
+
+const AUTO_LINK_MATCHERS = [
+    createLinkMatcherWithRegExp(URL_REGEX, (text: string) =>
+        /^https?:\/\//i.test(text) ? text : `https://${text}`,
+    ),
+];
+
+function AutoLinkInCodePlugin() {
+    const [editor] = useLexicalComposerContext();
+
+    useEffect(
+        () =>
+            editor.registerNodeTransform(AutoLinkNode, (node: any) => {
+                if (node.getParent()?.getType() !== 'code') {
+                    return;
+                }
+                node.getChildren().forEach((child: any) =>
+                    node.insertBefore(child),
+                );
+                node.remove();
+            }),
+        [editor],
+    );
+
+    return null;
+}
 const editorConfig = {
     namespace: 'TextEditor',
     theme: {
@@ -103,6 +134,7 @@ const editorConfig = {
         ListNode,
         ListItemNode,
         LinkNode,
+        AutoLinkNode,
         CodeNode,
         CodeHighlightNode,
     ],
@@ -377,6 +409,8 @@ export default function TextEditor({
                     <HistoryPlugin />
                     <ListPlugin />
                     <LinkPlugin />
+                    <AutoLinkPlugin matchers={AUTO_LINK_MATCHERS} />
+                    <AutoLinkInCodePlugin />
                     <HashtagPlugin />
                     <MentionPlugin />
                     <HashtagSuggestPlugin enabled={switcherActiveIndex === 0} />
