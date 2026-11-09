@@ -43,6 +43,7 @@ import MentionSuggestPlugin from './MentionSuggestPlugin';
 import './TextEditorField.scss';
 import SwitchBar from '../SwitchBar';
 import Tooltip from '../Tooltip/index';
+import DropDown from '../DropDown';
 
 import BoldText from '../../../assets/svg/bold-text.svg';
 import ItalicText from '../../../assets/svg/italic-text.svg';
@@ -141,7 +142,6 @@ const EditorToolbar = ({
     trailing = null,
 }: any) => {
     const [editor] = useLexicalComposerContext();
-    const [formatOpen, setFormatOpen] = useState(false);
     const [codeLanguage, setCodeLanguage] = useState<string | null>(null);
 
     useEffect(() => {
@@ -270,17 +270,7 @@ const EditorToolbar = ({
                     <>
                         {leading}
                         {codeTool}
-                        <Tooltip text="Text formatting">
-                            <button
-                                type="button"
-                                aria-pressed={formatOpen}
-                                className={`text_editor_format_toggle app-transition${formatOpen ? ' text_editor_tool_active' : ''}`}
-                                onClick={() => setFormatOpen((open) => !open)}
-                            >
-                                Aa
-                            </button>
-                        </Tooltip>
-                        {formatOpen ? formatTools : null}
+                        {formatTools}
                     </>
                 ) : (
                     <>
@@ -290,20 +280,15 @@ const EditorToolbar = ({
                 )}
 
                 {codeLanguage !== null ? (
-                    <select
+                    <DropDown
                         className="text_editor_language"
-                        aria-label="Code language"
+                        options={CODE_LANGUAGES.map(([value, label]) => ({
+                            value,
+                            label,
+                        }))}
                         value={codeLanguage}
-                        onChange={(event: any) =>
-                            changeLanguage(event.target.value)
-                        }
-                    >
-                        {CODE_LANGUAGES.map(([value, label]) => (
-                            <option key={value || 'plain'} value={value}>
-                                {label}
-                            </option>
-                        ))}
-                    </select>
+                        onChange={changeLanguage}
+                    />
                 ) : null}
                 {trailing}
             </div>

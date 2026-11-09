@@ -230,16 +230,37 @@
     color: var(--text-color);
 }
 
-.text_editor_language {
-    height: 32px;
+.text_editor_language.text_editor_language.text_editor_language.text_editor_language {
+    width: 150px;
     margin-left: 4px;
-    padding: 0 8px;
-    border: 1px solid var(--input-outline-color);
-    border-radius: 6px;
-    background: transparent;
-    color: var(--text-color);
-    font: inherit;
-    font-size: 13px;
+
+    .dropdown_select {
+        width: 100%;
+        height: 32px;
+        min-height: 32px;
+        padding: 0 10px;
+        justify-content: space-between;
+        border: 1px solid var(--input-outline-color);
+        color: var(--text-color);
+        font-size: 13px;
+    }
+
+    .dropdown_list {
+        min-width: 100%;
+        max-height: 260px;
+        overflow-y: auto;
+    }
+
+    .dropdown_item {
+        width: 100%;
+        height: auto;
+        min-height: 32px;
+        padding: 6px 10px;
+        justify-content: flex-start;
+        border: 0;
+        font-size: 13px;
+        text-align: left;
+    }
 }
 
 .text_editor_code {
