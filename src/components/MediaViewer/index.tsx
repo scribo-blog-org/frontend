@@ -95,7 +95,10 @@ const MediaViewer = ({ items, index = 0, onClose }: MediaViewerProps) => {
             aria-label={
                 item.type === 'video' ? 'Video preview' : 'Image preview'
             }
-            onClick={onClose}
+            onClick={(event) => {
+                event.stopPropagation();
+                onClose();
+            }}
             onTouchStart={(event) => {
                 touchStart.current = event.touches[0].clientX;
             }}
