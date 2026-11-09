@@ -3,7 +3,8 @@
 import { Link } from '@/navigation';
 
 import UserBadge from '../UserBadge';
-import { plainTextExcerpt } from '../../seo/excerpt';
+import { postDisplayTitle, postExcerpt } from '../../utils/postText';
+import { firstMediaThumbnail } from '../../utils/postMedia';
 import { mediaUrl } from '../../utils/image';
 import { format_back } from '../../utils/format';
 
@@ -29,13 +30,9 @@ const PostPreview = ({
     onMediaLoad,
 }: PostPreviewProps) => {
     const excerpt =
-        post.excerpt ||
-        post.snippet ||
-        plainTextExcerpt(post.content_text || '', 160);
-    const picture =
-        media !== 'none' && post.featured_image
-            ? mediaUrl(post.featured_image)
-            : null;
+        post.snippet || postExcerpt(post, 160) || postDisplayTitle(post);
+    const thumbnail = firstMediaThumbnail(post);
+    const picture = media !== 'none' && thumbnail ? mediaUrl(thumbnail) : null;
 
     const body = (
         <>
@@ -51,10 +48,7 @@ const PostPreview = ({
             ) : null}
             <span className="post_preview_body">
                 <span className="post_preview_copy">
-                    <span className="post_preview_title">{post.title}</span>
-                    {excerpt ? (
-                        <span className="post_preview_excerpt">{excerpt}</span>
-                    ) : null}
+                    <span className="post_preview_excerpt">{excerpt}</span>
                 </span>
                 {picture && media === 'side' ? (
                     <span className="post_preview_thumb">

@@ -1,8 +1,9 @@
 import { MENTION_STORAGE_PATTERN } from './mentions';
 import { MENTION_IN_TEXT, profilePathFromNick } from './plainRichText';
 import { linkifyHashtagsInHtml } from '../utils/hashtags';
+import { decorateCodeBlocksHtml } from './codeBlocks';
 
-const SKIP_TAGS = new Set(['A', 'SCRIPT', 'STYLE', 'TEXTAREA', 'CODE']);
+const SKIP_TAGS = new Set(['A', 'SCRIPT', 'STYLE', 'TEXTAREA', 'CODE', 'PRE']);
 
 function stripLegacyMentionMarkup(html: any) {
     if (!html) {
@@ -108,7 +109,9 @@ export function enrichPostHtml(html: any) {
     }
 
     const cleaned = stripLegacyMentionMarkup(html);
-    return linkifyHashtagsInHtml(linkifyPlainMentionsInHtml(cleaned));
+    return decorateCodeBlocksHtml(
+        linkifyHashtagsInHtml(linkifyPlainMentionsInHtml(cleaned)),
+    );
 }
 
 export function extractMentionUserIdsFromHtml(html: any) {

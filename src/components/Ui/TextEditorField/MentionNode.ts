@@ -107,8 +107,17 @@ export function $isMentionNode(node: any) {
     return node instanceof MentionNode;
 }
 
-export function registerMentionTransform(editor: any) {
+function registerMentionTextTransform(editor: any) {
     return editor.registerNodeTransform(TextNode, (textNode: any) => {
+        if (textNode.getParent()?.getType() === 'code') {
+            if ($isMentionNode(textNode)) {
+                const plain = $createTextNode(textNode.getTextContent());
+                plain.setFormat(textNode.getFormat());
+                plain.setStyle(textNode.getStyle());
+                textNode.replace(plain);
+            }
+            return;
+        }
         const text = textNode.getTextContent();
 
         if ($isMentionNode(textNode)) {
@@ -151,4 +160,24 @@ export function registerMentionTransform(editor: any) {
         mention.setStyle(nodeToReplace.getStyle());
         nodeToReplace.replace(mention);
     });
+}
+
+export function registerMentionTransform(editor: any) {
+    const unregisterInCode = editor.registerNodeTransform(
+        MentionNode,
+        (node: any) => {
+            if (node.getParent()?.getType() === 'code') {
+                const plain = $createTextNode(node.getTextContent());
+                plain.setFormat(node.getFormat());
+                plain.setStyle(node.getStyle());
+                node.replace(plain);
+            }
+        },
+    );
+    const unregisterText = registerMentionTextTransform(editor);
+
+    return () => {
+        unregisterInCode();
+        unregisterText();
+    };
 }

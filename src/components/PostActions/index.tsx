@@ -20,6 +20,7 @@ import FilledLikeIcon from '../../assets/svg/like-filled.svg';
 
 import Tooltip from '../Ui/Tooltip/index';
 import SharePostModal from '../SharePostModal';
+import { postDisplayTitle } from '../../utils/postText';
 
 import Sceleton from '../Ui/Sceleton/Sceleton';
 
@@ -241,13 +242,13 @@ const PostActions = ({
 
         showModalWindow({
             title: 'Share',
-            subtitle: article.title,
+            subtitle: postDisplayTitle(article),
             icon: <ShareIcon />,
             size: 'small',
             content: (
                 <SharePostModal
                     postId={article._id}
-                    postTitle={article.title}
+                    postTitle={postDisplayTitle(article)}
                     showToast={showToast}
                     requestCloseModal={requestCloseModal}
                 />

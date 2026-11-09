@@ -21,6 +21,7 @@ body {
     --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.16);
 
     --accent-color: var(--fg);
+    --accent-blue: #1b73fb;
 
     --main-background: var(--bg);
 
@@ -49,7 +50,7 @@ body {
     --post-text-color: var(--fg);
 
     --link-text-color: var(--fg);
-    --hashtag-color: var(--fg-muted);
+    --hashtag-color: var(--accent-blue);
     --mention-color: var(--fg);
 
     --user-badge-name-color: var(--fg);
@@ -222,6 +223,7 @@ body {
 }
 
 body.dark-theme {
+    --accent-blue: #5b9bff;
     --bg: #161616;
     --bg-subtle: #1b1b1b;
     --bg-raised: #212121;

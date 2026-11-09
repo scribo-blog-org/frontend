@@ -17,7 +17,9 @@ import PostHeader from '../../components/PostHeader';
 import { getPostById } from '../../api/posts.api';
 import PageSeo from '../../components/Seo/index';
 import { plainTextExcerpt } from '../../seo/excerpt';
-import { mediaUrl } from '../../utils/image';
+import PostMedia from '../../components/PostMedia';
+import { postDisplayTitle } from '../../utils/postText';
+import { firstMediaThumbnail, normalizePostMedia } from '../../utils/postMedia';
 
 const Article = ({
     initialArticle = null,
@@ -94,45 +96,46 @@ const Article = ({
         }
     }, [location.state?.comment, searchParams]);
 
+    const articleMedia = normalizePostMedia(article);
+
     return !isLoading && article?._id ? (
         <div>
             <PageSeo
-                title={article.title}
+                title={postDisplayTitle(article)}
                 description={
-                    plainTextExcerpt(article.content_text) || article.title
+                    plainTextExcerpt(article.content_text) ||
+                    postDisplayTitle(article)
                 }
                 path={`/posts/${article._id}`}
-                image={article.featured_image || undefined}
+                image={firstMediaThumbnail(article) || undefined}
                 type="article"
             />
             {article._id ? (
                 <div className="article">
-                    <h1 className="article_title">{article.title}</h1>
                     <div className="article_topic">
                         <PostHeader
                             post={article}
                             onDeletePost={() => navigate('/')}
                         />
+                    </div>
+                    {article.content_text ? (
+                        <HashtagHtml
+                            className="article_content"
+                            html={article.content_text}
+                        />
+                    ) : null}
+                    {articleMedia.length ? (
+                        <div className="article_media">
+                            <PostMedia media={articleMedia} variant="article" />
+                        </div>
+                    ) : null}
+                    <div className="article_actions">
                         <PostActions
                             article={article}
                             setArticle={setArticle}
                             onDeletePost={() => navigate('/')}
                         />
                     </div>
-                    {article.featured_image ? (
-                        <div className="article_featured_image">
-                            <img
-                                src={mediaUrl(article.featured_image)}
-                                alt={'featured'}
-                            />
-                        </div>
-                    ) : (
-                        <></>
-                    )}
-                    <HashtagHtml
-                        className="article_content"
-                        html={article.content_text}
-                    />
                     <PostComment
                         postId={article._id}
                         navigateTo={comment}

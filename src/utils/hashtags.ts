@@ -1,9 +1,10 @@
 export const HASHTAG_PATTERN = /#[^\s#]+/g;
 
-const SKIP_TAGS = new Set(['A', 'SCRIPT', 'STYLE', 'TEXTAREA', 'CODE']);
+const SKIP_TAGS = new Set(['A', 'SCRIPT', 'STYLE', 'TEXTAREA', 'CODE', 'PRE']);
 
 function stripMarkup(html: any) {
     return String(html || '')
+        .replace(/<pre[\s\S]*?<\/pre>/gi, ' ')
         .replace(/<[^>]+>/g, ' ')
         .replace(/&[a-zA-Z0-9#]+;/g, ' ')
         .replace(/\s+/g, ' ')
@@ -39,9 +40,7 @@ export function extractHashtagsFromPost(post: any) {
     if (!post) {
         return [];
     }
-    return extractHashtags(
-        `${post.title || ''} ${stripMarkup(post.content_text || '')}`,
-    );
+    return extractHashtags(stripMarkup(post.content_text || ''));
 }
 
 export function splitHashtags(text: any) {

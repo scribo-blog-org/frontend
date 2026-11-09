@@ -7,21 +7,34 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
-import { $getRoot } from 'lexical';
-import { FORMAT_TEXT_COMMAND } from 'lexical';
-import { $generateHtmlFromNodes } from '@lexical/html';
-import { $generateNodesFromDOM } from '@lexical/html';
+import {
+    $createParagraphNode,
+    $getRoot,
+    $getSelection,
+    $isRangeSelection,
+    FORMAT_TEXT_COMMAND,
+    TextNode,
+} from 'lexical';
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from '@lexical/html';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
     INSERT_UNORDERED_LIST_COMMAND,
     INSERT_ORDERED_LIST_COMMAND,
+    ListItemNode,
+    ListNode,
 } from '@lexical/list';
-import { TOGGLE_LINK_COMMAND } from '@lexical/link';
-import { ListItemNode, ListNode } from '@lexical/list';
-import { LinkNode } from '@lexical/link';
-import { TextNode } from 'lexical';
+import { LinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link';
+import {
+    $createCodeNode,
+    $isCodeNode,
+    CodeHighlightNode,
+    CodeNode,
+} from '@lexical/code';
+import { $setBlocksType } from '@lexical/selection';
+
 import { HashtagNode } from './HashtagNode';
 import { MentionNode } from './MentionNode';
+
 import HashtagPlugin from './HashtagPlugin';
 import HashtagSuggestPlugin from './HashtagSuggestPlugin';
 import MentionPlugin from './MentionPlugin';
@@ -36,9 +49,33 @@ import ItalicText from '../../../assets/svg/italic-text.svg';
 import MarkList from '../../../assets/svg/mark-list-icon.svg';
 import NumList from '../../../assets/svg/num-list-icon.svg';
 import LinkText from '../../../assets/svg/link-icon.svg';
+import CodeBlockIcon from '../../../assets/svg/code-block.svg';
 
-import { useState, useEffect } from 'react';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import {
+    exportCodeBlocksHtml,
+    importCodeBlocksHtml,
+} from '../../../content/codeBlocks';
+
+const CODE_LANGUAGES = [
+    ['', 'Plain'],
+    ['js', 'JavaScript'],
+    ['ts', 'TypeScript'],
+    ['tsx', 'TSX'],
+    ['json', 'JSON'],
+    ['html', 'HTML'],
+    ['css', 'CSS'],
+    ['python', 'Python'],
+    ['bash', 'Bash'],
+    ['sql', 'SQL'],
+    ['java', 'Java'],
+    ['c', 'C'],
+    ['cpp', 'C++'],
+    ['csharp', 'C#'],
+    ['go', 'Go'],
+    ['rust', 'Rust'],
+    ['php', 'PHP'],
+];
 
 const editorConfig = {
     namespace: 'TextEditor',
@@ -50,6 +87,7 @@ const editorConfig = {
         link: 'text_editor_link',
         hashtag: 'hashtag',
         mention: 'mention',
+        code: 'text_editor_code',
         list: {
             ul: 'text_editor_ul',
             ol: 'text_editor_ol',
@@ -65,6 +103,8 @@ const editorConfig = {
         ListNode,
         ListItemNode,
         LinkNode,
+        CodeNode,
+        CodeHighlightNode,
     ],
 };
 
@@ -83,7 +123,10 @@ function InitialHtmlPlugin({ html }: any) {
             root.clear();
 
             const parser = new DOMParser();
-            const dom = parser.parseFromString(html, 'text/html');
+            const dom = parser.parseFromString(
+                importCodeBlocksHtml(html),
+                'text/html',
+            );
             const nodes = $generateNodesFromDOM(editor, dom);
 
             root.append(...nodes);
@@ -93,10 +136,32 @@ function InitialHtmlPlugin({ html }: any) {
     return null;
 }
 
-const EditorToolbar = () => {
+const EditorToolbar = ({
+    compact = false,
+    leading = null,
+    trailing = null,
+}: any) => {
     const [editor] = useLexicalComposerContext();
     const [linkOpen, setLinkOpen] = useState(false);
     const [linkUrl, setLinkUrl] = useState('');
+    const [formatOpen, setFormatOpen] = useState(false);
+    const [codeLanguage, setCodeLanguage] = useState<string | null>(null);
+
+    useEffect(() => {
+        return editor.registerUpdateListener(({ editorState }: any) => {
+            editorState.read(() => {
+                const selection = $getSelection();
+                if (!$isRangeSelection(selection)) {
+                    setCodeLanguage(null);
+                    return;
+                }
+                const top = selection.anchor.getNode().getTopLevelElement();
+                setCodeLanguage(
+                    $isCodeNode(top) ? top.getLanguage() || '' : null,
+                );
+            });
+        });
+    }, [editor]);
 
     const closeLink = () => {
         setLinkOpen(false);
@@ -116,77 +181,162 @@ const EditorToolbar = () => {
         editor.focus();
     };
 
+    const toggleCodeBlock = () => {
+        editor.update(() => {
+            const selection = $getSelection();
+            if (!$isRangeSelection(selection)) {
+                return;
+            }
+            const top = selection.anchor.getNode().getTopLevelElement();
+            if ($isCodeNode(top)) {
+                $setBlocksType(selection, () => $createParagraphNode());
+            } else {
+                $setBlocksType(selection, () => $createCodeNode());
+            }
+        });
+        editor.focus();
+    };
+
+    const changeLanguage = (language: string) => {
+        editor.update(() => {
+            const selection = $getSelection();
+            if (!$isRangeSelection(selection)) {
+                return;
+            }
+            const top = selection.anchor.getNode().getTopLevelElement();
+            if ($isCodeNode(top)) {
+                top.setLanguage(language);
+            }
+        });
+        setCodeLanguage(language);
+    };
+
+    const formatTools = (
+        <>
+            <Tooltip text="Bold">
+                <button
+                    type="button"
+                    className="text_editor_body_top_side_toolbar_bold app-transition"
+                    onClick={() =>
+                        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')
+                    }
+                >
+                    <BoldText />
+                </button>
+            </Tooltip>
+
+            <Tooltip text="Italic">
+                <button
+                    type="button"
+                    className="app-transition"
+                    onClick={() =>
+                        editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')
+                    }
+                >
+                    <ItalicText />
+                </button>
+            </Tooltip>
+
+            <Tooltip text="Bulleted list">
+                <button
+                    type="button"
+                    className="app-transition"
+                    onClick={() =>
+                        editor.dispatchCommand(
+                            INSERT_UNORDERED_LIST_COMMAND,
+                            undefined,
+                        )
+                    }
+                >
+                    <MarkList />
+                </button>
+            </Tooltip>
+
+            <Tooltip text="Numbered list">
+                <button
+                    type="button"
+                    className="app-transition"
+                    onClick={() =>
+                        editor.dispatchCommand(
+                            INSERT_ORDERED_LIST_COMMAND,
+                            undefined,
+                        )
+                    }
+                >
+                    <NumList />
+                </button>
+            </Tooltip>
+
+            <Tooltip text="Add a link">
+                <button
+                    type="button"
+                    className="app-transition"
+                    onClick={() => (linkOpen ? closeLink() : setLinkOpen(true))}
+                >
+                    <LinkText />
+                </button>
+            </Tooltip>
+        </>
+    );
+
+    const codeTool = (
+        <Tooltip text="Code block">
+            <button
+                type="button"
+                aria-pressed={codeLanguage !== null}
+                className={`app-transition${codeLanguage !== null ? ' text_editor_tool_active' : ''}`}
+                onClick={toggleCodeBlock}
+            >
+                <CodeBlockIcon />
+            </button>
+        </Tooltip>
+    );
+
     return (
-        <div className="text_editor_body_top_side_tools">
+        <div
+            className={`text_editor_body_top_side_tools${compact ? ' text_editor_tools_compact' : ''}`}
+        >
             <div className="text_editor_body_top_side_toolbar app-transition">
-                <Tooltip text="Bold">
-                    <button
-                        type="button"
-                        className="text_editor_body_top_side_toolbar_bold app-transition"
-                        onClick={() =>
-                            editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')
-                        }
-                    >
-                        <BoldText />
-                    </button>
-                </Tooltip>
+                {compact ? (
+                    <>
+                        {leading}
+                        {codeTool}
+                        <Tooltip text="Text formatting">
+                            <button
+                                type="button"
+                                aria-pressed={formatOpen}
+                                className={`text_editor_format_toggle app-transition${formatOpen ? ' text_editor_tool_active' : ''}`}
+                                onClick={() => setFormatOpen((open) => !open)}
+                            >
+                                Aa
+                            </button>
+                        </Tooltip>
+                        {formatOpen ? formatTools : null}
+                    </>
+                ) : (
+                    <>
+                        {formatTools}
+                        {codeTool}
+                    </>
+                )}
 
-                <Tooltip text="Italic">
-                    <button
-                        type="button"
-                        className="app-transition"
-                        onClick={() =>
-                            editor.dispatchCommand(
-                                FORMAT_TEXT_COMMAND,
-                                'italic',
-                            )
+                {codeLanguage !== null ? (
+                    <select
+                        className="text_editor_language"
+                        aria-label="Code language"
+                        value={codeLanguage}
+                        onChange={(event: any) =>
+                            changeLanguage(event.target.value)
                         }
                     >
-                        <ItalicText />
-                    </button>
-                </Tooltip>
-
-                <Tooltip text="Bulleted list">
-                    <button
-                        type="button"
-                        className="app-transition"
-                        onClick={() =>
-                            editor.dispatchCommand(
-                                INSERT_UNORDERED_LIST_COMMAND,
-                                undefined,
-                            )
-                        }
-                    >
-                        <MarkList />
-                    </button>
-                </Tooltip>
-
-                <Tooltip text="Numbered list">
-                    <button
-                        type="button"
-                        className="app-transition"
-                        onClick={() =>
-                            editor.dispatchCommand(
-                                INSERT_ORDERED_LIST_COMMAND,
-                                undefined,
-                            )
-                        }
-                    >
-                        <NumList />
-                    </button>
-                </Tooltip>
-
-                <Tooltip text="Add a link">
-                    <button
-                        type="button"
-                        className="app-transition"
-                        onClick={() =>
-                            linkOpen ? closeLink() : setLinkOpen(true)
-                        }
-                    >
-                        <LinkText />
-                    </button>
-                </Tooltip>
+                        {CODE_LANGUAGES.map(([value, label]) => (
+                            <option key={value || 'plain'} value={value}>
+                                {label}
+                            </option>
+                        ))}
+                    </select>
+                ) : null}
+                {trailing}
             </div>
             {linkOpen ? (
                 <div className="text_editor_body_top_side_link">
@@ -216,24 +366,38 @@ const EditorToolbar = () => {
     );
 };
 
+function EditablePlugin({ editable }: any) {
+    const [editor] = useLexicalComposerContext();
+
+    useEffect(() => {
+        editor.setEditable(editable);
+    }, [editor, editable]);
+
+    return null;
+}
+
 export default function TextEditor({
     initialHtml,
     onChange,
     error,
     onFocus,
     disabled = false,
+    variant = 'field',
+    placeholder,
+    toolbarLeading = null,
+    toolbarTrailing = null,
+    belowEditor = null,
 }: any) {
     const [switcherActiveIndex, setSwitcherActiveIndex] = useState<any>(0);
+    const compose = variant === 'compose';
 
-    function EditablePlugin({ editable }: any) {
-        const [editor] = useLexicalComposerContext();
-
-        useEffect(() => {
-            editor.setEditable(editable);
-        }, [editor, editable]);
-
-        return null;
-    }
+    const toolbar = (
+        <EditorToolbar
+            compact={compose}
+            leading={toolbarLeading}
+            trailing={toolbarTrailing}
+        />
+    );
 
     return (
         <LexicalComposer
@@ -245,23 +409,34 @@ export default function TextEditor({
             }
         >
             <InitialHtmlPlugin html={initialHtml} />
-            <EditablePlugin editable={!disabled && switcherActiveIndex === 0} />
+            <EditablePlugin
+                editable={!disabled && (compose || switcherActiveIndex === 0)}
+            />
             <div
-                className={`text_editor app-transition${disabled ? ' text_editor_disabled' : ''}`}
+                className={`text_editor app-transition${disabled ? ' text_editor_disabled' : ''}${compose ? ' text_editor_compose' : ''}`}
             >
                 <div
                     className={`text_editor_body ${error ? 'incorrect_field' : ''} app-transition`}
                 >
-                    <div className="text_editor_body_top_side app-transition">
-                        <EditorToolbar />
-                        <SwitchBar
-                            activeIndex={switcherActiveIndex}
-                            setActiveIndex={setSwitcherActiveIndex}
-                            items={['Edit', 'Preview']}
-                        />
-                    </div>
+                    {compose ? null : (
+                        <div className="text_editor_body_top_side app-transition">
+                            {toolbar}
+                            <SwitchBar
+                                activeIndex={switcherActiveIndex}
+                                setActiveIndex={setSwitcherActiveIndex}
+                                items={['Edit', 'Preview']}
+                            />
+                        </div>
+                    )}
                     <RichTextPlugin
                         ErrorBoundary={undefined as any}
+                        placeholder={
+                            placeholder ? (
+                                <div className="text_editor_placeholder">
+                                    {placeholder}
+                                </div>
+                            ) : null
+                        }
                         contentEditable={
                             <ContentEditable
                                 className="text_editor_body_input"
@@ -282,18 +457,30 @@ export default function TextEditor({
                             const result = editorState.read(() => {
                                 const root = $getRoot();
                                 const text = root.getTextContent().trim();
+                                const hasCode = root
+                                    .getChildren()
+                                    .some(
+                                        (node: any) =>
+                                            node.getType() === 'code',
+                                    );
 
-                                if (text === '') {
+                                if (text === '' && !hasCode) {
                                     return '';
                                 }
 
-                                return $generateHtmlFromNodes(editor);
+                                return exportCodeBlocksHtml(
+                                    $generateHtmlFromNodes(editor),
+                                );
                             });
 
                             onChange?.(result);
                         }}
                     />
                 </div>
+                {compose ? belowEditor : null}
+                {compose ? (
+                    <div className="text_editor_compose_toolbar">{toolbar}</div>
+                ) : null}
             </div>
         </LexicalComposer>
     );

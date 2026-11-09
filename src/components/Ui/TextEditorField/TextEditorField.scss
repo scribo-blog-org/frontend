@@ -209,3 +209,123 @@
         pointer-events: none;
     }
 }
+
+.text_editor_body {
+    position: relative;
+}
+
+.text_editor_placeholder {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    right: 18px;
+    color: var(--input-placeholder-color);
+    font-size: var(--text-md);
+    pointer-events: none;
+    user-select: none;
+}
+
+.text_editor_tool_active {
+    background: var(--bg-active);
+    color: var(--text-color);
+}
+
+.text_editor_language {
+    height: 32px;
+    margin-left: 4px;
+    padding: 0 8px;
+    border: 1px solid var(--input-outline-color);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-color);
+    font: inherit;
+    font-size: 13px;
+}
+
+.text_editor_code {
+    display: block;
+    margin: 8px 0;
+    padding: 12px 14px;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.55;
+    tab-size: 4;
+    white-space: pre;
+
+    span {
+        font-family: inherit;
+        font-size: inherit;
+    }
+}
+
+.text_editor_compose {
+    .text_editor_body {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    .text_editor_body:has(.text_editor_body_input:focus) {
+        border: 0;
+    }
+
+    .text_editor_body_input {
+        min-height: 72px;
+        padding: 0;
+        font-size: 16px;
+        line-height: 1.5;
+
+        p,
+        span,
+        strong,
+        li {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    }
+
+    .text_editor_placeholder {
+        top: 0;
+        left: 0;
+        right: 0;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+    .text_editor_compose_toolbar {
+        margin-top: var(--space-2);
+    }
+
+    .text_editor_body_top_side_tools {
+        gap: var(--space-2);
+    }
+
+    .text_editor_body_top_side_toolbar {
+        flex-wrap: wrap;
+        gap: 2px;
+
+        button {
+            width: 36px;
+            height: 36px;
+            color: var(--fg-muted);
+
+            @include hover {
+                color: var(--text-color);
+            }
+
+            svg {
+                width: 20px;
+                height: 20px;
+            }
+        }
+
+        button.text_editor_format_toggle {
+            font-size: 13px;
+            font-weight: 600;
+        }
+    }
+}
