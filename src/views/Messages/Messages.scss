@@ -11,77 +11,8 @@
 }
 
 .messages_layout {
-    position: relative;
-    display: flex;
-    align-items: stretch;
-    flex: 1;
-    min-width: 0;
-    min-height: 0;
-    width: 100%;
+    --split-aside-width: 260px;
     overflow: hidden;
-
-    &_chat {
-        .messages_sidebar {
-            @include screen() {
-                transform: translateX(-24%);
-                opacity: 0.5;
-                pointer-events: none;
-            }
-        }
-    }
-}
-
-@include screen() {
-    .messages_layout .messages_chat {
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        background: var(--main-background);
-        transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .messages_layout:not(.messages_layout_chat) .messages_chat {
-        transform: translateX(100%);
-        visibility: hidden;
-        pointer-events: none;
-        transition:
-            transform 340ms cubic-bezier(0.16, 1, 0.3, 1),
-            visibility 0s linear 340ms;
-    }
-
-    .messages_layout_leaving .messages_chat {
-        transform: translateX(100%);
-    }
-
-    .messages_layout_leaving .messages_sidebar {
-        transform: none;
-        opacity: 1;
-    }
-}
-
-@media screen and (min-width: 769px) {
-    .messages_layout_chat .messages_chat {
-        animation: messages_chat_in 340ms cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .messages_layout_leaving .messages_chat {
-        transform: translateX(100%);
-        transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
-    }
-}
-
-@keyframes messages_chat_in {
-    from {
-        transform: translateX(100%);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .messages_layout .messages_chat,
-    .messages_layout .messages_sidebar {
-        animation: none;
-        transition: none;
-    }
 }
 
 .messages_sidebar_head {
@@ -127,40 +58,19 @@
 }
 
 .messages_sidebar {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    flex: 0 0 260px;
-    width: 260px;
-    min-width: 260px;
-    min-height: 0;
     padding: 0 var(--space-5) 0 0;
-    box-sizing: border-box;
     overflow: hidden;
     @include use-transition();
 
     @include screen() {
-        transition:
-            transform 340ms cubic-bezier(0.16, 1, 0.3, 1),
-            opacity 340ms ease;
-        flex-basis: 100%;
-        width: 100%;
-        min-width: 0;
         padding: 0;
         border-right: 0;
     }
 }
 
 .messages_chat {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    align-items: stretch;
-    min-width: 0;
-    min-height: 0;
-    padding: 0;
     --messages-composer-gap: 20px;
+    padding: 0;
     overflow: hidden;
 }
 

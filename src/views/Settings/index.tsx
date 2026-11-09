@@ -21,6 +21,8 @@ import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import { format_back, format_date_time } from '../../utils/format';
 
 import PageHeader from '../../components/PageHeader';
+import SideNav, { SideNavList } from '../../components/SideNav';
+import SplitLayout from '../../layouts/SplitLayout';
 import InputField from '../../components/Ui/InputField/index';
 import DropFile from '../../components/Ui/DropFile/index';
 import Toggle from '../../components/Ui/Toggle/index';
@@ -1080,45 +1082,29 @@ const Settings = () => {
     return (
         <div className="settings">
             <PageHeader title="Settings" />
-            <div className="settings_layout">
-                <nav className="settings_nav" aria-label="Settings sections">
-                    {sectionItems.map((item: any) => (
-                        <button
-                            key={item.key}
-                            type="button"
-                            className={
-                                'settings_nav_item app-transition' +
-                                (item.key === activeSection.key
-                                    ? ' settings_nav_item_active'
-                                    : '')
-                            }
-                            aria-current={
-                                item.key === activeSection.key
-                                    ? 'page'
-                                    : undefined
-                            }
-                            onClick={() => selectSection(item.key)}
-                        >
-                            <span className="settings_nav_title">
-                                {item.title}
-                            </span>
-                            <span className="settings_nav_hint">
-                                {item.hint}
-                            </span>
-                        </button>
-                    ))}
-                </nav>
+            <SplitLayout className="settings_split">
+                <SplitLayout.Aside>
+                    <SideNav variant="section" label="Settings sections">
+                        <SideNavList
+                            items={sectionItems.map((item: any) => ({
+                                key: item.key,
+                                label: item.title,
+                                hint: item.hint,
+                                active: item.key === activeSection.key,
+                                onClick: () => selectSection(item.key),
+                            }))}
+                        />
+                    </SideNav>
+                </SplitLayout.Aside>
 
-                <section
+                <SplitLayout.Main
                     key={activeSection.key}
                     className="settings_section"
-                    aria-label={activeSection.title}
                 >
                     {activeSection.content}
-                </section>
-            </div>
+                </SplitLayout.Main>
+            </SplitLayout>
         </div>
     );
 };
-
 export default Settings;

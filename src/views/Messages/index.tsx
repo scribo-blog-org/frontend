@@ -37,6 +37,7 @@ import {
     format_time,
     is_same_calendar_day,
 } from '../../utils/format';
+import SplitLayout from '../../layouts/SplitLayout';
 import { ModalFooter } from '../../components/Ui';
 import UserBadge from '../../components/UserBadge';
 import UserActivityStatus from '../../components/UserActivityStatus';
@@ -3041,10 +3042,13 @@ const MessagesPage = () => {
 
     return (
         <div className="messages_page">
-            <div
-                className={`messages_layout${conversationId ? ' messages_layout_chat' : ''}${isLeavingChat ? ' messages_layout_leaving' : ''}`}
+            <SplitLayout
+                mobile="slide"
+                className="messages_layout"
+                open={Boolean(conversationId)}
+                leaving={Boolean(isLeavingChat)}
             >
-                <aside className="messages_sidebar">
+                <SplitLayout.Aside className="messages_sidebar">
                     <div className="messages_sidebar_head">
                         <h1 className="messages_title">Messages</h1>
                         <button
@@ -3183,9 +3187,9 @@ const MessagesPage = () => {
                                 : 'No conversations yet. Start one from a the user profile.'}
                         </p>
                     )}
-                </aside>
+                </SplitLayout.Aside>
 
-                <section className="messages_chat">
+                <SplitLayout.Main className="messages_chat">
                     {!conversationId ? (
                         <div className="messages_blank">
                             <div
@@ -4086,8 +4090,8 @@ const MessagesPage = () => {
                             </div>
                         </>
                     )}
-                </section>
-            </div>
+                </SplitLayout.Main>
+            </SplitLayout>
             <MessageContextMenu
                 menu={messageMenu}
                 onClose={() => setMessageMenu(null)}
