@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import Lightbox from '../Lightbox';
+import MediaViewer from '../MediaViewer';
 import { mediaUrl } from '../../utils/image';
 import { hostLabel, isSafeEmbedUrl } from '../../utils/embed';
 import type { PostMediaItem } from '../../utils/postMedia';
@@ -119,13 +119,23 @@ const Slide = ({
 
     if (item.type === 'video') {
         return (
-            <video
-                src={src}
-                poster={item.poster ? mediaUrl(item.poster) : undefined}
-                controls
-                playsInline
-                preload="metadata"
-            />
+            <button
+                type="button"
+                className="post_media_open post_media_open_video"
+                aria-label="Play video"
+                onClick={onZoom}
+            >
+                <video
+                    src={src}
+                    poster={item.poster ? mediaUrl(item.poster) : undefined}
+                    muted
+                    playsInline
+                    preload="metadata"
+                />
+                <span className="post_media_play">
+                    <PlayIcon />
+                </span>
+            </button>
         );
     }
 
@@ -155,6 +165,24 @@ const PostMedia = ({
     const track = useRef<HTMLDivElement>(null);
     const [active, setActive] = useState(0);
     const [zoom, setZoom] = useState<number | null>(null);
+    const [canScroll, setCanScroll] = useState(false);
+
+    useEffect(() => {
+        const element = track.current;
+        if (!element) {
+            return;
+        }
+        const measure = () =>
+            setCanScroll(element.scrollWidth > element.clientWidth + 2);
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(element);
+        element.querySelectorAll('img, video').forEach((node) => {
+            node.addEventListener('load', measure);
+            node.addEventListener('loadedmetadata', measure);
+        });
+        return () => observer.disconnect();
+    }, [media]);
     const closeZoom = useCallback(() => setZoom(null), []);
 
     const zoomable = useMemo(
@@ -162,7 +190,10 @@ const PostMedia = ({
             items
                 .map((item, index) => ({ item, index }))
                 .filter(
-                    ({ item }) => item.type === 'image' || item.type === 'gif',
+                    ({ item }) =>
+                        item.type === 'image' ||
+                        item.type === 'gif' ||
+                        item.type === 'video',
                 ),
         [items],
     );
@@ -230,7 +261,7 @@ const PostMedia = ({
                 ))}
             </div>
 
-            {multiple ? (
+            {multiple && canScroll ? (
                 <>
                     <span className="post_media_pill">
                         {active + 1}/{items.length}
@@ -271,8 +302,12 @@ const PostMedia = ({
             ) : null}
 
             {zoom !== null && zoom >= 0 ? (
-                <Lightbox
-                    items={zoomable.map(({ item }) => mediaUrl(item.url))}
+                <MediaViewer
+                    items={zoomable.map(({ item }) => ({
+                        type: item.type as 'image' | 'gif' | 'video',
+                        src: mediaUrl(item.url),
+                        poster: item.poster ? mediaUrl(item.poster) : undefined,
+                    }))}
                     index={zoom}
                     onClose={closeZoom}
                 />
