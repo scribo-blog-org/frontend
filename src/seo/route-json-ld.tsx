@@ -49,11 +49,6 @@ async function postJsonLd(id: string) {
             ? (article.author as Record<string, unknown>)
             : null;
     const authorName = asString(authorRecord?.nick_name);
-    const categoryRecord =
-        article.category && typeof article.category === 'object'
-            ? (article.category as Record<string, unknown>)
-            : null;
-    const category = asString(categoryRecord?.name);
 
     return {
         '@context': 'https://schema.org',
@@ -67,7 +62,6 @@ async function postJsonLd(id: string) {
         ...(published
             ? { datePublished: published, dateModified: published }
             : {}),
-        ...(category ? { articleSection: category } : {}),
         author: authorName
             ? {
                   '@type': 'Person',

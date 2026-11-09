@@ -42,16 +42,6 @@
         white-space: nowrap;
     }
 
-    &_category {
-        min-height: 24px;
-        margin-left: auto;
-
-        &.chip_button_quiet {
-            padding: 0;
-            font-size: var(--text-xs);
-        }
-    }
-
     &_main {
         display: flex;
         flex-direction: column;

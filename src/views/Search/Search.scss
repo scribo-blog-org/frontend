@@ -86,56 +86,6 @@
         color: var(--light-text-color);
         transition: transform 300ms ease;
     }
-
-    &_link {
-        display: block;
-        color: inherit;
-        border-radius: 12px;
-
-        @include hover {
-            text-decoration: none;
-
-            .panel_row {
-                background: var(--panel-row-hover-color);
-            }
-
-            .search_page_chevron {
-                transform: translateX(3px);
-            }
-
-            .search_page_cat_hint {
-                color: var(--text-color);
-            }
-        }
-
-        &:focus-visible {
-            outline: 2px solid var(--input-outline-active-color);
-            outline-offset: -2px;
-        }
-    }
-
-    &_cat {
-        .search_page_cat_mark {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-        }
-
-        .search_page_cat_dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--category-color, var(--light-text-color));
-            flex-shrink: 0;
-        }
-    }
-
-    &_cat_hint {
-        font-size: var(--text-xs);
-        color: var(--light-text-color);
-        @include use-transition();
-    }
 }
 
 @keyframes search_group_enter {

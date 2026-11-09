@@ -7,7 +7,6 @@ export const FIELD_LIMITS = {
     postTitle: { min: 1, max: 120 },
     postContent: { min: 1, max: 50_000 },
     comment: { min: 1, max: 2_000 },
-    categoryName: { min: 1, max: 40 },
     supportMessage: { min: 10, max: 4_000 },
     supportReply: { min: 1, max: 4_000 },
     chatMessage: { min: 1, max: 4_000 },

@@ -75,7 +75,6 @@ const PostCard = ({ isLoading = false, post, setPosts }: any) => {
                 post={post}
                 isLoading={isLoading}
                 onDeletePost={deletePost}
-                showCategory
             />
             {isLoading || !post._id ? (
                 <div className="posts_item_main">{body}</div>
@@ -88,7 +87,6 @@ const PostCard = ({ isLoading = false, post, setPosts }: any) => {
                 article={post}
                 isLoading={isLoading}
                 setArticle={updatePost}
-                showCategory={false}
             />
             {isLoading ? null : <PostHashtags post={post} />}
         </article>

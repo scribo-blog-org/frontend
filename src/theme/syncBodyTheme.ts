@@ -16,21 +16,3 @@ export function syncMetaThemeColor(isDarkTheme: any) {
         meta.setAttribute('content', next);
     }
 }
-
-export function syncAccentAndCategoryVars(
-    isDarkTheme: any,
-    categoryColors: any,
-    accentColor: any,
-) {
-    Object.values(categoryColors).forEach((color: any) => {
-        document.body.style.setProperty(
-            color.variable,
-            isDarkTheme ? color.dark : color.light,
-        );
-    });
-
-    document.body.style.setProperty(
-        accentColor.variable,
-        isDarkTheme ? accentColor.dark : accentColor.light,
-    );
-}

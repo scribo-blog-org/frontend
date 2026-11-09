@@ -18,7 +18,6 @@ import EyeIcon from '../../assets/svg/eye.svg';
 import LikeIcon from '../../assets/svg/like-outline.svg';
 import FilledLikeIcon from '../../assets/svg/like-filled.svg';
 
-import Category from '../Category/index';
 import Tooltip from '../Ui/Tooltip/index';
 import SharePostModal from '../SharePostModal';
 
@@ -29,7 +28,6 @@ const PostActions = ({
     article,
     setArticle,
     isLoading = false,
-    showCategory = true,
 }: any) => {
     const {
         profile,
@@ -356,17 +354,6 @@ const PostActions = ({
                     </Tooltip>
                 </div>
             </Sceleton>
-            {showCategory ? (
-                <Sceleton
-                    isLoading={isLoading}
-                    rounded={true}
-                    className="post_actions_right_side"
-                >
-                    <div className="post_actions_right_side">
-                        <Category tag category={article.category} />
-                    </div>
-                </Sceleton>
-            ) : null}
         </div>
     );
 };

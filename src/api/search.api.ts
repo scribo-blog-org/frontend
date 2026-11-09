@@ -6,7 +6,7 @@ const searchSite = async (q: any) => {
     if (query.length < 2) {
         return {
             status: true,
-            data: { posts: [], users: [], categories: [] },
+            data: { posts: [], users: [] },
         };
     }
 

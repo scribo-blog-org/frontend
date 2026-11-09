@@ -157,7 +157,7 @@ const Profile = ({
             }
 
             const query: any = {
-                expand: 'author,category',
+                expand: 'author',
                 page,
                 limit: POSTS_PAGE_LIMIT,
             };

@@ -226,7 +226,6 @@ export type KnownNames = {
     user?: string;
     target?: string;
     post?: string;
-    category?: string;
 };
 
 export function describeDetails(
@@ -259,7 +258,7 @@ export function describeDetails(
 
     add('Post', data.post_title ?? names.post);
     add('Post ID', data.post, true);
-    add('Category', data.category_snapshot?.name ?? names.category);
+    add('Category', data.category_snapshot?.name);
     add('Category ID', data.category, true);
     add('Comment', data.comment_text);
     add('Comment ID', data.comment, true);

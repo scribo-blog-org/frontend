@@ -14,7 +14,6 @@ import { useSearchParams } from '@/navigation';
 
 import { getAllLogs } from '../../api/logs.api';
 import { getUsers } from '../../api/users.api';
-import { getCategories } from '../../api/categories.api';
 import { getPosts } from '../../api/posts.api';
 import { format_message_date_label } from '../../utils/format';
 
@@ -34,7 +33,6 @@ import InfiniteScroll from '../../components/Ui/InfiniteScroll';
 import { usePagedList } from '../../hooks/usePagedList';
 
 import {
-    CategoryEntity,
     ConversationEntity,
     PostEntity,
     RoleChip,
@@ -50,7 +48,6 @@ const PAGE_SIZE = 30;
 const ENTITY_FILTERS = [
     'user',
     'post',
-    'category',
     'conversation',
     'support_request',
     'role',
@@ -84,7 +81,6 @@ const LogsPage = () => {
     const [searchParams] = useSearchParams();
     const [users, setUsers] = useState<any[]>([]);
     const [posts, setPosts] = useState<any[]>([]);
-    const [categories, setCategories] = useState<any[]>([]);
     const [filter, setFilter] = useState<any>(() => {
         const userId = searchParams.get('user');
 
@@ -256,15 +252,6 @@ const LogsPage = () => {
     }, [live, refreshFeed]);
 
     useEffect(() => {
-        const fetchCategories = async () => {
-            const result = await getCategories();
-            setCategories(result?.data || []);
-        };
-
-        fetchCategories();
-    }, []);
-
-    useEffect(() => {
         const knownIds = new Set(posts.map((post: any) => post._id));
         const missingIds = [
             ...new Set(logs.map((log: any) => log.data?.post).filter(Boolean)),
@@ -407,22 +394,6 @@ const LogsPage = () => {
                                             (log: any) =>
                                                 log.data?.post === filter.id,
                                         )?.data?.post_title
-                                    }
-                                    setFilter={applyFilter}
-                                />
-                            )}
-                            {filter.type === 'category' && (
-                                <CategoryEntity
-                                    id={filter.id}
-                                    data={categories.find(
-                                        (c: any) => c._id === filter.id,
-                                    )}
-                                    snapshot={
-                                        logs.find(
-                                            (log: any) =>
-                                                log.data?.category ===
-                                                filter.id,
-                                        )?.data?.category_snapshot
                                     }
                                     setFilter={applyFilter}
                                 />
@@ -570,7 +541,6 @@ const LogsPage = () => {
                                     log={log}
                                     users={users}
                                     posts={posts}
-                                    categories={categories}
                                     setFilter={applyFilter}
                                     position={index + 1}
                                     total={logs.length}

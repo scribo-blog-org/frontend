@@ -1,13 +1,12 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from '@/navigation';
+import { useNavigate, useSearchParams } from '@/navigation';
 
 import { searchSite } from '../../api/search.api';
 import PageHeader from '../../components/PageHeader';
 import InputField from '../../components/Ui/InputField';
-import { Panel, PanelRow } from '../../components/Ui';
-import { CATEGORY_COLORS } from '../../styles/constants';
+import { Panel } from '../../components/Ui';
 
 import PostPreview from '../../components/PostPreview';
 import UserRow from '../../components/UserRow';
@@ -16,7 +15,7 @@ import CrossIcon from '../../assets/svg/cross-icon.svg';
 
 import './Search.scss';
 
-const emptyResults = { posts: [], users: [], categories: [] };
+const emptyResults = { posts: [], users: [] };
 
 const Count = ({ value }: any) => (
     <span className="search_page_group_count">{value}</span>
@@ -82,23 +81,19 @@ const SearchPage = () => {
 
     const hasQuery = urlQuery.trim().length >= 2;
     const people = results.users || [];
-    const categories = results.categories || [];
     const posts = results.posts || [];
-    const total = people.length + categories.length + posts.length;
+    const total = people.length + posts.length;
 
     return (
         <div className="search_page">
-            <PageHeader
-                title="Search"
-                description="Posts, people and categories."
-            />
+            <PageHeader title="Search" description="Posts and people." />
             <div className="search_page_field">
                 <InputField
                     ref={inputRef}
                     type="search"
                     className={value ? 'search_page_input' : ''}
                     value={value}
-                    placeholder="Posts, people, categories"
+                    placeholder="Posts, people"
                     length={80}
                     onChange={(event: any) => setValue(event.target.value)}
                     aria-label="Search"
@@ -120,8 +115,7 @@ const SearchPage = () => {
             </div>
             {!hasQuery ? (
                 <p className="search_page_hint">
-                    At least two letters — then posts, people, and categories
-                    will show up.
+                    At least two letters — then posts and people will show up.
                 </p>
             ) : isLoading ? (
                 <p className="search_page_hint">Searching…</p>
@@ -154,49 +148,6 @@ const SearchPage = () => {
                                             />
                                         }
                                     />
-                                ))}
-                            </Panel>
-                        </section>
-                    ) : null}
-
-                    {categories.length ? (
-                        <section className="search_page_group">
-                            <Panel
-                                title="Categories"
-                                action={<Count value={categories.length} />}
-                            >
-                                {categories.map((category: any) => (
-                                    <Link
-                                        key={category._id}
-                                        className="search_page_link"
-                                        href={`/posts?filter=${category._id}`}
-                                    >
-                                        <PanelRow
-                                            className="search_page_cat"
-                                            title={
-                                                <span
-                                                    className={`search_page_cat_mark ${CATEGORY_COLORS[category.color]?.className ?? ''}`}
-                                                >
-                                                    <span
-                                                        className="search_page_cat_dot"
-                                                        aria-hidden="true"
-                                                    />
-                                                    {category.name}
-                                                </span>
-                                            }
-                                            trailing={
-                                                <>
-                                                    <span className="search_page_cat_hint">
-                                                        In the feed
-                                                    </span>
-                                                    <ChevronRightIcon
-                                                        className="search_page_chevron"
-                                                        aria-hidden="true"
-                                                    />
-                                                </>
-                                            }
-                                        />
-                                    </Link>
                                 ))}
                             </Panel>
                         </section>

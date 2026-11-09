@@ -3,7 +3,6 @@
 import { Link } from '@/navigation';
 
 import UserBadge from '../UserBadge';
-import Category from '../Category';
 import { plainTextExcerpt } from '../../seo/excerpt';
 import { mediaUrl } from '../../utils/image';
 import { format_back } from '../../utils/format';
@@ -87,13 +86,6 @@ const PostPreview = ({
                     <span className="post_preview_date">
                         {format_back(post.created_date)}
                     </span>
-                ) : null}
-                {post.category ? (
-                    <Category
-                        tag
-                        category={post.category}
-                        className="post_preview_category"
-                    />
                 ) : null}
             </div>
 

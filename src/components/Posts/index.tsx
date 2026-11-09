@@ -15,7 +15,6 @@ import {
     unwrapPostsResponse,
     POSTS_PAGE_LIMIT,
 } from '../../api/posts.api';
-import { getCategories } from '../../api/categories.api';
 
 import './Posts.scss';
 
@@ -48,80 +47,39 @@ const Posts = ({
     const isControlled = Boolean(controlledFeed);
     const { profile } = useContext(AppContext);
 
-    const [filters, setFilters] = useState<any[]>([]);
-    const [categoryList, setCategoryList] = useState<any[]>([]);
+    const [tab, setTab] = useState<'all' | 'following'>(
+        postsFilters.includes('following') ? 'following' : 'all',
+    );
 
     const queryKey = JSON.stringify(query);
 
-    useEffect(() => {
-        if (isControlled) {
-            return;
-        }
-
-        if (categoryList.length) {
-            return;
-        }
-
-        const loadCategories = async () => {
-            const result = await getCategories();
-            setCategoryList(Array.isArray(result?.data) ? result.data : []);
-        };
-
-        loadCategories();
-    }, [isControlled, categoryList.length]);
+    const filtersKey = postsFilters.join(',');
 
     useEffect(() => {
-        if (isControlled) {
-            return;
-        }
+        setTab(filtersKey.includes('following') ? 'following' : 'all');
+    }, [filtersKey]);
 
-        const isPostsFiltersEmpty = postsFilters.length === 0;
-
-        let uniqueFilters = categoryList.map((category: any) => ({
-            ...category,
-            isActive: isPostsFiltersEmpty
-                ? true
-                : postsFilters.includes('all') ||
-                  postsFilters.includes(String(category._id).toLowerCase()) ||
-                  postsFilters.includes(category._id),
-        }));
-
-        if (profile?._id) {
-            uniqueFilters.unshift({
-                _id: 'subscription',
-                name: 'Following',
-                isActive: postsFilters.includes('following'),
-                color: null,
-                iconObject: null,
-            });
-        }
-
-        uniqueFilters.unshift({
-            _id: 'all',
-            name: 'All',
-            isActive: isPostsFiltersEmpty || postsFilters.includes('all'),
-            color: null,
-            iconObject: null,
-        });
-
-        setFilters(uniqueFilters);
-    }, [isControlled, categoryList, postsFilters, profile?._id]);
+    const filters = useMemo(
+        () => [
+            { _id: 'all', name: 'All', isActive: tab === 'all' },
+            ...(profile?._id
+                ? [
+                      {
+                          _id: 'subscription',
+                          name: 'Following',
+                          isActive: tab === 'following',
+                      },
+                  ]
+                : []),
+        ],
+        [tab, profile?._id],
+    );
 
     const baseQuery = useMemo(() => {
         const extraQuery = JSON.parse(queryKey);
-        const allActive = filters.find((f: any) => f._id === 'all')?.isActive;
-        const subscriptionFilterActive = filters.find(
-            (f: any) => f._id === 'subscription',
-        )?.isActive;
-        const categoryIds = filters
-            .filter(
-                (f: any) =>
-                    !['all', 'subscription'].includes(f._id) && f.isActive,
-            )
-            .map((f: any) => f._id);
-
+        const subscriptionFilterActive = tab === 'following' && profile?._id;
         const next = {
-            expand: 'author,category',
+            expand: 'author',
             limit: PAGE_LIMIT,
             ...extraQuery,
         };
@@ -151,16 +109,8 @@ const Posts = ({
             }
         }
 
-        if (filters.length && !allActive) {
-            if (!categoryIds.length) {
-                return { empty: true };
-            }
-
-            next.category = categoryIds;
-        }
-
         return next;
-    }, [filters, profile, queryKey]);
+    }, [tab, profile, queryKey]);
 
     const resetKey = JSON.stringify(baseQuery);
 
@@ -189,7 +139,7 @@ const Posts = ({
     const ownFeed = usePagedList({
         fetchPage,
         resetKey,
-        enabled: !isControlled && !wait && filters.length > 0,
+        enabled: !isControlled && !wait,
         initial: { items: initialPosts, pages: initialPagesCount },
     });
 
@@ -199,7 +149,7 @@ const Posts = ({
     const lastResetKey = useRef<string | null>(null);
 
     useEffect(() => {
-        if (isControlled || !filters.length) {
+        if (isControlled) {
             return;
         }
 
@@ -211,20 +161,16 @@ const Posts = ({
         }
 
         lastResetKey.current = resetKey;
-    }, [isControlled, filters.length, resetKey]);
+    }, [isControlled, resetKey]);
 
-    const handleFilters = (next: any) => {
-        setFilters(next);
+    const handleFilters = (id: string) => {
+        setTab(id === 'subscription' ? 'following' : 'all');
     };
 
     return (
         <div className="posts posts_columns" id="posts_column">
             {showFilters && !isControlled && (
-                <PostsFilters
-                    isLoading={loading && filters.length === 0}
-                    filters={filters}
-                    setFilters={handleFilters}
-                />
+                <PostsFilters filters={filters} onSelect={handleFilters} />
             )}
 
             {loading && feed.items.length === 0 ? (

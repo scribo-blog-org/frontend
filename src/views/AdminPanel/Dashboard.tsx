@@ -64,13 +64,6 @@ const placeRows = (items: any[] = []) =>
         valueLabel: `${formatNumber(item.count)} · ${formatPercent(item.share)}`,
     }));
 
-const categoryRows = (items: any[] = []) =>
-    items.map((item: any) => ({
-        key: String(item._id),
-        label: item.name,
-        count: item.count,
-    }));
-
 const DashboardPage = () => {
     const { showToast } = useContext(AppContext);
     const today = toDayKey(new Date());
@@ -339,13 +332,6 @@ const DashboardPage = () => {
                                     previous={content.likes_prev}
                                 />
                             </div>
-                            <Block title="New posts by category">
-                                <RankedBars
-                                    items={categoryRows(content.by_category)}
-                                    wideLabel
-                                    empty="No posts were published in this period"
-                                />
-                            </Block>
                         </Group>
 
                         <Group
@@ -479,19 +465,6 @@ const DashboardPage = () => {
                             </Block>
                         </Group>
                     </div>
-
-                    <Group
-                        title="Posts by category"
-                        hint={`${formatNumber(overview.categories)} categories`}
-                    >
-                        <Block>
-                            <RankedBars
-                                items={categoryRows(overview.by_category)}
-                                wideLabel
-                                empty="No posts yet"
-                            />
-                        </Block>
-                    </Group>
                 </div>
             )}
         </div>

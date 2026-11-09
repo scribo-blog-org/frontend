@@ -11,12 +11,8 @@ import InputFiled from '../../components/Ui/InputField';
 import TextEditorField from '../../components/Ui/TextEditorField';
 import PrimaryButton from '../../components/Ui/PrimaryButton';
 import ActionButton from '../../components/Ui/ActionButton';
-import SearchSelect from '../../components/Ui/SearchSelect/index';
 import Field from '../../components/Ui/Field/index';
 
-import { CATEGORY_COLORS } from '../../styles/constants';
-
-import { getCategories } from '../../api/categories.api';
 import { createPost } from '../../api/posts.api';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 
@@ -28,7 +24,6 @@ const CreatePost = () => {
     const [initialized, setInitialized] = useState<any>(false);
     const [createResult, setCreateResult] = useState<any>({});
     const [errors, setErrors] = useState<any>({});
-    const [allCategories, setAllCategories] = useState<any[]>([]);
 
     const [isLoading, setIsLoading] = useState<any>(false);
 
@@ -36,7 +31,6 @@ const CreatePost = () => {
         postTitle: '',
         postContent: '',
         featuredImage: null,
-        categoryId: '',
     });
 
     const titlePlaceholder = useMemo(() => {
@@ -91,17 +85,6 @@ const CreatePost = () => {
                 }
             } else {
                 setInitialized(true);
-
-                const categories_result = await getCategories();
-
-                if (categories_result?.status === true) {
-                    for (const category of categories_result.data) {
-                        category.className =
-                            CATEGORY_COLORS[category.color]?.className;
-                        category.value = category._id;
-                    }
-                    setAllCategories(categories_result.data);
-                }
             }
         };
 
@@ -156,7 +139,6 @@ const CreatePost = () => {
         formData.append('postTitle', title);
         formData.append('postContent', fields.postContent);
         formData.append('featuredImage', fields.featuredImage);
-        formData.append('categoryId', fields.categoryId);
 
         const result = await createPost(formData);
 
@@ -201,22 +183,6 @@ const CreatePost = () => {
                     onFocus={() => handleFocus('postTitle')}
                     length={FIELD_LIMITS.postTitle.max}
                     error={errors?.postTitle}
-                    disabled={isLoading}
-                />
-            </Field>
-            <Field error={errors?.categoryId} title={'Category'}>
-                <SearchSelect
-                    value={fields.categoryId}
-                    onSetValue={(value: any) =>
-                        setFields((prev: any) => ({
-                            ...prev,
-                            categoryId: value,
-                        }))
-                    }
-                    onFocus={() => handleFocus('categoryId')}
-                    error={errors?.categoryId}
-                    placeholder={'Choose a category'}
-                    options={allCategories}
                     disabled={isLoading}
                 />
             </Field>

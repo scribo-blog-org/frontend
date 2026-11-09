@@ -253,7 +253,6 @@ const SearchSelect = ({
 
     const ShowSelected = !isSearching && selectedOption;
     const Icon = ShowSelected?.iconObject;
-    const showCategoryDot = Boolean(ShowSelected?.className);
 
     return (
         <div
@@ -263,12 +262,7 @@ const SearchSelect = ({
             <div
                 className={`search_select_input ${error ? 'incorrect_field' : ''} app-transition`}
             >
-                {showCategoryDot ? (
-                    <span
-                        className={`category_dot ${ShowSelected.className}`}
-                        aria-hidden="true"
-                    />
-                ) : Icon ? (
+                {Icon ? (
                     <div className={`search_select_icon ${className}`}>
                         <Icon />
                     </div>
@@ -338,12 +332,7 @@ const SearchSelect = ({
                             >
                                 {option.render?.() ?? (
                                     <>
-                                        {option.className ? (
-                                            <span
-                                                className={`category_dot ${option.className}`}
-                                                aria-hidden="true"
-                                            />
-                                        ) : option.iconObject ? (
+                                        {option.iconObject ? (
                                             <div
                                                 className={`search_select_icon ${option.className ?? ''}`}
                                             >

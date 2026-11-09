@@ -13,15 +13,10 @@ import PrimaryButton from '../../components/Ui/PrimaryButton';
 import ActionButton from '../../components/Ui/ActionButton';
 import Field from '../../components/Ui/Field';
 
-import { CATEGORY_COLORS } from '../../styles/constants';
-
 import { getPostById, editPost } from '../../api/posts.api';
-import { getCategories } from '../../api/categories.api';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 
 import './EditPost.scss';
-
-import SearchSelect from '../../components/Ui/SearchSelect/index';
 
 const EditPost = () => {
     const navigate = useNavigate();
@@ -29,7 +24,6 @@ const EditPost = () => {
     const [createResult, setCreateResult] = useState<any>({});
     const [errors, setErrors] = useState<any>({});
     const [featuredImage, setFeaturedImage] = useState<any>(null);
-    const [allCategories, setAllCategories] = useState<any[]>([]);
 
     const { id } = useParams();
 
@@ -39,7 +33,6 @@ const EditPost = () => {
         postTitle: '',
         postContent: '',
         featuredImage: null,
-        categoryId: '',
     });
 
     const titlePlaceholder = useMemo(() => {
@@ -70,22 +63,10 @@ const EditPost = () => {
                 setFields({
                     postTitle: post.title ?? '',
                     postContent: post.content_text ?? '',
-                    categoryId: post.category?._id ?? post.category ?? '',
                     featuredImage: post.featured_image ?? null,
                     author: post.author ?? null,
                 });
                 setFeaturedImage(post.featured_image);
-            }
-
-            const categories_result = await getCategories();
-
-            if (categories_result?.status === true) {
-                for (const category of categories_result.data) {
-                    category.className =
-                        CATEGORY_COLORS[category.color]?.className;
-                    category.value = category._id;
-                }
-                setAllCategories(categories_result.data);
             }
         };
 
@@ -184,8 +165,6 @@ const EditPost = () => {
             formData.append('featuredImage', fields.featuredImage);
         }
 
-        formData.append('categoryId', fields.categoryId);
-
         const result = await editPost(id, formData);
 
         if (result.status === true) {
@@ -238,22 +217,6 @@ const EditPost = () => {
                     onFocus={() => handleFocus('postTitle')}
                     length={FIELD_LIMITS.postTitle.max}
                     error={errors?.postTitle}
-                    disabled={isLoading}
-                />
-            </Field>
-
-            <Field error={errors?.categoryId} title={'Category'}>
-                <SearchSelect
-                    value={fields?.categoryId}
-                    onSetValue={(value: any) =>
-                        setFields((prev: any) => ({
-                            ...prev,
-                            categoryId: value,
-                        }))
-                    }
-                    onFocus={() => handleFocus('categoryId')}
-                    error={errors?.categoryId}
-                    options={allCategories}
                     disabled={isLoading}
                 />
             </Field>

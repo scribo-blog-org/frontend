@@ -129,23 +129,6 @@ const format_back = (date_time: any) => {
     return ago(diffInYears, 'year', 'years');
 };
 
-function getCategoryColorType(categoryName: any) {
-    switch (categoryName?.toLowerCase()) {
-        case 'news':
-        case 'новости':
-            return 1;
-        case 'politics':
-        case 'политика':
-            return 2;
-        case 'dev':
-            return 3;
-        case 'other':
-        case 'другое':
-            return 4;
-        default:
-            return 0;
-    }
-}
 export {
     format_date_time,
     format_time,
@@ -153,5 +136,4 @@ export {
     format_message_date_label,
     is_same_calendar_day,
     format_back,
-    getCategoryColorType,
 };

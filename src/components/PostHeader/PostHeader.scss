@@ -39,17 +39,6 @@
         }
     }
 
-    &_category {
-        min-height: 24px;
-        display: flex;
-        align-items: center;
-
-        &.chip_button_quiet {
-            padding: 0;
-            font-size: var(--text-xs);
-        }
-    }
-
     &_right {
         display: flex;
         align-items: center;

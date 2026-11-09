@@ -47,7 +47,7 @@ const Article = ({
 
             try {
                 const result = await getPostById(id, {
-                    expand: 'author,category',
+                    expand: 'author',
                     view: 1,
                 });
 
