@@ -1,5 +1,6 @@
 'use client';
 
+import { hostLabel } from '../../utils/embed';
 import type { ComposerTile } from '../../utils/postMedia';
 
 const RADIUS = 16;
@@ -62,7 +63,13 @@ const MediaTile = ({
             {tile.previewUrl ? (
                 <img src={tile.previewUrl} alt="" draggable={false} />
             ) : (
-                <div className="composer_tile_placeholder" />
+                <div className="composer_tile_placeholder">
+                    {tile.kind === 'embed' ? (
+                        <span className="composer_tile_host">
+                            {hostLabel(String(tile.payload?.url || ''))}
+                        </span>
+                    ) : null}
+                </div>
             )}
 
             {tile.kind === 'video' ? (

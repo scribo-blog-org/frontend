@@ -222,14 +222,22 @@ const PostMedia = ({
     const [active, setActive] = useState(0);
     const [zoom, setZoom] = useState<number | null>(null);
     const [canScroll, setCanScroll] = useState(false);
+    const [edges, setEdges] = useState({ start: true, end: false });
 
     useEffect(() => {
         const element = track.current;
         if (!element) {
             return;
         }
-        const measure = () =>
+        const measure = () => {
             setCanScroll(element.scrollWidth > element.clientWidth + 2);
+            setEdges({
+                start: element.scrollLeft <= 2,
+                end:
+                    element.scrollLeft + element.clientWidth >=
+                    element.scrollWidth - 2,
+            });
+        };
         measure();
         const observer = new ResizeObserver(measure);
         observer.observe(element);
@@ -277,15 +285,20 @@ const PostMedia = ({
         if (!element || !first) {
             return;
         }
+        const atEnd =
+            element.scrollLeft + element.clientWidth >= element.scrollWidth - 2;
+        setEdges({ start: element.scrollLeft <= 2, end: atEnd });
         const step = first.offsetWidth + 8;
         setActive(
-            Math.max(
-                0,
-                Math.min(
-                    items.length - 1,
-                    Math.round(element.scrollLeft / step),
-                ),
-            ),
+            atEnd
+                ? items.length - 1
+                : Math.max(
+                      0,
+                      Math.min(
+                          items.length - 1,
+                          Math.round(element.scrollLeft / step),
+                      ),
+                  ),
         );
     };
 
@@ -322,7 +335,7 @@ const PostMedia = ({
                     <span className="post_media_pill">
                         {active + 1}/{items.length}
                     </span>
-                    {active > 0 ? (
+                    {!edges.start ? (
                         <button
                             type="button"
                             className="post_media_arrow post_media_arrow_prev"
@@ -332,7 +345,7 @@ const PostMedia = ({
                             ‹
                         </button>
                     ) : null}
-                    {active < items.length - 1 ? (
+                    {!edges.end ? (
                         <button
                             type="button"
                             className="post_media_arrow post_media_arrow_next"

@@ -89,6 +89,10 @@
     &_slide.post_media_embed {
         flex-basis: min(100%, 460px);
     }
+
+    &_multiple &_slide.post_media_embed {
+        flex-basis: min(85%, 460px);
+    }
     &_open {
         position: relative;
         display: block;

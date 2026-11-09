@@ -314,17 +314,44 @@ const PostComposer = ({
             return;
         }
 
+        const tileKey = nextKey();
+        const knownPreview = linkPreview?.image || '';
         setTiles((current) => [
             ...current,
             {
-                key: nextKey(),
+                key: tileKey,
                 status: 'embed',
                 kind: 'embed',
                 size: 0,
-                previewUrl: linkPreview?.image || '',
+                previewUrl: knownPreview,
                 payload: { type: 'embed', url: info.url },
             },
         ]);
+        if (!knownPreview) {
+            const previewFor = (value: string) =>
+                classifyLink(value)?.kind === 'youtube'
+                    ? (classifyLink(value) as any).thumbnail || ''
+                    : '';
+            const immediate = previewFor(info.url);
+            const fill = (image: string) =>
+                image &&
+                setTiles((current) =>
+                    current.map((tile) =>
+                        tile.key === tileKey && !tile.previewUrl
+                            ? { ...tile, previewUrl: image }
+                            : tile,
+                    ),
+                );
+            if (immediate) {
+                fill(immediate);
+            } else {
+                fetchLinkPreview(info.url).then((result: any) => {
+                    if (result?.status === true && result.data?.image) {
+                        fill(result.data.image);
+                    }
+                });
+            }
+        }
         setLinkValue('');
         setLinkPreview(null);
         setLinkOpen(false);
