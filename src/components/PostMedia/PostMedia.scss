@@ -25,7 +25,7 @@
         overflow: hidden;
         scroll-snap-align: start;
         border: 1px solid var(--border);
-        border-radius: var(--radius);
+        border-radius: 12px;
         background: var(--bg-subtle);
 
         img,
@@ -41,11 +41,13 @@
     }
 
     &_feed {
-        --post-media-height: 280px;
+        --post-media-height: 240px;
+        --post-media-single-max: 420px;
     }
 
     &_article {
-        --post-media-height: 420px;
+        --post-media-height: 320px;
+        --post-media-single-max: 560px;
     }
 
     &_slide.post_media_image,
@@ -61,6 +63,27 @@
             min-width: 120px;
             object-fit: cover;
         }
+    }
+
+    &:not(&_multiple) &_slide.post_media_image,
+    &:not(&_multiple) &_slide.post_media_gif,
+    &:not(&_multiple) &_slide.post_media_video {
+        flex-basis: 100%;
+        height: auto;
+
+        img,
+        video {
+            width: 100%;
+            height: auto;
+            max-height: var(--post-media-single-max);
+            min-width: 0;
+            object-fit: cover;
+        }
+    }
+
+    &:not(&_multiple) &_open {
+        width: 100%;
+        height: auto;
     }
 
     &_slide.post_media_embed {
