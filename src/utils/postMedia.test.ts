@@ -151,6 +151,43 @@ describe('payload helpers', () => {
         expect(form.get(existing.key)).toBeNull();
     });
 
+    it('keeps tile order for URL tiles mixed with files and sends them as embeds', () => {
+        const image = tile({
+            status: 'embed',
+            kind: 'image',
+            size: 0,
+            payload: { type: 'embed', url: 'https://cdn.example.com/a.png' },
+        });
+        const local = localTile('b.png', 12);
+        const twitch = tile({
+            status: 'embed',
+            kind: 'embed',
+            size: 0,
+            payload: { type: 'embed', url: 'https://www.twitch.tv/videos/123' },
+        });
+        const tiles = [twitch, local, image];
+
+        expect(buildMediaPayload(tiles)).toEqual([
+            { type: 'embed', url: 'https://www.twitch.tv/videos/123' },
+            { upload: local.key },
+            { type: 'embed', url: 'https://cdn.example.com/a.png' },
+        ]);
+        expect(totalUploadBytes(tiles)).toBe(12);
+        expect(canPublish('', [twitch, image]).ok).toBe(true);
+    });
+
+    it('does not append file parts for URL tiles', () => {
+        const url = tile({
+            status: 'embed',
+            kind: 'embed',
+            size: 0,
+            payload: { type: 'embed', url: 'https://youtu.be/abcdefghijk' },
+        });
+        const form = buildPostFormData('', [url]);
+        expect(JSON.parse(String(form.get('media')))).toEqual([url.payload]);
+        expect(form.get(url.key)).toBeNull();
+    });
+
     it('sends an empty media list when there is none', () => {
         const form = buildPostFormData('<p>hi</p>', []);
         expect(form.get('media')).toBe('[]');

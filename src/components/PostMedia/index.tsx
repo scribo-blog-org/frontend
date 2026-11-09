@@ -1,11 +1,24 @@
 'use client';
 
 import type React from 'react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+    useSyncExternalStore,
+} from 'react';
 
 import MediaViewer from '../MediaViewer';
 import { mediaUrl } from '../../utils/image';
-import { decodeEntities, hostLabel, isSafeEmbedUrl } from '../../utils/embed';
+import {
+    decodeEntities,
+    hostLabel,
+    isSafeEmbedUrl,
+    parseHttpUrl,
+    withTwitchParent,
+} from '../../utils/embed';
 import type { PostMediaItem } from '../../utils/postMedia';
 
 import './PostMedia.scss';
@@ -22,10 +35,31 @@ const PlayIcon = () => (
     </svg>
 );
 
+const subscribeNothing = () => () => undefined;
+const readHostname = () => window.location.hostname;
+const serverHostname = () => '';
+
+function playerSrc(embedUrl: string, provider: string, hostname: string) {
+    try {
+        const url = new URL(embedUrl);
+        url.searchParams.set('autoplay', provider === 'twitch' ? 'true' : '1');
+        const next = url.toString();
+        return provider === 'twitch' ? withTwitchParent(next, hostname) : next;
+    } catch {
+        return embedUrl;
+    }
+}
+
 const EmbedPlayer = ({ item }: { item: PostMediaItem }) => {
     const [playing, setPlaying] = useState(false);
+    const hostname = useSyncExternalStore(
+        subscribeNothing,
+        readHostname,
+        serverHostname,
+    );
     const embed = item.embed || {};
     const thumbnail = embed.thumbnail ? mediaUrl(embed.thumbnail) : '';
+    const provider = String(embed.provider || '');
 
     if (!isSafeEmbedUrl(embed.embed_url)) {
         return null;
@@ -37,7 +71,7 @@ const EmbedPlayer = ({ item }: { item: PostMediaItem }) => {
         return (
             <div className="post_media_frame">
                 <iframe
-                    src={`${embedUrl}${embedUrl.includes('?') ? '&' : '?'}autoplay=1`}
+                    src={playerSrc(embedUrl, provider, hostname)}
                     title={embed.title || 'Embedded video'}
                     allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
                     allowFullScreen
@@ -62,40 +96,6 @@ const EmbedPlayer = ({ item }: { item: PostMediaItem }) => {
         </button>
     );
 };
-
-const LinkCard = ({ item }: { item: PostMediaItem }) => {
-    const embed = item.embed || {};
-    const thumbnail = embed.thumbnail ? mediaUrl(embed.thumbnail) : '';
-
-    return (
-        <a
-            className="post_media_link"
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            {thumbnail ? (
-                <span className="post_media_link_image">
-                    <img src={thumbnail} alt="" loading="lazy" />
-                </span>
-            ) : null}
-            <span className="post_media_link_copy">
-                <span className="post_media_link_host">
-                    {hostLabel(item.url)}
-                </span>
-                <span className="post_media_link_title">
-                    {decodeEntities(embed.title) || item.url}
-                </span>
-                {embed.description ? (
-                    <span className="post_media_link_description">
-                        {decodeEntities(embed.description)}
-                    </span>
-                ) : null}
-            </span>
-        </a>
-    );
-};
-
 const AutoVideo = ({
     src,
     poster,
@@ -204,11 +204,7 @@ const Slide = ({
     }
 
     if (item.type === 'embed') {
-        return item.embed?.provider === 'link' || !item.embed?.embed_url ? (
-            <LinkCard item={item} />
-        ) : (
-            <EmbedPlayer item={item} />
-        );
+        return <EmbedPlayer item={item} />;
     }
 
     return null;
@@ -455,6 +451,10 @@ const MediaRow = ({
     );
 };
 
+const isLegacyLink = (item: PostMediaItem) =>
+    item.type === 'embed' &&
+    (item.embed?.provider === 'link' || !item.embed?.embed_url);
+
 const PostMedia = ({
     media,
     variant = 'feed',
@@ -467,28 +467,48 @@ const PostMedia = ({
             ),
         [media],
     );
-    const files = useMemo(
-        () => items.filter((item) => item.type !== 'embed'),
+    const slides = useMemo(
+        () => items.filter((item) => !isLegacyLink(item)),
         [items],
     );
-    const links = useMemo(
-        () => items.filter((item) => item.type === 'embed'),
+    const legacyLinks = useMemo(
+        () =>
+            items
+                .filter(isLegacyLink)
+                .map((item) => ({
+                    url: parseHttpUrl(item.url)?.href || '',
+                    label:
+                        decodeEntities(item.embed?.title) ||
+                        hostLabel(item.url) ||
+                        item.url,
+                }))
+                .filter((link) => link.url),
         [items],
     );
 
-    if (!items.length) {
+    if (!slides.length && !legacyLinks.length) {
         return null;
     }
 
     return (
         <div className={`post_media_stack ${className}`.trim()}>
-            {files.length ? <MediaRow media={files} variant={variant} /> : null}
-            {links.length ? (
-                <MediaRow
-                    media={links}
-                    variant={variant}
-                    className="post_media_links"
-                />
+            {slides.length ? (
+                <MediaRow media={slides} variant={variant} />
+            ) : null}
+            {legacyLinks.length ? (
+                <ul className="post_media_legacy_links">
+                    {legacyLinks.map((link, index) => (
+                        <li key={`${link.url}-${index}`}>
+                            <a
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                {link.label}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
             ) : null}
         </div>
     );

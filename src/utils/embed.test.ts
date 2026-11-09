@@ -6,6 +6,8 @@ import {
     hostLabel,
     isSafeEmbedUrl,
     parseHttpUrl,
+    twitchRef,
+    withTwitchParent,
 } from './embed';
 
 describe('classifyLink', () => {
@@ -44,9 +46,49 @@ describe('classifyLink', () => {
         );
     });
 
-    it('falls back to a link card and adds a scheme when missing', () => {
+    it('recognises Twitch videos, clips and channels', () => {
+        expect(
+            classifyLink('https://www.twitch.tv/videos/123456'),
+        ).toMatchObject({
+            kind: 'twitch',
+            id: '123456',
+            embedUrl: 'https://player.twitch.tv/?video=v123456',
+        });
+        expect(
+            classifyLink('https://www.twitch.tv/fleem_ff/clip/SlugName-abc'),
+        ).toMatchObject({
+            kind: 'twitch',
+            embedUrl: 'https://clips.twitch.tv/embed?clip=SlugName-abc',
+        });
+        expect(
+            classifyLink('https://clips.twitch.tv/SlugName-abc'),
+        ).toMatchObject({
+            kind: 'twitch',
+            embedUrl: 'https://clips.twitch.tv/embed?clip=SlugName-abc',
+        });
+        expect(classifyLink('https://m.twitch.tv/fleem_ff')).toMatchObject({
+            kind: 'twitch',
+            embedUrl: 'https://player.twitch.tv/?channel=fleem_ff',
+        });
+    });
+
+    it('does not treat reserved or foreign Twitch paths as players', () => {
+        expect(
+            twitchRef(new URL('https://www.twitch.tv/directory')),
+        ).toBeNull();
+        expect(
+            twitchRef(new URL('https://www.twitch.tv/videos/abc')),
+        ).toBeNull();
+        expect(twitchRef(new URL('https://www.twitch.tv/a/b/c/d'))).toBeNull();
+        expect(twitchRef(new URL('https://nottwitch.tv/fleem_ff'))).toBeNull();
+        expect(classifyLink('https://www.twitch.tv/settings')?.kind).toBe(
+            'unknown',
+        );
+    });
+
+    it('marks other links as unknown and adds a scheme when missing', () => {
         expect(classifyLink('example.com/article')).toMatchObject({
-            kind: 'link',
+            kind: 'unknown',
             url: 'https://example.com/article',
         });
     });
@@ -67,11 +109,39 @@ describe('isSafeEmbedUrl', () => {
             ),
         ).toBe(true);
         expect(isSafeEmbedUrl('https://player.vimeo.com/video/1')).toBe(true);
+        expect(isSafeEmbedUrl('https://player.twitch.tv/?video=v1')).toBe(true);
+        expect(
+            isSafeEmbedUrl('https://clips.twitch.tv/embed?clip=SlugName'),
+        ).toBe(true);
+        expect(isSafeEmbedUrl('https://www.twitch.tv/videos/1')).toBe(false);
         expect(isSafeEmbedUrl('https://evil.example.com/embed/1')).toBe(false);
         expect(
             isSafeEmbedUrl('http://www.youtube-nocookie.com/embed/abcdefghijk'),
         ).toBe(false);
         expect(isSafeEmbedUrl('')).toBe(false);
+    });
+});
+
+describe('withTwitchParent', () => {
+    it('appends the parent hostname to Twitch player urls only', () => {
+        expect(
+            withTwitchParent(
+                'https://player.twitch.tv/?video=v1',
+                'scribo.pp.ua',
+            ),
+        ).toBe('https://player.twitch.tv/?video=v1&parent=scribo.pp.ua');
+        expect(
+            withTwitchParent(
+                'https://clips.twitch.tv/embed?clip=abc&parent=old.example',
+                'localhost',
+            ),
+        ).toBe('https://clips.twitch.tv/embed?clip=abc&parent=localhost');
+        expect(
+            withTwitchParent('https://player.vimeo.com/video/1', 'x.y'),
+        ).toBe('https://player.vimeo.com/video/1');
+        expect(withTwitchParent('https://player.twitch.tv/?video=v1', '')).toBe(
+            'https://player.twitch.tv/?video=v1',
+        );
     });
 });
 

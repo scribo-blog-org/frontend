@@ -72,17 +72,18 @@ const MediaTile = ({
                 </div>
             )}
 
-            {tile.kind === 'video' ? (
-                <span className="composer_tile_badge" aria-hidden="true">
-                    ▶
+            {tile.kind === 'video' ||
+            (tile.kind === 'embed' &&
+                tile.payload?.embed?.provider !== 'link') ? (
+                <span className="composer_tile_play" aria-hidden="true">
+                    в–¶
                 </span>
             ) : null}
-            {tile.kind === 'embed' ? (
+            {tile.status === 'embed' ? (
                 <span className="composer_tile_badge" aria-hidden="true">
-                    Link
+                    URL
                 </span>
             ) : null}
-
             {busy ? (
                 <div className="composer_tile_overlay">
                     <ProgressRing percent={progress} />

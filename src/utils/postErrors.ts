@@ -1,10 +1,15 @@
 export function postErrorMessage(result: any, fallback: string) {
-    const fields = result?.errors?.body;
+    const bag = result?.errors;
 
-    if (fields && typeof fields === 'object') {
-        for (const value of Object.values(fields) as any[]) {
-            if (typeof value?.message === 'string' && value.message) {
-                return value.message;
+    if (bag && typeof bag === 'object') {
+        for (const source of Object.values(bag) as any[]) {
+            if (!source || typeof source !== 'object') {
+                continue;
+            }
+            for (const value of Object.values(source) as any[]) {
+                if (typeof value?.message === 'string' && value.message) {
+                    return value.message;
+                }
             }
         }
     }

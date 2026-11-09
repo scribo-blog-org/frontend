@@ -11,10 +11,6 @@
         width: 100%;
     }
 
-    &_links &_slide {
-        align-self: flex-start;
-    }
-
     &_track.post_media_track_dragging {
         scroll-snap-type: none;
         cursor: grabbing;
@@ -103,12 +99,34 @@
         width: auto;
         height: auto;
     }
+
     &_slide.post_media_embed {
-        flex-basis: min(100%, 460px);
+        flex: 0 0 min(100%, 640px);
     }
 
     &_multiple &_slide.post_media_embed {
-        flex-basis: min(85%, 460px);
+        flex: 0 0 min(100%, 427px);
+    }
+
+    &_legacy_links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 16px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: var(--text-sm);
+
+        a {
+            color: var(--link-text-color);
+            text-decoration: none;
+            overflow-wrap: anywhere;
+
+            &:hover {
+                text-decoration: underline;
+                text-underline-offset: 3px;
+            }
+        }
     }
     &_open {
         position: relative;
@@ -216,67 +234,6 @@
 
         &_active {
             background: var(--fg);
-        }
-    }
-
-    &_link {
-        display: flex;
-        align-items: stretch;
-        width: 100%;
-        color: var(--text-color);
-        text-decoration: none;
-
-        @include screen() {
-            flex-direction: column;
-        }
-
-        @include hover {
-            background: var(--bg-hover);
-            text-decoration: none;
-        }
-
-        &_image {
-            flex: 0 0 38%;
-            min-height: 120px;
-
-            @include screen() {
-                flex-basis: auto;
-            }
-
-            img {
-                height: 100%;
-                max-height: none;
-                object-fit: cover;
-            }
-        }
-
-        &_copy {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            min-width: 0;
-            padding: var(--space-3) var(--space-4);
-        }
-
-        &_host {
-            font-size: var(--text-xs);
-            color: var(--fg-subtle);
-        }
-
-        &_title {
-            font-size: var(--text-md);
-            font-weight: 600;
-            line-height: 1.35;
-            overflow-wrap: anywhere;
-        }
-
-        &_description {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            font-size: var(--text-sm);
-            color: var(--fg-muted);
         }
     }
 }

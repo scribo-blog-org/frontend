@@ -19,7 +19,7 @@ import ActionButton from '../Ui/ActionButton';
 import MediaTile from './MediaTile';
 
 import { fetchLinkPreview } from '../../api/linkPreview.api';
-import { classifyLink } from '../../utils/embed';
+import { classifyLink, type LinkInfo } from '../../utils/embed';
 import { captureVideoFrame } from '../../utils/videoFrame';
 import { mediaUrl } from '../../utils/image';
 import {
@@ -73,6 +73,64 @@ function tilesFromMedia(media: PostMediaItem[]): ComposerTile[] {
     }));
 }
 
+type UrlPreview = {
+    status: 'loading' | 'ok' | 'error';
+    kind: ComposerTile['kind'];
+    label: string;
+    image: string;
+};
+
+const URL_ERROR =
+    'Only image, video, YouTube, Vimeo or Twitch links can be added here. Paste other links into your text.';
+
+function directKind(info: LinkInfo): ComposerTile['kind'] {
+    if (info.kind === 'video') {
+        return 'video';
+    }
+    return /\.gif$/i.test(new URL(info.url).pathname) ? 'gif' : 'image';
+}
+
+function previewFromInfo(info: LinkInfo): UrlPreview | null {
+    switch (info.kind) {
+        case 'youtube':
+            return {
+                status: 'ok',
+                kind: 'embed',
+                label: 'YouTube video',
+                image: info.thumbnail || '',
+            };
+        case 'vimeo':
+            return {
+                status: 'ok',
+                kind: 'embed',
+                label: 'Vimeo video',
+                image: '',
+            };
+        case 'twitch':
+            return {
+                status: 'ok',
+                kind: 'embed',
+                label: 'Twitch',
+                image: '',
+            };
+        case 'image':
+            return {
+                status: 'ok',
+                kind: directKind(info),
+                label: directKind(info) === 'gif' ? 'GIF' : 'Image',
+                image: info.url,
+            };
+        case 'video':
+            return {
+                status: 'ok',
+                kind: 'video',
+                label: 'Video file',
+                image: '',
+            };
+        default:
+            return null;
+    }
+}
 const PostComposer = ({
     mode,
     initialHtml = '',
@@ -91,8 +149,7 @@ const PostComposer = ({
     const [confirmDiscard, setConfirmDiscard] = useState(false);
     const [linkOpen, setLinkOpen] = useState(false);
     const [linkValue, setLinkValue] = useState('');
-    const [linkPreview, setLinkPreview] = useState<any>(null);
-    const [linkLoading, setLinkLoading] = useState(false);
+    const [linkPreview, setLinkPreview] = useState<UrlPreview | null>(null);
     const [progress, setProgress] = useState(0);
     const [confirmAbort, setConfirmAbort] = useState(false);
 
@@ -245,64 +302,77 @@ const PostComposer = ({
         }
 
         const info = classifyLink(linkValue);
-        setLinkPreview(null);
+        const direct = info ? previewFromInfo(info) : null;
+        setLinkPreview(direct);
 
         if (!info) {
-            return;
-        }
-
-        if (info.kind === 'youtube') {
-            setLinkPreview({ title: 'YouTube video', image: info.thumbnail });
-            return;
-        }
-
-        if (info.kind === 'image') {
-            setLinkPreview({ title: 'Image', image: info.url });
-            return;
-        }
-
-        if (info.kind === 'vimeo' || info.kind === 'video') {
-            setLinkPreview({
-                title: info.kind === 'vimeo' ? 'Vimeo video' : 'Video file',
-                image: '',
-            });
             return;
         }
 
         let cancelled = false;
-        setLinkLoading(true);
-        const timer = window.setTimeout(async () => {
-            const result = await fetchLinkPreview(info.url);
-            if (cancelled) {
-                return;
-            }
-            setLinkLoading(false);
-            setLinkPreview(
-                result?.status === true && result.data
-                    ? {
-                          title: result.data.media_type
-                              ? result.data.media_type === 'video'
-                                  ? 'Video'
-                                  : 'Image'
-                              : result.data.title || info.url,
-                          image: result.data.image || '',
-                      }
-                    : { title: info.url, image: '' },
-            );
-        }, 450);
+        const timer = window.setTimeout(
+            async () => {
+                const result = await fetchLinkPreview(info.url);
+                if (cancelled) {
+                    return;
+                }
+                const data = result?.status === true ? result.data : null;
+
+                if (direct) {
+                    if (data?.image && !direct.image) {
+                        setLinkPreview({ ...direct, image: data.image });
+                    }
+                    return;
+                }
+
+                const mediaType = data?.media_type;
+                if (
+                    mediaType === 'image' ||
+                    mediaType === 'gif' ||
+                    mediaType === 'video'
+                ) {
+                    setLinkPreview({
+                        status: 'ok',
+                        kind: mediaType,
+                        label:
+                            mediaType === 'video'
+                                ? 'Video file'
+                                : mediaType === 'gif'
+                                  ? 'GIF'
+                                  : 'Image',
+                        image: mediaType === 'video' ? '' : data?.image || '',
+                    });
+                    return;
+                }
+
+                setLinkPreview({
+                    status: 'error',
+                    kind: 'embed',
+                    label: '',
+                    image: '',
+                });
+            },
+            direct ? 300 : 450,
+        );
+
+        if (!direct) {
+            setLinkPreview({
+                status: 'loading',
+                kind: 'embed',
+                label: '',
+                image: '',
+            });
+        }
 
         return () => {
             cancelled = true;
-            setLinkLoading(false);
             window.clearTimeout(timer);
         };
     }, [linkValue, linkOpen]);
-
     const addLink = () => {
         const info = classifyLink(linkValue);
 
-        if (!info) {
-            showToast?.({ message: 'Enter a valid link.', type: 'error' });
+        if (!info || linkPreview?.status !== 'ok') {
             return;
         }
 
@@ -315,48 +385,37 @@ const PostComposer = ({
         }
 
         const tileKey = nextKey();
-        const knownPreview = linkPreview?.image || '';
         setTiles((current) => [
             ...current,
             {
                 key: tileKey,
                 status: 'embed',
-                kind: 'embed',
+                kind: linkPreview.kind,
                 size: 0,
-                previewUrl: knownPreview,
+                previewUrl: linkPreview.image,
                 payload: { type: 'embed', url: info.url },
             },
         ]);
-        if (!knownPreview) {
-            const previewFor = (value: string) =>
-                classifyLink(value)?.kind === 'youtube'
-                    ? (classifyLink(value) as any).thumbnail || ''
-                    : '';
-            const immediate = previewFor(info.url);
-            const fill = (image: string) =>
-                image &&
-                setTiles((current) =>
-                    current.map((tile) =>
-                        tile.key === tileKey && !tile.previewUrl
-                            ? { ...tile, previewUrl: image }
-                            : tile,
-                    ),
-                );
-            if (immediate) {
-                fill(immediate);
-            } else {
-                fetchLinkPreview(info.url).then((result: any) => {
-                    if (result?.status === true && result.data?.image) {
-                        fill(result.data.image);
-                    }
-                });
-            }
+
+        if (!linkPreview.image && info.kind === 'twitch') {
+            fetchLinkPreview(info.url).then((result: any) => {
+                const image = result?.status === true && result.data?.image;
+                if (image) {
+                    setTiles((current) =>
+                        current.map((tile) =>
+                            tile.key === tileKey && !tile.previewUrl
+                                ? { ...tile, previewUrl: image }
+                                : tile,
+                        ),
+                    );
+                }
+            });
         }
+
         setLinkValue('');
         setLinkPreview(null);
         setLinkOpen(false);
     };
-
     const total = totalUploadBytes(tiles);
     const overLimit = total > MAX_MEDIA_BYTES;
     const verdict = canPublish(html, tiles);
@@ -483,42 +542,33 @@ const PostComposer = ({
                             onChange={(value: string) => setHtml(value)}
                             belowEditor={
                                 <>
-                                    {[
-                                        tiles.filter(
-                                            (tile) => tile.kind !== 'embed',
-                                        ),
-                                        tiles.filter(
-                                            (tile) => tile.kind === 'embed',
-                                        ),
-                                    ].map((group, index) =>
-                                        group.length ? (
-                                            <div
-                                                key={index}
-                                                className={`composer_tiles`}
-                                            >
-                                                {group.map((tile) => (
-                                                    <MediaTile
-                                                        key={tile.key}
-                                                        tile={tile}
-                                                        uploading={submitting}
-                                                        progress={progress}
-                                                        disabled={submitting}
-                                                        onRemove={() =>
-                                                            removeTile(tile.key)
-                                                        }
-                                                    />
-                                                ))}
-                                            </div>
-                                        ) : null,
-                                    )}
+                                    {tiles.length ? (
+                                        <div className="composer_tiles">
+                                            {tiles.map((tile) => (
+                                                <MediaTile
+                                                    key={tile.key}
+                                                    tile={tile}
+                                                    uploading={submitting}
+                                                    progress={progress}
+                                                    disabled={submitting}
+                                                    onRemove={() =>
+                                                        removeTile(tile.key)
+                                                    }
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : null}{' '}
                                     {linkOpen ? (
                                         <div className="composer_link">
+                                            <p className="composer_link_title">
+                                                Add media from a URL
+                                            </p>
                                             <div className="composer_link_row">
                                                 <input
                                                     autoFocus
                                                     type="url"
                                                     value={linkValue}
-                                                    placeholder="Any link"
+                                                    placeholder="Image, video, YouTube or Twitch link"
                                                     onChange={(event) =>
                                                         setLinkValue(
                                                             event.target.value,
@@ -544,15 +594,21 @@ const PostComposer = ({
                                                     type="button"
                                                     onClick={addLink}
                                                     disabled={
-                                                        !classifyLink(linkValue)
+                                                        linkPreview?.status !==
+                                                        'ok'
                                                     }
                                                 >
                                                     Add
                                                 </button>
                                             </div>
-                                            {linkLoading ? (
+                                            {linkPreview?.status === 'error' ? (
+                                                <p className="composer_link_error">
+                                                    {URL_ERROR}
+                                                </p>
+                                            ) : linkPreview?.status ===
+                                              'loading' ? (
                                                 <p className="composer_link_hint">
-                                                    Loading preview…
+                                                    Checking the linkвЂ¦
                                                 </p>
                                             ) : linkPreview ? (
                                                 <div className="composer_link_preview">
@@ -565,12 +621,21 @@ const PostComposer = ({
                                                         />
                                                     ) : null}
                                                     <span>
-                                                        {linkPreview.title}
+                                                        {linkPreview.label}
                                                     </span>
                                                 </div>
-                                            ) : null}
+                                            ) : (
+                                                <p className="composer_link_hint">
+                                                    Direct image or video links
+                                                    go into the carousel,
+                                                    YouTube and Twitch links
+                                                    become players. For any
+                                                    other link, just paste it
+                                                    into your text.
+                                                </p>
+                                            )}
                                         </div>
-                                    ) : null}
+                                    ) : null}{' '}
                                 </>
                             }
                             toolbarLeading={
@@ -593,8 +658,8 @@ const PostComposer = ({
                                     <button
                                         type="button"
                                         className="app-transition"
-                                        aria-label="Add media by link"
-                                        title="Add media by link"
+                                        aria-label="Add media from a URL"
+                                        title="Add media from a URL"
                                         aria-pressed={linkOpen}
                                         disabled={submitting}
                                         onClick={() =>

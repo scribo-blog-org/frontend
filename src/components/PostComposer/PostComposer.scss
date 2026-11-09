@@ -102,11 +102,6 @@
         }
     }
 
-    &_tiles_links &_tile {
-        flex-basis: 224px;
-        aspect-ratio: 16 / 10;
-    }
-
     &_tile {
         position: relative;
         flex: 0 0 168px;
@@ -163,6 +158,24 @@
             color: #fff;
         }
 
+        &_play {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            transform: translate(-50%, -50%);
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.62);
+            color: #fff;
+            font-size: 14px;
+            padding-left: 2px;
+            pointer-events: none;
+        }
+
         &_badge {
             position: absolute;
             left: 8px;
@@ -203,6 +216,20 @@
         border: 1px solid var(--border);
         border-radius: var(--radius-sm);
         background: var(--bg-subtle);
+
+        &_title {
+            margin: 0;
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        &_error {
+            margin: 0;
+            font-size: var(--text-xs);
+            line-height: 1.4;
+            color: var(--danger);
+        }
 
         &_row {
             display: flex;

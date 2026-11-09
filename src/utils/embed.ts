@@ -1,4 +1,5 @@
-export type LinkKind = 'youtube' | 'vimeo' | 'image' | 'video' | 'link';
+export type LinkKind =
+    'youtube' | 'vimeo' | 'twitch' | 'image' | 'video' | 'unknown';
 
 export type LinkInfo = {
     kind: LinkKind;
@@ -15,6 +16,32 @@ const YOUTUBE_HOSTS = new Set([
     'music.youtube.com',
     'youtube-nocookie.com',
     'www.youtube-nocookie.com',
+]);
+
+const TWITCH_HOSTS = new Set(['twitch.tv', 'www.twitch.tv', 'm.twitch.tv']);
+
+const TWITCH_RESERVED = new Set([
+    'directory',
+    'videos',
+    'settings',
+    'p',
+    'downloads',
+    'jobs',
+    'turbo',
+    'store',
+    'subscriptions',
+    'wallet',
+    'friends',
+    'messages',
+    'drops',
+    'search',
+    'popout',
+    'embed',
+    'clip',
+    'moderator',
+    'u',
+    'user',
+    'broadcast',
 ]);
 
 const IMAGE_EXTENSION = /\.(png|jpe?g|gif|webp|avif)$/i;
@@ -74,6 +101,86 @@ function vimeoId(url: URL) {
     return match ? match[1] : null;
 }
 
+export type TwitchRef =
+    | { type: 'video'; id: string }
+    | { type: 'clip'; id: string }
+    | { type: 'channel'; id: string };
+
+export function twitchRef(url: URL): TwitchRef | null {
+    const host = url.hostname.toLowerCase();
+    const segments = url.pathname.split('/').filter(Boolean);
+
+    if (host === 'clips.twitch.tv') {
+        if (segments[0] === 'embed') {
+            const clip = url.searchParams.get('clip');
+            return clip && /^[\w-]{3,100}$/.test(clip)
+                ? { type: 'clip', id: clip }
+                : null;
+        }
+        return segments[0] && /^[\w-]{3,100}$/.test(segments[0])
+            ? { type: 'clip', id: segments[0] }
+            : null;
+    }
+
+    if (!TWITCH_HOSTS.has(host) || !segments.length) {
+        return null;
+    }
+
+    if (segments[0].toLowerCase() === 'videos') {
+        return /^\d+$/.test(segments[1] || '')
+            ? { type: 'video', id: segments[1] }
+            : null;
+    }
+
+    if (
+        segments.length >= 3 &&
+        segments[1].toLowerCase() === 'clip' &&
+        /^[\w-]{3,100}$/.test(segments[2])
+    ) {
+        return { type: 'clip', id: segments[2] };
+    }
+
+    const login = segments[0];
+    if (
+        segments.length === 1 &&
+        /^\w{2,25}$/.test(login) &&
+        !TWITCH_RESERVED.has(login.toLowerCase())
+    ) {
+        return { type: 'channel', id: login };
+    }
+
+    return null;
+}
+
+export function twitchEmbedUrl(ref: TwitchRef) {
+    if (ref.type === 'video') {
+        return `https://player.twitch.tv/?video=v${ref.id}`;
+    }
+    if (ref.type === 'clip') {
+        return `https://clips.twitch.tv/embed?clip=${ref.id}`;
+    }
+    return `https://player.twitch.tv/?channel=${ref.id}`;
+}
+
+export function withTwitchParent(embedUrl: string, hostname: string) {
+    if (!hostname) {
+        return embedUrl;
+    }
+    try {
+        const url = new URL(embedUrl);
+        if (
+            url.hostname !== 'player.twitch.tv' &&
+            url.hostname !== 'clips.twitch.tv'
+        ) {
+            return embedUrl;
+        }
+        url.searchParams.delete('parent');
+        url.searchParams.append('parent', hostname);
+        return url.toString();
+    } catch {
+        return embedUrl;
+    }
+}
 export function classifyLink(value: unknown): LinkInfo | null {
     const url = parseHttpUrl(value);
     if (!url) {
@@ -103,6 +210,16 @@ export function classifyLink(value: unknown): LinkInfo | null {
         };
     }
 
+    const tw = twitchRef(url);
+    if (tw) {
+        return {
+            kind: 'twitch',
+            url: href,
+            id: tw.id,
+            embedUrl: twitchEmbedUrl(tw),
+        };
+    }
+
     if (IMAGE_EXTENSION.test(url.pathname)) {
         return { kind: 'image', url: href };
     }
@@ -111,16 +228,24 @@ export function classifyLink(value: unknown): LinkInfo | null {
         return { kind: 'video', url: href };
     }
 
-    return { kind: 'link', url: href };
+    return { kind: 'unknown', url: href };
 }
 
 export function isEmbedProvider(provider: unknown) {
-    return provider === 'youtube' || provider === 'vimeo';
+    return (
+        provider === 'youtube' ||
+        provider === 'vimeo' ||
+        provider === 'dailymotion' ||
+        provider === 'twitch'
+    );
 }
 
 const SAFE_EMBED_HOSTS = new Set([
     'www.youtube-nocookie.com',
     'player.vimeo.com',
+    'www.dailymotion.com',
+    'player.twitch.tv',
+    'clips.twitch.tv',
 ]);
 
 export function isSafeEmbedUrl(value: unknown) {
