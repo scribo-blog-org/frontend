@@ -66,37 +66,25 @@ export function firstMediaThumbnail(post: any) {
     return '';
 }
 
-export type ComposerTileStatus = 'uploading' | 'done' | 'error';
+export type ComposerTileStatus = 'local' | 'existing' | 'embed';
 
 export type ComposerTile = {
     key: string;
     status: ComposerTileStatus;
     kind: 'image' | 'gif' | 'video' | 'embed';
     size: number;
-    progress: number;
     previewUrl: string;
+    file?: File;
     payload?: PostMediaItem;
-    error?: string;
 };
+
+export type PostMediaPayloadItem = PostMediaItem | { upload: string };
 
 export function totalUploadBytes(tiles: Pick<ComposerTile, 'size'>[]) {
     return tiles.reduce((sum, tile) => sum + (tile.size || 0), 0);
 }
 
-export function canPublish(
-    text: string,
-    tiles: Pick<ComposerTile, 'size' | 'status'>[],
-) {
-    const done = tiles.filter((tile) => tile.status === 'done').length;
-
-    if (tiles.some((tile) => tile.status === 'uploading')) {
-        return { ok: false, reason: 'Wait for the uploads to finish' };
-    }
-
-    if (tiles.some((tile) => tile.status === 'error')) {
-        return { ok: false, reason: 'Retry or remove the failed uploads' };
-    }
-
+export function canPublish(text: string, tiles: Pick<ComposerTile, 'size'>[]) {
     if (tiles.length > MAX_MEDIA_ITEMS) {
         return { ok: false, reason: `At most ${MAX_MEDIA_ITEMS} items` };
     }
@@ -105,15 +93,42 @@ export function canPublish(
         return { ok: false, reason: 'Media exceeds 100 MB' };
     }
 
-    if (!text.trim() && done === 0) {
+    if (!text.trim() && tiles.length === 0) {
         return { ok: false, reason: 'Write something or add media' };
     }
 
     return { ok: true, reason: '' };
 }
 
-export function buildMediaPayload(tiles: ComposerTile[]): PostMediaItem[] {
-    return tiles
-        .filter((tile) => tile.status === 'done' && tile.payload)
-        .map((tile) => tile.payload as PostMediaItem);
+export function buildMediaPayload(
+    tiles: Pick<ComposerTile, 'key' | 'status' | 'payload'>[],
+): PostMediaPayloadItem[] {
+    const items: PostMediaPayloadItem[] = [];
+
+    for (const tile of tiles) {
+        if (tile.status === 'local') {
+            items.push({ upload: tile.key });
+        } else if (tile.payload) {
+            items.push(tile.payload);
+        }
+    }
+
+    return items;
+}
+
+export function buildPostFormData(
+    html: string,
+    tiles: Pick<ComposerTile, 'key' | 'status' | 'payload' | 'file'>[],
+) {
+    const form = new FormData();
+    form.append('postContent', html);
+    form.append('media', JSON.stringify(buildMediaPayload(tiles)));
+
+    for (const tile of tiles) {
+        if (tile.status === 'local' && tile.file) {
+            form.append(tile.key, tile.file, tile.file.name);
+        }
+    }
+
+    return form;
 }

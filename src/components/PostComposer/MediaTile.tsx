@@ -42,57 +42,57 @@ export const ProgressRing = ({ percent }: { percent: number }) => (
 
 const MediaTile = ({
     tile,
+    uploading = false,
+    progress = 0,
+    disabled = false,
     onRemove,
-    onRetry,
 }: {
     tile: ComposerTile;
+    uploading?: boolean;
+    progress?: number;
+    disabled?: boolean;
     onRemove: () => void;
-    onRetry: () => void;
-}) => (
-    <div
-        className={`composer_tile composer_tile_${tile.status} composer_tile_${tile.kind}`}
-    >
-        {tile.previewUrl ? (
-            <img src={tile.previewUrl} alt="" draggable={false} />
-        ) : (
-            <div className="composer_tile_placeholder" />
-        )}
+}) => {
+    const busy = uploading && tile.status === 'local';
 
-        {tile.kind === 'video' ? (
-            <span className="composer_tile_badge" aria-hidden="true">
-                ▶
-            </span>
-        ) : null}
-        {tile.kind === 'embed' ? (
-            <span className="composer_tile_badge" aria-hidden="true">
-                Link
-            </span>
-        ) : null}
-
-        {tile.status === 'uploading' ? (
-            <div className="composer_tile_overlay">
-                <ProgressRing percent={tile.progress} />
-            </div>
-        ) : null}
-
-        {tile.status === 'error' ? (
-            <div className="composer_tile_overlay composer_tile_error">
-                <span>{tile.error || 'Upload failed'}</span>
-                <button type="button" onClick={onRetry}>
-                    Retry
-                </button>
-            </div>
-        ) : null}
-
-        <button
-            type="button"
-            className="composer_tile_remove"
-            aria-label="Remove"
-            onClick={onRemove}
+    return (
+        <div
+            className={`composer_tile composer_tile_${tile.status} composer_tile_${tile.kind}${busy ? ' composer_tile_busy' : ''}`}
         >
-            ×
-        </button>
-    </div>
-);
+            {tile.previewUrl ? (
+                <img src={tile.previewUrl} alt="" draggable={false} />
+            ) : (
+                <div className="composer_tile_placeholder" />
+            )}
+
+            {tile.kind === 'video' ? (
+                <span className="composer_tile_badge" aria-hidden="true">
+                    ▶
+                </span>
+            ) : null}
+            {tile.kind === 'embed' ? (
+                <span className="composer_tile_badge" aria-hidden="true">
+                    Link
+                </span>
+            ) : null}
+
+            {busy ? (
+                <div className="composer_tile_overlay">
+                    <ProgressRing percent={progress} />
+                </div>
+            ) : null}
+
+            <button
+                type="button"
+                className="composer_tile_remove"
+                aria-label="Remove"
+                disabled={disabled}
+                onClick={onRemove}
+            >
+                ×
+            </button>
+        </div>
+    );
+};
 
 export default MediaTile;

@@ -18,7 +18,6 @@ import PrimaryButton from '../Ui/PrimaryButton';
 import ActionButton from '../Ui/ActionButton';
 import MediaTile from './MediaTile';
 
-import { uploadPostMedia } from '../../api/media.api';
 import { fetchLinkPreview } from '../../api/linkPreview.api';
 import { classifyLink } from '../../utils/embed';
 import { captureVideoFrame } from '../../utils/videoFrame';
@@ -32,7 +31,7 @@ import {
 } from '../../utils/media';
 import {
     MAX_MEDIA_ITEMS,
-    buildMediaPayload,
+    buildPostFormData,
     canPublish,
     mediaThumbnail,
     totalUploadBytes,
@@ -51,22 +50,24 @@ type PostComposerProps = {
     initialMedia?: PostMediaItem[];
     submitting?: boolean;
     onSubmit: (value: {
-        html: string;
-        media: PostMediaItem[];
+        formData: FormData;
+        onProgress: (percent: number) => void;
+        signal: AbortSignal;
     }) => Promise<void> | void;
     onCancel: () => void;
 };
 
 let tileCounter = 0;
-const nextKey = () => `tile-${Date.now()}-${(tileCounter += 1)}`;
+const nextKey = () => `m${Date.now().toString(36)}${(tileCounter += 1)}`;
+
+const isBlobUrl = (value: string) => value.startsWith('blob:');
 
 function tilesFromMedia(media: PostMediaItem[]): ComposerTile[] {
     return media.map((item) => ({
         key: nextKey(),
-        status: 'done',
+        status: item.type === 'embed' ? 'embed' : 'existing',
         kind: item.type,
         size: item.size || 0,
-        progress: 100,
         previewUrl: mediaThumbnail(item) ? mediaUrl(mediaThumbnail(item)) : '',
         payload: item,
     }));
@@ -92,10 +93,11 @@ const PostComposer = ({
     const [linkValue, setLinkValue] = useState('');
     const [linkPreview, setLinkPreview] = useState<any>(null);
     const [linkLoading, setLinkLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [confirmAbort, setConfirmAbort] = useState(false);
 
     const fileInput = useRef<HTMLInputElement>(null);
-    const files = useRef(new Map<string, File>());
-    const controllers = useRef(new Map<string, AbortController>());
+    const controller = useRef<AbortController | null>(null);
     const tilesRef = useRef<ComposerTile[]>(tiles);
     tilesRef.current = tiles;
 
@@ -108,58 +110,6 @@ const PostComposer = ({
     const dirty =
         html.trim() !== initialHtml.trim() ||
         signature !== initialSignature.current;
-
-    const patchTile = useCallback(
-        (key: string, patch: Partial<ComposerTile>) =>
-            setTiles((current) =>
-                current.map((tile) =>
-                    tile.key === key ? { ...tile, ...patch } : tile,
-                ),
-            ),
-        [],
-    );
-
-    const startUpload = useCallback(
-        async (key: string) => {
-            const file = files.current.get(key);
-            if (!file) {
-                return;
-            }
-
-            const controller = new AbortController();
-            controllers.current.set(key, controller);
-            patchTile(key, { status: 'uploading', progress: 0, error: '' });
-
-            const result = await uploadPostMedia(
-                file,
-                (percent) => patchTile(key, { progress: percent }),
-                controller.signal,
-            );
-            controllers.current.delete(key);
-
-            if (!tilesRef.current.some((tile) => tile.key === key)) {
-                return;
-            }
-
-            if (!result.status) {
-                patchTile(key, { status: 'error', error: result.message });
-                return;
-            }
-
-            patchTile(key, {
-                status: 'done',
-                progress: 100,
-                kind: result.data.type,
-                payload: {
-                    type: result.data.type,
-                    url: result.data.url,
-                    mime: result.data.mime,
-                    size: result.data.size ?? file.size,
-                },
-            });
-        },
-        [patchTile],
-    );
 
     const addFiles = useCallback(
         (incoming: File[]) => {
@@ -194,14 +144,12 @@ const PostComposer = ({
                 }
 
                 const kind = mediaKindFromMime(file.type) || 'image';
-                const key = nextKey();
-                files.current.set(key, file);
                 created.push({
-                    key,
-                    status: 'uploading',
+                    key: nextKey(),
+                    status: 'local',
                     kind,
                     size: file.size,
-                    progress: 0,
+                    file,
                     previewUrl:
                         kind === 'video' ? '' : URL.createObjectURL(file),
                 });
@@ -216,47 +164,59 @@ const PostComposer = ({
             setTiles((current) => [...current, ...created]);
 
             created.forEach((tile) => {
-                const file = files.current.get(tile.key);
-                if (tile.kind === 'video' && file) {
-                    captureVideoFrame(file).then((frame) => {
-                        if (frame) {
-                            patchTile(tile.key, { previewUrl: frame });
+                if (tile.kind === 'video' && tile.file) {
+                    captureVideoFrame(tile.file).then((frame) => {
+                        if (!frame) {
+                            return;
                         }
+                        setTiles((current) =>
+                            current.map((item) =>
+                                item.key === tile.key
+                                    ? { ...item, previewUrl: frame }
+                                    : item,
+                            ),
+                        );
                     });
                 }
-                startUpload(tile.key);
             });
         },
-        [patchTile, showToast, startUpload],
+        [showToast],
     );
 
     const removeTile = (key: string) => {
-        controllers.current.get(key)?.abort();
-        controllers.current.delete(key);
-        files.current.delete(key);
-        setTiles((current) => {
-            const tile = current.find((item) => item.key === key);
-            if (tile?.previewUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(tile.previewUrl);
-            }
-            return current.filter((item) => item.key !== key);
-        });
+        const tile = tilesRef.current.find((item) => item.key === key);
+        if (tile && isBlobUrl(tile.previewUrl)) {
+            URL.revokeObjectURL(tile.previewUrl);
+        }
+        setTiles((current) => current.filter((item) => item.key !== key));
     };
 
     useEffect(() => {
-        const live = controllers.current;
         return () => {
-            live.forEach((controller) => controller.abort());
+            controller.current?.abort();
+            tilesRef.current.forEach((tile) => {
+                if (isBlobUrl(tile.previewUrl)) {
+                    URL.revokeObjectURL(tile.previewUrl);
+                }
+            });
         };
     }, []);
-
     const requestCancel = useCallback(() => {
+        if (submitting) {
+            setConfirmAbort(true);
+            return;
+        }
         if (dirty && !confirmDiscard) {
             setConfirmDiscard(true);
             return;
         }
         onCancel();
-    }, [dirty, confirmDiscard, onCancel]);
+    }, [submitting, dirty, confirmDiscard, onCancel]);
+
+    const abortUpload = () => {
+        controller.current?.abort();
+        setConfirmAbort(false);
+    };
 
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
@@ -358,10 +318,9 @@ const PostComposer = ({
             ...current,
             {
                 key: nextKey(),
-                status: 'done',
+                status: 'embed',
                 kind: 'embed',
                 size: 0,
-                progress: 100,
                 previewUrl: linkPreview?.image || '',
                 payload: { type: 'embed', url: info.url },
             },
@@ -381,7 +340,15 @@ const PostComposer = ({
         if (!ready || submitting) {
             return;
         }
-        onSubmit({ html, media: buildMediaPayload(tiles) });
+        const next = new AbortController();
+        controller.current = next;
+        setProgress(0);
+        setConfirmAbort(false);
+        onSubmit({
+            formData: buildPostFormData(html, tiles),
+            onProgress: setProgress,
+            signal: next.signal,
+        });
     };
 
     const hasFiles = (event: any) =>
@@ -394,7 +361,21 @@ const PostComposer = ({
             <PageHeader
                 title={title}
                 actions={
-                    confirmDiscard ? (
+                    confirmAbort && submitting ? (
+                        <>
+                            <span className="composer_confirm">
+                                Cancel the upload?
+                            </span>
+                            <ActionButton
+                                onClick={() => setConfirmAbort(false)}
+                            >
+                                Keep uploading
+                            </ActionButton>
+                            <ActionButton onClick={abortUpload}>
+                                Cancel upload
+                            </ActionButton>
+                        </>
+                    ) : confirmDiscard ? (
                         <>
                             <span className="composer_confirm">
                                 Discard this post?
@@ -409,10 +390,7 @@ const PostComposer = ({
                             </ActionButton>
                         </>
                     ) : (
-                        <ActionButton
-                            onClick={requestCancel}
-                            disabled={submitting}
-                        >
+                        <ActionButton onClick={requestCancel}>
                             Cancel
                         </ActionButton>
                     )
@@ -422,7 +400,7 @@ const PostComposer = ({
             <div
                 className={`composer_card${dragging ? ' composer_card_dragging' : ''}`}
                 onDragEnter={(event) => {
-                    if (hasFiles(event)) {
+                    if (hasFiles(event) && !submitting) {
                         event.preventDefault();
                         setDragging(true);
                     }
@@ -447,7 +425,9 @@ const PostComposer = ({
                     }
                     event.preventDefault();
                     setDragging(false);
-                    addFiles(Array.from(event.dataTransfer.files));
+                    if (!submitting) {
+                        addFiles(Array.from(event.dataTransfer.files));
+                    }
                 }}
             >
                 {dragging ? (
@@ -482,11 +462,11 @@ const PostComposer = ({
                                                 <MediaTile
                                                     key={tile.key}
                                                     tile={tile}
+                                                    uploading={submitting}
+                                                    progress={progress}
+                                                    disabled={submitting}
                                                     onRemove={() =>
                                                         removeTile(tile.key)
-                                                    }
-                                                    onRetry={() =>
-                                                        startUpload(tile.key)
                                                     }
                                                 />
                                             ))}
@@ -562,6 +542,7 @@ const PostComposer = ({
                                         aria-label="Add photo or video"
                                         title="Add photo or video"
                                         disabled={
+                                            submitting ||
                                             tiles.length >= MAX_MEDIA_ITEMS
                                         }
                                         onClick={() =>
@@ -576,6 +557,7 @@ const PostComposer = ({
                                         aria-label="Add media by link"
                                         title="Add media by link"
                                         aria-pressed={linkOpen}
+                                        disabled={submitting}
                                         onClick={() =>
                                             setLinkOpen((open) => !open)
                                         }

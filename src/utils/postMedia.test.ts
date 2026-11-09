@@ -4,6 +4,7 @@ import { MAX_MEDIA_BYTES } from './media';
 import {
     MAX_MEDIA_ITEMS,
     buildMediaPayload,
+    buildPostFormData,
     canPublish,
     firstMediaThumbnail,
     normalizePostMedia,
@@ -12,16 +13,23 @@ import {
 } from './postMedia';
 
 const tile = (patch: Partial<ComposerTile> = {}): ComposerTile => ({
-    key: Math.random().toString(36),
-    status: 'done',
+    key: Math.random().toString(36).slice(2),
+    status: 'existing',
     kind: 'image',
     size: 1000,
-    progress: 100,
     previewUrl: '',
     payload: { type: 'image', url: '/uploads/a.png' },
     ...patch,
 });
 
+const localTile = (name: string, size = 10): ComposerTile =>
+    tile({
+        key: `up-${name}`,
+        status: 'local',
+        size,
+        file: new File(['x'.repeat(size)], name, { type: 'image/png' }),
+        payload: undefined,
+    });
 describe('normalizePostMedia', () => {
     it('reads the media array', () => {
         const media = [{ type: 'image', url: '/uploads/a.png' }];
@@ -71,26 +79,24 @@ describe('firstMediaThumbnail', () => {
 });
 
 describe('canPublish', () => {
-    it('needs text or finished media', () => {
+    it('needs text or at least one media tile', () => {
         expect(canPublish('', []).ok).toBe(false);
+        expect(canPublish('   ', []).ok).toBe(false);
         expect(canPublish('hello', []).ok).toBe(true);
         expect(canPublish('', [tile()]).ok).toBe(true);
-    });
-
-    it('blocks while uploading or after a failure', () => {
-        expect(canPublish('hi', [tile({ status: 'uploading' })]).ok).toBe(
-            false,
-        );
-        expect(canPublish('hi', [tile({ status: 'error' })]).ok).toBe(false);
+        expect(canPublish('', [localTile('a.png')]).ok).toBe(true);
     });
 
     it('enforces the total size and item limits', () => {
         expect(
             canPublish('hi', [
                 tile({ size: MAX_MEDIA_BYTES }),
-                tile({ size: 1 }),
+                localTile('b.png', 1),
             ]).ok,
         ).toBe(false);
+        expect(canPublish('hi', [tile({ size: MAX_MEDIA_BYTES / 2 })]).ok).toBe(
+            true,
+        );
         expect(
             canPublish(
                 'hi',
@@ -103,12 +109,50 @@ describe('canPublish', () => {
 });
 
 describe('payload helpers', () => {
-    it('sums sizes and only sends finished tiles', () => {
-        const tiles = [
-            tile({ size: 10 }),
-            tile({ size: 20, status: 'uploading', payload: undefined }),
-        ];
-        expect(totalUploadBytes(tiles)).toBe(30);
-        expect(buildMediaPayload(tiles)).toHaveLength(1);
+    it('sums the sizes of existing and local tiles', () => {
+        expect(
+            totalUploadBytes([tile({ size: 10 }), localTile('a.png', 20)]),
+        ).toBe(30);
+    });
+
+    it('references new files by client id and resends existing items', () => {
+        const existing = tile({
+            payload: { id: 'm1', type: 'image', url: '/uploads/a.png' },
+        });
+        const embed = tile({
+            status: 'embed',
+            kind: 'embed',
+            size: 0,
+            payload: { type: 'embed', url: 'https://youtu.be/abc' },
+        });
+        const local = localTile('c.png');
+
+        expect(buildMediaPayload([existing, local, embed])).toEqual([
+            { id: 'm1', type: 'image', url: '/uploads/a.png' },
+            { upload: local.key },
+            { type: 'embed', url: 'https://youtu.be/abc' },
+        ]);
+    });
+
+    it('builds multipart data with one file part per new tile', () => {
+        const first = localTile('one.png', 5);
+        const second = localTile('two.png', 7);
+        const existing = tile();
+        const form = buildPostFormData('<p>hi</p>', [existing, first, second]);
+
+        expect(form.get('postContent')).toBe('<p>hi</p>');
+        expect(JSON.parse(String(form.get('media')))).toEqual([
+            existing.payload,
+            { upload: first.key },
+            { upload: second.key },
+        ]);
+        expect((form.get(first.key) as File).name).toBe('one.png');
+        expect((form.get(second.key) as File).size).toBe(7);
+        expect(form.get(existing.key)).toBeNull();
+    });
+
+    it('sends an empty media list when there is none', () => {
+        const form = buildPostFormData('<p>hi</p>', []);
+        expect(form.get('media')).toBe('[]');
     });
 });

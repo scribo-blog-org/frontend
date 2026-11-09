@@ -46,22 +46,22 @@ const EditPost = () => {
         }
     }, [profileLoading, profile, post, navigate]);
 
-    const handleSubmit = async ({ html, media }: any) => {
+    const handleSubmit = async ({ formData, onProgress, signal }: any) => {
         if (submitting) {
             return;
         }
 
         setSubmitting(true);
         try {
-            const formData = new FormData();
-            formData.append('postContent', html);
-            formData.append('media', JSON.stringify(media));
-
-            const result = await editPost(id, formData);
+            const result = await editPost(id, formData, { onProgress, signal });
 
             if (result?.status === true) {
                 navigate(`/posts/${id}`);
                 showToast({ message: 'Post updated!', type: 'success' });
+                return;
+            }
+
+            if (result?.aborted) {
                 return;
             }
 

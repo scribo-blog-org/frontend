@@ -28,22 +28,22 @@ const CreatePost = () => {
         }
     }, [profileLoading, initialized, profile, navigate]);
 
-    const handleSubmit = async ({ html, media }: any) => {
+    const handleSubmit = async ({ formData, onProgress, signal }: any) => {
         if (submitting) {
             return;
         }
 
         setSubmitting(true);
         try {
-            const formData = new FormData();
-            formData.append('postContent', html);
-            formData.append('media', JSON.stringify(media));
-
-            const result = await createPost(formData);
+            const result = await createPost(formData, { onProgress, signal });
 
             if (result?.status === true) {
                 navigate('/');
                 showToast({ message: 'Published!', type: 'success' });
+                return;
+            }
+
+            if (result?.aborted) {
                 return;
             }
 
