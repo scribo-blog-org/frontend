@@ -3,31 +3,109 @@
 .settings {
     display: flex;
     flex: 1 1;
-    width: 100%;
+    flex-direction: column;
+    gap: var(--space-6);
     min-width: 0;
+    @include page-column(var(--page-width));
 
-    .settings_sections {
+    .settings_layout {
+        display: grid;
+        grid-template-columns: 200px minmax(0, 1fr);
+        gap: var(--space-6);
+        align-items: start;
+        min-width: 0;
+
+        @include screen() {
+            grid-template-columns: minmax(0, 1fr);
+            gap: var(--space-5);
+        }
+    }
+
+    .settings_nav {
+        position: sticky;
+        top: var(--space-5);
         display: flex;
         flex-direction: column;
-        gap: var(--space-6);
-        flex: 1;
-        @include page-column(var(--page-width-medium));
-        min-width: 0;
+        gap: 2px;
+
+        @include screen() {
+            position: static;
+            flex-direction: row;
+            gap: var(--space-5);
+            overflow-x: auto;
+            scrollbar-width: none;
+            border-bottom: 1px solid var(--line-color);
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+        }
+    }
+
+    .settings_nav_item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        width: 100%;
+        padding: 8px 12px;
+        border: 0;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--light-text-color);
+        text-align: left;
+        font-family: inherit;
+        cursor: pointer;
+
+        @include hover {
+            background: var(--bg-hover);
+            color: var(--text-color);
+        }
+
+        @include screen() {
+            width: auto;
+            flex-shrink: 0;
+            padding: 8px 0 10px;
+            border-radius: 0;
+            box-shadow: inset 0 -2px 0 transparent;
+
+            @include hover {
+                background: transparent;
+            }
+        }
+    }
+
+    .settings_nav_item_active {
+        background: var(--bg-active);
+        color: var(--text-color);
+
+        @include screen() {
+            background: transparent;
+            box-shadow: inset 0 -2px 0 var(--text-color);
+        }
+    }
+
+    .settings_nav_title {
+        font-size: var(--text-md);
+        font-weight: 500;
+        line-height: 1.3;
+    }
+
+    .settings_nav_hint {
+        font-size: var(--text-xs);
+        line-height: 1.3;
+        color: var(--fg-subtle);
+
+        @include screen() {
+            display: none;
+        }
     }
 
     .settings_section {
         display: flex;
         flex-direction: column;
-        gap: var(--space-5, 20px);
+        gap: var(--space-5);
         min-width: 0;
-        padding: var(--space-6);
-        background: var(--section-background-color);
-        border: 1px solid var(--line-color);
-        border-radius: var(--radius-md, 12px);
-
-        > h1 {
-            font-size: 20px;
-        }
+        animation: settings_enter 200ms ease backwards;
     }
 
     .settings_panel {
@@ -41,53 +119,31 @@
     .settings_stack {
         display: flex;
         flex-direction: column;
-        gap: var(--space-6);
+        gap: var(--space-5);
         width: 100%;
     }
 
     .settings_group {
-        display: grid;
-        grid-template-columns: 128px minmax(0, 1fr);
-        column-gap: var(--space-5);
-        row-gap: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
         min-width: 0;
+        padding: var(--space-5);
+        background: var(--bg-subtle);
+        border: 1px solid var(--line-color);
+        border-radius: var(--radius);
 
         > .kicker {
-            grid-column: 1;
-            grid-row: 1;
-            align-self: start;
-            margin: 0;
-        }
-
-        > :not(.kicker) {
-            grid-column: 2;
-            min-width: 0;
-        }
-
-        > :not(.kicker) ~ :not(.kicker) {
-            margin-top: var(--space-3);
+            margin: 0 0 var(--space-1);
+            font-size: var(--text-sm);
+            font-weight: 600;
+            color: var(--text-color);
         }
 
         > .settings_switch ~ .settings_switch {
             margin-top: 0;
         }
-
-        @include screen() {
-            grid-template-columns: minmax(0, 1fr);
-            row-gap: var(--space-3);
-
-            > .kicker,
-            > :not(.kicker) {
-                grid-column: 1;
-                grid-row: auto;
-            }
-
-            > :not(.kicker) ~ :not(.kicker) {
-                margin-top: 0;
-            }
-        }
     }
-
     .settings_panel_actions {
         position: sticky;
         bottom: calc(var(--bottom-inset, 0px) + var(--space-4));
@@ -98,7 +154,7 @@
         gap: 12px;
         padding: var(--space-3) 0 0;
         border-top: 1px solid var(--line-color);
-        background: var(--section-background-color);
+        background: var(--bg);
         flex-wrap: wrap;
     }
 

@@ -6,7 +6,7 @@
     gap: var(--space-6);
 
     .drop_file {
-        min-height: 230px;
+        min-height: 140px;
         border-radius: 8px;
 
         @include screen() {

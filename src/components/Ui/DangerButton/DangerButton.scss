@@ -7,9 +7,9 @@
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    border: 1px solid var(--red-button-primary-color);
-    background-color: var(--red-button-primary-color);
-    color: var(--red-button-secondary-color);
+    border: 1px solid var(--border-strong);
+    background-color: transparent;
+    color: var(--red-button-primary-color);
     @include button-sizes;
 
     svg {
@@ -29,16 +29,16 @@
     }
 
     @include hover {
-        background-color: var(--red-button-hover-color);
-        border-color: var(--red-button-hover-color);
-        color: var(--red-button-secondary-color);
+        background-color: rgb(from var(--red-button-primary-color) r g b / 0.1);
+        border-color: var(--red-button-primary-color);
+        color: var(--red-button-primary-color);
     }
 }
 
 .danger_button_active {
-    background-color: var(--red-button-primary-color);
+    background-color: rgb(from var(--red-button-primary-color) r g b / 0.1);
     border-color: var(--red-button-primary-color);
-    color: var(--red-button-secondary-color);
+    color: var(--red-button-primary-color);
 }
 
 .danger_button_loading {

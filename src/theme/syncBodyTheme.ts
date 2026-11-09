@@ -9,7 +9,7 @@ export function syncBodyThemeClass(isDarkTheme: any) {
 }
 
 export function syncMetaThemeColor(isDarkTheme: any) {
-    const next = isDarkTheme ? '#1e1e1e' : '#ffffff';
+    const next = isDarkTheme ? '#161616' : '#ffffff';
     const meta = document.querySelector('meta[name="theme-color"]');
 
     if (meta && meta.getAttribute('content') !== next) {

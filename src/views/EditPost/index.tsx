@@ -5,6 +5,7 @@ import { useParams } from '@/navigation';
 import { useContext, useEffect, useState, useMemo } from 'react';
 import { AppContext } from '@/providers/AppProviders';
 
+import PageHeader from '../../components/PageHeader';
 import DropFile from '../../components/Ui/DropFile/index';
 import InputFiled from '../../components/Ui/InputField';
 import TextEditorField from '../../components/Ui/TextEditorField';
@@ -214,6 +215,7 @@ const EditPost = () => {
 
     return (
         <form className="edit_post" onSubmit={handleSubmit}>
+            <PageHeader title="Edit post" />
             <Field error={errors?.postTitle} title={'Title'}>
                 <InputFiled
                     value={fields.postTitle}

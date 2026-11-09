@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from '@/navigation';
 
 import { searchSite } from '../../api/search.api';
+import PageHeader from '../../components/PageHeader';
 import InputField from '../../components/Ui/InputField';
 import { Panel, PanelRow } from '../../components/Ui';
 import { CATEGORY_COLORS } from '../../styles/constants';
@@ -87,7 +88,10 @@ const SearchPage = () => {
 
     return (
         <div className="search_page">
-            <h1>Search</h1>
+            <PageHeader
+                title="Search"
+                description="Posts, people and categories."
+            />
             <div className="search_page_field">
                 <InputField
                     ref={inputRef}

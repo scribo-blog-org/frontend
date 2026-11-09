@@ -3195,7 +3195,7 @@ const MessagesPage = () => {
                                 <NewMessageIllustration className="app-transition" />
                             </div>
                             <div className="messages_blank_copy">
-                                <h1>This conversation is still empty</h1>
+                                <h1>Select a conversation</h1>
                                 <p className="messages_blank_lead">
                                     Choose a chat on the left. Or open a profile
                                     and click “Start a conversation”.

@@ -12,6 +12,7 @@
     max-height: 100dvh;
     padding: var(--space-5) var(--space-3);
     border-right: 1px solid var(--line-color);
+    background: var(--bg-subtle);
     box-sizing: border-box;
     z-index: 100;
     transition: border-color 300ms ease;
@@ -83,7 +84,7 @@
         }
 
         &_active {
-            background: var(--section-item-hover-background-color);
+            background: var(--bg-active);
             color: var(--text-color);
         }
     }
@@ -113,8 +114,8 @@
         height: 16px;
         padding: 0 4px;
         border-radius: 999px;
-        background: var(--red-f5);
-        color: #fff;
+        background: var(--inverse-bg);
+        color: var(--inverse-fg);
         font-size: 10px;
         font-weight: 600;
         line-height: 16px;
@@ -129,14 +130,34 @@
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: var(--red-f5);
+        background: var(--inverse-bg);
         z-index: 1;
     }
 
-    &_create,
     &_login {
         margin-top: var(--space-2);
         width: 100%;
         justify-content: center;
+    }
+
+    &_create {
+        margin-top: var(--space-2);
+        width: 100%;
+        justify-content: center;
+        background: transparent;
+        color: var(--text-color);
+        border: 1px solid var(--border-strong);
+        box-shadow: none;
+
+        svg,
+        svg * {
+            fill: currentColor;
+        }
+
+        @include hover {
+            background: var(--bg-hover);
+            border-color: var(--fg-muted);
+            color: var(--text-color);
+        }
     }
 }

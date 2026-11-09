@@ -64,6 +64,7 @@
             object-position: scale-down;
             user-select: none;
             border-radius: 8px;
+            border: 1px solid var(--line-color);
 
             @include screen() {
                 object-fit: contain;
@@ -86,6 +87,13 @@
 
         a:not(.hashtag):not(.mention) {
             color: var(--accent-color);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            text-decoration-color: var(--border-strong);
+
+            @include hover {
+                text-decoration-color: currentColor;
+            }
         }
 
         a.hashtag,

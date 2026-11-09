@@ -1,7 +1,7 @@
 export const ACCENT_COLOR = {
     variable: '--accent-color',
-    light: '#1b73fb',
-    dark: '#4e93ff',
+    light: 'var(--fg)',
+    dark: 'var(--fg)',
 };
 
 export const CATEGORY_COLORS = {

@@ -119,12 +119,12 @@
                 width: 8px;
                 height: 8px;
                 border-radius: 50%;
-                background: #22c55e;
+                background: var(--success);
                 flex-shrink: 0;
             }
 
             &--online p {
-                color: #22c55e;
+                color: var(--success);
             }
         }
 

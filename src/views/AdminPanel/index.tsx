@@ -116,7 +116,7 @@ const AdminPanel = () => {
             <TabsPage
                 label="Admin panel"
                 pages={pages}
-                aside={version ? <Pill tone="info">v{version}</Pill> : null}
+                aside={version ? <Pill tone="neutral">v{version}</Pill> : null}
             />
         </div>
     );
