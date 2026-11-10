@@ -2,11 +2,16 @@
 
 .logs_page {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: stretch;
     flex: 1 1 0%;
     min-height: 0;
     min-width: 0;
     gap: var(--space-3);
+
+    @include screen() {
+        flex-direction: column;
+    }
 
     .logs_list {
         flex: 1 1 0%;
@@ -21,85 +26,18 @@
     }
 }
 
-.logs_toolbar {
+.logs_toolbar_filter {
     display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    flex-shrink: 0;
-    position: relative;
-    z-index: 3;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
 
-    &_row {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-
-        @include screen() {
-            flex-direction: column;
-            align-items: stretch;
-        }
-    }
-
-    &_level {
-        flex: 0 0 170px;
-        min-width: 0;
-
-        @include screen() {
-            flex-basis: auto;
-        }
-    }
-
-    &_type {
-        flex: 0 0 240px;
-        min-width: 0;
-
-        @include screen() {
-            flex-basis: auto;
-        }
-    }
-
-    &_range {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
+    > svg {
+        width: 18px;
+        height: 18px;
         flex-shrink: 0;
-
-        @include screen() {
-            flex-direction: column;
-            align-items: stretch;
-        }
-    }
-
-    &_actions {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        flex-shrink: 0;
-
-        svg {
-            width: 16px;
-            height: 16px;
-        }
-    }
-
-    &_search {
-        flex: 1 1 0%;
-        min-width: 0;
-    }
-
-    &_filter {
-        flex: 0 1 auto;
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        min-width: 0;
-
-        > svg {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-            color: var(--section-light-color);
-        }
+        color: var(--section-light-color);
     }
 }
 
@@ -750,8 +688,8 @@
 }
 
 .action_button.logs_live_active {
-    color: var(--accent-color);
-    border-color: var(--accent-color);
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
 }
 
 .logs_reload {
@@ -773,113 +711,6 @@
     .logs_empty,
     .log_item {
         animation: none;
-    }
-}
-
-.action_button.logs_filters_toggle {
-    display: none;
-    width: var(--button-height-lg);
-    padding: 0;
-    flex-shrink: 0;
-
-    @include screen() {
-        display: flex;
-    }
-
-    svg {
-        transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    &_open svg {
-        transform: rotate(180deg);
-    }
-}
-
-.logs_filters_dot {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--accent-color);
-}
-
-.logs_toolbar_actions_wide {
-    @include screen() {
-        display: none;
-    }
-}
-
-.logs_toolbar_actions_folded {
-    display: none;
-
-    @include screen() {
-        display: flex;
-    }
-}
-
-.logs_toolbar_row_top {
-    @include screen() {
-        flex-direction: row;
-        align-items: center;
-    }
-}
-
-.logs_toolbar_filters {
-    @include screen() {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: 0fr;
-        min-width: 0;
-        margin-top: calc(var(--space-3) * -1);
-        visibility: hidden;
-        transition:
-            grid-template-rows 300ms cubic-bezier(0.16, 1, 0.3, 1),
-            margin-top 300ms cubic-bezier(0.16, 1, 0.3, 1),
-            visibility 0s linear 300ms;
-    }
-
-    &_inner {
-        @include screen() {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-3);
-            min-height: 0;
-            min-width: 0;
-            overflow: hidden;
-            opacity: 0;
-            transition: opacity 300ms ease;
-        }
-    }
-
-    &_open {
-        @include screen() {
-            grid-template-rows: 1fr;
-            margin-top: 0;
-            visibility: visible;
-            transition:
-                grid-template-rows 300ms cubic-bezier(0.16, 1, 0.3, 1),
-                margin-top 300ms cubic-bezier(0.16, 1, 0.3, 1),
-                visibility 0s;
-        }
-
-        .logs_toolbar_filters_inner {
-            opacity: 1;
-        }
-    }
-
-    &_settled .logs_toolbar_filters_inner {
-        @include screen() {
-            overflow: visible;
-        }
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .logs_toolbar_filters,
-    .logs_toolbar_filters_inner {
-        transition: none;
     }
 }
 
@@ -983,10 +814,7 @@
 
 .log_timing_segment {
     min-width: 6px;
-    padding: 0;
-    border: 0;
     border-radius: 4px;
-    cursor: pointer;
     @include use-transition();
 
     &_db {
@@ -999,11 +827,6 @@
 
     &_dim {
         opacity: 0.3;
-    }
-
-    &:focus-visible {
-        outline: 2px solid var(--input-outline-active-color);
-        outline-offset: 2px;
     }
 }
 
@@ -1026,6 +849,15 @@
         color: var(--text-color);
         cursor: pointer;
         @include use-transition();
+
+        @include hover {
+            background: var(--section-item-hover-background-color);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--input-outline-active-color);
+            outline-offset: -2px;
+        }
 
         &_active {
             background: var(--section-item-hover-background-color);
@@ -1084,9 +916,15 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding-top: 8px;
-    border-top: 1px solid var(--line-color);
+    padding: 5px 8px;
+    margin: 0 -8px;
+    border-radius: 6px;
     font-size: 13px;
+    @include use-transition();
+
+    @include hover {
+        background: var(--section-item-hover-background-color);
+    }
 
     .log_timing_legend_label {
         flex: 1;

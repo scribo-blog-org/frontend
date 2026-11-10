@@ -111,13 +111,10 @@ export const TimingBreakdown = ({ timing }: { timing: Timing }) => {
 
             <div className="log_timing_split" role="group" aria-label="Split">
                 {parts.map((part) => (
-                    <button
+                    <span
                         key={part.key}
-                        type="button"
                         className={`log_timing_segment log_timing_segment_${part.key}${current && current !== part.key ? ' log_timing_segment_dim' : ''}`}
                         style={{ flexGrow: Math.max(part.share, 0.02) }}
-                        title={`${part.label}: ${formatDuration(part.ms)}`}
-                        {...bind(part.key)}
                     />
                 ))}
             </div>
@@ -163,7 +160,7 @@ export const TimingBreakdown = ({ timing }: { timing: Timing }) => {
             <p className="log_timing_hint">
                 {current
                     ? parts.find((part) => part.key === current)?.hint
-                    : 'Hover or tap a part to see what it means'}
+                    : 'Hover a row to see what it means'}
             </p>
 
             {timing.queries >= MANY_QUERIES ? (

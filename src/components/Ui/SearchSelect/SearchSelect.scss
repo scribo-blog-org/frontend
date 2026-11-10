@@ -155,6 +155,23 @@
         &.search_select_item_selected {
             background-color: var(--section-item-hover-background-color);
         }
+
+        &.search_select_item_active {
+            color: var(--text-color);
+        }
+
+        p {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        &_check {
+            flex-shrink: 0;
+            width: 14px;
+            height: 14px;
+            margin-left: auto;
+            color: var(--text-color);
+        }
     }
 }
 
