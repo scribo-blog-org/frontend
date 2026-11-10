@@ -18,29 +18,33 @@ const guestIcon = (useIcon: any) =>
 const CurrentUserBadge = ({
     className,
     asLink = true,
+    interactive = asLink,
     guestAsIcon = false,
     avatarOnly = false,
 }: any) => {
     const { profile } = useContext(AppContext);
+    const staticClass = interactive ? '' : ' user_badge_static';
 
-    return profile ? (
-        <UserBadge
-            data={profile}
-            className={className}
-            asLink={asLink}
-            avatarOnly={avatarOnly}
-        />
-    ) : asLink ? (
-        <Link
-            href={'/auth/login'}
-            className={`user_badge ${className ?? ''} app-transition`}
-        >
+    if (profile) {
+        return (
+            <UserBadge
+                data={profile}
+                className={className}
+                asLink={asLink}
+                interactive={interactive}
+                avatarOnly={avatarOnly}
+            />
+        );
+    }
+
+    const classes = `user_badge${staticClass} ${className ?? ''} app-transition`;
+
+    return asLink ? (
+        <Link href={'/auth/login'} className={classes}>
             {guestIcon(guestAsIcon)}
         </Link>
     ) : (
-        <div className={`user_badge ${className ?? ''} app-transition`}>
-            {guestIcon(guestAsIcon)}
-        </div>
+        <div className={classes}>{guestIcon(guestAsIcon)}</div>
     );
 };
 

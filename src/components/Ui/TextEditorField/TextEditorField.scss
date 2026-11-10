@@ -344,6 +344,10 @@
             }
         }
 
+        button.text_editor_tool_active {
+            color: var(--text-color);
+        }
+
         button.text_editor_format_toggle {
             font-size: 13px;
             font-weight: 600;

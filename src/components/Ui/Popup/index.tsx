@@ -178,7 +178,7 @@ function MenuBody({ sections, onItemSelect }: any) {
 function MenuStack({ sections, onItemSelect }: any) {
     const [trail, setTrail] = useState<any[]>([]);
     const [depth, setDepth] = useState<any>(0);
-    const [height, setHeight] = useState<any>(null);
+    const [box, setBox] = useState<any>(null);
     const panels = useRef<any[]>([]);
     const timer = useRef<any>(0);
 
@@ -191,7 +191,13 @@ function MenuStack({ sections, onItemSelect }: any) {
             return;
         }
 
-        const measure = () => setHeight(node.offsetHeight);
+        const measure = () =>
+            setBox((current: any) =>
+                current?.height === node.offsetHeight &&
+                current?.width === node.offsetWidth
+                    ? current
+                    : { height: node.offsetHeight, width: node.offsetWidth },
+            );
         measure();
 
         const observer = new ResizeObserver(measure);
@@ -232,7 +238,11 @@ function MenuStack({ sections, onItemSelect }: any) {
         <MenuNavContext.Provider value={nav}>
             <div
                 className="popup_menu_stack"
-                style={height == null ? undefined : { height }}
+                style={
+                    box == null
+                        ? undefined
+                        : { height: box.height, width: box.width }
+                }
             >
                 {levels.map((level: any, index: any) => (
                     <div
