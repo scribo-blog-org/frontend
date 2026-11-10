@@ -417,7 +417,7 @@ const LogsPage = () => {
             </FilterField>
             <FilterField label="Event type">
                 <SearchSelect
-                    multiple
+                    multiple="pinned"
                     options={TYPE_OPTIONS}
                     value={levelValues(typeFilter)}
                     placeholder="All events"

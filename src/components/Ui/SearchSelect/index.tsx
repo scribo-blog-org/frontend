@@ -41,6 +41,7 @@ const SearchSelect = ({
 }: any) => {
     const setValue = onChange ?? onSetValue;
     const external = typeof onInput === 'function';
+    const pinned = multiple === 'pinned';
 
     const [isOpen, setIsOpen] = useState<any>(false);
     const [inputValue, setInputValue] = useState<any>('');
@@ -53,11 +54,14 @@ const SearchSelect = ({
     const { mounted: listMounted, visible: listVisible } =
         useOverlayPresence(isOpen);
 
+    const valueKey = Array.isArray(value) ? value.join('\u0000') : value;
+
     const selectedValues: any[] = useMemo(() => {
         if (!multiple) return [];
         if (Array.isArray(value)) return value;
         return value ? [value] : [];
-    }, [multiple, value]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [multiple, valueKey]);
 
     const joinedLabels = useMemo(
         () =>
@@ -80,13 +84,24 @@ const SearchSelect = ({
 
     const filteredOptions = useMemo(() => {
         const search = isSearching ? inputValue.trim().toLowerCase() : '';
+        const found =
+            external || !search
+                ? options
+                : options.filter((option: any) =>
+                      optionLabel(option).toLowerCase().includes(search),
+                  );
 
-        if (external || !search) return options;
+        if (!pinned) return found;
 
-        return options.filter((option: any) =>
-            optionLabel(option).toLowerCase().includes(search),
-        );
-    }, [options, inputValue, external, isSearching]);
+        return [
+            ...found.filter((option: any) =>
+                selectedValues.includes(option.value),
+            ),
+            ...found.filter(
+                (option: any) => !selectedValues.includes(option.value),
+            ),
+        ];
+    }, [options, inputValue, external, isSearching, pinned, selectedValues]);
 
     const resetValue = useCallback(() => {
         const search = inputValue.trim().toLowerCase();
@@ -150,8 +165,8 @@ const SearchSelect = ({
 
     useEffect(() => {
         if (!multiple || isSearching) return;
-        setInputValue(joinedLabels);
-    }, [multiple, isSearching, joinedLabels]);
+        setInputValue(pinned && isOpen ? '' : joinedLabels);
+    }, [multiple, pinned, isOpen, isSearching, joinedLabels]);
 
     useEffect(() => {
         if (multiple || external || clearOnSelect) return;
@@ -289,6 +304,9 @@ const SearchSelect = ({
                 ) {
                     e.preventDefault();
                     handleSelect(filteredOptions[0]);
+                } else if (pinned && isOpen && !inputValue.trim()) {
+                    e.preventDefault();
+                    closeSelect();
                 }
 
                 break;
