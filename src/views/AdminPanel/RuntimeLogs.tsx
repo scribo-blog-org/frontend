@@ -5,6 +5,7 @@ import {
     useCallback,
     useContext,
     useEffect,
+    useMemo,
     useRef,
     useState,
 } from 'react';
@@ -152,6 +153,19 @@ const RuntimeRow = ({
     );
 };
 
+const withKeys = (list: any[]) => {
+    const seen = new Map<string, number>();
+
+    return list.map((entry: any) => {
+        const base = `${entry.ts}|${entry.msg}|${entry.data?.request_id ?? ''}`;
+        const count = seen.get(base) ?? 0;
+
+        seen.set(base, count + 1);
+
+        return { entry, key: `${base}#${count}` };
+    });
+};
+
 const RuntimeLogs = ({ source }: { source: string }) => {
     const { showToast } = useContext(AppContext);
     const {
@@ -170,6 +184,7 @@ const RuntimeLogs = ({ source }: { source: string }) => {
     const [next, setNext] = useState<string | null>(null);
     const [available, setAvailable] = useState<boolean>(true);
     const [loadedKey, setLoadedKey] = useState<string>('');
+    const loadedRef = useRef<string>('');
     const [loadingNext, setLoadingNext] = useState<boolean>(false);
     const [search, setSearch] = useState<string>(searchText.trim());
     const [expanded, setExpanded] = useState<any>(() => new Set());
@@ -213,24 +228,55 @@ const RuntimeLogs = ({ source }: { source: string }) => {
         [source, levelFilter, search, dateFrom, dateTo],
     );
 
-    const load = useCallback(async () => {
-        const params = query();
-        const result = await getRuntimeLogs(params);
+    const load = useCallback(
+        async (silent = false) => {
+            const params = query();
+            const paramsKey = JSON.stringify(params);
 
-        if (!result?.status) {
-            showToast({
-                type: 'error',
-                message: result?.message || 'Failed to load logs',
-            });
-            setLoadedKey(JSON.stringify(params));
-            return;
-        }
+            if (silent && loadedRef.current !== paramsKey) {
+                return;
+            }
 
-        setItems(result.data?.items || []);
-        setNext(result.data?.next ?? null);
-        setAvailable(result.data?.available !== false);
-        setLoadedKey(JSON.stringify(params));
-    }, [query, showToast]);
+            const result = await getRuntimeLogs(params);
+
+            if (!result?.status) {
+                if (!silent) {
+                    showToast({
+                        type: 'error',
+                        message: result?.message || 'Failed to load logs',
+                    });
+                    loadedRef.current = paramsKey;
+                    setLoadedKey(paramsKey);
+                }
+
+                return;
+            }
+
+            const fetched: any[] = result.data?.items || [];
+
+            if (silent) {
+                setItems((prev: any[]) => {
+                    const known = new Set(
+                        withKeys(prev).map((item) => item.key),
+                    );
+                    const fresh = withKeys(fetched)
+                        .filter((item) => !known.has(item.key))
+                        .map((item) => item.entry);
+
+                    return fresh.length ? [...fresh, ...prev] : prev;
+                });
+
+                return;
+            }
+
+            setItems(fetched);
+            setNext(result.data?.next ?? null);
+            setAvailable(result.data?.available !== false);
+            loadedRef.current = paramsKey;
+            setLoadedKey(paramsKey);
+        },
+        [query, showToast],
+    );
 
     const loadNext = useCallback(async () => {
         if (!next || loadingNext) {
@@ -260,7 +306,7 @@ const RuntimeLogs = ({ source }: { source: string }) => {
 
         const timer = setInterval(() => {
             if (!document.hidden) {
-                load();
+                load(true);
             }
         }, LIVE_MS);
 
@@ -281,7 +327,7 @@ const RuntimeLogs = ({ source }: { source: string }) => {
         });
 
     const loading = loadedKey !== JSON.stringify(query());
-    const keyOf = (entry: any, index: number) => `${entry.ts}-${index}`;
+    const keyed = useMemo(() => withKeys(items), [items]);
 
     return (
         <div className="logs_page">
@@ -362,64 +408,48 @@ const RuntimeLogs = ({ source }: { source: string }) => {
                         loadingNext={loadingNext}
                         onLoadNext={loadNext}
                     >
-                        {items.map((entry: any, index: number) => {
-                            const id = keyOf(entry, index);
-
-                            return (
-                                <Fragment key={id}>
-                                    {index === 0 ||
-                                    dayKey(items[index - 1].ts) !==
-                                        dayKey(entry.ts) ? (
-                                        <div className="logs_day">
-                                            {format_message_date_label(
-                                                entry.ts,
-                                            )}
-                                        </div>
-                                    ) : null}
-                                    <RuntimeRow
-                                        entry={entry}
-                                        expanded={expanded.has(id)}
-                                        onToggle={() => toggle(id)}
-                                        onPrev={
-                                            items[index - 1]
-                                                ? () =>
-                                                      setExpanded(
-                                                          new Set([
-                                                              keyOf(
-                                                                  items[
-                                                                      index - 1
-                                                                  ],
-                                                                  index - 1,
-                                                              ),
-                                                          ]),
-                                                      )
-                                                : undefined
-                                        }
-                                        onNext={
-                                            items[index + 1]
-                                                ? () =>
-                                                      setExpanded(
-                                                          new Set([
-                                                              keyOf(
-                                                                  items[
-                                                                      index + 1
-                                                                  ],
-                                                                  index + 1,
-                                                              ),
-                                                          ]),
-                                                      )
-                                                : undefined
-                                        }
-                                        position={index + 1}
-                                        total={items.length}
-                                        hasMore={Boolean(next)}
-                                        onFindRequest={(requestId: string) =>
-                                            setSearchText(requestId)
-                                        }
-                                    />
-                                </Fragment>
-                            );
-                        })}
+                        {keyed.map(({ entry, key }, index) => (
+                            <Fragment key={key}>
+                                {index === 0 ||
+                                dayKey(keyed[index - 1].entry.ts) !==
+                                    dayKey(entry.ts) ? (
+                                    <div className="logs_day">
+                                        {format_message_date_label(entry.ts)}
+                                    </div>
+                                ) : null}
+                                <RuntimeRow
+                                    entry={entry}
+                                    expanded={expanded.has(key)}
+                                    onToggle={() => toggle(key)}
+                                    onPrev={
+                                        keyed[index - 1]
+                                            ? () =>
+                                                  setExpanded(
+                                                      new Set([
+                                                          keyed[index - 1].key,
+                                                      ]),
+                                                  )
+                                            : undefined
+                                    }
+                                    onNext={
+                                        keyed[index + 1]
+                                            ? () =>
+                                                  setExpanded(
+                                                      new Set([
+                                                          keyed[index + 1].key,
+                                                      ]),
+                                                  )
+                                            : undefined
+                                    }
+                                    position={index + 1}
+                                    total={keyed.length}
+                                    hasMore={Boolean(next)}
+                                    onFindRequest={(requestId: string) =>
+                                        setSearchText(requestId)
+                                    }
+                                />
+                            </Fragment>
+                        ))}{' '}
                     </InfiniteScroll>
                 ) : (
                     <p className="logs_empty">
