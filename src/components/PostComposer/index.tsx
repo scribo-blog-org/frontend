@@ -21,6 +21,7 @@ import CancelButton from '../Ui/CancelButton';
 import DangerButton from '../Ui/DangerButton';
 import { ModalFooter, Panel } from '../Ui';
 import PostPreview from '../PostPreview';
+import Tooltip from '../Ui/Tooltip';
 import MediaTile from './MediaTile';
 import MediaViewer, { type MediaViewerItem } from '../MediaViewer';
 
@@ -879,35 +880,37 @@ const PostComposer = ({
                             }
                             toolbarLeading={
                                 <>
-                                    <button
-                                        type="button"
-                                        className="app-transition"
-                                        aria-label="Add photo or video"
-                                        title="Add photo or video"
-                                        disabled={
-                                            submitting ||
-                                            tiles.length >= MAX_MEDIA_ITEMS
-                                        }
-                                        onClick={() =>
-                                            fileInput.current?.click()
-                                        }
-                                    >
-                                        <MediaInsertIcon />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`app-transition${linkOpen ? ' text_editor_tool_active' : ''}`}
-                                        aria-label="Add link"
-                                        title="Add link"
-                                        aria-pressed={linkOpen}
-                                        disabled={submitting}
-                                        onMouseDown={(event) =>
-                                            event.preventDefault()
-                                        }
-                                        onClick={toggleLink}
-                                    >
-                                        <LinkIcon />
-                                    </button>{' '}
+                                    <Tooltip text="Add photo or video">
+                                        <button
+                                            type="button"
+                                            className="app-transition"
+                                            aria-label="Add photo or video"
+                                            disabled={
+                                                submitting ||
+                                                tiles.length >= MAX_MEDIA_ITEMS
+                                            }
+                                            onClick={() =>
+                                                fileInput.current?.click()
+                                            }
+                                        >
+                                            <MediaInsertIcon />
+                                        </button>
+                                    </Tooltip>
+                                    <Tooltip text="Add link">
+                                        <button
+                                            type="button"
+                                            className={`app-transition${linkOpen ? ' text_editor_tool_active' : ''}`}
+                                            aria-label="Add link"
+                                            aria-pressed={linkOpen}
+                                            disabled={submitting}
+                                            onMouseDown={(event) =>
+                                                event.preventDefault()
+                                            }
+                                            onClick={toggleLink}
+                                        >
+                                            <LinkIcon />
+                                        </button>
+                                    </Tooltip>
                                 </>
                             }
                             toolbarTrailing={
