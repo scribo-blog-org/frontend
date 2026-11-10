@@ -6,7 +6,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from '@/navigation';
 
 import { AppContext } from '@/providers/AppProviders';
-import { getUnreadCount } from '../../api/chat.api';
+import { useUnreadMessages } from '../../hooks/useUnreadMessages';
 import { socketService } from '../../sockets/socket.service';
 
 import HomeIcon from '../../assets/svg/home-icon.svg';
@@ -27,34 +27,10 @@ const MobileNavigationBar = () => {
     const navigate = useNavigate();
     const { profile } = useContext(AppContext);
 
-    const [unreadMessages, setUnreadMessages] = useState<any>(0);
+    const unreadMessages = useUnreadMessages(profile);
     const hasUnread = Boolean(
         profile?.notifications?.some((item: any) => item.is_read === false),
     );
-
-    useEffect(() => {
-        if (!profile) {
-            setUnreadMessages(0);
-            return;
-        }
-
-        let cancelled = false;
-
-        getUnreadCount().then((result: any) => {
-            if (!cancelled && result?.status) {
-                setUnreadMessages(result.data?.unread || 0);
-            }
-        });
-
-        const unsubscribe = socketService.on('chat:unread', (unread: any) => {
-            setUnreadMessages(Number(unread) || 0);
-        });
-
-        return () => {
-            cancelled = true;
-            unsubscribe();
-        };
-    }, [profile?._id]);
 
     const canCreate = Boolean(profile?.permissions?.includes('create_post'));
     const isAdmin = isAdminRole(profile?.role);

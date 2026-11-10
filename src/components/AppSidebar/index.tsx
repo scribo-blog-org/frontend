@@ -4,7 +4,7 @@ import { useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from '@/navigation';
 
 import { AppContext } from '@/providers/AppProviders';
-import { getUnreadCount } from '../../api/chat.api';
+import { useUnreadMessages } from '../../hooks/useUnreadMessages';
 import { useAdminAttention } from '../../hooks/useAdminAttention';
 import { socketService } from '../../sockets/socket.service';
 import { isAdminRole } from '../AccountMenu/getAccountMenuBody';
@@ -31,7 +31,7 @@ function AppSidebar() {
     const { profile } = useContext(AppContext);
     const location = useLocation();
     const navigate = useNavigate();
-    const [unreadMessages, setUnreadMessages] = useState<any>(0);
+    const unreadMessages = useUnreadMessages(profile);
 
     const hasUnreadNotifications = Boolean(
         profile?.notifications?.some((item: any) => item.is_read === false),
@@ -39,30 +39,6 @@ function AppSidebar() {
     const canCreate = Boolean(profile?.permissions?.includes('create_post'));
     const isAdmin = isAdminRole(profile?.role);
     const adminAttention = useAdminAttention(profile);
-
-    useEffect(() => {
-        if (!profile) {
-            setUnreadMessages(0);
-            return;
-        }
-
-        let cancelled = false;
-
-        getUnreadCount().then((result: any) => {
-            if (!cancelled && result?.status) {
-                setUnreadMessages(result.data?.unread || 0);
-            }
-        });
-
-        const unsubscribe = socketService.on('chat:unread', (unread: any) => {
-            setUnreadMessages(Number(unread) || 0);
-        });
-
-        return () => {
-            cancelled = true;
-            unsubscribe();
-        };
-    }, [profile?._id]);
 
     const link = (
         key: string,
