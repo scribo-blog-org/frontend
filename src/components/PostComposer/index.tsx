@@ -19,6 +19,7 @@ import ActionButton from '../Ui/ActionButton';
 import DangerButton from '../Ui/DangerButton';
 import { ModalFooter } from '../Ui';
 import MediaTile from './MediaTile';
+import MediaViewer, { type MediaViewerItem } from '../MediaViewer';
 
 import { fetchLinkPreview } from '../../api/linkPreview.api';
 import { classifyLink, type LinkInfo } from '../../utils/embed';
@@ -178,6 +179,11 @@ const PostComposer = ({
         tilesFromMedia(initialMedia),
     );
     const [dragging, setDragging] = useState(false);
+    const [viewer, setViewer] = useState<{
+        items: MediaViewerItem[];
+        index: number;
+        objectUrls: string[];
+    } | null>(null);
     const [linkOpen, setLinkOpen] = useState(false);
     const [linkValue, setLinkValue] = useState('');
     const [linkSelection, setLinkSelection] = useState(false);
@@ -353,13 +359,18 @@ const PostComposer = ({
 
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && !linkOpen && !modalWindow) {
+            if (
+                event.key === 'Escape' &&
+                !linkOpen &&
+                !modalWindow &&
+                !viewer
+            ) {
                 requestCancel();
             }
         };
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
-    }, [requestCancel, linkOpen, modalWindow]);
+    }, [requestCancel, linkOpen, modalWindow, viewer]);
 
     useEffect(() => {
         if (!dirty) {
@@ -543,6 +554,47 @@ const PostComposer = ({
 
         closeLink();
     };
+    const openViewer = (key: string) => {
+        const viewable = tilesRef.current.filter(
+            (tile) => tile.kind !== 'embed',
+        );
+        const index = viewable.findIndex((tile) => tile.key === key);
+
+        if (index < 0) {
+            return;
+        }
+
+        const objectUrls: string[] = [];
+        const items = viewable.map((tile): MediaViewerItem => {
+            const type = tile.kind as MediaViewerItem['type'];
+
+            if (tile.status === 'existing' && tile.payload) {
+                return {
+                    type,
+                    src: mediaUrl(tile.payload.url),
+                    poster: tile.payload.poster
+                        ? mediaUrl(tile.payload.poster)
+                        : undefined,
+                };
+            }
+
+            if (type === 'video' && tile.file) {
+                const src = URL.createObjectURL(tile.file);
+                objectUrls.push(src);
+                return { type, src, poster: tile.previewUrl || undefined };
+            }
+
+            return { type, src: tile.previewUrl };
+        });
+
+        setViewer({ items, index, objectUrls });
+    };
+
+    const closeViewer = () => {
+        viewer?.objectUrls.forEach((url) => URL.revokeObjectURL(url));
+        setViewer(null);
+    };
+
     const total = totalUploadBytes(tiles);
     const overLimit = total > MAX_MEDIA_BYTES;
     const verdict = canPublish(html, tiles);
@@ -637,22 +689,6 @@ const PostComposer = ({
                             editorApiRef={editorApi}
                             belowEditor={
                                 <>
-                                    {tiles.length ? (
-                                        <div className="composer_tiles">
-                                            {tiles.map((tile) => (
-                                                <MediaTile
-                                                    key={tile.key}
-                                                    tile={tile}
-                                                    uploading={submitting}
-                                                    progress={progress}
-                                                    disabled={submitting}
-                                                    onRemove={() =>
-                                                        removeTile(tile.key)
-                                                    }
-                                                />
-                                            ))}
-                                        </div>
-                                    ) : null}{' '}
                                     {linkOpen ? (
                                         <div className="composer_link">
                                             <p className="composer_link_title">
@@ -743,7 +779,31 @@ const PostComposer = ({
                                                 </p>
                                             )}
                                         </div>
-                                    ) : null}{' '}
+                                    ) : null}
+                                    {tiles.length ? (
+                                        <div className="composer_tiles">
+                                            {tiles.map((tile) => (
+                                                <MediaTile
+                                                    key={tile.key}
+                                                    tile={tile}
+                                                    uploading={submitting}
+                                                    progress={progress}
+                                                    disabled={submitting}
+                                                    onRemove={() =>
+                                                        removeTile(tile.key)
+                                                    }
+                                                    onOpen={
+                                                        tile.kind === 'embed'
+                                                            ? undefined
+                                                            : () =>
+                                                                  openViewer(
+                                                                      tile.key,
+                                                                  )
+                                                    }
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : null}
                                 </>
                             }
                             toolbarLeading={
@@ -821,6 +881,13 @@ const PostComposer = ({
                     </PrimaryButton>
                 </div>
             </div>
+            {viewer ? (
+                <MediaViewer
+                    items={viewer.items}
+                    index={viewer.index}
+                    onClose={closeViewer}
+                />
+            ) : null}
         </div>
     );
 };

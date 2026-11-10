@@ -108,6 +108,10 @@
         background: var(--bg-subtle);
         scroll-snap-align: start;
 
+        &_openable {
+            cursor: zoom-in;
+        }
+
         img {
             display: block;
             width: 100%;
@@ -304,7 +308,6 @@
         justify-content: space-between;
         gap: var(--space-3);
         padding-top: var(--space-4);
-        border-top: 1px solid var(--line-color);
     }
 
     &_hint {
