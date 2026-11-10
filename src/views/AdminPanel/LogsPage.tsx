@@ -1,49 +1,33 @@
 'use client';
 
-import ActionButton from '../../components/Ui/ActionButton';
+import SwitchBar from '../../components/Ui/SwitchBar';
 
 import EventLogs from './Logs';
 import RuntimeLogs from './RuntimeLogs';
-import { LogsToolbarProvider, useLogsToolbarState } from './logsToolbar';
+import {
+    LOG_VIEWS,
+    LogsToolbarProvider,
+    useLogsToolbarState,
+} from './logsToolbar';
 
 import './RuntimeLogs.scss';
 
-const SOURCES = [
-    { value: 'events', name: 'Events' },
-    { value: 'backend', name: 'Backend' },
-    { value: 'socket', name: 'Socket' },
-    { value: 'frontend', name: 'Frontend' },
-];
+const VIEW_LABELS = ['Events', 'Runtime'];
 
 const LogsPage = () => {
     const toolbar = useLogsToolbarState();
-    const { source, setSource } = toolbar;
+    const { view, setView } = toolbar;
 
     return (
         <LogsToolbarProvider value={toolbar}>
             <div className="logs_root">
-                <div className="logs_root_sources">
-                    {SOURCES.map((item) => (
-                        <ActionButton
-                            key={item.value}
-                            size="lg"
-                            className={
-                                source === item.value
-                                    ? 'logs_source_active'
-                                    : ''
-                            }
-                            aria-pressed={source === item.value}
-                            onClick={() => setSource(item.value)}
-                        >
-                            {item.name}
-                        </ActionButton>
-                    ))}
-                </div>
-                {source === 'events' ? (
-                    <EventLogs />
-                ) : (
-                    <RuntimeLogs key={source} source={source} />
-                )}
+                <SwitchBar
+                    className="logs_root_tabs"
+                    items={VIEW_LABELS}
+                    activeIndex={Math.max(LOG_VIEWS.indexOf(view), 0)}
+                    onChange={(index: number) => setView(LOG_VIEWS[index])}
+                />
+                {view === 'events' ? <EventLogs /> : <RuntimeLogs />}
             </div>
         </LogsToolbarProvider>
     );

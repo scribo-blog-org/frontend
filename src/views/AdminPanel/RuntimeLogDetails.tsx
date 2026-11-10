@@ -52,6 +52,7 @@ const SHOWN_ELSEWHERE = new Set([
     'db_queries',
     'user',
     'request_id',
+    'trace_id',
     'query',
     'error',
     'error_message',
@@ -133,7 +134,7 @@ const RuntimeLogDetails = ({
     position,
     total,
     hasMore,
-    onFindRequest,
+    onFindTrace,
 }: any) => {
     const { showToast } = useContext(AppContext);
     const [showRaw, setShowRaw] = useState<boolean>(false);
@@ -141,6 +142,8 @@ const RuntimeLogDetails = ({
     const raw = JSON.stringify(entry, null, 2);
     const isRequest = Boolean(data.method && data.path && data.status);
     const requestId = data.request_id ? String(data.request_id) : null;
+    const traceId = data.trace_id ? String(data.trace_id) : null;
+    const chainId = traceId ?? requestId;
     const status = Number(data.status);
     const duration = data.total_ms != null ? Number(data.total_ms) : null;
     const timing =
@@ -179,6 +182,9 @@ const RuntimeLogDetails = ({
                   : []),
               ...(requestId
                   ? [{ label: 'Request ID', value: requestId, mono: true }]
+                  : []),
+              ...(traceId && traceId !== requestId
+                  ? [{ label: 'Trace ID', value: traceId, mono: true }]
                   : []),
           ]
         : [];
@@ -282,13 +288,14 @@ const RuntimeLogDetails = ({
                         <ChevronDownIcon />
                     </button>
                     <span className="log_details_divider" />
-                    {requestId ? (
+                    {chainId ? (
                         <button
                             type="button"
                             className="log_text_button"
-                            onClick={() => onFindRequest(requestId)}
+                            title="Every log entry of the frontend, backend and socket that carries this id"
+                            onClick={() => onFindTrace(chainId)}
                         >
-                            All entries of this request
+                            Follow this request
                         </button>
                     ) : null}
                     <button

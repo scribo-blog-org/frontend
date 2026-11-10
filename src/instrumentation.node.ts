@@ -1,5 +1,8 @@
+import { randomBytes } from 'crypto';
 import http from 'http';
 import { rlog } from './rlog';
+
+const REQUEST_ID = /^[A-Za-z0-9_-]{6,64}$/;
 
 type RequestInfo = { path: string; method: string };
 type ErrorContext = {
@@ -48,12 +51,23 @@ function hookRequests() {
                 http.ServerResponse,
             ];
             const started = performance.now();
+            const incoming = req.headers['x-request-id'];
+            let id = Array.isArray(incoming) ? incoming[0] : incoming;
+            if (!id || !REQUEST_ID.test(id)) {
+                id = randomBytes(6).toString('hex');
+                req.headers['x-request-id'] = id;
+            }
+            if (
+                req.headers['sec-fetch-dest'] === 'document' ||
+                req.headers.accept?.includes('text/html')
+            ) {
+                res.setHeader('Server-Timing', `trace;desc="${id}"`);
+            }
             res.once('finish', () => {
                 const path = (req.url ?? '').split('?')[0];
                 if (REQUEST_LOG_SKIPPED.test(path)) return;
                 const status = res.statusCode;
                 const totalMs = Math.round(performance.now() - started);
-                const id = req.headers['x-request-id'];
                 const query = queryOf(req.url ?? '');
                 rlog.write(
                     status >= 500 ? 'error' : 'info',
@@ -64,7 +78,8 @@ function hookRequests() {
                         path,
                         total_ms: totalMs,
                         ...(query ? { query } : {}),
-                        request_id: Array.isArray(id) ? id[0] : (id ?? null),
+                        request_id: id,
+                        trace_id: id,
                     },
                 );
             });

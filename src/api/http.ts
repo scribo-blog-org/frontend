@@ -1,4 +1,5 @@
 import { apiUrl } from '../config';
+import { getTraceId } from '../lib/trace';
 
 let accessToken: any = null;
 let refreshPromise: any = null;
@@ -140,6 +141,12 @@ export async function apiFetch(url: any, options: any = {}) {
 
     if (!skipAuth && token && !headers.has('Authorization')) {
         headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    const traceId = getTraceId();
+
+    if (traceId && !headers.has('X-Trace-Id')) {
+        headers.set('X-Trace-Id', traceId);
     }
 
     let response: any;

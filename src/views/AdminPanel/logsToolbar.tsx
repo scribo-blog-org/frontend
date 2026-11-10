@@ -4,13 +4,16 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 import { useSearchParams } from '@/navigation';
 
-export const LOG_SOURCES = ['events', 'backend', 'socket', 'frontend'];
+export const LOG_VIEWS = ['events', 'runtime'];
+export const RUNTIME_SERVICES = ['backend', 'frontend', 'socket'];
 
 export type LogEntity = { type: string | null; id: string | null };
 
 export type LogsToolbar = {
-    source: string;
-    setSource: (value: string) => void;
+    view: string;
+    setView: (value: string) => void;
+    services: string[];
+    setServices: (value: string[]) => void;
     searchText: string;
     setSearchText: (value: string) => void;
     levelFilter: string;
@@ -52,10 +55,17 @@ const entityParam = (params: URLSearchParams): LogEntity => {
 
 export const useLogsToolbarState = (): LogsToolbar => {
     const [params] = useSearchParams();
-    const [source, setSource] = useState<string>(() => {
-        const value = params.get('source') ?? '';
+    const [view, setView] = useState<string>(() => {
+        const value = params.get('view') ?? '';
 
-        return LOG_SOURCES.includes(value) ? value : 'events';
+        return LOG_VIEWS.includes(value) ? value : 'events';
+    });
+    const [services, setServices] = useState<string[]>(() => {
+        const picked = (params.get('services') ?? '')
+            .split(',')
+            .filter((item) => RUNTIME_SERVICES.includes(item));
+
+        return picked.length ? picked : RUNTIME_SERVICES;
     });
     const [searchText, setSearchText] = useState<string>(
         () => params.get('q') ?? '',
@@ -86,7 +96,14 @@ export const useLogsToolbarState = (): LogsToolbar => {
             }
         };
 
-        write('source', source, 'events');
+        write('view', view, 'events');
+        write(
+            'services',
+            services.length === RUNTIME_SERVICES.length
+                ? ''
+                : services.join(','),
+        );
+        query.delete('source');
         write('q', searchText);
         write('level', levelFilter, 'all');
         write('from', dateFrom);
@@ -107,7 +124,8 @@ export const useLogsToolbarState = (): LogsToolbar => {
             window.history.replaceState(window.history.state, '', next);
         }
     }, [
-        source,
+        view,
+        services,
         searchText,
         levelFilter,
         dateFrom,
@@ -118,8 +136,10 @@ export const useLogsToolbarState = (): LogsToolbar => {
     ]);
 
     return {
-        source,
-        setSource,
+        view,
+        setView,
+        services,
+        setServices,
         searchText,
         setSearchText,
         levelFilter,

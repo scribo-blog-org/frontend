@@ -1,3 +1,3 @@
-﻿import { RuntimeLog, runtimeLogOptionsFromEnv } from './runtime-log';
+import { RuntimeLog, runtimeLogOptionsFromEnv } from './runtime-log';
 
 export const rlog = new RuntimeLog(runtimeLogOptionsFromEnv('frontend'));

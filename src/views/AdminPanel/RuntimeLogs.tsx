@@ -16,20 +16,22 @@ import { getRuntimeLogs } from '../../api/logs.api';
 import { format_message_date_label } from '../../utils/format';
 
 import ChevronDownIcon from '../../assets/svg/chevron-down.svg';
-import PlayIcon from '../../assets/svg/play.svg';
-import PauseIcon from '../../assets/svg/pause.svg';
-import RefreshIcon from '../../assets/svg/refresh.svg';
 
 import SearchSelect from '../../components/Ui/SearchSelect';
-import ActionButton from '../../components/Ui/ActionButton';
 import DateTimeField from '../../components/Ui/DateTimeField';
 import Loading from '../../components/Ui/Loading';
 import InfiniteScroll from '../../components/Ui/InfiniteScroll';
 import { useOverlayPresence } from '../../components/Ui/useOverlayEnter';
 
 import LogSearch from './LogSearch';
+import {
+    FilterField,
+    LogsActions,
+    LogsFilters,
+    ServiceChecks,
+} from './LogsFilters';
 import RuntimeLogDetails, { queryString } from './RuntimeLogDetails';
-import { useLogsToolbar } from './logsToolbar';
+import { RUNTIME_SERVICES, useLogsToolbar } from './logsToolbar';
 import { formatDuration } from './logFormat';
 import { LEVELS } from './logTypes';
 
@@ -47,6 +49,12 @@ const LEVEL_OPTIONS = [
     { value: 'warn', name: 'Warnings' },
     { value: 'info', name: 'Info' },
 ];
+
+const SERVICE_LABELS: Record<string, string> = {
+    backend: 'Backend',
+    frontend: 'Frontend',
+    socket: 'Socket',
+};
 
 const dayKey = (date: any) => new Date(date).toDateString();
 
@@ -71,6 +79,19 @@ const statusTone = (status: number | null) =>
             ? ' rt_status_warn'
             : '';
 
+const withKeys = (list: any[]) => {
+    const seen = new Map<string, number>();
+
+    return list.map((entry: any) => {
+        const base = `${entry.service}|${entry.ts}|${entry.msg}|${entry.data?.request_id ?? ''}`;
+        const count = seen.get(base) ?? 0;
+
+        seen.set(base, count + 1);
+
+        return { entry, key: `${base}#${count}` };
+    });
+};
+
 const RuntimeRow = ({
     entry,
     expanded,
@@ -80,7 +101,7 @@ const RuntimeRow = ({
     position,
     total,
     hasMore,
-    onFindRequest,
+    onFindTrace,
 }: any) => {
     const itemRef = useRef<any>(null);
     const { mounted, visible } = useOverlayPresence(expanded);
@@ -120,6 +141,9 @@ const RuntimeRow = ({
                     title={LEVELS[entry.level as keyof typeof LEVELS]}
                 />
                 <span className="rt_time">{clock(entry.ts)}</span>
+                <span className="rt_source">
+                    {SERVICE_LABELS[entry.service] ?? entry.service}
+                </span>
                 <span className="rt_msg">
                     {entry.msg}
                     {queryString(entry.data?.query) ? (
@@ -149,7 +173,7 @@ const RuntimeRow = ({
                             position={position}
                             total={total}
                             hasMore={hasMore}
-                            onFindRequest={onFindRequest}
+                            onFindTrace={onFindTrace}
                         />
                     ) : null}
                 </div>
@@ -158,20 +182,7 @@ const RuntimeRow = ({
     );
 };
 
-const withKeys = (list: any[]) => {
-    const seen = new Map<string, number>();
-
-    return list.map((entry: any) => {
-        const base = `${entry.ts}|${entry.msg}|${entry.data?.request_id ?? ''}`;
-        const count = seen.get(base) ?? 0;
-
-        seen.set(base, count + 1);
-
-        return { entry, key: `${base}#${count}` };
-    });
-};
-
-const RuntimeLogs = ({ source }: { source: string }) => {
+const RuntimeLogs = () => {
     const { showToast } = useContext(AppContext);
     const {
         searchText,
@@ -184,6 +195,8 @@ const RuntimeLogs = ({ source }: { source: string }) => {
         setDateTo,
         live,
         setLive,
+        services,
+        setServices,
     } = useLogsToolbar();
     const [items, setItems] = useState<any[]>([]);
     const [next, setNext] = useState<string | null>(null);
@@ -203,9 +216,11 @@ const RuntimeLogs = ({ source }: { source: string }) => {
         return () => clearTimeout(timer);
     }, [searchText]);
 
+    const sources = services.join(',');
+
     const query = useCallback(
         (before?: string | null) => {
-            const params: any = { source, limit: PAGE_SIZE };
+            const params: any = { sources, limit: PAGE_SIZE };
 
             if (levelFilter !== 'all') {
                 params.level =
@@ -230,7 +245,7 @@ const RuntimeLogs = ({ source }: { source: string }) => {
 
             return params;
         },
-        [source, levelFilter, search, dateFrom, dateTo],
+        [sources, levelFilter, search, dateFrom, dateTo],
     );
 
     const load = useCallback(
@@ -333,73 +348,63 @@ const RuntimeLogs = ({ source }: { source: string }) => {
 
     const loading = loadedKey !== JSON.stringify(query());
     const keyed = useMemo(() => withKeys(items), [items]);
+    const activeFilters =
+        Number(levelFilter !== 'all') +
+        Number(Boolean(dateFrom)) +
+        Number(Boolean(dateTo)) +
+        Number(services.length !== RUNTIME_SERVICES.length);
 
     return (
         <div className="logs_page">
-            <div className="logs_toolbar">
-                <div className="logs_toolbar_row logs_toolbar_row_top">
-                    <div className="logs_toolbar_search">
-                        <LogSearch
-                            value={searchText}
-                            onChange={setSearchText}
-                            placeholder="Search by text, path, error, user or request id"
-                            length={200}
-                        />
-                    </div>
-                    <div className="logs_toolbar_actions">
-                        <ActionButton
-                            size="lg"
-                            className={live ? 'logs_live_active' : ''}
-                            onClick={() => setLive((value: boolean) => !value)}
-                        >
-                            {live ? <PauseIcon /> : <PlayIcon />}
-                            Live
-                        </ActionButton>
-                        <ActionButton
-                            size="lg"
-                            onClick={() => load()}
-                            isLoading={loading || live}
-                            loaderVariant="segments"
-                            className="logs_reload"
-                        >
-                            <RefreshIcon />
-                        </ActionButton>
-                    </div>
-                </div>
-                <div className="logs_toolbar_row">
-                    <div className="logs_toolbar_level">
-                        <SearchSelect
-                            options={LEVEL_OPTIONS}
-                            value={levelFilter}
-                            placeholder="Level"
-                            onChange={(value: any) =>
-                                setLevelFilter(value || 'all')
-                            }
-                        />
-                    </div>
-                    <div className="logs_toolbar_range">
-                        <DateTimeField
-                            label="From"
-                            value={dateFrom}
-                            max={dateTo || undefined}
-                            defaultTime="00:00"
-                            onChange={setDateFrom}
-                        />
-                        <DateTimeField
-                            label="To"
-                            value={dateTo}
-                            min={dateFrom || undefined}
-                            defaultTime="23:59"
-                            onChange={setDateTo}
-                        />
-                    </div>
-                </div>
-            </div>
+            <LogsFilters activeCount={activeFilters}>
+                <LogSearch
+                    value={searchText}
+                    onChange={setSearchText}
+                    placeholder="Search by text, path, error, user or request id"
+                    length={200}
+                />
+                <LogsActions
+                    live={live}
+                    setLive={setLive}
+                    busy={loading}
+                    onReload={() => load()}
+                />
+                <FilterField label="Services">
+                    <ServiceChecks value={services} onChange={setServices} />
+                </FilterField>
+                <FilterField label="Level">
+                    <SearchSelect
+                        options={LEVEL_OPTIONS}
+                        value={levelFilter}
+                        placeholder="Level"
+                        onChange={(value: any) =>
+                            setLevelFilter(value || 'all')
+                        }
+                    />
+                </FilterField>
+                <FilterField label="Period">
+                    <DateTimeField
+                        label="From"
+                        value={dateFrom}
+                        max={dateTo || undefined}
+                        defaultTime="00:00"
+                        onChange={setDateFrom}
+                    />
+                    <DateTimeField
+                        label="To"
+                        value={dateTo}
+                        min={dateFrom || undefined}
+                        defaultTime="23:59"
+                        onChange={setDateTo}
+                    />
+                </FilterField>
+            </LogsFilters>
 
             <div className="logs_list">
                 <div className="rt_head">
                     <span />
                     <span>Time</span>
+                    <span>Source</span>
                     <span>Message</span>
                     <span>Status</span>
                     <span>Duration</span>
@@ -449,18 +454,19 @@ const RuntimeLogs = ({ source }: { source: string }) => {
                                     position={index + 1}
                                     total={keyed.length}
                                     hasMore={Boolean(next)}
-                                    onFindRequest={(requestId: string) =>
-                                        setSearchText(requestId)
-                                    }
+                                    onFindTrace={(id: string) => {
+                                        setServices(RUNTIME_SERVICES);
+                                        setSearchText(id);
+                                    }}
                                 />
                             </Fragment>
-                        ))}{' '}
+                        ))}
                     </InfiniteScroll>
                 ) : (
                     <p className="logs_empty">
                         {available
                             ? 'No log entries'
-                            : 'Log files are not available for this service'}
+                            : 'Log files are not available for the selected services'}
                     </p>
                 )}
             </div>
