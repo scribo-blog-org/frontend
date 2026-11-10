@@ -88,7 +88,7 @@ export async function fetchUserByNick(nick: string) {
 }
 
 export const loadPublicPost = cache((id: string) =>
-    fetchPostById(id, { expand: 'author,category' }),
+    fetchPostById(id, { expand: 'author' }),
 );
 
 export const loadPublicProfile = cache((nick: string) => fetchUserByNick(nick));

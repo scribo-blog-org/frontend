@@ -1,5 +1,4 @@
 @use '../../../styles/helpers' as *;
-@use '../../../styles/categoryColors.scss' as *;
 @use '../../../styles/overlaySurface.scss' as *;
 
 .search_select {
@@ -16,18 +15,6 @@
 
     .search_select_arrow {
         color: var(--input-text-color);
-    }
-
-    .category_dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        flex-shrink: 0;
-        background: var(--light-text-color);
-
-        @include category-colors {
-            background: var(--category-color);
-        }
     }
 
     &_icon {

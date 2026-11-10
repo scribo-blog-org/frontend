@@ -9,28 +9,10 @@ export function syncBodyThemeClass(isDarkTheme: any) {
 }
 
 export function syncMetaThemeColor(isDarkTheme: any) {
-    const next = isDarkTheme ? '#1e1e1e' : '#ffffff';
+    const next = isDarkTheme ? '#161616' : '#ffffff';
     const meta = document.querySelector('meta[name="theme-color"]');
 
     if (meta && meta.getAttribute('content') !== next) {
         meta.setAttribute('content', next);
     }
-}
-
-export function syncAccentAndCategoryVars(
-    isDarkTheme: any,
-    categoryColors: any,
-    accentColor: any,
-) {
-    Object.values(categoryColors).forEach((color: any) => {
-        document.body.style.setProperty(
-            color.variable,
-            isDarkTheme ? color.dark : color.light,
-        );
-    });
-
-    document.body.style.setProperty(
-        accentColor.variable,
-        isDarkTheme ? accentColor.dark : accentColor.light,
-    );
 }

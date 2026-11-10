@@ -1,129 +1,150 @@
 body {
-    --accent-color: #1b73fb;
+    --bg: var(--gray-18);
+    --bg-subtle: var(--gray-17);
+    --bg-raised: var(--gray-18);
+    --bg-hover: rgba(0, 0, 0, 0.04);
+    --bg-active: rgba(0, 0, 0, 0.07);
+    --border: var(--gray-14);
+    --border-strong: var(--gray-12);
+    --fg: var(--gray-1);
+    --fg-muted: var(--gray-7);
+    --fg-subtle: var(--gray-9);
+    --inverse-bg: var(--gray-1);
+    --inverse-fg: var(--gray-18);
+    --inverse-bg-hover: var(--gray-5);
+    --danger: #e5484d;
+    --success: #2f9e44;
+    --warning: #d97706;
+    --overlay: rgba(0, 0, 0, 0.4);
+    --shadow-menu:
+        0 8px 30px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.16);
 
-    --main-background: var(--gray-f1);
+    --accent-color: var(--fg);
+    --accent-blue: #1b73fb;
 
-    --warning-color: rgb(255 179 0);
-    --warning-background-color: rgba(255, 245, 163, 0.8);
+    --main-background: var(--bg);
 
-    --success-color: rgb(0 139 12);
-    --success-background-color: rgba(199, 252, 188, 0.8);
+    --warning-color: var(--warning);
+    --warning-background-color: rgba(217, 119, 6, 0.1);
 
-    --error-color: rgb(255 14 14);
-    --error-background-color: rgba(250, 223, 223, 0.8);
+    --success-color: var(--success);
+    --success-background-color: rgba(47, 158, 68, 0.1);
 
-    --svg-logo-color: #2f2f2f;
+    --error-color: var(--danger);
+    --error-background-color: rgba(229, 72, 77, 0.1);
 
-    --administrator-color: red;
+    --svg-logo-color: var(--fg);
 
-    --line-color: var(--gray-d7);
+    --administrator-color: var(--fg);
 
-    --text-color: var(--gray-16);
-    --light-text-color: var(--gray-63);
+    --line-color: var(--border);
 
-    --text-selection-color: var(--gray-f1);
-    --text-selection-background-color: var(--gray-33);
+    --text-color: var(--fg);
+    --light-text-color: var(--fg-muted);
 
-    --background-text-color: var(--gray-e7);
-    --post-text-color: var(--gray-25);
+    --text-selection-color: var(--inverse-fg);
+    --text-selection-background-color: var(--inverse-bg);
 
-    --link-text-color: var(--accent-color);
-    --hashtag-color: var(--accent-color);
-    --mention-color: var(--blue-39);
+    --background-text-color: var(--gray-14);
+    --post-text-color: var(--fg);
 
-    --user-badge-name-color: var(--gray-1e);
-    --user-badge-name-hover-color: var(--gray-16);
+    --link-text-color: var(--accent-blue);
+    --hashtag-color: var(--accent-blue);
+    --mention-color: var(--accent-blue);
 
-    --input-text-color: var(--gray-1e);
-    --input-background-color: var(--gray-f9);
-    --input-outline-color: var(--gray-c6);
-    --input-outline-active-color: var(--gray-25);
-    --input-placeholder-color: var(--gray-79);
+    --user-badge-name-color: var(--fg);
+    --user-badge-name-hover-color: var(--fg);
+
+    --input-text-color: var(--fg);
+    --input-background-color: var(--bg);
+    --input-outline-color: var(--border-strong);
+    --input-outline-active-color: var(--fg);
+    --input-placeholder-color: var(--fg-subtle);
 
     --drop-file-background-color: transparent;
-    --drop-file-hover-background-color: var(--gray-f7);
-    --drop-file-border-color: var(--gray-b5);
-    --drop-file-hover-border-color: var(--gray-63);
+    --drop-file-hover-background-color: var(--bg-subtle);
+    --drop-file-border-color: var(--border-strong);
+    --drop-file-hover-border-color: var(--fg-muted);
 
-    --avatar-icon-color: var(--drop-file-hover-background-color);
+    --avatar-icon-color: var(--bg-subtle);
 
-    --submit-button-primary-color: var(--gray-1e);
-    --submit-button-primary-hover-color: var(--gray-33);
-    --submit-button-secondary-color: var(--main-background);
-    --submit-button-loading-background-color: var(--gray-d7);
-    --submit-button-disabled-background-color: var(--gray-e1);
-    --submit-button-disabled-color: var(--gray-99);
+    --submit-button-primary-color: var(--inverse-bg);
+    --submit-button-primary-hover-color: var(--inverse-bg-hover);
+    --submit-button-secondary-color: var(--bg);
+    --submit-button-loading-background-color: var(--gray-12);
+    --submit-button-disabled-background-color: var(--gray-15);
+    --submit-button-disabled-color: var(--fg-subtle);
 
-    --secondary-button-background-color: var(--gray-f9);
-    --secondary-button-hover-background-color: var(--gray-e7);
-    --secondary-button-disabled-background-color: var(--gray-f1);
-    --secondary-button-disabled-color: var(--gray-99);
-    --secondary-button-disabled-border-color: var(--gray-e1);
+    --secondary-button-background-color: var(--bg);
+    --secondary-button-hover-background-color: var(--bg-hover);
+    --secondary-button-disabled-background-color: var(--bg-subtle);
+    --secondary-button-disabled-color: var(--fg-subtle);
+    --secondary-button-disabled-border-color: var(--border);
 
-    --section-background-color: var(--gray-ff);
-    --section-light-color: var(--gray-99);
-    --section-light-hover-color: var(--gray-25);
-    --section-item-hover-background-color: rgba(139, 139, 139, 0.1);
+    --section-background-color: var(--bg-subtle);
+    --section-light-color: var(--fg-subtle);
+    --section-light-hover-color: var(--fg);
+    --section-item-hover-background-color: var(--bg-hover);
 
     --float-section-background-color: rgba(255, 255, 255, 0.8);
-    --float-section-line-color: var(--gray-b5);
-    --menu-surface-background: rgba(255, 255, 255, 0.62);
-    --menu-surface-border: rgba(22, 22, 22, 0.08);
-    --menu-shadow:
-        0 18px 50px rgba(22, 22, 22, 0.16), 0 2px 8px rgba(22, 22, 22, 0.06);
+    --float-section-line-color: var(--border-strong);
+    --menu-surface-background: rgba(255, 255, 255, 0.78);
+    --menu-surface-border: var(--border);
+    --menu-shadow: var(--shadow-menu);
 
-    --loader-color: black;
+    --loader-color: var(--fg);
 
-    --sticky-button-background-color: rgba(241, 241, 241, 0.8);
+    --sticky-button-background-color: rgba(255, 255, 255, 0.8);
 
-    --red-button-primary-color: var(--red-f5);
+    --red-button-primary-color: var(--danger);
     --red-button-hover-color: var(--red-6d);
-    --red-button-secondary-color: var(--gray-ff);
-    --red-button-third-color: var(--red-f5);
+    --red-button-secondary-color: var(--gray-18);
+    --red-button-third-color: var(--danger);
     --red-button-disabled-background-color: color-mix(
         in srgb,
-        var(--red-f5) 22%,
-        var(--gray-ff)
+        var(--danger) 22%,
+        var(--gray-18)
     );
     --red-button-disabled-color: color-mix(
         in srgb,
-        var(--red-f5) 55%,
-        var(--gray-ff)
+        var(--danger) 55%,
+        var(--gray-18)
     );
 
-    --profile-badge-background-color: var(--gray-f1);
-    --profile-badge-hover-background-color: var(--gray-e7);
+    --profile-badge-background-color: var(--bg-subtle);
+    --profile-badge-hover-background-color: var(--bg-hover);
 
-    --blue-button-primary-color: var(--blue-39);
+    --blue-button-primary-color: var(--fg);
 
-    --header-text-color: #6b6b6b;
+    --header-text-color: var(--fg-muted);
     --header-background: rgba(255, 255, 255, 0.8);
-    --header-button-color: var(--gray-63);
-    --header-button-hover-color: var(--gray-16);
+    --header-button-color: var(--fg-muted);
+    --header-button-hover-color: var(--fg);
 
     --banner-haze: 1;
 
-    --post-title-color: var(--gray-25);
+    --post-title-color: var(--fg);
 
-    --modal-window-body-background-color: white;
-    --modal-window-background-color: rgba(0, 0, 0, 0.46);
-    --modal-window-backdrop-filter: blur(22px) saturate(140%);
-    --modal-window-button-color: var(--gray-63);
-    --modal-window-button-hover-color: var(--gray-1e);
-    --modal-window-title-text-color: var(--gray-1e);
-    --modal-window-shadow: 0 24px 64px rgba(0, 0, 0, 0.16);
-    --panel-frame-color: var(--gray-f7);
-    --panel-row-color: var(--gray-ff);
-    --panel-row-hover-color: var(--gray-f1);
-    --panel-row-border-color: var(--gray-e7);
+    --modal-window-body-background-color: var(--bg);
+    --modal-window-background-color: var(--overlay);
+    --modal-window-backdrop-filter: blur(12px);
+    --modal-window-button-color: var(--fg-muted);
+    --modal-window-button-hover-color: var(--fg);
+    --modal-window-title-text-color: var(--fg);
+    --modal-window-shadow: var(--shadow-modal);
+    --panel-frame-color: var(--bg-subtle);
+    --panel-row-color: var(--bg);
+    --panel-row-hover-color: var(--bg-subtle);
+    --panel-row-border-color: var(--border);
 
-    --post-card-description-color: #6b6b6b;
-    --post-card-hover-background-color: var(--gray-f9);
+    --post-card-description-color: var(--fg-muted);
+    --post-card-hover-background-color: var(--bg-subtle);
 
-    --footer-background: var(--gray-f1);
-    --footer-line-color: var(--gray-b5);
-    --footer-content-color: var(--gray-b5);
-    --footer-content-hover-color: var(--gray-4f);
+    --footer-background: var(--bg);
+    --footer-line-color: var(--border);
+    --footer-content-color: var(--fg-subtle);
+    --footer-content-hover-color: var(--fg);
 
     --swagger-patch-color: var(--swagger-patch-color-light);
     --swagger-post-color: var(--swagger-post-color-light);
@@ -135,199 +156,127 @@ body {
     --swagger-option-background-color: #f1f5f9;
     --swagger-servers-background-color: rgba(255, 255, 255, 0.4);
 
-    --dropdown-outline-color: var(--gray-c6);
-    --dropdown-selected-background-color: var(--gray-d7);
-    --dropdown-item-hover-background-color: var(--gray-f1);
+    --dropdown-outline-color: var(--border-strong);
+    --dropdown-selected-background-color: var(--bg-active);
+    --dropdown-item-hover-background-color: var(--bg-hover);
 
-    --toggle-track-background: var(--gray-c6);
-    --toggle-active-track-background: var(--gray-25);
-    --toggle-thumb-background: var(--gray-ff);
-    --toggle-active-thumb-background: var(--gray-ff);
+    --toggle-track-background: var(--gray-11);
+    --toggle-active-track-background: var(--inverse-bg);
+    --toggle-thumb-background: var(--gray-18);
+    --toggle-active-thumb-background: var(--gray-18);
 
-    --text-editor-toolbar-item-hover-background: var(--gray-d7);
-    --text-editor-toolbar-item-color: var(--gray-63);
+    --text-editor-toolbar-item-hover-background: var(--bg-hover);
+    --text-editor-toolbar-item-color: var(--fg-muted);
 
-    --switcher-bar-border-color: var(--gray-b5);
-    --switcher-bar-item-color: var(--gray-63);
-    --switcher-bar-item-hover-background-color: var(--gray-d7);
-    --switcher-bar-active-item-background-color: var(--gray-d7);
-    --switcher-bar-active-item-color: var(--gray-16);
+    --switcher-bar-border-color: var(--border-strong);
+    --switcher-bar-item-color: var(--fg-muted);
+    --switcher-bar-item-hover-background-color: var(--bg-hover);
+    --switcher-bar-active-item-background-color: var(--bg-active);
+    --switcher-bar-active-item-color: var(--fg);
 
-    --tab-item-color: var(--gray-63);
+    --tab-item-color: var(--fg-muted);
 
-    --administrator-badge-background-color: var(--blue-de);
-    --administrator-badge-color: var(--blue-39);
+    --administrator-badge-background-color: var(--bg-subtle);
+    --administrator-badge-color: var(--fg-muted);
 
-    --chip-button-background-color: var(--gray-e7);
-    --chip-button-text-color: var(--gray-25);
-    --chip-button-hover-background-color: var(--gray-f1);
+    --chip-button-background-color: transparent;
+    --chip-button-text-color: var(--fg-muted);
+    --chip-button-hover-background-color: var(--bg-hover);
 
-    --reply-button-color: var(--gray-63);
-    --reply-button-background-color: var(--gray-e7);
-    --reply-button-hover-background-color: var(--gray-25);
+    --reply-button-color: var(--fg-muted);
+    --reply-button-background-color: var(--bg-subtle);
+    --reply-button-hover-background-color: var(--bg-active);
 
-    --tooltip-background-color: var(--gray-ff);
-    --tooltip-text-color: var(--gray-63);
+    --tooltip-background-color: var(--inverse-bg);
+    --tooltip-text-color: var(--inverse-fg);
 
-    --chip-active-button-text-color: var(--gray-e7);
-    --chip-active-button-background-color: var(--gray-33);
-    --chip-active-button-hover-background-color: var(--gray-4f);
+    --chip-active-button-text-color: var(--inverse-fg);
+    --chip-active-button-background-color: var(--inverse-bg);
+    --chip-active-button-hover-background-color: var(--inverse-bg-hover);
 
-    --popup-button-background-color: var(--gray-d7);
-    --popup-background-color: rgba(255, 255, 255, 0.8);
-    --popup-button-background-hover-color: var(--gray-b5);
-    --popup-border-color: var(--gray-c6);
+    --popup-button-background-color: var(--bg-subtle);
+    --popup-background-color: rgba(255, 255, 255, 0.85);
+    --popup-button-background-hover-color: var(--bg-hover);
+    --popup-border-color: var(--border-strong);
     --popup-text-color: var(--text-color);
 
-    --cancel-button-primary-color: var(--red-f1);
-    --cancel-button-hover-background-color: rgba(255, 120, 120, 0.1);
+    --cancel-button-primary-color: var(--fg-muted);
+    --cancel-button-hover-background-color: var(--bg-hover);
 
-    --navigation-bar-active-item-background-color: rgba(80, 80, 80, 0.1);
+    --navigation-bar-active-item-background-color: var(--bg-active);
 
-    --log-create-color: rgb(0 152 13);
-    --log-error-color: rgb(255 109 109);
-    --log-update-color: rgb(214 154 0);
-    --log-register-color: rgb(5 134 255);
+    --log-create-color: var(--success);
+    --log-error-color: var(--danger);
+    --log-update-color: var(--warning);
+    --log-register-color: var(--fg-muted);
 
-    --author-color: var(--author-color-light);
-    --moderator-color: var(--moderator-color-light);
-    --admin-color: var(--admin-color-light);
-    --tech-admin-color: var(--tech-admin-color-light);
+    --author-color: var(--fg-muted);
+    --moderator-color: var(--fg-muted);
+    --admin-color: var(--fg-muted);
+    --tech-admin-color: var(--fg-muted);
 
-    --sceleton-color: var(--gray-e7);
-    --sceleton-active-color: var(--gray-d7);
+    --sceleton-color: var(--gray-14);
+    --sceleton-active-color: var(--gray-13);
 
-    --sceleton-section-color: var(--gray-e7);
-    --sceleton-section-active-color: var(--gray-e1);
+    --sceleton-section-color: var(--gray-14);
+    --sceleton-section-active-color: var(--gray-13);
 }
 
 body.dark-theme {
-    --accent-color: #4e93ff;
+    --accent-blue: #5b9bff;
+    --bg: #161616;
+    --bg-subtle: #1b1b1b;
+    --bg-raised: #212121;
+    --bg-hover: rgba(255, 255, 255, 0.06);
+    --bg-active: rgba(255, 255, 255, 0.1);
+    --border: #2a2a2a;
+    --border-strong: #3a3a3a;
+    --fg: #d6d6d6;
+    --fg-muted: #9b9b9b;
+    --fg-subtle: #707070;
+    --inverse-bg: #e2e2e2;
+    --inverse-fg: #161616;
+    --inverse-bg-hover: #cfcfcf;
+    --danger: #ff6369;
+    --success: #5ccf75;
+    --warning: #f5a524;
+    --overlay: rgba(0, 0, 0, 0.6);
+    --shadow-menu: 0 8px 30px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-modal: 0 24px 64px rgba(0, 0, 0, 0.6);
 
-    --main-background: var(--gray-16);
+    --warning-background-color: rgba(245, 165, 36, 0.12);
+    --success-background-color: rgba(92, 207, 117, 0.12);
+    --error-background-color: rgba(255, 99, 105, 0.12);
 
-    --warning-color: rgb(255 191 0);
-    --warning-background-color: rgb(94, 85, 42, 0.8);
+    --background-text-color: #2a2a2a;
 
-    --success-color: rgb(132 255 148);
-    --success-background-color: rgb(72, 90, 73, 0.8);
+    --submit-button-loading-background-color: #2a2a2a;
+    --submit-button-disabled-background-color: #212121;
 
-    --error-color: rgb(246 0 0);
-    --error-background-color: rgba(92, 62, 62, 0.8);
-
-    --svg-logo-color: white;
-
-    --administrator-color: var(--red-f5);
-
-    --line-color: var(--gray-2f);
-
-    --text-color: var(--gray-f1);
-    --light-text-color: var(--gray-99);
-
-    --text-selection-color: var(--gray-25);
-    --text-selection-background-color: var(--gray-b5);
-
-    --background-text-color: var(--gray-25);
-    --post-text-color: var(--gray-e7);
-
-    --link-text-color: var(--accent-color);
-    --hashtag-color: var(--accent-color);
-    --mention-color: var(--blue-8f);
-
-    --user-badge-name-color: var(--gray-d7);
-    --user-badge-name-hover-color: var(--gray-f1);
-
-    --input-text-color: var(--gray-e7);
-    --input-background-color: var(--gray-25);
-    --input-outline-color: var(--gray-33);
-    --input-outline-active-color: var(--gray-b5);
-    --input-placeholder-color: var(--gray-79);
-
-    --drop-file-background-color: transparent;
-    --drop-file-hover-background-color: var(--gray-25);
-    --drop-file-border-color: var(--gray-4f);
-    --drop-file-hover-border-color: var(--gray-b5);
-
-    --avatar-icon-color: var(--drop-file-hover-background-color);
-
-    --submit-button-primary-color: var(--gray-f1);
-    --submit-button-primary-hover-color: var(--gray-d7);
-    --submit-button-secondary-color: var(--main-background);
-    --submit-button-loading-background-color: var(--gray-33);
-    --submit-button-disabled-background-color: var(--gray-25);
-    --submit-button-disabled-color: var(--gray-79);
-
-    --secondary-button-background-color: var(--gray-25);
-    --secondary-button-hover-background-color: var(--gray-2f);
-    --secondary-button-disabled-background-color: var(--gray-25);
-    --secondary-button-disabled-color: var(--gray-79);
-    --secondary-button-disabled-border-color: var(--gray-33);
-
-    --section-background-color: var(--gray-1e);
-    --section-light-color: var(--gray-79);
-    --section-light-hover-color: var(--gray-d7);
-
-    --float-section-background-color: rgba(13, 13, 13, 0.8);
-    --float-section-line-color: var(--gray-33);
-    --menu-surface-background: rgba(28, 28, 30, 0.58);
-    --menu-surface-border: rgba(255, 255, 255, 0.08);
-    --menu-shadow:
-        0 18px 50px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.24);
-
-    --section-item-hover-background-color: rgba(160, 160, 160, 0.1);
-
-    --loader-color: white;
-
+    --float-section-background-color: rgba(22, 22, 22, 0.8);
+    --menu-surface-background: rgba(27, 27, 27, 0.78);
     --sticky-button-background-color: rgba(22, 22, 22, 0.8);
 
-    --red-button-primary-color: var(--red-b9);
     --red-button-hover-color: var(--red-c4);
-    --red-button-secondary-color: var(--gray-ff);
-    --red-button-third-color: var(--red-b9);
     --red-button-disabled-background-color: color-mix(
         in srgb,
-        var(--red-b9) 28%,
-        var(--gray-25)
+        var(--danger) 28%,
+        var(--gray-3)
     );
     --red-button-disabled-color: color-mix(
         in srgb,
-        var(--red-b9) 55%,
-        var(--gray-79)
+        var(--danger) 55%,
+        var(--gray-8)
     );
 
-    --profile-badge-background-color: var(--gray-33);
-    --profile-badge-hover-background-color: var(--gray-4f);
-
-    --blue-button-primary-color: var(--blue-8f);
-
-    --header-text-color: var(--gray-b5);
-    --header-background: rgba(0, 0, 0, 0.8);
-    --header-button-color: var(--gray-b5);
-    --header-button-hover-color: var(--gray-ff);
+    --header-background: rgba(22, 22, 22, 0.8);
 
     --banner-haze: 0;
 
-    --post-title-color: var(--gray-e7);
+    --modal-window-body-background-color: var(--bg-subtle);
 
-    --modal-window-body-background-color: var(--gray-1e);
-    --modal-window-background-color: rgba(0, 0, 0, 0.46);
-    --modal-window-backdrop-filter: blur(22px) saturate(140%);
-    --modal-window-button-color: var(--gray-b5);
-    --modal-window-button-hover-color: var(--gray-1e);
-    --modal-window-title-text-color: var(--gray-d7);
-    --modal-window-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
-    --panel-frame-color: var(--gray-25);
-    --panel-row-color: var(--gray-2f);
-    --panel-row-hover-color: var(--gray-33);
-    --panel-row-border-color: var(--gray-33);
-
-    --post-card-description-color: var(--gray-b5);
-    --post-card-hover-background-color: var(--gray-25);
-
-    --footer-background: var(--gray-16);
-    --footer-line-color: var(--gray-25);
-    --footer-content-color: var(--gray-79);
-    --footer-content-hover-color: var(--gray-d7);
+    --panel-row-color: var(--bg-raised);
+    --panel-row-hover-color: #262626;
 
     --swagger-patch-color: var(--swagger-patch-color-dark);
     --swagger-post-color: var(--swagger-post-color-dark);
@@ -339,68 +288,9 @@ body.dark-theme {
     --swagger-option-background-color: #1b2229;
     --swagger-servers-background-color: rgba(89, 89, 89, 0.1);
 
-    --dropdown-outline-color: var(--gray-25);
-    --dropdown-selected-background-color: var(--gray-33);
-    --dropdown-item-hover-background-color: var(--gray-25);
+    --toggle-track-background: #3a3a3a;
+    --toggle-thumb-background: #161616;
+    --toggle-active-thumb-background: #161616;
 
-    --toggle-track-background: var(--gray-4f);
-    --toggle-active-track-background: var(--gray-b5);
-    --toggle-thumb-background: var(--gray-1e);
-    --toggle-active-thumb-background: var(--gray-1e);
-
-    --text-editor-toolbar-item-hover-background: var(--gray-2f);
-    --text-editor-toolbar-item-color: var(--gray-79);
-
-    --switcher-bar-border-color: var(--gray-33);
-    --switcher-bar-item-color: var(--gray-79);
-    --switcher-bar-item-hover-background-color: var(--gray-25);
-    --switcher-bar-active-item-background-color: rgb(152 152 152 / 10%);
-    --switcher-bar-active-item-color: var(--gray-ff);
-
-    --tab-item-color: var(--gray-79);
-
-    --administrator-badge-background-color: var(--blue-2f);
-    --administrator-badge-color: var(--blue-39);
-
-    --chip-button-background-color: var(--gray-1e);
-    --chip-button-text-color: var(--gray-b5);
-    --chip-button-hover-background-color: var(--gray-2f);
-
-    --reply-button-color: var(--gray-b5);
-    --reply-button-background-color: var(--gray-1e);
-    --reply-button-hover-background-color: var(--gray-e7);
-
-    --tooltip-background-color: var(--gray-1e);
-    --tooltip-text-color: var(--gray-b5);
-
-    --chip-active-button-text-color: var(--gray-16);
-    --chip-active-button-background-color: var(--gray-99);
-    --chip-active-button-hover-background-color: var(--gray-79);
-
-    --popup-button-background-color: var(--gray-2f);
-    --popup-background-color: rgba(22, 22, 22, 0.8);
-    --popup-button-background-hover-color: var(--gray-4f);
-    --popup-border-color: var(--gray-33);
-    --popup-text-color: var(--text-color);
-
-    --cancel-button-primary-color: var(--red-f1);
-    --cancel-button-hover-background-color: rgba(235, 114, 114, 0.1);
-
-    --navigation-bar-active-item-background-color: var(--gray-1e);
-
-    --log-create-color: rgb(110 255 198);
-    --log-error-color: rgb(255 89 89);
-    --log-update-color: rgb(255 222 125);
-    --log-register-color: rgb(72 166 255);
-
-    --author-color: var(--author-color-dark);
-    --moderator-color: var(--moderator-color-dark);
-    --admin-color: var(--admin-color-dark);
-    --tech-admin-color: var(--tech-admin-color-dark);
-
-    --sceleton-color: var(--gray-25);
-    --sceleton-active-color: var(--gray-4f);
-
-    --sceleton-section-color: var(--gray-33);
-    --sceleton-section-active-color: var(--gray-4f);
+    --popup-background-color: rgba(27, 27, 27, 0.85);
 }

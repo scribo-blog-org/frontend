@@ -23,7 +23,6 @@ import PostPreview from '../PostPreview';
 import ActionButton from '../Ui/ActionButton';
 import DangerButton from '../Ui/DangerButton';
 import Tooltip from '../Ui/Tooltip/index';
-import Category from '../Category';
 
 import Sceleton from '../Ui/Sceleton/Sceleton';
 
@@ -79,13 +78,7 @@ const DeletePostContent = ({
 };
 
 const PostHeader = memo(
-    ({
-        post,
-        onDeletePost,
-        className,
-        isLoading = false,
-        showCategory = false,
-    }: any) => {
+    ({ post, onDeletePost, className, isLoading = false }: any) => {
         const { profile, showModalWindow, requestCloseModal, showToast } =
             useContext(AppContext);
         const navigate = useNavigate();
@@ -151,21 +144,6 @@ const PostHeader = memo(
                             </p>
                         </Tooltip>
                     </Sceleton>
-                    {showCategory ? (
-                        isLoading ? (
-                            <Sceleton
-                                isLoading
-                                rounded={true}
-                                className="post_header_category"
-                            />
-                        ) : post.category ? (
-                            <Category
-                                tag
-                                className="post_header_category"
-                                category={post.category}
-                            />
-                        ) : null
-                    ) : null}
                 </div>
                 {!isLoading &&
                 ((profile?.permissions.includes('delete_any_post') &&

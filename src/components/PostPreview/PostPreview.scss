@@ -42,16 +42,6 @@
         white-space: nowrap;
     }
 
-    &_category {
-        min-height: 24px;
-        margin-left: auto;
-
-        &.chip_button_quiet {
-            padding: 0;
-            font-size: var(--text-xs);
-        }
-    }
-
     &_main {
         display: flex;
         flex-direction: column;
@@ -109,10 +99,11 @@
     &_excerpt {
         display: -webkit-box;
         overflow: hidden;
-        font-size: var(--text-xs);
-        line-height: 1.4;
-        color: var(--light-text-color);
-        -webkit-line-clamp: 2;
+        font-size: var(--text-md);
+        line-height: 1.45;
+        color: var(--text-color);
+        overflow-wrap: anywhere;
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
     }
 

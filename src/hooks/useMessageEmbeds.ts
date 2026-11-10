@@ -30,7 +30,7 @@ export function useMessageEmbeds(text: any) {
 
                     if (postId) {
                         const result = await getPostById(postId, {
-                            expand: 'author,category',
+                            expand: 'author',
                         });
 
                         if (result?.status === true && result.data) {

@@ -1,16 +1,17 @@
 'use client';
 
-import { memo, useCallback, useState } from 'react';
-import { Link } from '@/navigation';
+import { memo, useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from '@/navigation';
 
 import './PostCard.scss';
 
 import PostHeader from '../PostHeader';
 import PostActions from '../PostActions';
-import PostHashtags from '../PostHashtags';
+import PostMedia from '../PostMedia';
+import HashtagHtml from '../HashtagHtml';
 
 import Sceleton from '../Ui/Sceleton/Sceleton';
-import { mediaUrl } from '../../utils/image';
+import { normalizePostMedia } from '../../utils/postMedia';
 
 const PostCard = ({ isLoading = false, post, setPosts }: any) => {
     const updatePost = useCallback(
@@ -49,23 +50,9 @@ const PostCard = ({ isLoading = false, post, setPosts }: any) => {
         [setPosts],
     );
 
-    const body = (
-        <>
-            <Sceleton
-                isLoading={isLoading}
-                rounded={true}
-                section={false}
-                className="posts_item_title"
-            >
-                <h2 className="posts_item_title">{post.title}</h2>
-            </Sceleton>
-            {post.featured_image ? (
-                <div className="posts_item_img">
-                    <img src={mediaUrl(post.featured_image)} alt="" />
-                </div>
-            ) : null}
-        </>
-    );
+    const navigate = useNavigate();
+    const media = normalizePostMedia(post);
+    const ready = !isLoading && Boolean(post._id);
 
     return (
         <article
@@ -75,24 +62,98 @@ const PostCard = ({ isLoading = false, post, setPosts }: any) => {
                 post={post}
                 isLoading={isLoading}
                 onDeletePost={deletePost}
-                showCategory
             />
-            {isLoading || !post._id ? (
-                <div className="posts_item_main">{body}</div>
+            {ready ? (
+                post.content_text || post.excerpt ? (
+                    <PostText post={post} />
+                ) : null
             ) : (
-                <Link className="posts_item_main" href={`/posts/${post._id}`}>
-                    {body}
-                </Link>
+                <Sceleton isLoading={true} rounded={true} section={false}>
+                    <div className="posts_item_text_skeleton" />
+                </Sceleton>
             )}
+            {ready && media.length ? (
+                <div
+                    className="posts_item_media"
+                    onClick={(event: any) => {
+                        if (
+                            event.defaultPrevented ||
+                            event.target.closest(
+                                '.post_media_slide, .post_media_arrow, a, button, video',
+                            )
+                        ) {
+                            return;
+                        }
+                        navigate('/posts/' + post._id);
+                    }}
+                >
+                    <PostMedia media={media} variant="feed" />
+                </div>
+            ) : null}
             <PostActions
                 article={post}
                 isLoading={isLoading}
                 setArticle={updatePost}
-                showCategory={false}
             />
-            {isLoading ? null : <PostHashtags post={post} />}
         </article>
     );
 };
 
+const PostText = ({ post }: any) => {
+    const navigate = useNavigate();
+    const ref = useRef<HTMLDivElement>(null);
+    const [clamped, setClamped] = useState(false);
+    const href = `/posts/${post._id}`;
+
+    useLayoutEffect(() => {
+        const element = ref.current;
+        if (!element) {
+            return;
+        }
+
+        const measure = () =>
+            setClamped(element.scrollHeight > element.clientHeight + 2);
+        measure();
+
+        if (typeof ResizeObserver === 'undefined') {
+            return;
+        }
+
+        const observer = new ResizeObserver(measure);
+        observer.observe(element);
+        return () => observer.disconnect();
+    }, [post.content_text]);
+
+    return (
+        <div className="posts_item_text_wrap">
+            <div
+                ref={ref}
+                className={`posts_item_text${clamped ? ' posts_item_text_clamped' : ''}`}
+                onClick={(event: any) => {
+                    if (
+                        event.defaultPrevented ||
+                        event.target.closest('a, button')
+                    ) {
+                        return;
+                    }
+                    navigate(href);
+                }}
+            >
+                {post.content_text ? (
+                    <HashtagHtml
+                        className="posts_item_text_body"
+                        html={post.content_text}
+                    />
+                ) : (
+                    <p className="posts_item_text_body">{post.excerpt}</p>
+                )}
+            </div>
+            {clamped ? (
+                <Link className="posts_item_more" href={href}>
+                    Show more
+                </Link>
+            ) : null}
+        </div>
+    );
+};
 export default memo(PostCard);

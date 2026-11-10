@@ -4,6 +4,8 @@ import Article from '@/views/Article';
 import { buildMetadata } from '@/lib/metadata';
 import { loadPublicPost } from '@/lib/server-api';
 import { plainTextExcerpt } from '@/seo/excerpt';
+import { postDisplayTitle } from '@/utils/postText';
+import { firstMediaThumbnail } from '@/utils/postMedia';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,13 +26,10 @@ export async function generateMetadata({ params }: ArticleRouteProps) {
         });
     }
 
-    const title = typeof article.title === 'string' ? article.title : 'Article';
+    const title = postDisplayTitle(article);
     const text =
         typeof article.content_text === 'string' ? article.content_text : '';
-    const image =
-        typeof article.featured_image === 'string'
-            ? article.featured_image
-            : undefined;
+    const image = firstMediaThumbnail(article) || undefined;
     const author = articleAuthor(article);
     const publishedTime = isoDate(article.created_date);
 

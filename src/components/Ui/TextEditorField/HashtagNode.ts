@@ -105,8 +105,17 @@ export function $isHashtagNode(node: any) {
     return node instanceof HashtagNode;
 }
 
-export function registerHashtagTransform(editor: any) {
+function registerHashtagTextTransform(editor: any) {
     return editor.registerNodeTransform(TextNode, (textNode: any) => {
+        if (textNode.getParent()?.getType() === 'code') {
+            if ($isHashtagNode(textNode)) {
+                const plain = $createTextNode(textNode.getTextContent());
+                plain.setFormat(textNode.getFormat());
+                plain.setStyle(textNode.getStyle());
+                textNode.replace(plain);
+            }
+            return;
+        }
         const text = textNode.getTextContent();
 
         if ($isHashtagNode(textNode)) {
@@ -149,4 +158,24 @@ export function registerHashtagTransform(editor: any) {
         hashtag.setStyle(nodeToReplace.getStyle());
         nodeToReplace.replace(hashtag);
     });
+}
+
+export function registerHashtagTransform(editor: any) {
+    const unregisterInCode = editor.registerNodeTransform(
+        HashtagNode,
+        (node: any) => {
+            if (node.getParent()?.getType() === 'code') {
+                const plain = $createTextNode(node.getTextContent());
+                plain.setFormat(node.getFormat());
+                plain.setStyle(node.getStyle());
+                node.replace(plain);
+            }
+        },
+    );
+    const unregisterText = registerHashtagTextTransform(editor);
+
+    return () => {
+        unregisterInCode();
+        unregisterText();
+    };
 }

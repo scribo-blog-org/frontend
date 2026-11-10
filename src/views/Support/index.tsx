@@ -8,6 +8,7 @@ import { createSupportRequest } from '../../api/support.api';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import { SUPPORT_KINDS } from './constants';
 
+import PageHeader from '../../components/PageHeader';
 import Field from '../../components/Ui/Field/index';
 import InputField from '../../components/Ui/InputField';
 import RichInputField from '../../components/RichInputField';
@@ -114,13 +115,10 @@ const Support = () => {
 
     return (
         <div className="support_page">
-            <div className="support_page_intro">
-                <h1>Support</h1>
-                <p>
-                    Leave an email and a message. The reply will come by email.
-                    You cannot reply from this page.
-                </p>
-            </div>
+            <PageHeader
+                title="Support"
+                description="Leave an email and a message. The reply will come by email. You cannot reply from this page."
+            />
             <form
                 className="form_input app-transition"
                 onSubmit={(event: any) => {

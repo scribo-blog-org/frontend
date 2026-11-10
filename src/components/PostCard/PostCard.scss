@@ -34,54 +34,42 @@
         }
     }
 
-    &_main {
+    &_text_wrap {
         display: flex;
         flex-direction: column;
-        gap: 12px;
-        color: inherit;
+        gap: 6px;
         min-width: 0;
-
-        @include hover {
-            .posts_item_title {
-                text-decoration: underline;
-                text-underline-offset: 4px;
-            }
-        }
     }
 
-    &_title {
-        color: var(--text-color);
-        font-size: var(--text-xl);
-        font-weight: 600;
-        letter-spacing: -0.03em;
-        line-height: 1.25;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
+    &_text {
+        position: relative;
+        max-height: 12em;
         overflow: hidden;
+        font-size: 15px;
+        line-height: 1.55;
+        color: var(--post-text-color);
+        cursor: pointer;
 
-        @include screen() {
-            font-size: var(--text-lg);
+        &_clamped {
+            mask-image: linear-gradient(#000 72%, transparent);
         }
-    }
 
-    &_img {
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        max-height: 280px;
-        border-radius: var(--radius-sm);
-        overflow: hidden;
-        display: block;
-        background: var(--section-item-hover-background-color);
-
-        img {
+        &_skeleton {
+            height: 48px;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            user-select: none;
         }
     }
 
+    &_more {
+        align-self: flex-start;
+        font-size: var(--text-sm);
+        font-weight: 500;
+        color: var(--fg-muted);
+
+        &:hover {
+            color: var(--text-color);
+        }
+    }
     &_bottom {
         .post_actions_button {
             padding: 6px;
@@ -101,4 +89,8 @@
         animation: none;
         transition: none;
     }
+}
+
+.posts_item_media {
+    cursor: pointer;
 }

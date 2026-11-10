@@ -6,6 +6,8 @@ import { useNavigate } from '@/navigation';
 import { enrichPostHtml } from '../../content/postHtml';
 import { escapeHtml, linkifyHashtagsInHtml } from '../../utils/hashtags';
 
+import './HashtagHtml.scss';
+
 function plainMarkup(html: unknown, text: unknown) {
     if (html) {
         return String(html);
@@ -16,6 +18,25 @@ function plainMarkup(html: unknown, text: unknown) {
     }
 
     return escapeHtml(text).replace(/\n/g, '<br>');
+}
+
+async function copyCode(button: HTMLElement) {
+    const block = button.closest('.code_block');
+    const code = block?.querySelector('pre');
+    if (!code) {
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(code.textContent || '');
+        button.textContent = 'Copied';
+    } catch {
+        button.textContent = 'Failed';
+    }
+
+    window.setTimeout(() => {
+        button.textContent = 'Copy';
+    }, 1500);
 }
 
 const HashtagHtml = ({ html, text, className, as = 'div', id }: any) => {
@@ -42,9 +63,16 @@ const HashtagHtml = ({ html, text, className, as = 'div', id }: any) => {
     return (
         <Tag
             id={id}
-            className={className}
+            className={`rich_html ${className || ''}`.trim()}
             dangerouslySetInnerHTML={{ __html: markup }}
             onClick={(event: any) => {
+                const copy = event.target.closest('[data-code-copy]');
+                if (copy) {
+                    event.preventDefault();
+                    copyCode(copy);
+                    return;
+                }
+
                 const link = event.target.closest('a.hashtag, a.mention');
                 if (
                     !link ||

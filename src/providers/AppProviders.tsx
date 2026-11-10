@@ -23,7 +23,6 @@ import MobileNavigationBar from '../components/MobileNavigationBar';
 import ScrollToTop from '../components/ScrollToTop';
 
 import { publicEnv } from '../config/publicEnv';
-import { ACCENT_COLOR, CATEGORY_COLORS } from '../styles/constants';
 import {
     getAccessToken,
     setAccessToken,
@@ -207,22 +206,8 @@ export default function AppProviders({
 
         document
             .querySelector('meta[name="theme-color"]')
-            ?.setAttribute('content', isDarkTheme ? '#1e1e1e' : '#ffffff');
+            ?.setAttribute('content', isDarkTheme ? '#161616' : '#ffffff');
     }, [isDarkTheme, themeReady]);
-
-    useEffect(() => {
-        Object.values(CATEGORY_COLORS).forEach((color: any) => {
-            document.body.style.setProperty(
-                color.variable,
-                isDarkTheme ? color.dark : color.light,
-            );
-        });
-
-        document.body.style.setProperty(
-            ACCENT_COLOR.variable,
-            isDarkTheme ? ACCENT_COLOR.dark : ACCENT_COLOR.light,
-        );
-    }, [isDarkTheme]);
 
     return (
         <AppContext.Provider

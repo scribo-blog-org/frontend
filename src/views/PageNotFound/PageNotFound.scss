@@ -55,10 +55,10 @@
         display: block;
         height: 1px;
         width: 100%;
-        background-color: var(--gray-b5);
+        background-color: var(--gray-10);
 
         @at-root .dark-theme #{&} {
-            background-color: var(--gray-25);
+            background-color: var(--gray-3);
         }
     }
 

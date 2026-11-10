@@ -62,7 +62,7 @@ const ErrorText = ({ text, title }: any) =>
 
 const objectOf = (log: any, config: any, ctx: any) => {
     const data = log.data ?? {};
-    const { users, posts, categories, setFilter } = ctx;
+    const { users, posts, setFilter } = ctx;
 
     switch (config.object) {
         case 'post':
@@ -76,12 +76,7 @@ const objectOf = (log: any, config: any, ctx: any) => {
             ) : null;
         case 'category':
             return data.category ? (
-                <CategoryEntity
-                    id={data.category}
-                    data={categories.find((c: any) => c._id === data.category)}
-                    snapshot={data.category_snapshot}
-                    setFilter={setFilter}
-                />
+                <CategoryEntity snapshot={data.category_snapshot} />
             ) : null;
         case 'user': {
             const id = data.target_user ?? data.updated_user;
@@ -305,7 +300,6 @@ const LogRow = ({
     log,
     users,
     posts,
-    categories,
     setFilter,
     expanded = false,
     onToggle,
@@ -387,7 +381,6 @@ const LogRow = ({
                     {objectOf(log, config, {
                         users,
                         posts,
-                        categories,
                         setFilter,
                     })}
                 </div>
@@ -434,9 +427,6 @@ const LogRow = ({
                                 post: posts.find(
                                     (p: any) => p._id === data.post,
                                 )?.title,
-                                category: categories.find(
-                                    (c: any) => c._id === data.category,
-                                )?.name,
                             }}
                             setFilter={setFilter}
                             onPrev={onPrev}
