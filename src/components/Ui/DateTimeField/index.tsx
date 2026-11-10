@@ -1,6 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react';
+import { createPortal } from 'react-dom';
 
 import './DateTimeField.scss';
 
@@ -115,6 +122,11 @@ const DateTimeField = ({
     className = '',
 }: Props) => {
     const rootRef = useRef<HTMLDivElement>(null);
+    const popRef = useRef<HTMLDivElement>(null);
+    const [pos, setPos] = useState<{ top: number; left: number }>({
+        top: 0,
+        left: 0,
+    });
     const current = parse(value);
     const minDate = parse(min ?? '');
     const maxDate = parse(max ?? '');
@@ -133,7 +145,12 @@ const DateTimeField = ({
         }
 
         const close = (event: PointerEvent) => {
-            if (!rootRef.current?.contains(event.target as Node)) {
+            const target = event.target as Node;
+
+            if (
+                !rootRef.current?.contains(target) &&
+                !popRef.current?.contains(target)
+            ) {
                 setOpen(false);
             }
         };
@@ -151,6 +168,51 @@ const DateTimeField = ({
             document.removeEventListener('keydown', escape);
         };
     }, [open]);
+
+    const place = useCallback(() => {
+        const anchor = rootRef.current;
+        const pop = popRef.current;
+
+        if (!anchor || !pop) {
+            return;
+        }
+
+        const rect = anchor.getBoundingClientRect();
+        const width = pop.offsetWidth;
+        const height = pop.offsetHeight;
+        const left = Math.min(
+            Math.max(8, align === 'right' ? rect.right - width : rect.left),
+            window.innerWidth - width - 8,
+        );
+        const below = rect.bottom + 6;
+        const top =
+            below + height > window.innerHeight - 8 &&
+            rect.top - height - 6 >= 8
+                ? rect.top - height - 6
+                : below;
+
+        setPos({ top, left });
+    }, [align]);
+
+    useLayoutEffect(() => {
+        if (open) {
+            place();
+        }
+    }, [open, place, view, withTime]);
+
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        window.addEventListener('resize', place);
+        window.addEventListener('scroll', place, true);
+
+        return () => {
+            window.removeEventListener('resize', place);
+            window.removeEventListener('scroll', place, true);
+        };
+    }, [open, place]);
 
     const toggle = () => {
         if (!open) {
@@ -276,145 +338,163 @@ const DateTimeField = ({
                 <CalendarIcon className="dt_field_icon" />
             </div>
 
-            {open ? (
-                <div className="dt_pop" role="dialog" aria-label={label}>
-                    <div className="dt_pop_head">
-                        <button
-                            type="button"
-                            className="dt_pop_nav dt_pop_nav_prev"
-                            aria-label="Previous month"
-                            onClick={() =>
-                                setView(
-                                    new Date(
-                                        view.getFullYear(),
-                                        view.getMonth() - 1,
-                                        1,
-                                    ),
-                                )
-                            }
-                        >
-                            <ChevronDownIcon />
-                        </button>
-                        <span className="dt_pop_title">
-                            {MONTHS[view.getMonth()]} {view.getFullYear()}
-                        </span>
-                        <button
-                            type="button"
-                            className="dt_pop_nav dt_pop_nav_next"
-                            aria-label="Next month"
-                            onClick={() =>
-                                setView(
-                                    new Date(
-                                        view.getFullYear(),
-                                        view.getMonth() + 1,
-                                        1,
-                                    ),
-                                )
-                            }
-                        >
-                            <ChevronDownIcon />
-                        </button>
-                    </div>
+            {open
+                ? createPortal(
+                      <div
+                          ref={popRef}
+                          className="dt_pop"
+                          style={{ top: pos.top, left: pos.left }}
+                          role="dialog"
+                          aria-label={label}
+                      >
+                          <div className="dt_pop_head">
+                              <button
+                                  type="button"
+                                  className="dt_pop_nav dt_pop_nav_prev"
+                                  aria-label="Previous month"
+                                  onClick={() =>
+                                      setView(
+                                          new Date(
+                                              view.getFullYear(),
+                                              view.getMonth() - 1,
+                                              1,
+                                          ),
+                                      )
+                                  }
+                              >
+                                  <ChevronDownIcon />
+                              </button>
+                              <span className="dt_pop_title">
+                                  {MONTHS[view.getMonth()]} {view.getFullYear()}
+                              </span>
+                              <button
+                                  type="button"
+                                  className="dt_pop_nav dt_pop_nav_next"
+                                  aria-label="Next month"
+                                  onClick={() =>
+                                      setView(
+                                          new Date(
+                                              view.getFullYear(),
+                                              view.getMonth() + 1,
+                                              1,
+                                          ),
+                                      )
+                                  }
+                              >
+                                  <ChevronDownIcon />
+                              </button>
+                          </div>
 
-                    <div className="dt_pop_weekdays">
-                        {WEEKDAYS.map((day) => (
-                            <span key={day}>{day}</span>
-                        ))}
-                    </div>
+                          <div className="dt_pop_weekdays">
+                              {WEEKDAYS.map((day) => (
+                                  <span key={day}>{day}</span>
+                              ))}
+                          </div>
 
-                    <div className="dt_pop_days">
-                        {monthGrid(view).map((day) => {
-                            const key = dayKey(day);
-                            const outside = day.getMonth() !== view.getMonth();
-                            const disabled =
-                                Boolean(minKey && key < minKey) ||
-                                Boolean(maxKey && key > maxKey);
+                          <div className="dt_pop_days">
+                              {monthGrid(view).map((day) => {
+                                  const key = dayKey(day);
+                                  const outside =
+                                      day.getMonth() !== view.getMonth();
+                                  const disabled =
+                                      Boolean(minKey && key < minKey) ||
+                                      Boolean(maxKey && key > maxKey);
 
-                            return (
-                                <button
-                                    key={key}
-                                    type="button"
-                                    disabled={disabled}
-                                    className={`dt_pop_day${outside ? ' dt_pop_day_outside' : ''}${key === todayKey ? ' dt_pop_day_today' : ''}${key === selectedKey ? ' dt_pop_day_selected' : ''}`}
-                                    onClick={() => pickDay(day)}
-                                >
-                                    {day.getDate()}
-                                </button>
-                            );
-                        })}
-                    </div>
+                                  return (
+                                      <button
+                                          key={key}
+                                          type="button"
+                                          disabled={disabled}
+                                          className={`dt_pop_day${outside ? ' dt_pop_day_outside' : ''}${key === todayKey ? ' dt_pop_day_today' : ''}${key === selectedKey ? ' dt_pop_day_selected' : ''}`}
+                                          onClick={() => pickDay(day)}
+                                      >
+                                          {day.getDate()}
+                                      </button>
+                                  );
+                              })}
+                          </div>
 
-                    {withTime ? (
-                        <div className="dt_pop_time">
-                            <span className="dt_pop_time_label">Time</span>
-                            <input
-                                className="dt_pop_time_input"
-                                inputMode="numeric"
-                                aria-label="Hours"
-                                maxLength={2}
-                                value={hours}
-                                onChange={(event) =>
-                                    setHours(
-                                        event.target.value.replace(/\D/g, ''),
-                                    )
-                                }
-                                onBlur={() => commitTime(hours, minutes)}
-                                onKeyDown={timeKeys('h')}
-                            />
-                            <span className="dt_pop_time_colon">:</span>
-                            <input
-                                className="dt_pop_time_input"
-                                inputMode="numeric"
-                                aria-label="Minutes"
-                                maxLength={2}
-                                value={minutes}
-                                onChange={(event) =>
-                                    setMinutes(
-                                        event.target.value.replace(/\D/g, ''),
-                                    )
-                                }
-                                onBlur={() => commitTime(hours, minutes)}
-                                onKeyDown={timeKeys('m')}
-                            />
-                        </div>
-                    ) : null}
+                          {withTime ? (
+                              <div className="dt_pop_time">
+                                  <span className="dt_pop_time_label">
+                                      Time
+                                  </span>
+                                  <input
+                                      className="dt_pop_time_input"
+                                      inputMode="numeric"
+                                      aria-label="Hours"
+                                      maxLength={2}
+                                      value={hours}
+                                      onChange={(event) =>
+                                          setHours(
+                                              event.target.value.replace(
+                                                  /\D/g,
+                                                  '',
+                                              ),
+                                          )
+                                      }
+                                      onBlur={() => commitTime(hours, minutes)}
+                                      onKeyDown={timeKeys('h')}
+                                  />
+                                  <span className="dt_pop_time_colon">:</span>
+                                  <input
+                                      className="dt_pop_time_input"
+                                      inputMode="numeric"
+                                      aria-label="Minutes"
+                                      maxLength={2}
+                                      value={minutes}
+                                      onChange={(event) =>
+                                          setMinutes(
+                                              event.target.value.replace(
+                                                  /\D/g,
+                                                  '',
+                                              ),
+                                          )
+                                      }
+                                      onBlur={() => commitTime(hours, minutes)}
+                                      onKeyDown={timeKeys('m')}
+                                  />
+                              </div>
+                          ) : null}
 
-                    <div className="dt_pop_foot">
-                        <button
-                            type="button"
-                            className="dt_pop_text"
-                            onClick={() => {
-                                commit(new Date());
-                                setView(new Date());
-                                if (!withTime) {
-                                    setOpen(false);
-                                }
-                            }}
-                        >
-                            {withTime ? 'Now' : 'Today'}
-                        </button>
-                        {clearable ? (
-                            <button
-                                type="button"
-                                className="dt_pop_text"
-                                onClick={() => {
-                                    onChange('');
-                                    setOpen(false);
-                                }}
-                            >
-                                Clear
-                            </button>
-                        ) : null}
-                        <button
-                            type="button"
-                            className="dt_pop_text dt_pop_text_primary"
-                            onClick={() => setOpen(false)}
-                        >
-                            Done
-                        </button>
-                    </div>
-                </div>
-            ) : null}
+                          <div className="dt_pop_foot">
+                              <button
+                                  type="button"
+                                  className="dt_pop_text"
+                                  onClick={() => {
+                                      commit(new Date());
+                                      setView(new Date());
+                                      if (!withTime) {
+                                          setOpen(false);
+                                      }
+                                  }}
+                              >
+                                  {withTime ? 'Now' : 'Today'}
+                              </button>
+                              {clearable ? (
+                                  <button
+                                      type="button"
+                                      className="dt_pop_text"
+                                      onClick={() => {
+                                          onChange('');
+                                          setOpen(false);
+                                      }}
+                                  >
+                                      Clear
+                                  </button>
+                              ) : null}
+                              <button
+                                  type="button"
+                                  className="dt_pop_text dt_pop_text_primary"
+                                  onClick={() => setOpen(false)}
+                              >
+                                  Done
+                              </button>
+                          </div>
+                      </div>,
+                      document.body,
+                  )
+                : null}
         </div>
     );
 };

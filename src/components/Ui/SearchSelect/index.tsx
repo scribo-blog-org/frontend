@@ -179,22 +179,13 @@ const SearchSelect = ({
         };
     }, [closeSelect]);
 
-    const filteredOptionsRef = useRef(filteredOptions);
-    filteredOptionsRef.current = filteredOptions;
-
     useEffect(() => {
         if (!isOpen) {
             setHighlightedIndex(-1);
             return;
         }
-        if (external) return;
-        setHighlightedIndex(filteredOptions.length ? 0 : -1);
-    }, [external, filteredOptions, isOpen]);
-
-    useEffect(() => {
-        if (!isOpen || !external) return;
-        setHighlightedIndex(filteredOptionsRef.current.length ? 0 : -1);
-    }, [external, inputValue, isOpen]);
+        setHighlightedIndex(-1);
+    }, [filteredOptions, isOpen]);
 
     useEffect(() => {
         if (highlightedIndex < 0) return;
@@ -291,6 +282,13 @@ const SearchSelect = ({
                 ) {
                     e.preventDefault();
                     handleSelect(filteredOptions[highlightedIndex]);
+                } else if (
+                    isOpen &&
+                    isSearching &&
+                    filteredOptions.length === 1
+                ) {
+                    e.preventDefault();
+                    handleSelect(filteredOptions[0]);
                 }
 
                 break;
