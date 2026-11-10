@@ -623,7 +623,17 @@ const PostComposer = ({
 
     return (
         <div className="composer">
-            <PageHeader title={title} />
+            <PageHeader
+                title={title}
+                actions={
+                    <CancelButton
+                        className="composer_cancel"
+                        onClick={requestCancel}
+                    >
+                        Cancel
+                    </CancelButton>
+                }
+            />
 
             <div
                 className={`composer_card${dragging ? ' composer_card_dragging' : ''}`}
@@ -883,12 +893,6 @@ const PostComposer = ({
                             ? verdict.reason
                             : ''}
                     </span>
-                    <CancelButton
-                        className="composer_cancel"
-                        onClick={requestCancel}
-                    >
-                        Cancel
-                    </CancelButton>
                 </div>
             </div>
             {viewer ? (
