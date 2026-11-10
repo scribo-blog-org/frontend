@@ -316,7 +316,15 @@
         color: var(--fg-subtle);
     }
 
-    &_cancel,
+    &_cancel.cancel_button {
+        color: var(--danger);
+
+        @include hover {
+            color: var(--danger);
+            background: rgb(from var(--danger) r g b / 0.1);
+        }
+    }
+
     &_publish {
         min-width: 96px;
         border-radius: 999px;

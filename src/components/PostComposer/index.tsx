@@ -870,17 +870,6 @@ const PostComposer = ({
                 </div>
 
                 <div className="composer_footer">
-                    <ActionButton
-                        className="composer_cancel"
-                        onClick={requestCancel}
-                    >
-                        Cancel
-                    </ActionButton>
-                    <span className="composer_hint">
-                        {!verdict.ok && (hasText || tiles.length)
-                            ? verdict.reason
-                            : ''}
-                    </span>
                     <PrimaryButton
                         className="composer_publish"
                         onClick={publish}
@@ -889,6 +878,17 @@ const PostComposer = ({
                     >
                         {mode === 'create' ? 'Publish' : 'Save'}
                     </PrimaryButton>
+                    <span className="composer_hint">
+                        {!verdict.ok && (hasText || tiles.length)
+                            ? verdict.reason
+                            : ''}
+                    </span>
+                    <CancelButton
+                        className="composer_cancel"
+                        onClick={requestCancel}
+                    >
+                        Cancel
+                    </CancelButton>
                 </div>
             </div>
             {viewer ? (
