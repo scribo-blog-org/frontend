@@ -286,7 +286,7 @@
         height: 16px;
         color: transparent;
         border: 1px solid var(--input-outline-color);
-        border-radius: 4px;
+        border-radius: 0;
         background: var(--input-background-color);
         @include use-transition();
 

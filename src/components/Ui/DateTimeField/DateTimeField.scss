@@ -32,6 +32,11 @@
         color: var(--input-text-color);
     }
 
+    &_right .dt_pop {
+        left: auto;
+        right: 0;
+    }
+
     &_label {
         flex-shrink: 0;
         font-size: 13px;

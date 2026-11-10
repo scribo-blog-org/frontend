@@ -8,7 +8,7 @@ import { hashtagSearchPath } from '../../utils/hashtags';
 
 import Tabs from '../../components/Ui/Tabs';
 import SwitchBar from '../../components/Ui/SwitchBar';
-import DateTimePicker from '../../components/Ui/DateTimePicker';
+import DateTimeField from '../../components/Ui/DateTimeField';
 import Loading from '../../components/Ui/Loading';
 
 import {
@@ -229,8 +229,8 @@ const DashboardPage = () => {
                             onChange={pickPeriod}
                         />
                         <div className="analytics_period_dates">
-                            <DateTimePicker
-                                type="date"
+                            <DateTimeField
+                                withTime={false}
                                 value={from}
                                 min={earliest}
                                 max={to || today}
@@ -238,8 +238,9 @@ const DashboardPage = () => {
                                 onChange={pickFrom}
                             />
                             <span className="analytics_period_dash">—</span>
-                            <DateTimePicker
-                                type="date"
+                            <DateTimeField
+                                withTime={false}
+                                align="right"
                                 value={to}
                                 min={from || earliest}
                                 max={today}

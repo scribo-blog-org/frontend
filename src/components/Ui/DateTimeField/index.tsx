@@ -29,25 +29,42 @@ const pad = (value: number) => String(value).padStart(2, '0');
 const dayKey = (date: Date) =>
     `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 
-const toValue = (date: Date) =>
-    `${dayKey(date)}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+const toValue = (date: Date, withTime: boolean) =>
+    withTime
+        ? `${dayKey(date)}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+        : dayKey(date);
 
 const parse = (value: string): Date | null => {
-    const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(value || '');
+    const match = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/.exec(
+        value || '',
+    );
 
     if (!match) {
         return null;
     }
 
-    const [, y, m, d, hh, mm] = match.map(Number);
+    const [, y, m, d, hh, mm] = match;
 
-    return new Date(y, m - 1, d, hh, mm);
+    return new Date(
+        Number(y),
+        Number(m) - 1,
+        Number(d),
+        Number(hh ?? 0),
+        Number(mm ?? 0),
+    );
 };
 
-const display = (date: Date | null) =>
-    date
-        ? `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`
-        : '';
+const display = (date: Date | null, withTime: boolean) => {
+    if (!date) {
+        return '';
+    }
+
+    const day = `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+
+    return withTime
+        ? `${day} ${pad(date.getHours())}:${pad(date.getMinutes())}`
+        : day;
+};
 
 const monthGrid = (view: Date) => {
     const first = new Date(view.getFullYear(), view.getMonth(), 1);
@@ -79,6 +96,9 @@ type Props = {
     min?: string;
     max?: string;
     defaultTime?: string;
+    withTime?: boolean;
+    clearable?: boolean;
+    align?: 'left' | 'right';
     className?: string;
 };
 
@@ -89,6 +109,9 @@ const DateTimeField = ({
     min,
     max,
     defaultTime = '00:00',
+    withTime = true,
+    clearable = true,
+    align = 'left',
     className = '',
 }: Props) => {
     const rootRef = useRef<HTMLDivElement>(null);
@@ -148,7 +171,7 @@ const DateTimeField = ({
     const commit = (date: Date) => {
         const next = clamp(date, minDate, maxDate);
 
-        onChange(toValue(next));
+        onChange(toValue(next, withTime));
         setHours(pad(next.getHours()));
         setMinutes(pad(next.getMinutes()));
     };
@@ -160,6 +183,10 @@ const DateTimeField = ({
         commit(
             new Date(day.getFullYear(), day.getMonth(), day.getDate(), hh, mm),
         );
+
+        if (!withTime) {
+            setOpen(false);
+        }
     };
 
     const commitTime = (nextHours: string, nextMinutes: string) => {
@@ -212,7 +239,7 @@ const DateTimeField = ({
     return (
         <div
             ref={rootRef}
-            className={`dt_field${open ? ' dt_field_open' : ''}${value ? ' dt_field_filled' : ''} ${className}`.trim()}
+            className={`dt_field${align === 'right' ? ' dt_field_right' : ''}${open ? ' dt_field_open' : ''}${value ? ' dt_field_filled' : ''} ${className}`.trim()}
         >
             <div
                 className="dt_field_trigger app-transition"
@@ -230,9 +257,10 @@ const DateTimeField = ({
             >
                 {label ? <span className="dt_field_label">{label}</span> : null}
                 <span className="dt_field_value">
-                    {display(current) || 'dd.mm.yyyy --:--'}
+                    {display(current, withTime) ||
+                        (withTime ? 'dd.mm.yyyy --:--' : 'dd.mm.yyyy')}
                 </span>
-                {value ? (
+                {value && clearable ? (
                     <button
                         type="button"
                         className="dt_field_clear"
@@ -316,36 +344,40 @@ const DateTimeField = ({
                         })}
                     </div>
 
-                    <div className="dt_pop_time">
-                        <span className="dt_pop_time_label">Time</span>
-                        <input
-                            className="dt_pop_time_input"
-                            inputMode="numeric"
-                            aria-label="Hours"
-                            maxLength={2}
-                            value={hours}
-                            onChange={(event) =>
-                                setHours(event.target.value.replace(/\D/g, ''))
-                            }
-                            onBlur={() => commitTime(hours, minutes)}
-                            onKeyDown={timeKeys('h')}
-                        />
-                        <span className="dt_pop_time_colon">:</span>
-                        <input
-                            className="dt_pop_time_input"
-                            inputMode="numeric"
-                            aria-label="Minutes"
-                            maxLength={2}
-                            value={minutes}
-                            onChange={(event) =>
-                                setMinutes(
-                                    event.target.value.replace(/\D/g, ''),
-                                )
-                            }
-                            onBlur={() => commitTime(hours, minutes)}
-                            onKeyDown={timeKeys('m')}
-                        />
-                    </div>
+                    {withTime ? (
+                        <div className="dt_pop_time">
+                            <span className="dt_pop_time_label">Time</span>
+                            <input
+                                className="dt_pop_time_input"
+                                inputMode="numeric"
+                                aria-label="Hours"
+                                maxLength={2}
+                                value={hours}
+                                onChange={(event) =>
+                                    setHours(
+                                        event.target.value.replace(/\D/g, ''),
+                                    )
+                                }
+                                onBlur={() => commitTime(hours, minutes)}
+                                onKeyDown={timeKeys('h')}
+                            />
+                            <span className="dt_pop_time_colon">:</span>
+                            <input
+                                className="dt_pop_time_input"
+                                inputMode="numeric"
+                                aria-label="Minutes"
+                                maxLength={2}
+                                value={minutes}
+                                onChange={(event) =>
+                                    setMinutes(
+                                        event.target.value.replace(/\D/g, ''),
+                                    )
+                                }
+                                onBlur={() => commitTime(hours, minutes)}
+                                onKeyDown={timeKeys('m')}
+                            />
+                        </div>
+                    ) : null}
 
                     <div className="dt_pop_foot">
                         <button
@@ -354,20 +386,25 @@ const DateTimeField = ({
                             onClick={() => {
                                 commit(new Date());
                                 setView(new Date());
+                                if (!withTime) {
+                                    setOpen(false);
+                                }
                             }}
                         >
-                            Now
+                            {withTime ? 'Now' : 'Today'}
                         </button>
-                        <button
-                            type="button"
-                            className="dt_pop_text"
-                            onClick={() => {
-                                onChange('');
-                                setOpen(false);
-                            }}
-                        >
-                            Clear
-                        </button>
+                        {clearable ? (
+                            <button
+                                type="button"
+                                className="dt_pop_text"
+                                onClick={() => {
+                                    onChange('');
+                                    setOpen(false);
+                                }}
+                            >
+                                Clear
+                            </button>
+                        ) : null}
                         <button
                             type="button"
                             className="dt_pop_text dt_pop_text_primary"
