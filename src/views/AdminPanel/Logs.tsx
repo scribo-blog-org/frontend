@@ -310,7 +310,7 @@ const LogsPage = () => {
     }, [logs]);
 
     useEffect(() => {
-        rootRef.current?.querySelector('.logs_list')?.scrollTo({ top: 0 });
+        rootRef.current?.scrollTo({ top: 0 });
         setExpanded(new Set());
     }, [
         filter.type,
@@ -450,9 +450,9 @@ const LogsPage = () => {
     );
 
     return (
-        <div className="logs_page" ref={rootRef}>
+        <>
             {aside}
-            <div className="logs_list">
+            <div className="logs_list" ref={rootRef}>
                 {feed.loading && !logs.length ? (
                     <Loading size={40} />
                 ) : logs.length ? (
@@ -510,7 +510,7 @@ const LogsPage = () => {
                     <p className="logs_empty">No events</p>
                 )}
             </div>
-        </div>
+        </>
     );
 };
 

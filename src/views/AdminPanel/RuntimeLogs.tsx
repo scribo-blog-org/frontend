@@ -364,7 +364,7 @@ const RuntimeLogs = () => {
         Number(services.length !== RUNTIME_SERVICES.length);
 
     return (
-        <div className="logs_page">
+        <>
             <LogsFilters activeCount={activeFilters}>
                 <LogSearch
                     value={searchText}
@@ -479,7 +479,7 @@ const RuntimeLogs = () => {
                     </p>
                 )}
             </div>
-        </div>
+        </>
     );
 };
 

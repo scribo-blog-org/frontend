@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import ActionButton from '../../components/Ui/ActionButton';
 import Tabs from '../../components/Ui/Tabs';
@@ -18,15 +19,9 @@ const VIEW_ITEMS = [
     { key: 'runtime', title: 'Runtime' },
 ];
 
-export const LogsFilters = ({
-    activeCount = 0,
-    children,
-}: {
-    activeCount?: number;
-    children: any;
-}) => {
+export const LogsAside = () => {
     const [open, setOpen] = useState<boolean>(false);
-    const { view, setView } = useLogsToolbar();
+    const { view, setView, activeCount, setSlot } = useLogsToolbar();
 
     return (
         <aside
@@ -51,11 +46,26 @@ export const LogsFilters = ({
                 ) : null}
                 <ChevronDownIcon />
             </button>
-            <div className="logs_filters_body">{children}</div>
+            <div className="logs_filters_body" ref={setSlot} />
         </aside>
     );
 };
 
+export const LogsFilters = ({
+    activeCount = 0,
+    children,
+}: {
+    activeCount?: number;
+    children: any;
+}) => {
+    const { slot, setActiveCount } = useLogsToolbar();
+
+    useEffect(() => {
+        setActiveCount(activeCount);
+    }, [activeCount, setActiveCount]);
+
+    return slot ? createPortal(children, slot) : null;
+};
 export const FilterField = ({
     label,
     children,

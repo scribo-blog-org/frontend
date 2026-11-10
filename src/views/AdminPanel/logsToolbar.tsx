@@ -28,6 +28,10 @@ export type LogsToolbar = {
     setTypeFilter: (value: string) => void;
     entity: LogEntity;
     setEntity: (value: LogEntity) => void;
+    slot: HTMLElement | null;
+    setSlot: (value: HTMLElement | null) => void;
+    activeCount: number;
+    setActiveCount: (value: number) => void;
 };
 
 const LogsToolbarContext = createContext<LogsToolbar | null>(null);
@@ -88,6 +92,8 @@ export const useLogsToolbarState = (): LogsToolbar => {
         () => params.get('type') ?? 'all',
     );
     const [entity, setEntity] = useState<LogEntity>(() => entityParam(params));
+    const [slot, setSlot] = useState<HTMLElement | null>(null);
+    const [activeCount, setActiveCount] = useState<number>(0);
 
     useEffect(() => {
         const url = new URL(window.location.href);
@@ -158,6 +164,10 @@ export const useLogsToolbarState = (): LogsToolbar => {
         setTypeFilter,
         entity,
         setEntity,
+        slot,
+        setSlot,
+        activeCount,
+        setActiveCount,
     };
 };
 

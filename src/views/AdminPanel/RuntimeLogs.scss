@@ -263,6 +263,7 @@
     padding: 9px 10px;
     font-size: 14px;
     color: var(--text-color);
+    border-radius: var(--radius-sm);
     cursor: pointer;
     user-select: none;
     @include use-transition();
@@ -286,7 +287,7 @@
         height: 16px;
         color: transparent;
         border: 1px solid var(--input-outline-color);
-        border-radius: 0;
+        border-radius: 4px;
         background: var(--input-background-color);
         @include use-transition();
 
