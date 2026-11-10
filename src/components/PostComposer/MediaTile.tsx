@@ -47,18 +47,30 @@ const MediaTile = ({
     progress = 0,
     disabled = false,
     onRemove,
+    onOpen,
 }: {
     tile: ComposerTile;
     uploading?: boolean;
     progress?: number;
     disabled?: boolean;
     onRemove: () => void;
+    onOpen?: () => void;
 }) => {
     const busy = uploading && tile.status === 'local';
 
     return (
         <div
-            className={`composer_tile composer_tile_${tile.status} composer_tile_${tile.kind}${busy ? ' composer_tile_busy' : ''}`}
+            className={`composer_tile composer_tile_${tile.status} composer_tile_${tile.kind}${busy ? ' composer_tile_busy' : ''}${onOpen ? ' composer_tile_openable' : ''}`}
+            role={onOpen ? 'button' : undefined}
+            tabIndex={onOpen ? 0 : undefined}
+            aria-label={onOpen ? 'Open media' : undefined}
+            onClick={onOpen}
+            onKeyDown={(event) => {
+                if (onOpen && (event.key === 'Enter' || event.key === ' ')) {
+                    event.preventDefault();
+                    onOpen();
+                }
+            }}
         >
             {tile.previewUrl ? (
                 <img src={tile.previewUrl} alt="" draggable={false} />
@@ -95,7 +107,11 @@ const MediaTile = ({
                 className="composer_tile_remove"
                 aria-label="Remove"
                 disabled={disabled}
-                onClick={onRemove}
+                onClick={(event) => {
+                    event.stopPropagation();
+                    onRemove();
+                }}
+                onKeyDown={(event) => event.stopPropagation()}
             >
                 ×
             </button>

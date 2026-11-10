@@ -1,25 +1,8 @@
 @use '../../styles/helpers' as *;
 
 .posts_filters {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    gap: 8px 20px;
-    min-height: 30px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-
-    &::-webkit-scrollbar {
-        display: none;
-    }
-
-    .post_filter_separator {
-        flex-shrink: 0;
-        padding: 0;
-        border-right: 1px solid var(--line-color);
-        width: 0;
-        height: 14px;
-        background-color: transparent;
-    }
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: var(--bg);
 }

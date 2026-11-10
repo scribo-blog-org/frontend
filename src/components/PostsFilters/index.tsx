@@ -1,25 +1,26 @@
 'use client';
 
 import './PostsFilters.scss';
-import ChipButton from '../Ui/ChipButton';
+import Tabs from '../Ui/Tabs';
 
 const PostsFilters = ({ filters, onSelect }: any) => {
     if (filters.length < 2) {
         return null;
     }
 
+    const active = filters.find((filter: any) => filter.isActive);
+
     return (
         <div className="posts_filters">
-            {filters.map((filter: any) => (
-                <ChipButton
-                    key={filter._id}
-                    variant="quiet"
-                    isActive={filter.isActive}
-                    onClick={() => onSelect(filter._id)}
-                >
-                    {filter.name}
-                </ChipButton>
-            ))}
+            <Tabs
+                label="Feed"
+                items={filters.map((filter: any) => ({
+                    key: filter._id,
+                    title: filter.name,
+                }))}
+                activeKey={active?._id}
+                onChange={onSelect}
+            />
         </div>
     );
 };

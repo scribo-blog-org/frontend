@@ -18,14 +18,6 @@ export function asDetectedMedia(value: unknown): DetectedMedia | null {
         : null;
 }
 
-/**
- * Decides what the composer's single link button does with a URL.
- *
- * - selected text: it always becomes a hyperlink, whatever the URL is;
- * - no selection and the URL is a player or a direct media file (known from
- *   the URL itself or from the server's content-type sniff): carousel media;
- * - anything else: inserted into the text as a plain URL.
- */
 export function decideLinkAction(
     hasSelection: boolean,
     info: LinkInfo | null,
@@ -46,7 +38,6 @@ export function decideLinkAction(
     return 'text';
 }
 
-/** The URL as typed when it already has a scheme, otherwise the normalised one. */
 export function linkHref(value: string, info: LinkInfo): string {
     const typed = String(value || '').trim();
     return /^https?:\/\//i.test(typed) ? typed : info.url;

@@ -40,6 +40,18 @@
         }
     }
 
+    &_static {
+        cursor: default;
+
+        @include hover {
+            background: transparent;
+
+            .user_badge_info_name {
+                color: var(--user-badge-name-color);
+            }
+        }
+    }
+
     &_avatar_only {
         padding: 0;
 

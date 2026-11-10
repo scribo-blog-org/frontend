@@ -1,6 +1,7 @@
 'use client';
 
 import {
+    type ReactNode,
     useCallback,
     useContext,
     useEffect,
@@ -16,7 +17,13 @@ import UserAvatar from '../UserBadge/UserAvatar';
 import TextEditorField from '../Ui/TextEditorField';
 import PrimaryButton from '../Ui/PrimaryButton';
 import ActionButton from '../Ui/ActionButton';
+import CancelButton from '../Ui/CancelButton';
+import DangerButton from '../Ui/DangerButton';
+import { ModalFooter, Panel } from '../Ui';
+import PostPreview from '../PostPreview';
+import Tooltip from '../Ui/Tooltip';
 import MediaTile from './MediaTile';
+import MediaViewer, { type MediaViewerItem } from '../MediaViewer';
 
 import { fetchLinkPreview } from '../../api/linkPreview.api';
 import { classifyLink, type LinkInfo } from '../../utils/embed';
@@ -46,8 +53,69 @@ import {
 
 import MediaInsertIcon from '../../assets/svg/media-insert.svg';
 import LinkIcon from '../../assets/svg/link-icon.svg';
+import WarningIcon from '../../assets/svg/warning-icon.svg';
 
 import './PostComposer.scss';
+
+const DraftPreview = ({
+    html,
+    author,
+    mediaCount,
+}: {
+    html: string;
+    author: unknown;
+    mediaCount: number;
+}) => {
+    const hasText = html.trim() !== '';
+
+    return (
+        <Panel>
+            {!hasText && !mediaCount ? (
+                <p className="composer_confirm_media">The post is empty</p>
+            ) : null}
+            {hasText ? (
+                <PostPreview
+                    post={{ content_text: html, author }}
+                    media="none"
+                    asLinkAuthor={false}
+                />
+            ) : null}
+            {mediaCount ? (
+                <p className="composer_confirm_media">
+                    {mediaCount === 1
+                        ? '1 media file attached'
+                        : `${mediaCount} media files attached`}
+                </p>
+            ) : null}
+        </Panel>
+    );
+};
+
+const ConfirmContent = ({
+    hint,
+    keepLabel,
+    confirmLabel,
+    preview,
+    onKeep,
+    onConfirm,
+}: {
+    hint: string;
+    keepLabel: string;
+    confirmLabel: string;
+    preview?: ReactNode;
+    onKeep: () => void;
+    onConfirm: () => void;
+}) => (
+    <div className="composer_confirm_content">
+        {preview}
+        <ModalFooter hint={hint}>
+            <ActionButton onClick={onKeep}>{keepLabel}</ActionButton>
+            <DangerButton onClick={onConfirm} isActive={true}>
+                {confirmLabel}
+            </DangerButton>
+        </ModalFooter>
+    </div>
+);
 
 type PostComposerProps = {
     mode: 'create' | 'edit';
@@ -141,21 +209,30 @@ const PostComposer = ({
     onSubmit,
     onCancel,
 }: PostComposerProps) => {
-    const { profile, showToast } = useContext(AppContext);
+    const {
+        profile,
+        showToast,
+        modalWindow,
+        showModalWindow,
+        requestCloseModal,
+    } = useContext(AppContext);
 
     const [html, setHtml] = useState(initialHtml);
     const [tiles, setTiles] = useState<ComposerTile[]>(() =>
         tilesFromMedia(initialMedia),
     );
     const [dragging, setDragging] = useState(false);
-    const [confirmDiscard, setConfirmDiscard] = useState(false);
+    const [viewer, setViewer] = useState<{
+        items: MediaViewerItem[];
+        index: number;
+        objectUrls: string[];
+    } | null>(null);
     const [linkOpen, setLinkOpen] = useState(false);
     const [linkValue, setLinkValue] = useState('');
     const [linkSelection, setLinkSelection] = useState(false);
     const editorApi = useRef<any>(null);
     const [linkPreview, setLinkPreview] = useState<UrlPreview | null>(null);
     const [progress, setProgress] = useState(0);
-    const [confirmAbort, setConfirmAbort] = useState(false);
 
     const fileInput = useRef<HTMLInputElement>(null);
     const controller = useRef<AbortController | null>(null);
@@ -262,32 +339,97 @@ const PostComposer = ({
             });
         };
     }, []);
+    const abortUpload = useCallback(() => {
+        controller.current?.abort();
+    }, []);
+
     const requestCancel = useCallback(() => {
         if (submitting) {
-            setConfirmAbort(true);
+            showModalWindow({
+                title: 'Cancel the upload?',
+                subtitle: 'The post will not be published',
+                icon: <WarningIcon />,
+                size: 'small',
+                content: (
+                    <ConfirmContent
+                        preview={
+                            <DraftPreview
+                                html={html}
+                                author={profile}
+                                mediaCount={tilesRef.current.length}
+                            />
+                        }
+                        hint="Uploaded files will be discarded"
+                        keepLabel="Keep uploading"
+                        confirmLabel="Cancel upload"
+                        onKeep={requestCloseModal}
+                        onConfirm={() => {
+                            abortUpload();
+                            requestCloseModal();
+                        }}
+                    />
+                ),
+                showCloseButton: false,
+                closeFunc: () => {},
+            });
             return;
         }
-        if (dirty && !confirmDiscard) {
-            setConfirmDiscard(true);
+        if (dirty) {
+            showModalWindow({
+                title: 'Discard this post?',
+                subtitle: 'Your changes will be lost',
+                icon: <WarningIcon />,
+                size: 'small',
+                content: (
+                    <ConfirmContent
+                        preview={
+                            <DraftPreview
+                                html={html}
+                                author={profile}
+                                mediaCount={tilesRef.current.length}
+                            />
+                        }
+                        hint="This cannot be undone"
+                        keepLabel="Keep editing"
+                        confirmLabel="Discard"
+                        onKeep={requestCloseModal}
+                        onConfirm={() => {
+                            requestCloseModal();
+                            onCancel();
+                        }}
+                    />
+                ),
+                showCloseButton: false,
+                closeFunc: () => {},
+            });
             return;
         }
         onCancel();
-    }, [submitting, dirty, confirmDiscard, onCancel]);
-
-    const abortUpload = () => {
-        controller.current?.abort();
-        setConfirmAbort(false);
-    };
+    }, [
+        submitting,
+        dirty,
+        html,
+        profile,
+        onCancel,
+        abortUpload,
+        showModalWindow,
+        requestCloseModal,
+    ]);
 
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && !linkOpen) {
+            if (
+                event.key === 'Escape' &&
+                !linkOpen &&
+                !modalWindow &&
+                !viewer
+            ) {
                 requestCancel();
             }
         };
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
-    }, [requestCancel, linkOpen]);
+    }, [requestCancel, linkOpen, modalWindow, viewer]);
 
     useEffect(() => {
         if (!dirty) {
@@ -471,6 +613,47 @@ const PostComposer = ({
 
         closeLink();
     };
+    const openViewer = (key: string) => {
+        const viewable = tilesRef.current.filter(
+            (tile) => tile.kind !== 'embed',
+        );
+        const index = viewable.findIndex((tile) => tile.key === key);
+
+        if (index < 0) {
+            return;
+        }
+
+        const objectUrls: string[] = [];
+        const items = viewable.map((tile): MediaViewerItem => {
+            const type = tile.kind as MediaViewerItem['type'];
+
+            if (tile.status === 'existing' && tile.payload) {
+                return {
+                    type,
+                    src: mediaUrl(tile.payload.url),
+                    poster: tile.payload.poster
+                        ? mediaUrl(tile.payload.poster)
+                        : undefined,
+                };
+            }
+
+            if (type === 'video' && tile.file) {
+                const src = URL.createObjectURL(tile.file);
+                objectUrls.push(src);
+                return { type, src, poster: tile.previewUrl || undefined };
+            }
+
+            return { type, src: tile.previewUrl };
+        });
+
+        setViewer({ items, index, objectUrls });
+    };
+
+    const closeViewer = () => {
+        viewer?.objectUrls.forEach((url) => URL.revokeObjectURL(url));
+        setViewer(null);
+    };
+
     const total = totalUploadBytes(tiles);
     const overLimit = total > MAX_MEDIA_BYTES;
     const verdict = canPublish(html, tiles);
@@ -484,7 +667,6 @@ const PostComposer = ({
         const next = new AbortController();
         controller.current = next;
         setProgress(0);
-        setConfirmAbort(false);
         onSubmit({
             formData: buildPostFormData(html, tiles),
             onProgress: setProgress,
@@ -502,39 +684,12 @@ const PostComposer = ({
             <PageHeader
                 title={title}
                 actions={
-                    confirmAbort && submitting ? (
-                        <>
-                            <span className="composer_confirm">
-                                Cancel the upload?
-                            </span>
-                            <ActionButton
-                                onClick={() => setConfirmAbort(false)}
-                            >
-                                Keep uploading
-                            </ActionButton>
-                            <ActionButton onClick={abortUpload}>
-                                Cancel upload
-                            </ActionButton>
-                        </>
-                    ) : confirmDiscard ? (
-                        <>
-                            <span className="composer_confirm">
-                                Discard this post?
-                            </span>
-                            <ActionButton
-                                onClick={() => setConfirmDiscard(false)}
-                            >
-                                Keep editing
-                            </ActionButton>
-                            <ActionButton onClick={onCancel}>
-                                Discard
-                            </ActionButton>
-                        </>
-                    ) : (
-                        <ActionButton onClick={requestCancel}>
-                            Cancel
-                        </ActionButton>
-                    )
+                    <CancelButton
+                        className="composer_cancel"
+                        onClick={requestCancel}
+                    >
+                        Cancel
+                    </CancelButton>
                 }
             />
 
@@ -598,22 +753,6 @@ const PostComposer = ({
                             editorApiRef={editorApi}
                             belowEditor={
                                 <>
-                                    {tiles.length ? (
-                                        <div className="composer_tiles">
-                                            {tiles.map((tile) => (
-                                                <MediaTile
-                                                    key={tile.key}
-                                                    tile={tile}
-                                                    uploading={submitting}
-                                                    progress={progress}
-                                                    disabled={submitting}
-                                                    onRemove={() =>
-                                                        removeTile(tile.key)
-                                                    }
-                                                />
-                                            ))}
-                                        </div>
-                                    ) : null}{' '}
                                     {linkOpen ? (
                                         <div className="composer_link">
                                             <p className="composer_link_title">
@@ -650,15 +789,23 @@ const PostComposer = ({
                                                         }
                                                     }}
                                                 />
-                                                <button
-                                                    type="button"
+                                                <PrimaryButton
                                                     onClick={addLink}
                                                     disabled={
                                                         !classifyLink(linkValue)
                                                     }
                                                 >
                                                     Add
-                                                </button>
+                                                </PrimaryButton>
+                                                <CancelButton
+                                                    className="composer_link_cancel"
+                                                    onClick={() => {
+                                                        closeLink();
+                                                        editorApi.current?.focus();
+                                                    }}
+                                                >
+                                                    Cancel
+                                                </CancelButton>
                                             </div>
                                             {linkSelection ? (
                                                 <p className="composer_link_hint">
@@ -704,40 +851,66 @@ const PostComposer = ({
                                                 </p>
                                             )}
                                         </div>
-                                    ) : null}{' '}
+                                    ) : null}
+                                    {tiles.length ? (
+                                        <div className="composer_tiles">
+                                            {tiles.map((tile) => (
+                                                <MediaTile
+                                                    key={tile.key}
+                                                    tile={tile}
+                                                    uploading={submitting}
+                                                    progress={progress}
+                                                    disabled={submitting}
+                                                    onRemove={() =>
+                                                        removeTile(tile.key)
+                                                    }
+                                                    onOpen={
+                                                        tile.kind === 'embed'
+                                                            ? undefined
+                                                            : () =>
+                                                                  openViewer(
+                                                                      tile.key,
+                                                                  )
+                                                    }
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : null}
                                 </>
                             }
                             toolbarLeading={
                                 <>
-                                    <button
-                                        type="button"
-                                        className="app-transition"
-                                        aria-label="Add photo or video"
-                                        title="Add photo or video"
-                                        disabled={
-                                            submitting ||
-                                            tiles.length >= MAX_MEDIA_ITEMS
-                                        }
-                                        onClick={() =>
-                                            fileInput.current?.click()
-                                        }
-                                    >
-                                        <MediaInsertIcon />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="app-transition"
-                                        aria-label="Add link"
-                                        title="Add link"
-                                        aria-pressed={linkOpen}
-                                        disabled={submitting}
-                                        onMouseDown={(event) =>
-                                            event.preventDefault()
-                                        }
-                                        onClick={toggleLink}
-                                    >
-                                        <LinkIcon />
-                                    </button>{' '}
+                                    <Tooltip text="Add photo or video">
+                                        <button
+                                            type="button"
+                                            className="app-transition"
+                                            aria-label="Add photo or video"
+                                            disabled={
+                                                submitting ||
+                                                tiles.length >= MAX_MEDIA_ITEMS
+                                            }
+                                            onClick={() =>
+                                                fileInput.current?.click()
+                                            }
+                                        >
+                                            <MediaInsertIcon />
+                                        </button>
+                                    </Tooltip>
+                                    <Tooltip text="Add link">
+                                        <button
+                                            type="button"
+                                            className={`app-transition${linkOpen ? ' text_editor_tool_active' : ''}`}
+                                            aria-label="Add link"
+                                            aria-pressed={linkOpen}
+                                            disabled={submitting}
+                                            onMouseDown={(event) =>
+                                                event.preventDefault()
+                                            }
+                                            onClick={toggleLink}
+                                        >
+                                            <LinkIcon />
+                                        </button>
+                                    </Tooltip>
                                 </>
                             }
                             toolbarTrailing={
@@ -767,11 +940,6 @@ const PostComposer = ({
                 </div>
 
                 <div className="composer_footer">
-                    <span className="composer_hint">
-                        {!verdict.ok && (hasText || tiles.length)
-                            ? verdict.reason
-                            : ''}
-                    </span>
                     <PrimaryButton
                         className="composer_publish"
                         onClick={publish}
@@ -780,8 +948,20 @@ const PostComposer = ({
                     >
                         {mode === 'create' ? 'Publish' : 'Save'}
                     </PrimaryButton>
+                    <span className="composer_hint">
+                        {!verdict.ok && (hasText || tiles.length)
+                            ? verdict.reason
+                            : ''}
+                    </span>
                 </div>
             </div>
+            {viewer ? (
+                <MediaViewer
+                    items={viewer.items}
+                    index={viewer.index}
+                    onClose={closeViewer}
+                />
+            ) : null}
         </div>
     );
 };

@@ -15,9 +15,6 @@ self.addEventListener('push', (event) => {
 
     event.waitUntil(
         (async () => {
-            // Skip the push when the user is already looking at what it is
-            // about: the same page, or the chat list for a chat message,
-            // since the open messenger shows new messages by itself.
             const strip = (path) => path.replace(/\/+$/, '') || '/';
             const target = strip(new URL(url, self.location.origin).pathname);
             const isChat = target.startsWith('/messages/');
@@ -25,9 +22,6 @@ self.addEventListener('push', (event) => {
                 type: 'window',
                 includeUncontrolled: true,
             });
-            // `client.url` is the address the window was opened with and does
-            // not follow in-app navigation, so each window is asked where it
-            // is now. A window that does not answer in time is not counted.
             const states = await Promise.all(
                 windows.map(
                     (client) =>
@@ -56,10 +50,6 @@ self.addEventListener('push', (event) => {
                 return;
             }
 
-            // Showing a notification with a tag that is still on screen only
-            // swaps it in place, and macOS then updates Notification Center
-            // without a new banner. Closing the old one first keeps a single
-            // notification per chat and makes the new one pop up.
             if (data.tag) {
                 const previous = await self.registration.getNotifications({
                     tag: data.tag,
