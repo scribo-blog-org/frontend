@@ -31,7 +31,13 @@ import {
     ServiceChecks,
 } from './LogsFilters';
 import RuntimeLogDetails, { queryString } from './RuntimeLogDetails';
-import { RUNTIME_SERVICES, useLogsToolbar } from './logsToolbar';
+import {
+    LEVEL_OPTIONS,
+    RUNTIME_SERVICES,
+    levelFromValues,
+    levelValues,
+    useLogsToolbar,
+} from './logsToolbar';
 import { formatDuration } from './logFormat';
 import { LEVELS } from './logTypes';
 
@@ -41,14 +47,6 @@ import './RuntimeLogs.scss';
 const PAGE_SIZE = 100;
 const LIVE_MS = 3000;
 const SEARCH_DELAY_MS = 250;
-
-const LEVEL_OPTIONS = [
-    { value: 'all', name: 'All levels' },
-    { value: 'problems', name: 'Problems only' },
-    { value: 'error', name: 'Errors' },
-    { value: 'warn', name: 'Warnings' },
-    { value: 'info', name: 'Info' },
-];
 
 const SERVICE_LABELS: Record<string, string> = {
     backend: 'Backend',
@@ -223,8 +221,7 @@ const RuntimeLogs = () => {
             const params: any = { sources, limit: PAGE_SIZE };
 
             if (levelFilter !== 'all') {
-                params.level =
-                    levelFilter === 'problems' ? 'warn,error' : levelFilter;
+                params.level = levelFilter;
             }
 
             if (search) {
@@ -383,11 +380,12 @@ const RuntimeLogs = () => {
                 </FilterField>
                 <FilterField label="Level">
                     <SearchSelect
+                        multiple
                         options={LEVEL_OPTIONS}
-                        value={levelFilter}
-                        placeholder="Level"
-                        onChange={(value: any) =>
-                            setLevelFilter(value || 'all')
+                        value={levelValues(levelFilter)}
+                        placeholder="All levels"
+                        onChange={(values: string[]) =>
+                            setLevelFilter(levelFromValues(values))
                         }
                     />
                 </FilterField>

@@ -9,6 +9,7 @@ import InputField from '../InputField';
 
 import ArrowDownUpIcon from '../../../assets/svg/chevron-down-up.svg';
 import CloseIcon from '../../../assets/svg/cross-icon.svg';
+import TickIcon from '../../../assets/svg/tick.svg';
 
 const optionLabel = (option: any) => option?.label ?? option?.name ?? '';
 
@@ -36,6 +37,7 @@ const SearchSelect = ({
     clearOnSelect = false,
     onSelect,
     disabled = false,
+    multiple = false,
 }: any) => {
     const setValue = onChange ?? onSetValue;
     const external = typeof onInput === 'function';
@@ -51,9 +53,30 @@ const SearchSelect = ({
     const { mounted: listMounted, visible: listVisible } =
         useOverlayPresence(isOpen);
 
+    const selectedValues: any[] = useMemo(() => {
+        if (!multiple) return [];
+        if (Array.isArray(value)) return value;
+        return value ? [value] : [];
+    }, [multiple, value]);
+
+    const joinedLabels = useMemo(
+        () =>
+            multiple
+                ? options
+                      .filter((option: any) =>
+                          selectedValues.includes(option.value),
+                      )
+                      .map(optionLabel)
+                      .join(', ')
+                : '',
+        [multiple, options, selectedValues],
+    );
+
     const selectedOption = useMemo(() => {
+        if (multiple) return undefined;
+
         return options.find((option: any) => option.value === value);
-    }, [options, value]);
+    }, [multiple, options, value]);
 
     const filteredOptions = useMemo(() => {
         const search = isSearching ? inputValue.trim().toLowerCase() : '';
@@ -67,6 +90,14 @@ const SearchSelect = ({
 
     const resetValue = useCallback(() => {
         const search = inputValue.trim().toLowerCase();
+
+        if (multiple) {
+            setInputValue(joinedLabels);
+            if (external && search) onInput('');
+            setIsSearching(false);
+            setHighlightedIndex(-1);
+            return;
+        }
 
         if (clearOnSelect) {
             setInputValue('');
@@ -104,6 +135,8 @@ const SearchSelect = ({
         external,
         onInput,
         clearOnSelect,
+        multiple,
+        joinedLabels,
     ]);
 
     const closeSelect = useCallback(() => {
@@ -116,16 +149,21 @@ const SearchSelect = ({
     optionsRef.current = options;
 
     useEffect(() => {
-        if (external || clearOnSelect) return;
-        const option = options.find((o: any) => o.value === value);
-        setInputValue(optionLabel(option));
-    }, [external, clearOnSelect, options, value]);
+        if (!multiple || isSearching) return;
+        setInputValue(joinedLabels);
+    }, [multiple, isSearching, joinedLabels]);
 
     useEffect(() => {
-        if (!external || clearOnSelect) return;
+        if (multiple || external || clearOnSelect) return;
+        const option = options.find((o: any) => o.value === value);
+        setInputValue(optionLabel(option));
+    }, [multiple, external, clearOnSelect, options, value]);
+
+    useEffect(() => {
+        if (multiple || !external || clearOnSelect) return;
         const option = optionsRef.current.find((o: any) => o.value === value);
         setInputValue(optionLabel(option));
-    }, [external, clearOnSelect, value]);
+    }, [multiple, external, clearOnSelect, value]);
 
     useEffect(() => {
         const handleClickOutside = (e: any) => {
@@ -184,6 +222,21 @@ const SearchSelect = ({
     };
 
     const handleSelect = (option: any) => {
+        if (multiple) {
+            const next = selectedValues.includes(option.value)
+                ? selectedValues.filter((item: any) => item !== option.value)
+                : [...selectedValues, option.value];
+
+            setValue?.(
+                options
+                    .filter((item: any) => next.includes(item.value))
+                    .map((item: any) => item.value),
+            );
+            setIsSearching(false);
+            onSelect?.(option);
+            return;
+        }
+
         if (clearOnSelect) {
             setInputValue('');
         } else {
@@ -291,7 +344,7 @@ const SearchSelect = ({
                         e.preventDefault();
 
                         if (isOpen) {
-                            setValue?.('');
+                            setValue?.(multiple ? [] : '');
                             setInputValue('');
                             setIsSearching(false);
                         } else {
@@ -327,7 +380,7 @@ const SearchSelect = ({
                                     (optionRefs.current[index] = el)
                                 }
                                 type="button"
-                                className={`search_select_item ${option.className ?? ''} ${highlightedIndex === index ? 'search_select_item_selected' : ''} app-transition`}
+                                className={`search_select_item ${option.className ?? ''} ${highlightedIndex === index ? 'search_select_item_selected' : ''}${multiple && selectedValues.includes(option.value) ? ' search_select_item_active' : ''} app-transition`}
                                 onMouseDown={() => handleSelect(option)}
                             >
                                 {option.render?.() ?? (
@@ -342,6 +395,10 @@ const SearchSelect = ({
                                         <p>{optionLabel(option)}</p>
                                     </>
                                 )}
+                                {multiple &&
+                                selectedValues.includes(option.value) ? (
+                                    <TickIcon className="search_select_item_check" />
+                                ) : null}
                             </button>
                         ))
                     ) : loading ? null : (

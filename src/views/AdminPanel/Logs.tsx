@@ -35,7 +35,12 @@ import {
     UserEntity,
 } from './LogEntities';
 import LogRow from './LogRow';
-import { useLogsToolbar } from './logsToolbar';
+import {
+    LEVEL_OPTIONS,
+    levelFromValues,
+    levelValues,
+    useLogsToolbar,
+} from './logsToolbar';
 import { LOG_TYPES } from './logTypes';
 
 import './Logs.scss';
@@ -56,14 +61,6 @@ const TYPE_OPTIONS = [
         value,
         name: config.title,
     })),
-];
-
-const LEVEL_OPTIONS = [
-    { value: 'all', name: 'All levels' },
-    { value: 'problems', name: 'Problems only' },
-    { value: 'error', name: 'Errors' },
-    { value: 'warn', name: 'Warnings' },
-    { value: 'info', name: 'Info' },
 ];
 
 const LIVE_MS = 3000;
@@ -412,12 +409,13 @@ const LogsPage = () => {
             ) : null}
             <FilterField label="Level">
                 <SearchSelect
+                    multiple
                     options={LEVEL_OPTIONS}
-                    value={levelFilter}
-                    placeholder="Level"
-                    onChange={(value: any) => {
-                        setLevelFilter(value || 'all');
-                    }}
+                    value={levelValues(levelFilter)}
+                    placeholder="All levels"
+                    onChange={(values: string[]) =>
+                        setLevelFilter(levelFromValues(values))
+                    }
                 />
             </FilterField>
             <FilterField label="Event type">

@@ -38,6 +38,28 @@ const LogsToolbarContext = createContext<LogsToolbar | null>(null);
 
 export const LogsToolbarProvider = LogsToolbarContext.Provider;
 
+export const LEVEL_OPTIONS = [
+    { value: 'error', name: 'Errors' },
+    { value: 'warn', name: 'Warnings' },
+    { value: 'info', name: 'Info' },
+];
+
+const LEVEL_NAMES = LEVEL_OPTIONS.map((option) => option.value);
+
+export const levelValues = (level: string) =>
+    level === 'all' ? [] : level.split(',');
+
+export const levelFromValues = (values: string[]) =>
+    values.length ? values.join(',') : 'all';
+
+const levelParam = (value: string | null) => {
+    const picked = (value === 'problems' ? 'error,warn' : (value ?? ''))
+        .split(',')
+        .filter((item) => LEVEL_NAMES.includes(item));
+
+    return levelFromValues(LEVEL_NAMES.filter((item) => picked.includes(item)));
+};
+
 const MOMENT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 
 const momentParam = (value: string | null) =>
@@ -78,8 +100,8 @@ export const useLogsToolbarState = (): LogsToolbar => {
     const [searchText, setSearchText] = useState<string>(
         () => params.get('q') ?? '',
     );
-    const [levelFilter, setLevelFilter] = useState<string>(
-        () => params.get('level') ?? 'all',
+    const [levelFilter, setLevelFilter] = useState<string>(() =>
+        levelParam(params.get('level')),
     );
     const [dateFrom, setDateFrom] = useState<string>(() =>
         momentParam(params.get('from')),
