@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 
 import './SearchSelect.scss';
 import { useOverlayPresence } from '../useOverlayEnter';
@@ -63,6 +70,15 @@ const SearchSelect = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [multiple, valueKey]);
 
+    const [pinnedAtOpen, setPinnedAtOpen] = useState<any[]>([]);
+
+    useLayoutEffect(() => {
+        if (pinned && isOpen) {
+            setPinnedAtOpen(selectedValues);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pinned, isOpen]);
+
     const joinedLabels = useMemo(
         () =>
             multiple
@@ -95,13 +111,13 @@ const SearchSelect = ({
 
         return [
             ...found.filter((option: any) =>
-                selectedValues.includes(option.value),
+                pinnedAtOpen.includes(option.value),
             ),
             ...found.filter(
-                (option: any) => !selectedValues.includes(option.value),
+                (option: any) => !pinnedAtOpen.includes(option.value),
             ),
         ];
-    }, [options, inputValue, external, isSearching, pinned, selectedValues]);
+    }, [options, inputValue, external, isSearching, pinned, pinnedAtOpen]);
 
     const resetValue = useCallback(() => {
         const search = inputValue.trim().toLowerCase();
