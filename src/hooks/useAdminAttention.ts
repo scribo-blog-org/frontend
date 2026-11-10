@@ -10,8 +10,34 @@ export type AdminAttention = {
 
 const NONE: AdminAttention = { support: false, any: false };
 
+let sharedCount = 0;
+let inFlight: Promise<void> | null = null;
+const listeners = new Set<(count: number) => void>();
+
+const publish = (count: number) => {
+    sharedCount = count;
+    listeners.forEach((listener) => listener(count));
+};
+
+const refresh = () => {
+    if (!inFlight) {
+        inFlight = getSupportRequests({ status: 'new', page: 1, limit: 1 })
+            .then((result: any) => {
+                if (result?.status) {
+                    publish(Number(result.data?.pagination?.total) || 0);
+                }
+            })
+            .catch(() => undefined)
+            .finally(() => {
+                inFlight = null;
+            });
+    }
+
+    return inFlight;
+};
+
 export function useAdminAttention(profile: any): AdminAttention {
-    const [newSupport, setNewSupport] = useState(0);
+    const [newSupport, setNewSupport] = useState(sharedCount);
     const canManageSupport = Boolean(
         profile?.permissions?.includes('manage_support'),
     );
@@ -22,32 +48,24 @@ export function useAdminAttention(profile: any): AdminAttention {
             return;
         }
 
-        let cancelled = false;
-
-        const load = () => {
-            getSupportRequests({ status: 'new', page: 1, limit: 1 })
-                .then((result: any) => {
-                    if (!cancelled && result?.status) {
-                        setNewSupport(
-                            Number(result.data?.pagination?.total) || 0,
-                        );
-                    }
-                })
-                .catch(() => undefined);
-        };
-
-        load();
+        listeners.add(setNewSupport);
+        setNewSupport(sharedCount);
+        refresh();
 
         const unsubscribe = socketService.on(
             'admin:support-new',
-            (count: any) => setNewSupport(Number(count) || 0),
+            (count: any) => publish(Number(count) || 0),
         );
-        window.addEventListener('focus', load);
+        const onFocus = () => {
+            refresh();
+        };
+
+        window.addEventListener('focus', onFocus);
 
         return () => {
-            cancelled = true;
+            listeners.delete(setNewSupport);
             unsubscribe();
-            window.removeEventListener('focus', load);
+            window.removeEventListener('focus', onFocus);
         };
     }, [canManageSupport, profile?._id]);
 
