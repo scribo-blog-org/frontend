@@ -207,6 +207,8 @@ const LogsPage = () => {
     };
 
     const activeFilters =
+        Number(Boolean(searchText.trim())) +
+        Number(Boolean(filter.type)) +
         Number(levelFilter !== 'all') +
         Number(typeFilter !== 'all') +
         Number(Boolean(dateFrom)) +

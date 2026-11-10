@@ -355,6 +355,7 @@ const RuntimeLogs = () => {
     const loading = loadedKey !== JSON.stringify(query());
     const keyed = useMemo(() => withKeys(items), [items]);
     const activeFilters =
+        Number(Boolean(searchText.trim())) +
         Number(levelFilter !== 'all') +
         Number(Boolean(dateFrom)) +
         Number(Boolean(dateTo)) +
