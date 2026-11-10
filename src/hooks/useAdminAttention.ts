@@ -56,16 +56,9 @@ export function useAdminAttention(profile: any): AdminAttention {
             'admin:support-new',
             (count: any) => publish(Number(count) || 0),
         );
-        const onFocus = () => {
-            refresh();
-        };
-
-        window.addEventListener('focus', onFocus);
-
         return () => {
             listeners.delete(setNewSupport);
             unsubscribe();
-            window.removeEventListener('focus', onFocus);
         };
     }, [canManageSupport, profile?._id]);
 
