@@ -324,7 +324,7 @@ const SearchSelect = ({
                 ) {
                     e.preventDefault();
                     handleSelect(filteredOptions[0]);
-                } else if (pinned && isOpen && !inputValue.trim()) {
+                } else if (multiple && isOpen && !isSearching) {
                     e.preventDefault();
                     closeSelect();
                 }
