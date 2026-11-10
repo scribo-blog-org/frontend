@@ -983,10 +983,7 @@
 
 .log_timing_segment {
     min-width: 6px;
-    padding: 0;
-    border: 0;
     border-radius: 4px;
-    cursor: pointer;
     @include use-transition();
 
     &_db {
@@ -999,11 +996,6 @@
 
     &_dim {
         opacity: 0.3;
-    }
-
-    &:focus-visible {
-        outline: 2px solid var(--input-outline-active-color);
-        outline-offset: 2px;
     }
 }
 
@@ -1026,6 +1018,15 @@
         color: var(--text-color);
         cursor: pointer;
         @include use-transition();
+
+        @include hover {
+            background: var(--section-item-hover-background-color);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--input-outline-active-color);
+            outline-offset: -2px;
+        }
 
         &_active {
             background: var(--section-item-hover-background-color);
@@ -1084,9 +1085,15 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding-top: 8px;
-    border-top: 1px solid var(--line-color);
+    padding: 5px 8px;
+    margin: 0 -8px;
+    border-radius: 6px;
     font-size: 13px;
+    @include use-transition();
+
+    @include hover {
+        background: var(--section-item-hover-background-color);
+    }
 
     .log_timing_legend_label {
         flex: 1;
