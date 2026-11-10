@@ -136,3 +136,16 @@
 .rt_status_error {
     color: var(--log-error-color);
 }
+
+.rt_query {
+    font-size: 13px;
+    color: var(--light-text-color);
+}
+
+.rt_values {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    word-break: break-all;
+}

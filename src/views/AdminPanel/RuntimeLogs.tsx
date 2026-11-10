@@ -123,7 +123,7 @@ const RuntimeRow = ({
                 <span className="rt_msg">
                     {entry.msg}
                     {queryString(entry.data?.query) ? (
-                        <span className="rt_note">
+                        <span className="rt_query">
                             {queryString(entry.data?.query)}
                         </span>
                     ) : null}

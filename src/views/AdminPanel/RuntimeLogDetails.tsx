@@ -12,7 +12,36 @@ import { formatDuration } from './logFormat';
 import { TimingBreakdown } from './LogTiming';
 import { LEVELS } from './logTypes';
 
-type Row = { label: string; value: string; mono?: boolean };
+type Row = {
+    label: string;
+    value: string;
+    mono?: boolean;
+    list?: string[];
+};
+
+const splitList = (value: string) => {
+    const parts = value.split(',');
+
+    return parts.length > 1 && parts.every((part) => part && !/\s/.test(part))
+        ? parts
+        : null;
+};
+
+const queryRows = (query: unknown): Row[] =>
+    query && typeof query === 'object'
+        ? Object.entries(query as Record<string, string>).map(
+              ([key, value]) => {
+                  const list = splitList(String(value));
+
+                  return {
+                      label: key,
+                      value: String(value),
+                      mono: true,
+                      ...(list ? { list } : {}),
+                  };
+              },
+          )
+        : [];
 
 const SHOWN_ELSEWHERE = new Set([
     'method',
@@ -70,7 +99,15 @@ const Card = ({ rows, children }: { rows?: Row[]; children?: any }) => (
                 <span
                     className={`log_card_value${row.mono ? ' log_card_mono' : ''}`}
                 >
-                    {row.value}
+                    {row.list ? (
+                        <span className="rt_values">
+                            {row.list.map((item, index) => (
+                                <span key={`${item}-${index}`}>{item}</span>
+                            ))}
+                        </span>
+                    ) : (
+                        row.value
+                    )}
                 </span>
             </div>
         ))}
@@ -128,15 +165,6 @@ const RuntimeLogDetails = ({
         ? [
               { label: 'Method', value: String(data.method) },
               { label: 'Path', value: String(data.path), mono: true },
-              ...(queryString(data.query)
-                  ? [
-                        {
-                            label: 'Query',
-                            value: queryString(data.query),
-                            mono: true,
-                        },
-                    ]
-                  : []),
               { label: 'Status', value: String(data.status) },
               ...(duration !== null
                   ? [
@@ -154,6 +182,8 @@ const RuntimeLogDetails = ({
                   : []),
           ]
         : [];
+
+    const query = queryRows(data.query);
 
     const facts: Row[] = [
         { label: 'Service', value: entry.service },
@@ -279,6 +309,15 @@ const RuntimeLogDetails = ({
                         meta={formatMoment(entry.ts)}
                     >
                         <Card rows={request} />
+                    </Step>
+                ) : null}
+
+                {query.length ? (
+                    <Step
+                        title="Query parameters"
+                        meta={`${query.length} ${query.length === 1 ? 'parameter' : 'parameters'}`}
+                    >
+                        <Card rows={query} />
                     </Step>
                 ) : null}
 
