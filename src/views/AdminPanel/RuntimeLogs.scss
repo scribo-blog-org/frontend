@@ -86,7 +86,7 @@
     background: var(--panel-frame-color);
     border-bottom: 1px solid var(--line-color);
 
-    span:nth-child(n + 4):not(:last-child) {
+    span:nth-child(n + 5):not(:last-child) {
         text-align: right;
     }
 
