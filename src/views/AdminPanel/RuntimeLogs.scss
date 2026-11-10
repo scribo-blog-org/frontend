@@ -1,0 +1,138 @@
+@use '../../styles/helpers' as *;
+
+.logs_root {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
+    min-width: 0;
+    gap: var(--space-3);
+
+    &_sources {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        flex-shrink: 0;
+    }
+}
+
+.action_button.logs_source_active {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.action_button.logs_live_active {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.logs_search {
+    position: relative;
+    width: 100%;
+
+    .input_field {
+        padding-right: 36px;
+    }
+
+    &_clear {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        padding: 0;
+        color: var(--light-text-color);
+        transform: translateY(-50%);
+        @include use-transition();
+
+        svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        @include hover {
+            color: var(--text-color);
+        }
+    }
+}
+
+.logs_list {
+    --rt-cols: 8px 104px minmax(0, 1fr) 52px 76px 16px;
+    --rt-head-h: 29px;
+}
+
+.logs_list:has(.rt_head) .logs_day {
+    top: var(--rt-head-h);
+}
+
+.rt_head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: var(--rt-cols);
+    column-gap: var(--space-3);
+    height: var(--rt-head-h);
+    align-items: center;
+    padding: 0 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--light-text-color);
+    background: var(--panel-frame-color);
+    border-bottom: 1px solid var(--line-color);
+
+    span:nth-child(n + 4):not(:last-child) {
+        text-align: right;
+    }
+
+    @include screen() {
+        display: none;
+    }
+}
+
+.log_row.rt_log_row {
+    grid-template-columns: var(--rt-cols);
+}
+
+.rt_time {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 12px;
+    color: var(--light-text-color);
+    white-space: nowrap;
+}
+
+.rt_msg {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+.rt_note {
+    margin-left: var(--space-2);
+    font-size: 13px;
+    color: var(--light-text-color);
+}
+
+.rt_status,
+.rt_took {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--light-text-color);
+    white-space: nowrap;
+}
+
+.rt_status_warn {
+    color: var(--log-update-color);
+}
+
+.rt_status_error {
+    color: var(--log-error-color);
+}

@@ -10,7 +10,6 @@ import {
 } from 'react';
 
 import { AppContext } from '@/providers/AppProviders';
-import { useSearchParams } from '@/navigation';
 
 import { getAllLogs } from '../../api/logs.api';
 import { getUsers } from '../../api/users.api';
@@ -24,10 +23,10 @@ import PauseIcon from '../../assets/svg/pause.svg';
 import RefreshIcon from '../../assets/svg/refresh.svg';
 
 import SearchSelect from '../../components/Ui/SearchSelect';
-import InputField from '../../components/Ui/InputField';
+import LogSearch from './LogSearch';
 import CancelButton from '../../components/Ui/CancelButton';
 import ActionButton from '../../components/Ui/ActionButton';
-import DateTimePicker from '../../components/Ui/DateTimePicker';
+import DateTimeField from '../../components/Ui/DateTimeField';
 import Loading from '../../components/Ui/Loading';
 import InfiniteScroll from '../../components/Ui/InfiniteScroll';
 import { usePagedList } from '../../hooks/usePagedList';
@@ -40,6 +39,7 @@ import {
     UserEntity,
 } from './LogEntities';
 import LogRow from './LogRow';
+import { useLogsToolbar } from './logsToolbar';
 import { LOG_TYPES } from './logTypes';
 
 import './Logs.scss';
@@ -78,18 +78,26 @@ const dayKey = (date: any) => new Date(date).toDateString();
 
 const LogsPage = () => {
     const { showToast } = useContext(AppContext);
-    const [searchParams] = useSearchParams();
     const [users, setUsers] = useState<any[]>([]);
     const [posts, setPosts] = useState<any[]>([]);
-    const [filter, setFilter] = useState<any>(() => {
-        const userId = searchParams.get('user');
-
-        return userId ? { type: 'user', id: userId } : { type: null, id: null };
-    });
-    const [typeFilter, setTypeFilter] = useState<any>('all');
-    const [levelFilter, setLevelFilter] = useState<any>('all');
-    const [dateFrom, setDateFrom] = useState<any>('');
-    const [dateTo, setDateTo] = useState<any>('');
+    const {
+        entity,
+        setEntity,
+        typeFilter,
+        setTypeFilter,
+        levelFilter,
+        setLevelFilter,
+        dateFrom,
+        setDateFrom,
+        dateTo,
+        setDateTo,
+        searchText,
+        setSearchText,
+        live,
+        setLive,
+    } = useLogsToolbar();
+    const filter = entity;
+    const setFilter = setEntity;
     const rootRef = useRef<any>(null);
     const [expanded, setExpanded] = useState<any>(() => new Set());
     const toggle = (id: any) =>
@@ -105,8 +113,7 @@ const LogsPage = () => {
             return next;
         });
 
-    const [searchText, setSearchText] = useState<any>('');
-    const [search, setSearch] = useState<any>('');
+    const [search, setSearch] = useState<any>(searchText.trim());
 
     useEffect(() => {
         const timer = setTimeout(
@@ -200,7 +207,6 @@ const LogsPage = () => {
     const [filtersOpen, setFiltersOpen] = useState<any>(false);
     const [filtersSettled, setFiltersSettled] = useState<any>(false);
     const filtersTimer = useRef<any>(0);
-    const [live, setLive] = useState<any>(false);
     const [reloading, setReloading] = useState<any>(false);
     const refreshFeed = feed.refresh;
 
@@ -350,7 +356,7 @@ const LogsPage = () => {
             <ActionButton
                 size="lg"
                 className={live ? 'logs_live_active' : ''}
-                onClick={() => setLive((value: any) => !value)}
+                onClick={() => setLive((value: boolean) => !value)}
             >
                 {live ? <PauseIcon /> : <PlayIcon />}
                 Live
@@ -441,13 +447,10 @@ const LogsPage = () => {
                         </div>
                     ) : null}
                     <div className="logs_toolbar_search">
-                        <InputField
-                            type="text"
+                        <LogSearch
                             value={searchText}
+                            onChange={setSearchText}
                             placeholder="Search by message, user, route, error, IP or request id"
-                            onChange={(event: any) =>
-                                setSearchText(event.target.value)
-                            }
                             length={100}
                         />
                     </div>
@@ -499,16 +502,18 @@ const LogsPage = () => {
                             </div>
 
                             <div className="logs_toolbar_range">
-                                <DateTimePicker
+                                <DateTimeField
                                     label="From"
                                     value={dateFrom}
                                     max={dateTo || undefined}
+                                    defaultTime="00:00"
                                     onChange={setDateFrom}
                                 />
-                                <DateTimePicker
+                                <DateTimeField
                                     label="To"
                                     value={dateTo}
                                     min={dateFrom || undefined}
+                                    defaultTime="23:59"
                                     onChange={setDateTo}
                                 />
                             </div>

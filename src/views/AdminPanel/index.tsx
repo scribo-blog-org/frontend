@@ -18,7 +18,7 @@ import { Pill } from '../../components/Ui';
 import { useAdminAttention } from '../../hooks/useAdminAttention';
 import TabsPage from '../../components/TabsPage/index';
 
-import LogsPage from './Logs';
+import LogsPage from './LogsPage';
 import AdminsPage from './Admins';
 import UsersPage from './Users';
 import RequestsPage from './Requests';
