@@ -92,11 +92,12 @@ const RuntimeLogDetails = ({
     const isRequest = Boolean(data.method && data.path && data.status);
     const requestId = data.request_id ? String(data.request_id) : null;
     const status = Number(data.status);
+    const duration = data.total_ms != null ? Number(data.total_ms) : null;
     const timing =
-        data.total_ms != null
+        duration !== null && data.db_ms != null
             ? {
-                  total: Number(data.total_ms),
-                  db: Number(data.db_ms || 0),
+                  total: duration,
+                  db: Number(data.db_ms),
                   queries: Number(data.db_queries || 0),
               }
             : null;
@@ -115,11 +116,11 @@ const RuntimeLogDetails = ({
               { label: 'Method', value: String(data.method) },
               { label: 'Path', value: String(data.path), mono: true },
               { label: 'Status', value: String(data.status) },
-              ...(timing
+              ...(duration !== null
                   ? [
                         {
                             label: 'Duration',
-                            value: formatDuration(timing.total),
+                            value: formatDuration(duration),
                         },
                     ]
                   : []),
