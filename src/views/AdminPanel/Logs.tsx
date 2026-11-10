@@ -55,13 +55,10 @@ const ENTITY_FILTERS = [
     'request',
 ];
 
-const TYPE_OPTIONS = [
-    { value: 'all', name: 'All events' },
-    ...Object.entries(LOG_TYPES).map(([value, config]: any) => ({
-        value,
-        name: config.title,
-    })),
-];
+const TYPE_OPTIONS = Object.entries(LOG_TYPES).map(([value, config]: any) => ({
+    value,
+    name: config.title,
+}));
 
 const LIVE_MS = 3000;
 const SEARCH_DELAY_MS = 250;
@@ -420,12 +417,13 @@ const LogsPage = () => {
             </FilterField>
             <FilterField label="Event type">
                 <SearchSelect
+                    multiple
                     options={TYPE_OPTIONS}
-                    value={typeFilter}
-                    placeholder="Event type"
-                    onChange={(value: any) => {
-                        setTypeFilter(value || 'all');
-                    }}
+                    value={levelValues(typeFilter)}
+                    placeholder="All events"
+                    onChange={(values: string[]) =>
+                        setTypeFilter(levelFromValues(values))
+                    }
                 />
             </FilterField>
             <FilterField label="Period">
