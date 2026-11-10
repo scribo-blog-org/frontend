@@ -68,6 +68,10 @@
 
 .logs_list:has(.rt_head) .logs_day {
     top: var(--rt-head-h);
+
+    @include screen() {
+        top: 0;
+    }
 }
 
 .rt_head {
