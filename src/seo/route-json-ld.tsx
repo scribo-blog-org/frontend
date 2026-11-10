@@ -10,6 +10,8 @@ import {
     absoluteUrl,
 } from '@/seo/site';
 import { mediaUrl } from '@/utils/image';
+import { postDisplayTitle } from '@/utils/postText';
+import { firstMediaThumbnail } from '@/utils/postMedia';
 
 function asString(value: unknown) {
     return typeof value === 'string' ? value : '';
@@ -37,10 +39,10 @@ async function postJsonLd(id: string) {
         return null;
     }
 
-    const title = asString(article.title) || 'Article';
+    const title = postDisplayTitle(article);
     const description =
         plainTextExcerpt(asString(article.content_text)) || title;
-    const featured = asString(article.featured_image);
+    const featured = firstMediaThumbnail(article);
     const image = featured ? mediaUrl(featured) : absoluteUrl(DEFAULT_OG_IMAGE);
     const published = isoDate(article.created_date);
     const url = absoluteUrl(`/posts/${String(article._id)}`);
@@ -49,11 +51,6 @@ async function postJsonLd(id: string) {
             ? (article.author as Record<string, unknown>)
             : null;
     const authorName = asString(authorRecord?.nick_name);
-    const categoryRecord =
-        article.category && typeof article.category === 'object'
-            ? (article.category as Record<string, unknown>)
-            : null;
-    const category = asString(categoryRecord?.name);
 
     return {
         '@context': 'https://schema.org',
@@ -67,7 +64,6 @@ async function postJsonLd(id: string) {
         ...(published
             ? { datePublished: published, dateModified: published }
             : {}),
-        ...(category ? { articleSection: category } : {}),
         author: authorName
             ? {
                   '@type': 'Person',

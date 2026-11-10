@@ -1,0 +1,319 @@
+@use '../../styles/helpers' as *;
+
+.logs_root {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0%;
+    min-height: 0;
+    min-width: 0;
+    gap: var(--space-3);
+
+    &_sources {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        flex-shrink: 0;
+    }
+}
+
+.action_button.logs_source_active {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.action_button.logs_live_active {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.logs_search {
+    position: relative;
+    width: 100%;
+
+    .input_field {
+        padding-right: 36px;
+    }
+
+    &_clear {
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        color: var(--light-text-color);
+        border-radius: var(--radius-sm);
+        transform: translateY(-50%);
+        @include use-transition();
+
+        svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        @include hover {
+            color: var(--text-color);
+            background: var(--section-item-hover-background-color);
+        }
+    }
+}
+
+.logs_list {
+    --rt-cols: 8px 104px 72px minmax(0, 1fr) 52px 76px 16px;
+    --rt-head-h: 29px;
+}
+
+.logs_list:has(.rt_head) .logs_day {
+    top: var(--rt-head-h);
+
+    @include screen() {
+        top: 0;
+    }
+}
+
+.rt_head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: var(--rt-cols);
+    column-gap: var(--space-3);
+    height: var(--rt-head-h);
+    align-items: center;
+    padding: 0 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--light-text-color);
+    background: var(--panel-frame-color);
+    border-bottom: 1px solid var(--line-color);
+
+    span:nth-child(n + 5):not(:last-child) {
+        text-align: right;
+    }
+
+    @include screen() {
+        display: none;
+    }
+}
+
+.log_row.rt_log_row {
+    grid-template-columns: var(--rt-cols);
+}
+
+.rt_time {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 12px;
+    color: var(--light-text-color);
+    white-space: nowrap;
+}
+
+.rt_msg {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+.rt_note {
+    margin-left: var(--space-2);
+    font-size: 13px;
+    color: var(--light-text-color);
+}
+
+.rt_status,
+.rt_took {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--light-text-color);
+    white-space: nowrap;
+}
+
+.rt_status_warn {
+    color: var(--log-update-color);
+}
+
+.rt_status_error {
+    color: var(--log-error-color);
+}
+
+.rt_query {
+    font-size: 13px;
+    color: var(--light-text-color);
+}
+
+.rt_values {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    word-break: break-all;
+}
+
+.logs_filters {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 280px;
+    gap: var(--space-3);
+    min-width: 0;
+    overflow-y: auto;
+    padding-right: 2px;
+
+    @include screen() {
+        flex-basis: auto;
+        overflow: visible;
+    }
+
+    .tabs {
+        margin-bottom: 0;
+    }
+
+    &_toggle {
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-2);
+        height: var(--control-height);
+        padding: 0 12px;
+        font-size: 14px;
+        color: var(--text-color);
+        background: var(--input-background-color);
+        border: 1px solid var(--input-outline-color);
+        border-radius: var(--radius-sm);
+
+        svg {
+            width: 16px;
+            height: 16px;
+            margin-left: auto;
+            transition: transform 0.25s ease;
+        }
+
+        @include screen() {
+            display: flex;
+        }
+    }
+
+    &_open &_toggle svg {
+        transform: rotate(180deg);
+    }
+
+    &_count {
+        padding: 1px 7px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #fff;
+        background: var(--accent-blue);
+        border-radius: 999px;
+    }
+
+    &_body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+
+        @include screen() {
+            display: none;
+        }
+    }
+
+    &_open &_body {
+        @include screen() {
+            display: flex;
+        }
+    }
+}
+
+.logs_field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+
+    &_label {
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--light-text-color);
+    }
+}
+
+.logs_actions {
+    display: flex;
+    gap: var(--space-2);
+
+    > :first-child {
+        flex: 1 1 auto;
+    }
+}
+
+.logs_checks {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.logs_check {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    font-size: 14px;
+    color: var(--text-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    user-select: none;
+    @include use-transition();
+
+    @include hover {
+        background: var(--section-item-hover-background-color);
+    }
+
+    input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    &_box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        color: transparent;
+        border: 1px solid var(--input-outline-color);
+        border-radius: 4px;
+        background: var(--input-background-color);
+        @include use-transition();
+
+        svg {
+            width: 12px;
+            height: 12px;
+        }
+    }
+
+    &_checked &_box {
+        color: var(--input-background-color);
+        background: var(--text-color);
+        border-color: var(--text-color);
+    }
+
+    input:focus-visible + &_box {
+        outline: 2px solid var(--input-outline-active-color);
+        outline-offset: 2px;
+    }
+}
+.rt_source {
+    font-size: 12px;
+    color: var(--light-text-color);
+    white-space: nowrap;
+}

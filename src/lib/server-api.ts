@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { headers } from 'next/headers';
 
 import { apiUrl } from '@/config';
 import { decodeRouteParam } from '@/utils/routeParam';
@@ -37,6 +38,20 @@ export function buildQuery(query?: Record<string, QueryValue>) {
         .join('&');
 }
 
+async function traceHeaders(): Promise<Record<string, string>> {
+    try {
+        const id = (await headers()).get('x-request-id');
+
+        return id ? { 'X-Trace-Id': id } : {};
+    } catch (error) {
+        if ((error as { digest?: unknown })?.digest) {
+            throw error;
+        }
+
+        return {};
+    }
+}
+
 export async function serverGet<T>(path: string): Promise<ApiResult<T | null>> {
     if (!apiUrl()) {
         return {
@@ -48,7 +63,7 @@ export async function serverGet<T>(path: string): Promise<ApiResult<T | null>> {
 
     try {
         const response = await fetch(`${apiUrl()}${path}`, {
-            headers: { Accept: 'application/json' },
+            headers: { Accept: 'application/json', ...(await traceHeaders()) },
             cache: 'no-store',
         });
 
@@ -88,7 +103,7 @@ export async function fetchUserByNick(nick: string) {
 }
 
 export const loadPublicPost = cache((id: string) =>
-    fetchPostById(id, { expand: 'author,category' }),
+    fetchPostById(id, { expand: 'author' }),
 );
 
 export const loadPublicProfile = cache((nick: string) => fetchUserByNick(nick));

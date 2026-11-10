@@ -8,7 +8,7 @@ import { hashtagSearchPath } from '../../utils/hashtags';
 
 import Tabs from '../../components/Ui/Tabs';
 import SwitchBar from '../../components/Ui/SwitchBar';
-import DateTimePicker from '../../components/Ui/DateTimePicker';
+import DateTimeField from '../../components/Ui/DateTimeField';
 import Loading from '../../components/Ui/Loading';
 
 import {
@@ -62,13 +62,6 @@ const placeRows = (items: any[] = []) =>
         label: item.label,
         count: item.count,
         valueLabel: `${formatNumber(item.count)} · ${formatPercent(item.share)}`,
-    }));
-
-const categoryRows = (items: any[] = []) =>
-    items.map((item: any) => ({
-        key: String(item._id),
-        label: item.name,
-        count: item.count,
     }));
 
 const DashboardPage = () => {
@@ -236,8 +229,8 @@ const DashboardPage = () => {
                             onChange={pickPeriod}
                         />
                         <div className="analytics_period_dates">
-                            <DateTimePicker
-                                type="date"
+                            <DateTimeField
+                                withTime={false}
                                 value={from}
                                 min={earliest}
                                 max={to || today}
@@ -245,8 +238,9 @@ const DashboardPage = () => {
                                 onChange={pickFrom}
                             />
                             <span className="analytics_period_dash">—</span>
-                            <DateTimePicker
-                                type="date"
+                            <DateTimeField
+                                withTime={false}
+                                align="right"
                                 value={to}
                                 min={from || earliest}
                                 max={today}
@@ -339,13 +333,6 @@ const DashboardPage = () => {
                                     previous={content.likes_prev}
                                 />
                             </div>
-                            <Block title="New posts by category">
-                                <RankedBars
-                                    items={categoryRows(content.by_category)}
-                                    wideLabel
-                                    empty="No posts were published in this period"
-                                />
-                            </Block>
                         </Group>
 
                         <Group
@@ -479,19 +466,6 @@ const DashboardPage = () => {
                             </Block>
                         </Group>
                     </div>
-
-                    <Group
-                        title="Posts by category"
-                        hint={`${formatNumber(overview.categories)} categories`}
-                    >
-                        <Block>
-                            <RankedBars
-                                items={categoryRows(overview.by_category)}
-                                wideLabel
-                                empty="No posts yet"
-                            />
-                        </Block>
-                    </Group>
                 </div>
             )}
         </div>

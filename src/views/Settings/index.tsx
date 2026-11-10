@@ -20,6 +20,9 @@ import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import { format_back, format_date_time } from '../../utils/format';
 
+import PageHeader from '../../components/PageHeader';
+import SideNav, { SideNavList } from '../../components/SideNav';
+import SplitLayout from '../../layouts/SplitLayout';
 import InputField from '../../components/Ui/InputField/index';
 import DropFile from '../../components/Ui/DropFile/index';
 import Toggle from '../../components/Ui/Toggle/index';
@@ -45,6 +48,19 @@ const Settings = () => {
         setThemeMode,
     } = useContext(AppContext);
     const [initialized, setInitialized] = useState<any>(false);
+    const [activeKey, setActiveKey] = useState<string>('profile');
+
+    useEffect(() => {
+        const fromHash = window.location.hash.replace('#', '');
+        if (['profile', 'preferences', 'security'].includes(fromHash)) {
+            setActiveKey(fromHash);
+        }
+    }, []);
+
+    const selectSection = (key: string) => {
+        setActiveKey(key);
+        window.history.replaceState(null, '', '#' + key);
+    };
     const [pushOn, setPushOn] = useState<boolean>(false);
     const [pushBusy, setPushBusy] = useState<boolean>(false);
     const [pushSupportState, setPushSupportState] =
@@ -578,592 +594,517 @@ const Settings = () => {
         setChangingPassword(false);
     };
 
-    return (
-        <div className="settings">
-            <div className="settings_sections">
-                {[
-                    {
-                        title: 'Profile',
-                        key: 'profile',
-                        content: (
-                            <form
-                                className="settings_panel settings_panel_profile"
-                                onSubmit={(event: any) => {
-                                    event.preventDefault();
-                                    save_settings();
-                                }}
+    const sectionItems: any[] = [
+        {
+            title: 'Profile',
+            hint: 'Avatar, name, privacy',
+            key: 'profile',
+            content: (
+                <form
+                    className="settings_panel settings_panel_profile"
+                    onSubmit={(event: any) => {
+                        event.preventDefault();
+                        save_settings();
+                    }}
+                >
+                    <div className="settings_stack">
+                        <div className="settings_group">
+                            <p className="kicker">Account</p>
+                            <div className="settings_avatar">
+                                <DropFile
+                                    value={fields.userAvatar}
+                                    setValue={(file: any) =>
+                                        setFields((prev: any) => ({
+                                            ...prev,
+                                            userAvatar: file,
+                                        }))
+                                    }
+                                    background={
+                                        <AvatarIcon className="drop_file_info_avatar_icon app-transition" />
+                                    }
+                                    dropFileType={'image/*'}
+                                    fileTypes={
+                                        'SVG, PNG, JPEG, JPG, and others'
+                                    }
+                                    errors={errors?.userAvatar}
+                                    addNewErrors={add_errors_to_image}
+                                    clearErrors={clear_errors_from_image}
+                                    onRemove={handleAvatarRemove}
+                                    previewUrl={profile?.avatar}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            {profile?.email ? (
+                                <Field title="Email">
+                                    <InputField
+                                        type="email"
+                                        value={profile.email}
+                                        confirmed={Boolean(profile.is_verified)}
+                                        onChange={() => {}}
+                                        disabled={isLoading}
+                                    />
+                                </Field>
+                            ) : null}
+                            <Field
+                                error={errors?.userNickName ?? null}
+                                title={'Username'}
                             >
-                                <div className="settings_stack">
-                                    <div className="settings_group">
-                                        <p className="kicker">Account</p>
-                                        <div className="settings_avatar">
-                                            <DropFile
-                                                value={fields.userAvatar}
-                                                setValue={(file: any) =>
-                                                    setFields((prev: any) => ({
-                                                        ...prev,
-                                                        userAvatar: file,
-                                                    }))
-                                                }
-                                                background={
-                                                    <AvatarIcon className="drop_file_info_avatar_icon app-transition" />
-                                                }
-                                                dropFileType={'image/*'}
-                                                fileTypes={
-                                                    'SVG, PNG, JPEG, JPG, and others'
-                                                }
-                                                errors={errors?.userAvatar}
-                                                addNewErrors={
-                                                    add_errors_to_image
-                                                }
-                                                clearErrors={
-                                                    clear_errors_from_image
-                                                }
-                                                onRemove={handleAvatarRemove}
-                                                previewUrl={profile?.avatar}
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                        {profile?.email ? (
-                                            <Field title="Email">
-                                                <InputField
-                                                    type="email"
-                                                    value={profile.email}
-                                                    confirmed={Boolean(
-                                                        profile.is_verified,
-                                                    )}
-                                                    onChange={() => {}}
-                                                    disabled={isLoading}
-                                                />
-                                            </Field>
-                                        ) : null}
-                                        <Field
-                                            error={errors?.userNickName ?? null}
-                                            title={'Username'}
-                                        >
-                                            <InputField
-                                                className={`user_name`}
-                                                type="text"
-                                                onChange={(e: any) =>
-                                                    setFields({
-                                                        ...fields,
-                                                        userNickName:
-                                                            e.target.value,
-                                                    })
-                                                }
-                                                onFocus={() =>
-                                                    handleFocus('userNickName')
-                                                }
-                                                placeholder="User Name"
-                                                value={fields?.userNickName}
-                                                error={
-                                                    errors?.userNickName ?? null
-                                                }
-                                                length={FIELD_LIMITS.nick.max}
-                                                disabled={isLoading}
-                                            />
-                                        </Field>
-                                        <Field
-                                            error={
-                                                errors?.userDescription ?? null
-                                            }
-                                            title={'Description'}
-                                        >
-                                            <InputField
-                                                className={`description`}
-                                                type="text"
-                                                isMultiline={true}
-                                                length={
-                                                    FIELD_LIMITS.description.max
-                                                }
-                                                rows={3}
-                                                onChange={(e: any) =>
-                                                    setFields({
-                                                        ...fields,
-                                                        userDescription:
-                                                            e.target.value,
-                                                    })
-                                                }
-                                                onFocus={() =>
-                                                    handleFocus(
-                                                        'userDescription',
-                                                    )
-                                                }
-                                                placeholder="Description of profile"
-                                                value={fields?.userDescription}
-                                                error={
-                                                    errors?.userDescription ??
-                                                    null
-                                                }
-                                                disabled={isLoading}
-                                            />
-                                        </Field>
-                                    </div>
-                                    <div className="settings_group">
-                                        <p className="kicker">Privacy</p>
-                                        <div className="settings_switch">
-                                            <div className="settings_switch_copy">
-                                                <p className="settings_switch_title">
-                                                    Show email
-                                                </p>
-                                                <p className="settings_switch_hint">
-                                                    The address will be visible
-                                                    on the profile page
-                                                </p>
-                                            </div>
-                                            <Toggle
-                                                checked={fields.isEmailPublic}
-                                                onChange={set_email_visibility}
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                        <div className="settings_switch">
-                                            <div className="settings_switch_copy">
-                                                <p className="settings_switch_title">
-                                                    Public saved posts
-                                                </p>
-                                                <p className="settings_switch_hint">
-                                                    Visitors of the profile will
-                                                    see saved posts
-                                                </p>
-                                            </div>
-                                            <Toggle
-                                                checked={
-                                                    fields.isSavedPostsPublic
-                                                }
-                                                onChange={
-                                                    set_saved_posts_visibility
-                                                }
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                        <div className="settings_switch">
-                                            <div className="settings_switch_copy">
-                                                <p className="settings_switch_title">
-                                                    Show last activity
-                                                </p>
-                                                <p className="settings_switch_hint">
-                                                    The date and time will be
-                                                    visible on the profile page
-                                                </p>
-                                            </div>
-                                            <Toggle
-                                                checked={
-                                                    fields.isLastActivityPublic
-                                                }
-                                                onChange={
-                                                    set_last_activity_visibility
-                                                }
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="settings_panel_actions">
-                                        <PrimaryButton
-                                            type="submit"
-                                            isLoading={isLoading}
-                                        >
-                                            Save
-                                        </PrimaryButton>
-                                    </div>
+                                <InputField
+                                    className={`user_name`}
+                                    type="text"
+                                    onChange={(e: any) =>
+                                        setFields({
+                                            ...fields,
+                                            userNickName: e.target.value,
+                                        })
+                                    }
+                                    onFocus={() => handleFocus('userNickName')}
+                                    placeholder="User Name"
+                                    value={fields?.userNickName}
+                                    error={errors?.userNickName ?? null}
+                                    length={FIELD_LIMITS.nick.max}
+                                    disabled={isLoading}
+                                />
+                            </Field>
+                            <Field
+                                error={errors?.userDescription ?? null}
+                                title={'Description'}
+                            >
+                                <InputField
+                                    className={`description`}
+                                    type="text"
+                                    isMultiline={true}
+                                    length={FIELD_LIMITS.description.max}
+                                    rows={3}
+                                    onChange={(e: any) =>
+                                        setFields({
+                                            ...fields,
+                                            userDescription: e.target.value,
+                                        })
+                                    }
+                                    onFocus={() =>
+                                        handleFocus('userDescription')
+                                    }
+                                    placeholder="Description of profile"
+                                    value={fields?.userDescription}
+                                    error={errors?.userDescription ?? null}
+                                    disabled={isLoading}
+                                />
+                            </Field>
+                        </div>
+                        <div className="settings_group">
+                            <p className="kicker">Privacy</p>
+                            <div className="settings_switch">
+                                <div className="settings_switch_copy">
+                                    <p className="settings_switch_title">
+                                        Show email
+                                    </p>
+                                    <p className="settings_switch_hint">
+                                        The address will be visible on the
+                                        profile page
+                                    </p>
                                 </div>
-                            </form>
-                        ),
-                    },
-                    {
-                        title: 'Preferences',
-                        key: 'preferences',
-                        content: (
-                            <div className="settings_panel">
-                                <div className="settings_stack">
-                                    <div className="settings_group">
-                                        <p className="kicker">Appearance</p>
-                                        <ThemePicker
-                                            value={themeMode}
-                                            onChange={setThemeMode}
-                                        />
+                                <Toggle
+                                    checked={fields.isEmailPublic}
+                                    onChange={set_email_visibility}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <div className="settings_switch">
+                                <div className="settings_switch_copy">
+                                    <p className="settings_switch_title">
+                                        Public saved posts
+                                    </p>
+                                    <p className="settings_switch_hint">
+                                        Visitors of the profile will see saved
+                                        posts
+                                    </p>
+                                </div>
+                                <Toggle
+                                    checked={fields.isSavedPostsPublic}
+                                    onChange={set_saved_posts_visibility}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            <div className="settings_switch">
+                                <div className="settings_switch_copy">
+                                    <p className="settings_switch_title">
+                                        Show last activity
+                                    </p>
+                                    <p className="settings_switch_hint">
+                                        The date and time will be visible on the
+                                        profile page
+                                    </p>
+                                </div>
+                                <Toggle
+                                    checked={fields.isLastActivityPublic}
+                                    onChange={set_last_activity_visibility}
+                                    disabled={isLoading}
+                                />
+                            </div>
+                        </div>
+                        <div className="settings_panel_actions">
+                            <PrimaryButton type="submit" isLoading={isLoading}>
+                                Save
+                            </PrimaryButton>
+                        </div>
+                    </div>
+                </form>
+            ),
+        },
+        {
+            title: 'Preferences',
+            hint: 'Theme, notifications, app',
+            key: 'preferences',
+            content: (
+                <div className="settings_panel">
+                    <div className="settings_stack">
+                        <div className="settings_group">
+                            <p className="kicker">Appearance</p>
+                            <ThemePicker
+                                value={themeMode}
+                                onChange={setThemeMode}
+                            />
+                        </div>
+                        <div className="settings_group">
+                            <p className="kicker">Notifications</p>
+                            <div className="settings_switch">
+                                <div className="settings_switch_copy">
+                                    <p className="settings_switch_title">
+                                        Push notifications
+                                    </p>
+                                    <p className="settings_switch_hint">
+                                        {pushSupportState === 'needs-install'
+                                            ? 'On iPhone, add Scribo to the Home Screen first, then open it from there'
+                                            : pushSupportState === 'unsupported'
+                                              ? 'This browser does not support notifications'
+                                              : pushDenied
+                                                ? 'Blocked in the browser, allow notifications for this site in its settings'
+                                                : 'New messages and activity on this device, even when Scribo is closed'}
+                                    </p>
+                                </div>
+                                <Toggle
+                                    checked={pushOn}
+                                    onChange={
+                                        pushSupportState === 'supported' &&
+                                        !pushDenied &&
+                                        !pushBusy
+                                            ? togglePush
+                                            : () => undefined
+                                    }
+                                />
+                            </div>
+                            {pushSupportState === 'supported' && pushDenied && (
+                                <div className="settings_push_blocked">
+                                    <p className="settings_push_blocked_title">
+                                        Notifications are blocked for this site
+                                    </p>
+                                    <ol className="settings_push_blocked_steps">
+                                        <li>
+                                            Click the icon left of the address
+                                            bar (lock or settings)
+                                        </li>
+                                        <li>Set Notifications to Allow</li>
+                                        <li>
+                                            Come back here, this page updates on
+                                            its own
+                                        </li>
+                                    </ol>
+                                    <ActionButton
+                                        type="button"
+                                        isLoading={pushBusy}
+                                        onClick={() => void retryPush()}
+                                    >
+                                        Enable notifications
+                                    </ActionButton>
+                                </div>
+                            )}
+                        </div>
+                        {installMode === 'prompt' || installMode === 'ios' ? (
+                            <div className="settings_group">
+                                <p className="kicker">App</p>
+                                <div className="settings_switch">
+                                    <div className="settings_switch_copy">
+                                        <p className="settings_switch_title">
+                                            Install the app
+                                        </p>
+                                        <p className="settings_switch_hint">
+                                            {installMode === 'ios'
+                                                ? 'Tap Share in Safari, choose Add to Home Screen, then open Scribo from the new icon. iPhone only offers notifications to an installed app'
+                                                : 'Open Scribo in its own window, right from your home screen or desktop'}
+                                        </p>
                                     </div>
-                                    <div className="settings_group">
-                                        <p className="kicker">Notifications</p>
-                                        <div className="settings_switch">
-                                            <div className="settings_switch_copy">
-                                                <p className="settings_switch_title">
-                                                    Push notifications
-                                                </p>
-                                                <p className="settings_switch_hint">
-                                                    {pushSupportState ===
-                                                    'needs-install'
-                                                        ? 'On iPhone, add Scribo to the Home Screen first, then open it from there'
-                                                        : pushSupportState ===
-                                                            'unsupported'
-                                                          ? 'This browser does not support notifications'
-                                                          : pushDenied
-                                                            ? 'Blocked in the browser, allow notifications for this site in its settings'
-                                                            : 'New messages and activity on this device, even when Scribo is closed'}
-                                                </p>
-                                            </div>
-                                            <Toggle
-                                                checked={pushOn}
-                                                onChange={
-                                                    pushSupportState ===
-                                                        'supported' &&
-                                                    !pushDenied &&
-                                                    !pushBusy
-                                                        ? togglePush
-                                                        : () => undefined
-                                                }
-                                            />
-                                        </div>
-                                        {pushSupportState === 'supported' &&
-                                            pushDenied && (
-                                                <div className="settings_push_blocked">
-                                                    <p className="settings_push_blocked_title">
-                                                        Notifications are
-                                                        blocked for this site
-                                                    </p>
-                                                    <ol className="settings_push_blocked_steps">
-                                                        <li>
-                                                            Click the icon left
-                                                            of the address bar
-                                                            (lock or settings)
-                                                        </li>
-                                                        <li>
-                                                            Set Notifications to
-                                                            Allow
-                                                        </li>
-                                                        <li>
-                                                            Come back here, this
-                                                            page updates on its
-                                                            own
-                                                        </li>
-                                                    </ol>
-                                                    <ActionButton
-                                                        type="button"
-                                                        isLoading={pushBusy}
-                                                        onClick={() =>
-                                                            void retryPush()
-                                                        }
-                                                    >
-                                                        Enable notifications
-                                                    </ActionButton>
-                                                </div>
-                                            )}
-                                    </div>
-                                    {installMode === 'prompt' ||
-                                    installMode === 'ios' ? (
-                                        <div className="settings_group">
-                                            <p className="kicker">App</p>
-                                            <div className="settings_switch">
-                                                <div className="settings_switch_copy">
-                                                    <p className="settings_switch_title">
-                                                        Install the app
-                                                    </p>
-                                                    <p className="settings_switch_hint">
-                                                        {installMode === 'ios'
-                                                            ? 'Tap Share in Safari, choose Add to Home Screen, then open Scribo from the new icon. iPhone only offers notifications to an installed app'
-                                                            : 'Open Scribo in its own window, right from your home screen or desktop'}
-                                                    </p>
-                                                </div>
-                                                {installMode === 'prompt' ? (
-                                                    <ActionButton
-                                                        type="button"
-                                                        onClick={() =>
-                                                            void install()
-                                                        }
-                                                    >
-                                                        Install
-                                                    </ActionButton>
-                                                ) : null}
-                                            </div>
-                                        </div>
+                                    {installMode === 'prompt' ? (
+                                        <ActionButton
+                                            type="button"
+                                            onClick={() => void install()}
+                                        >
+                                            Install
+                                        </ActionButton>
                                     ) : null}
                                 </div>
                             </div>
-                        ),
-                    },
-                    {
-                        title: 'Security',
-                        key: 'security',
-                        content: (
-                            <div className="settings_panel">
-                                <div className="settings_stack">
-                                    <div className="settings_group">
-                                        <p className="kicker">Password</p>
-                                        {changingPassword ? (
-                                            <form
-                                                className="settings_password"
-                                                onSubmit={(event: any) => {
-                                                    event.preventDefault();
-                                                    save_password();
-                                                }}
-                                            >
-                                                <Field
-                                                    error={
-                                                        errors?.currentPassword ??
-                                                        null
-                                                    }
-                                                    title={'Current password'}
-                                                >
-                                                    <InputField
-                                                        type="password"
-                                                        autoComplete="current-password"
-                                                        length={
-                                                            FIELD_LIMITS
-                                                                .password.max
-                                                        }
-                                                        onChange={(e: any) =>
-                                                            setPasswordFields({
-                                                                ...passwordFields,
-                                                                currentPassword:
-                                                                    e.target
-                                                                        .value,
-                                                            })
-                                                        }
-                                                        onFocus={() =>
-                                                            handleFocus(
-                                                                'currentPassword',
-                                                            )
-                                                        }
-                                                        placeholder="Current password"
-                                                        value={
-                                                            passwordFields.currentPassword
-                                                        }
-                                                        error={
-                                                            errors?.currentPassword ??
-                                                            null
-                                                        }
-                                                        disabled={
-                                                            passwordLoading
-                                                        }
-                                                    />
-                                                </Field>
-                                                <Field
-                                                    error={
-                                                        errors?.newPassword ??
-                                                        null
-                                                    }
-                                                    title={'New password'}
-                                                >
-                                                    <InputField
-                                                        type="password"
-                                                        autoComplete="new-password"
-                                                        length={
-                                                            FIELD_LIMITS
-                                                                .password.max
-                                                        }
-                                                        onChange={(e: any) =>
-                                                            setPasswordFields({
-                                                                ...passwordFields,
-                                                                newPassword:
-                                                                    e.target
-                                                                        .value,
-                                                            })
-                                                        }
-                                                        onFocus={() =>
-                                                            handleFocus(
-                                                                'newPassword',
-                                                            )
-                                                        }
-                                                        placeholder="New password"
-                                                        value={
-                                                            passwordFields.newPassword
-                                                        }
-                                                        error={
-                                                            errors?.newPassword ??
-                                                            null
-                                                        }
-                                                        disabled={
-                                                            passwordLoading
-                                                        }
-                                                    />
-                                                </Field>
-                                                <Field
-                                                    error={
-                                                        errors?.newPasswordConfirm ??
-                                                        null
-                                                    }
-                                                    title={
-                                                        'Repeat the new password'
-                                                    }
-                                                >
-                                                    <InputField
-                                                        type="password"
-                                                        autoComplete="new-password"
-                                                        length={
-                                                            FIELD_LIMITS
-                                                                .password.max
-                                                        }
-                                                        onChange={(e: any) =>
-                                                            setPasswordFields({
-                                                                ...passwordFields,
-                                                                newPasswordConfirm:
-                                                                    e.target
-                                                                        .value,
-                                                            })
-                                                        }
-                                                        onFocus={() =>
-                                                            handleFocus(
-                                                                'newPasswordConfirm',
-                                                            )
-                                                        }
-                                                        placeholder="Repeat the new password"
-                                                        value={
-                                                            passwordFields.newPasswordConfirm
-                                                        }
-                                                        error={
-                                                            errors?.newPasswordConfirm ??
-                                                            null
-                                                        }
-                                                        disabled={
-                                                            passwordLoading
-                                                        }
-                                                    />
-                                                </Field>
-                                                <div className="settings_panel_actions">
-                                                    <PrimaryButton
-                                                        type="submit"
-                                                        isLoading={
-                                                            passwordLoading
-                                                        }
-                                                    >
-                                                        Change password
-                                                    </PrimaryButton>
-                                                    <ActionButton
-                                                        type="button"
-                                                        disabled={
-                                                            passwordLoading
-                                                        }
-                                                        onClick={
-                                                            closePasswordForm
-                                                        }
-                                                    >
-                                                        Cancel
-                                                    </ActionButton>
-                                                </div>
-                                            </form>
-                                        ) : (
-                                            <div className="settings_password_preview">
-                                                <InputField
-                                                    type="password"
-                                                    value="********"
-                                                    readOnly
-                                                    tabIndex={-1}
-                                                    onChange={() => {}}
-                                                />
-                                                <ActionButton
-                                                    type="button"
-                                                    onClick={openPasswordForm}
-                                                >
-                                                    Change password
-                                                </ActionButton>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="settings_group">
-                                        <p className="kicker">Sessions</p>
-                                        <div className="settings_sessions">
-                                            {sessionsLoading ? (
-                                                <p className="settings_sessions_empty">
-                                                    Loading…
-                                                </p>
-                                            ) : sessions.length === 0 ? (
-                                                <p className="settings_sessions_empty">
-                                                    No active sessions
-                                                </p>
-                                            ) : (
-                                                sessions.map((session: any) => (
-                                                    <div
-                                                        className="settings_sessions_item app-transition"
-                                                        key={session._id}
-                                                    >
-                                                        <div className="settings_sessions_item_info">
-                                                            <div className="settings_sessions_item_head">
-                                                                <p className="settings_sessions_item_device">
-                                                                    {
-                                                                        session.device
-                                                                    }
-                                                                </p>
-                                                                {session.isCurrent ? (
-                                                                    <span className="settings_sessions_badge app-transition">
-                                                                        This
-                                                                        session
-                                                                    </span>
-                                                                ) : null}
-                                                            </div>
-                                                            <div className="settings_sessions_item_meta">
-                                                                <span>
-                                                                    {session.location ||
-                                                                        '—'}
-                                                                </span>
-                                                                <span aria-hidden="true">
-                                                                    ·
-                                                                </span>
-                                                                <Tooltip
-                                                                    text={format_date_time(
-                                                                        session.lastSeen,
-                                                                    )}
-                                                                >
-                                                                    <span className="settings_sessions_item_time">
-                                                                        {format_back(
-                                                                            session.lastSeen,
-                                                                        ) ||
-                                                                            format_date_time(
-                                                                                session.lastSeen,
-                                                                            )}
-                                                                    </span>
-                                                                </Tooltip>
-                                                            </div>
-                                                        </div>
-                                                        <DangerButton
-                                                            type="button"
-                                                            isLoading={
-                                                                endingSessionId ===
-                                                                session._id
-                                                            }
-                                                            disabled={
-                                                                Boolean(
-                                                                    endingSessionId,
-                                                                ) ||
-                                                                logoutLoading
-                                                            }
-                                                            onClick={() =>
-                                                                handleDeleteSession(
-                                                                    session,
-                                                                )
-                                                            }
-                                                        >
-                                                            End
-                                                        </DangerButton>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="settings_logout app-transition">
-                                        <DangerButton
-                                            className="logout_button"
-                                            type="button"
-                                            isLoading={logoutLoading}
-                                            disabled={Boolean(endingSessionId)}
-                                            onClick={handleLogout}
+                        ) : null}
+                    </div>
+                </div>
+            ),
+        },
+        {
+            title: 'Security',
+            hint: 'Password and sessions',
+            key: 'security',
+            content: (
+                <div className="settings_panel">
+                    <div className="settings_stack">
+                        <div className="settings_group">
+                            <p className="kicker">Password</p>
+                            {changingPassword ? (
+                                <form
+                                    className="settings_password"
+                                    onSubmit={(event: any) => {
+                                        event.preventDefault();
+                                        save_password();
+                                    }}
+                                >
+                                    <Field
+                                        error={errors?.currentPassword ?? null}
+                                        title={'Current password'}
+                                    >
+                                        <InputField
+                                            type="password"
+                                            autoComplete="current-password"
+                                            length={FIELD_LIMITS.password.max}
+                                            onChange={(e: any) =>
+                                                setPasswordFields({
+                                                    ...passwordFields,
+                                                    currentPassword:
+                                                        e.target.value,
+                                                })
+                                            }
+                                            onFocus={() =>
+                                                handleFocus('currentPassword')
+                                            }
+                                            placeholder="Current password"
+                                            value={
+                                                passwordFields.currentPassword
+                                            }
+                                            error={
+                                                errors?.currentPassword ?? null
+                                            }
+                                            disabled={passwordLoading}
+                                        />
+                                    </Field>
+                                    <Field
+                                        error={errors?.newPassword ?? null}
+                                        title={'New password'}
+                                    >
+                                        <InputField
+                                            type="password"
+                                            autoComplete="new-password"
+                                            length={FIELD_LIMITS.password.max}
+                                            onChange={(e: any) =>
+                                                setPasswordFields({
+                                                    ...passwordFields,
+                                                    newPassword: e.target.value,
+                                                })
+                                            }
+                                            onFocus={() =>
+                                                handleFocus('newPassword')
+                                            }
+                                            placeholder="New password"
+                                            value={passwordFields.newPassword}
+                                            error={errors?.newPassword ?? null}
+                                            disabled={passwordLoading}
+                                        />
+                                    </Field>
+                                    <Field
+                                        error={
+                                            errors?.newPasswordConfirm ?? null
+                                        }
+                                        title={'Repeat the new password'}
+                                    >
+                                        <InputField
+                                            type="password"
+                                            autoComplete="new-password"
+                                            length={FIELD_LIMITS.password.max}
+                                            onChange={(e: any) =>
+                                                setPasswordFields({
+                                                    ...passwordFields,
+                                                    newPasswordConfirm:
+                                                        e.target.value,
+                                                })
+                                            }
+                                            onFocus={() =>
+                                                handleFocus(
+                                                    'newPasswordConfirm',
+                                                )
+                                            }
+                                            placeholder="Repeat the new password"
+                                            value={
+                                                passwordFields.newPasswordConfirm
+                                            }
+                                            error={
+                                                errors?.newPasswordConfirm ??
+                                                null
+                                            }
+                                            disabled={passwordLoading}
+                                        />
+                                    </Field>
+                                    <div className="settings_panel_actions">
+                                        <PrimaryButton
+                                            type="submit"
+                                            isLoading={passwordLoading}
                                         >
-                                            <LogoutIcon />
-                                            Log out
-                                        </DangerButton>
+                                            Change password
+                                        </PrimaryButton>
+                                        <ActionButton
+                                            type="button"
+                                            disabled={passwordLoading}
+                                            onClick={closePasswordForm}
+                                        >
+                                            Cancel
+                                        </ActionButton>
                                     </div>
+                                </form>
+                            ) : (
+                                <div className="settings_password_preview">
+                                    <InputField
+                                        type="password"
+                                        value="********"
+                                        readOnly
+                                        tabIndex={-1}
+                                        onChange={() => {}}
+                                    />
+                                    <ActionButton
+                                        type="button"
+                                        onClick={openPasswordForm}
+                                    >
+                                        Change password
+                                    </ActionButton>
                                 </div>
+                            )}
+                        </div>
+                        <div className="settings_group">
+                            <p className="kicker">Sessions</p>
+                            <div className="settings_sessions">
+                                {sessionsLoading ? (
+                                    <p className="settings_sessions_empty">
+                                        Loading…
+                                    </p>
+                                ) : sessions.length === 0 ? (
+                                    <p className="settings_sessions_empty">
+                                        No active sessions
+                                    </p>
+                                ) : (
+                                    sessions.map((session: any) => (
+                                        <div
+                                            className="settings_sessions_item app-transition"
+                                            key={session._id}
+                                        >
+                                            <div className="settings_sessions_item_info">
+                                                <div className="settings_sessions_item_head">
+                                                    <p className="settings_sessions_item_device">
+                                                        {session.device}
+                                                    </p>
+                                                    {session.isCurrent ? (
+                                                        <span className="settings_sessions_badge app-transition">
+                                                            This session
+                                                        </span>
+                                                    ) : null}
+                                                </div>
+                                                <div className="settings_sessions_item_meta">
+                                                    <span>
+                                                        {session.location ||
+                                                            '—'}
+                                                    </span>
+                                                    <span aria-hidden="true">
+                                                        ·
+                                                    </span>
+                                                    <Tooltip
+                                                        text={format_date_time(
+                                                            session.lastSeen,
+                                                        )}
+                                                    >
+                                                        <span className="settings_sessions_item_time">
+                                                            {format_back(
+                                                                session.lastSeen,
+                                                            ) ||
+                                                                format_date_time(
+                                                                    session.lastSeen,
+                                                                )}
+                                                        </span>
+                                                    </Tooltip>
+                                                </div>
+                                            </div>
+                                            <DangerButton
+                                                type="button"
+                                                isLoading={
+                                                    endingSessionId ===
+                                                    session._id
+                                                }
+                                                disabled={
+                                                    Boolean(endingSessionId) ||
+                                                    logoutLoading
+                                                }
+                                                onClick={() =>
+                                                    handleDeleteSession(session)
+                                                }
+                                            >
+                                                End
+                                            </DangerButton>
+                                        </div>
+                                    ))
+                                )}
                             </div>
-                        ),
-                    },
-                ].map((section: any) => (
-                    <section key={section.key} className="settings_section">
-                        <h1>{section.title}</h1>
-                        {section.content}
-                    </section>
-                ))}
-            </div>
+                        </div>
+                        <div className="settings_logout app-transition">
+                            <DangerButton
+                                className="logout_button"
+                                type="button"
+                                isLoading={logoutLoading}
+                                disabled={Boolean(endingSessionId)}
+                                onClick={handleLogout}
+                            >
+                                <LogoutIcon />
+                                Log out
+                            </DangerButton>
+                        </div>
+                    </div>
+                </div>
+            ),
+        },
+    ];
+
+    const activeSection =
+        sectionItems.find((item: any) => item.key === activeKey) ??
+        sectionItems[0];
+
+    return (
+        <div className="settings">
+            <PageHeader title="Settings" />
+            <SplitLayout className="settings_split">
+                <SplitLayout.Aside>
+                    <SideNav variant="section" label="Settings sections">
+                        <SideNavList
+                            items={sectionItems.map((item: any) => ({
+                                key: item.key,
+                                label: item.title,
+                                hint: item.hint,
+                                active: item.key === activeSection.key,
+                                onClick: () => selectSection(item.key),
+                            }))}
+                        />
+                    </SideNav>
+                </SplitLayout.Aside>
+
+                <SplitLayout.Main
+                    key={activeSection.key}
+                    className="settings_section"
+                >
+                    {activeSection.content}
+                </SplitLayout.Main>
+            </SplitLayout>
         </div>
     );
 };
-
 export default Settings;

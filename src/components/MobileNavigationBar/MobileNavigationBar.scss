@@ -87,8 +87,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 52px;
-        height: 52px;
+        width: 44px;
+        height: 44px;
         padding: 0;
         border-radius: 999px;
         color: var(--text-color);
@@ -132,7 +132,7 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background-color: var(--red-f5, #c62828);
+            background-color: var(--inverse-bg);
         }
     }
 
@@ -145,8 +145,8 @@
         height: 16px;
         padding: 0 4px;
         border-radius: 999px;
-        background: var(--red-f5);
-        color: #fff;
+        background: var(--inverse-bg);
+        color: var(--inverse-fg);
         font-size: 10px;
         font-weight: 600;
         line-height: 16px;

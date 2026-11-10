@@ -4,19 +4,19 @@ import { useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from '@/navigation';
 
 import { AppContext } from '@/providers/AppProviders';
-import { getUnreadCount } from '../../api/chat.api';
+import { useUnreadMessages } from '../../hooks/useUnreadMessages';
 import { useAdminAttention } from '../../hooks/useAdminAttention';
 import { socketService } from '../../sockets/socket.service';
 import { isAdminRole } from '../AccountMenu/getAccountMenuBody';
 import { handleSameRouteClick, isPathActive } from '../../utils/navigation';
 
+import SideNav, { SideNavList, SideNavItem } from '../SideNav';
 import PrimaryButton from '../Ui/PrimaryButton/index';
 import UserAvatar from '../UserBadge/UserAvatar';
 
 import MainLogo from '../../assets/svg/full-logo-icon.svg';
 import HomeIcon from '../../assets/svg/home-icon.svg';
 import SearchIcon from '../../assets/svg/search.svg';
-import ProfileIcon from '../../assets/svg/profile.svg';
 import MessageIcon from '../../assets/svg/message.svg';
 import NotificationIcon from '../../assets/svg/notification.svg';
 import PlusIcon from '../../assets/svg/plus-icon.svg';
@@ -31,7 +31,7 @@ function AppSidebar() {
     const { profile } = useContext(AppContext);
     const location = useLocation();
     const navigate = useNavigate();
-    const [unreadMessages, setUnreadMessages] = useState<any>(0);
+    const unreadMessages = useUnreadMessages(profile);
 
     const hasUnreadNotifications = Boolean(
         profile?.notifications?.some((item: any) => item.is_read === false),
@@ -40,235 +40,119 @@ function AppSidebar() {
     const isAdmin = isAdminRole(profile?.role);
     const adminAttention = useAdminAttention(profile);
 
-    useEffect(() => {
-        if (!profile) {
-            setUnreadMessages(0);
-            return;
-        }
+    const link = (
+        key: string,
+        label: string,
+        href: string,
+        extra: Partial<SideNavItem> & { path?: string } = {},
+    ): SideNavItem => {
+        const { path = href, ...rest } = extra;
 
-        let cancelled = false;
-
-        getUnreadCount().then((result: any) => {
-            if (!cancelled && result?.status) {
-                setUnreadMessages(result.data?.unread || 0);
-            }
-        });
-
-        const unsubscribe = socketService.on('chat:unread', (unread: any) => {
-            setUnreadMessages(Number(unread) || 0);
-        });
-
-        return () => {
-            cancelled = true;
-            unsubscribe();
+        return {
+            key,
+            label,
+            href,
+            active: isPathActive(location.pathname, path),
+            onClick: (event: any) =>
+                handleSameRouteClick(event, location.pathname, path),
+            ...rest,
         };
-    }, [profile?._id]);
-
-    const navClass = (path: any, extraPaths: any = []) => {
-        const active =
-            isPathActive(location.pathname, path) ||
-            extraPaths.some((item: any) =>
-                isPathActive(location.pathname, item),
-            );
-
-        return `app-sidebar_item app-transition${active ? ' app-sidebar_item_active' : ''}`;
     };
 
+    const mainItems: SideNavItem[] = [
+        link('home', 'Home', '/', { icon: HomeIcon }),
+        link('search', 'Search', '/search', { icon: SearchIcon }),
+        ...(profile
+            ? [
+                  link('messages', 'Messages', '/messages', {
+                      icon: MessageIcon,
+                      badge: unreadMessages,
+                  }),
+                  link('notifications', 'Notifications', '/notifications', {
+                      icon: NotificationIcon,
+                      dot: hasUnreadNotifications,
+                  }),
+                  link('support', 'Support', '/support/mine', {
+                      icon: SupportIcon,
+                  }),
+              ]
+            : []),
+    ];
+
+    const footerItems: SideNavItem[] = [
+        ...(profile
+            ? [
+                  link('profile', 'Profile', `/users/${profile.nick_name}`, {
+                      avatar: (
+                          <UserAvatar
+                              data={profile}
+                              className="side_nav_avatar"
+                          />
+                      ),
+                  }),
+              ]
+            : []),
+        ...(isAdmin
+            ? [
+                  link('admin', 'Admin panel', '/admin-panel?tab=dashboard', {
+                      path: '/admin-panel',
+                      icon: DashboardIcon,
+                      dot: adminAttention.any,
+                  }),
+              ]
+            : []),
+        ...(profile
+            ? [
+                  link('settings', 'Settings', '/settings', {
+                      icon: SettingsIcon,
+                  }),
+              ]
+            : []),
+    ];
+
     return (
-        <aside className="app-sidebar" aria-label="Navigation">
-            <Link
-                href="/"
-                className="app-sidebar_logo"
-                onClick={(event: any) =>
-                    handleSameRouteClick(event, location.pathname, '/')
-                }
-            >
-                <MainLogo className="app-sidebar_logo_icon" />
-            </Link>
-
-            <nav className="app-sidebar_nav">
-                {profile ? (
-                    <Link
-                        href={`/users/${profile.nick_name}`}
-                        className={navClass(`/users/${profile.nick_name}`)}
-                        onClick={(event: any) =>
-                            handleSameRouteClick(
-                                event,
-                                location.pathname,
-                                `/users/${profile.nick_name}`,
-                            )
-                        }
-                    >
-                        <UserAvatar
-                            data={profile}
-                            className="app-sidebar_item_avatar"
-                        />
-                        <span>Profile</span>
-                    </Link>
-                ) : (
-                    <Link
-                        href="/auth/login"
-                        className={navClass('/auth/login', ['/auth/register'])}
-                    >
-                        <ProfileIcon className="app-sidebar_item_icon" />
-                        <span>Profile</span>
-                    </Link>
-                )}
-
+        <SideNav
+            variant="app"
+            className="app-sidebar"
+            label="Navigation"
+            header={
                 <Link
                     href="/"
-                    className={navClass('/')}
+                    className="app-sidebar_logo"
                     onClick={(event: any) =>
                         handleSameRouteClick(event, location.pathname, '/')
                     }
                 >
-                    <HomeIcon className="app-sidebar_item_icon" />
-                    <span>Home</span>
+                    <MainLogo className="app-sidebar_logo_icon" />
                 </Link>
+            }
+            footer={
+                <>
+                    <SideNavList items={footerItems} />
+                    {profile ? null : (
+                        <PrimaryButton
+                            className="app-sidebar_login"
+                            onClick={() => navigate('/auth/login')}
+                        >
+                            <LoginIcon />
+                            Log in
+                        </PrimaryButton>
+                    )}
+                </>
+            }
+        >
+            <SideNavList items={mainItems} />
 
-                <Link
-                    href="/search"
-                    className={navClass('/search')}
-                    onClick={(event: any) =>
-                        handleSameRouteClick(
-                            event,
-                            location.pathname,
-                            '/search',
-                        )
-                    }
+            {canCreate ? (
+                <PrimaryButton
+                    className="app-sidebar_create"
+                    onClick={() => navigate('/create-post')}
                 >
-                    <SearchIcon className="app-sidebar_item_icon" />
-                    <span>Search</span>
-                </Link>
-
-                {profile ? (
-                    <>
-                        <Link
-                            href="/messages"
-                            className={navClass('/messages')}
-                            onClick={(event: any) =>
-                                handleSameRouteClick(
-                                    event,
-                                    location.pathname,
-                                    '/messages',
-                                )
-                            }
-                        >
-                            {unreadMessages > 0 ? (
-                                <span className="app-sidebar_badge">
-                                    {unreadMessages > 99
-                                        ? '99+'
-                                        : unreadMessages}
-                                </span>
-                            ) : null}
-                            <MessageIcon className="app-sidebar_item_icon" />
-                            <span>Messages</span>
-                        </Link>
-
-                        <Link
-                            href="/notifications"
-                            className={navClass('/notifications')}
-                            onClick={(event: any) =>
-                                handleSameRouteClick(
-                                    event,
-                                    location.pathname,
-                                    '/notifications',
-                                )
-                            }
-                        >
-                            {hasUnreadNotifications ? (
-                                <span
-                                    className="app-sidebar_dot"
-                                    aria-hidden="true"
-                                />
-                            ) : null}
-                            <NotificationIcon className="app-sidebar_item_icon" />
-                            <span>Notifications</span>
-                        </Link>
-
-                        <Link
-                            href="/support/mine"
-                            className={navClass('/support/mine')}
-                            onClick={(event: any) =>
-                                handleSameRouteClick(
-                                    event,
-                                    location.pathname,
-                                    '/support/mine',
-                                )
-                            }
-                        >
-                            <SupportIcon className="app-sidebar_item_icon" />
-                            <span>Support</span>
-                        </Link>
-                    </>
-                ) : null}
-
-                {canCreate ? (
-                    <PrimaryButton
-                        className="app-sidebar_create"
-                        onClick={() => navigate('/create-post')}
-                    >
-                        <PlusIcon />
-                        Create post
-                    </PrimaryButton>
-                ) : null}
-            </nav>
-
-            <div className="app-sidebar_footer">
-                {isAdmin ? (
-                    <Link
-                        href="/admin-panel?tab=dashboard"
-                        className={navClass('/admin-panel')}
-                        aria-current={
-                            isPathActive(location.pathname, '/admin-panel')
-                                ? 'page'
-                                : undefined
-                        }
-                        onClick={(event: any) =>
-                            handleSameRouteClick(
-                                event,
-                                location.pathname,
-                                '/admin-panel',
-                            )
-                        }
-                    >
-                        {adminAttention.any ? (
-                            <span
-                                className="app-sidebar_dot"
-                                aria-hidden="true"
-                            />
-                        ) : null}
-                        <DashboardIcon className="app-sidebar_item_icon" />
-                        <span>Admin panel</span>
-                    </Link>
-                ) : null}
-
-                {profile ? (
-                    <Link
-                        href="/settings"
-                        className={navClass('/settings')}
-                        onClick={(event: any) =>
-                            handleSameRouteClick(
-                                event,
-                                location.pathname,
-                                '/settings',
-                            )
-                        }
-                    >
-                        <SettingsIcon className="app-sidebar_item_icon" />
-                        <span>Settings</span>
-                    </Link>
-                ) : (
-                    <PrimaryButton
-                        className="app-sidebar_login"
-                        onClick={() => navigate('/auth/login')}
-                    >
-                        <LoginIcon />
-                        Log in
-                    </PrimaryButton>
-                )}
-            </div>
-        </aside>
+                    <PlusIcon />
+                    Create post
+                </PrimaryButton>
+            ) : null}
+        </SideNav>
     );
 }
 

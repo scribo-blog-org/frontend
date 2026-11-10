@@ -8,24 +8,24 @@
     --z-popup-content: 900;
     --z-popup-header: 1100;
 
-    --gray-16: #161616;
-    --gray-1e: #1e1e1e;
-    --gray-25: #252525;
-    --gray-2f: #2f2f2f;
-    --gray-33: #333333;
-    --gray-4f: #4f4f4f;
-    --gray-63: #636363;
-    --gray-79: #797979;
-    --gray-99: #999999;
-    --gray-b5: #b5b5b5;
-    --gray-c6: #c6c6c6;
-    --gray-d7: #d7d7d7;
-    --gray-e1: #e1e1e1;
-    --gray-e7: #e7e7e7;
-    --gray-f1: #f1f1f1;
-    --gray-f7: #f7f7f7;
-    --gray-f9: #f9f9f9;
-    --gray-ff: #ffffff;
+    --gray-1: #0a0a0a;
+    --gray-2: #111111;
+    --gray-3: #171717;
+    --gray-4: #1f1f1f;
+    --gray-5: #262626;
+    --gray-6: #3d3d3d;
+    --gray-7: #666666;
+    --gray-8: #7a7a7a;
+    --gray-9: #a1a1a1;
+    --gray-10: #bdbdbd;
+    --gray-11: #cfcfcf;
+    --gray-12: #dedede;
+    --gray-13: #e8e8e8;
+    --gray-14: #ededed;
+    --gray-15: #f4f4f4;
+    --gray-16: #f7f7f7;
+    --gray-17: #fafafa;
+    --gray-18: #ffffff;
 
     --font-sans:
         'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -77,7 +77,7 @@
     --blue-de: #dfedfe;
     --blue-2f: #2e363f;
 
-    --verified-icon-color: #0095f6;
+    --verified-icon-color: var(--fg);
 
     --swagger-patch-color-dark: #237b67;
     --swagger-patch-color-light: #00b1a9;

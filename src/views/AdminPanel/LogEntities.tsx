@@ -22,7 +22,6 @@ import DefaultProfileAvatar from '../../assets/images/default-profile-avatar.png
 import Popup from '../../components/Ui/Popup';
 import RoleBadge from '../../components/RoleBadge/index';
 import { imageSrc } from '../../utils/image';
-import { CATEGORY_COLORS } from '../../styles/constants';
 import { kindLabel, statusLabel } from '../Support/constants';
 
 import './Requests.scss';
@@ -42,12 +41,10 @@ export const EntityView = ({
     name,
     avatar,
     verified,
-    color,
     deleted = false,
     title,
 }: any) => {
     const Glyph = GLYPHS[kind];
-    const tint = CATEGORY_COLORS[color as keyof typeof CATEGORY_COLORS];
 
     return (
         <span
@@ -61,12 +58,7 @@ export const EntityView = ({
                     alt=""
                 />
             ) : Glyph ? (
-                <Glyph
-                    className="log_chip_glyph"
-                    style={
-                        tint ? { color: `var(${tint.variable})` } : undefined
-                    }
-                />
+                <Glyph className="log_chip_glyph" />
             ) : null}
             <span className="log_chip_label">{name}</span>
             {verified ? (
@@ -157,43 +149,15 @@ export const PostEntity = ({ id, data, snapshotTitle, setFilter }: any) => {
     );
 };
 
-export const CategoryEntity = ({ id, data, snapshot, setFilter }: any) => {
-    const navigate = useNavigate();
-    const { showToast } = useContext(AppContext);
-    const shown = data ?? snapshot;
-
-    return (
-        <Popup
-            body={[
-                {
-                    title: 'Category posts',
-                    onClick: () =>
-                        data
-                            ? navigate(`/?filter=${data._id}`)
-                            : showToast({
-                                  type: 'error',
-                                  message: 'Category deleted',
-                              }),
-                    icon: <RedirectIcon />,
-                },
-                {
-                    title: 'Category history',
-                    onClick: () => setFilter({ type: 'category', id }),
-                    icon: <FilterIcon />,
-                },
-            ]}
-        >
-            <span className="log_entity">
-                <EntityView
-                    kind="category"
-                    name={shown?.name ?? 'Category'}
-                    color={shown?.color}
-                    deleted={!data}
-                />
-            </span>
-        </Popup>
-    );
-};
+export const CategoryEntity = ({ snapshot }: any) => (
+    <span className="log_entity">
+        <EntityView
+            kind="category"
+            name={snapshot?.name ?? 'Category'}
+            deleted
+        />
+    </span>
+);
 
 export const ConversationEntity = ({ id, title, setFilter }: any) => (
     <Popup

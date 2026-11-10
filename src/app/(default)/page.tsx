@@ -46,7 +46,7 @@ export default async function HomeRoute({ searchParams }: HomeRouteProps) {
 
 async function loadFeed() {
     const result = await fetchPosts({
-        expand: 'author,category',
+        expand: 'author',
         page: 1,
         limit: POSTS_PAGE_LIMIT,
     });

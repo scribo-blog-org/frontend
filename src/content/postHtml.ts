@@ -1,8 +1,9 @@
 import { MENTION_STORAGE_PATTERN } from './mentions';
 import { MENTION_IN_TEXT, profilePathFromNick } from './plainRichText';
 import { linkifyHashtagsInHtml } from '../utils/hashtags';
+import { decorateCodeBlocksHtml } from './codeBlocks';
 
-const SKIP_TAGS = new Set(['A', 'SCRIPT', 'STYLE', 'TEXTAREA', 'CODE']);
+const SKIP_TAGS = new Set(['A', 'SCRIPT', 'STYLE', 'TEXTAREA', 'CODE', 'PRE']);
 
 function stripLegacyMentionMarkup(html: any) {
     if (!html) {
@@ -35,6 +36,71 @@ function stripLegacyMentionMarkup(html: any) {
     return doc.body.innerHTML;
 }
 
+const URL_IN_TEXT = /(?:https?:\/\/|www\.)[^\s<>"'`]+[^\s<>"'`.,;:!?)\]}]/gi;
+
+function linkifyPlainUrlsInHtml(html: any) {
+    if (!html) {
+        return '';
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
+    const nodes: any[] = [];
+    while (walker.nextNode()) {
+        nodes.push(walker.currentNode);
+    }
+
+    for (const node of nodes) {
+        const parent = node.parentElement;
+        if (
+            !parent ||
+            SKIP_TAGS.has(parent.tagName) ||
+            parent.closest('a, pre, code')
+        ) {
+            continue;
+        }
+
+        const text = node.nodeValue || '';
+        URL_IN_TEXT.lastIndex = 0;
+        if (!URL_IN_TEXT.test(text)) {
+            continue;
+        }
+
+        URL_IN_TEXT.lastIndex = 0;
+        const fragment = doc.createDocumentFragment();
+        let lastIndex = 0;
+        let match = URL_IN_TEXT.exec(text);
+
+        while (match) {
+            if (match.index > lastIndex) {
+                fragment.appendChild(
+                    doc.createTextNode(text.slice(lastIndex, match.index)),
+                );
+            }
+
+            const link = doc.createElement('a');
+            link.href = /^https?:\/\//i.test(match[0])
+                ? match[0]
+                : `https://${match[0]}`;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.textContent = match[0];
+            fragment.appendChild(link);
+
+            lastIndex = match.index + match[0].length;
+            match = URL_IN_TEXT.exec(text);
+        }
+
+        if (lastIndex < text.length) {
+            fragment.appendChild(doc.createTextNode(text.slice(lastIndex)));
+        }
+
+        node.replaceWith(fragment);
+    }
+
+    return doc.body.innerHTML;
+}
 function linkifyPlainMentionsInHtml(html: any) {
     if (!html) {
         return '';
@@ -102,13 +168,43 @@ function linkifyPlainMentionsInHtml(html: any) {
     return doc.body.innerHTML;
 }
 
+function openLinksInNewTab(html: any) {
+    if (!html) {
+        return '';
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    doc.querySelectorAll('a[href]').forEach((link: any) => {
+        if (link.classList.contains('mention')) {
+            return;
+        }
+        if (link.classList.contains('hashtag')) {
+            return;
+        }
+        const href = link.getAttribute('href') || '';
+        if (/^https?:\/\//i.test(href) || /^mailto:/i.test(href)) {
+            link.setAttribute('target', '_blank');
+            link.setAttribute('rel', 'noopener noreferrer');
+        }
+    });
+
+    return doc.body.innerHTML;
+}
 export function enrichPostHtml(html: any) {
     if (!html) {
         return '';
     }
 
     const cleaned = stripLegacyMentionMarkup(html);
-    return linkifyHashtagsInHtml(linkifyPlainMentionsInHtml(cleaned));
+    return openLinksInNewTab(
+        decorateCodeBlocksHtml(
+            linkifyHashtagsInHtml(
+                linkifyPlainMentionsInHtml(linkifyPlainUrlsInHtml(cleaned)),
+            ),
+        ),
+    );
 }
 
 export function extractMentionUserIdsFromHtml(html: any) {

@@ -1,5 +1,6 @@
 import { apiUrl } from '../config';
 import { apiFetch } from './http';
+import { sendPostForm, type PostFormOptions } from './postForm';
 
 const getPosts = async (query: any) => {
     let queryString = '';
@@ -184,41 +185,11 @@ const savePost = async (id: any, method: any = 'POST') => {
     };
 };
 
-const createPost = async (data: any) => {
-    try {
-        const response = await apiFetch(`${apiUrl()}/api/posts`, {
-            method: 'POST',
-            body: data,
-        });
-        const result = await response.json();
-        const code = response.status;
+const createPost = (data: FormData, options?: PostFormOptions) =>
+    sendPostForm('POST', '/api/posts', data, options);
 
-        console.log(result);
-        return {
-            statusCode: code,
-            ...result,
-        };
-    } catch (err: any) {
-        console.log(err);
-    }
-};
-
-const editPost = async (id: any, data: any) => {
-    try {
-        const response = await apiFetch(`${apiUrl()}/api/posts/${id}`, {
-            method: 'PATCH',
-            body: data,
-        });
-        const result = await response.json();
-        const code = response.status;
-        return {
-            statusCode: code,
-            ...result,
-        };
-    } catch (err: any) {
-        console.log(err);
-    }
-};
+const editPost = (id: any, data: FormData, options?: PostFormOptions) =>
+    sendPostForm('PATCH', `/api/posts/${id}`, data, options);
 
 export {
     getPosts,

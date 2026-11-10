@@ -12,6 +12,7 @@ import { FIELD_LIMITS } from '../../constants/fieldLimits';
 import { SUPPORT_KINDS, kindLabel, statusLabel, statusTone } from './constants';
 import { format_back, format_date_time } from '../../utils/format';
 
+import PageHeader from '../../components/PageHeader';
 import { Pill } from '../../components/Ui/Panel';
 import Field from '../../components/Ui/Field/index';
 import RichInputField from '../../components/RichInputField';
@@ -152,13 +153,10 @@ const SupportMine = () => {
 
     return (
         <div className="support_page support_page_mine">
-            <div className="support_page_intro">
-                <h1>Support</h1>
-                <p>
-                    Requests from your account. Replies and statuses arrive in
-                    notifications on the site.
-                </p>
-            </div>
+            <PageHeader
+                title="Support"
+                description="Requests from your account. Replies and statuses arrive in notifications on the site."
+            />
             <form
                 className="form_input app-transition"
                 onSubmit={(event: any) => {

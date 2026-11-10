@@ -24,4 +24,26 @@ const getAllLogs = async (query: any = {}) => {
     return await response.json();
 };
 
-export { getAllLogs };
+const getRuntimeLogs = async (query: any = {}) => {
+    const params = new URLSearchParams();
+
+    Object.entries(query).forEach(([key, value]: any) => {
+        if (value !== undefined && value !== null && value !== '') {
+            params.append(key, value);
+        }
+    });
+
+    const response = await apiFetch(
+        `${apiUrl()}/api/logs/runtime?${params.toString()}`,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        },
+    );
+
+    return await response.json();
+};
+
+export { getAllLogs, getRuntimeLogs };

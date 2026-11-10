@@ -4,9 +4,9 @@
     position: relative;
     align-items: center;
     justify-content: center;
-    border: 2px dashed var(--drop-file-border-color);
+    border: 1px dashed var(--drop-file-border-color);
     background-color: var(--drop-file-background-color);
-    border-width: 2px;
+    border-width: 1px;
     box-sizing: border-box;
     overflow: hidden;
     outline: none;
@@ -95,19 +95,19 @@
 .drop_file_dragged,
 .drop_file:hover {
     border: 1px dashed var(--drop-file-hover-border-color);
-    border-width: 2px;
+    border-width: 1px;
     background: var(--drop-file-hover-background-color);
 }
 
 .drop_file_incorrect_field:hover {
     border: 1px dashed var(--red-f5);
-    border-width: 2px;
+    border-width: 1px;
     background: var(--drop-file-hover-background-color);
 }
 
 .drop_file_incorrect_field {
     border: 1px dashed var(--red-f5);
-    border-width: 2px;
+    border-width: 1px;
     box-shadow: 0 0 20px rgb(255 0 0 / 50%);
 }
 

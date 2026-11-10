@@ -3,6 +3,7 @@ import type { MetadataRoute } from 'next';
 import { apiUrl } from '@/config';
 import { absoluteUrl } from '@/seo/site';
 import { mediaUrl } from '@/utils/image';
+import { firstMediaThumbnail } from '@/utils/postMedia';
 
 export type SitemapEntry = MetadataRoute.Sitemap[number];
 
@@ -82,10 +83,8 @@ export async function postEntries(): Promise<SitemapEntry[]> {
                 continue;
             }
 
-            const image =
-                typeof post.featured_image === 'string'
-                    ? mediaUrl(post.featured_image)
-                    : '';
+            const thumbnail = firstMediaThumbnail(post);
+            const image = thumbnail ? mediaUrl(thumbnail) : '';
 
             entries.push({
                 url: absoluteUrl(`/posts/${id}`),

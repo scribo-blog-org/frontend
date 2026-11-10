@@ -7,6 +7,7 @@ import { getProfile } from '../../api/profile.api';
 import { socketService } from '../../sockets/socket.service';
 import { format_back, format_date_time } from '../../utils/format';
 
+import PageHeader from '../../components/PageHeader';
 import UserBadge from '../../components/UserBadge/index';
 import NotificationMessage from '../../components/NotificationMessage/index';
 
@@ -148,12 +149,10 @@ const Notifications = () => {
 
     return (
         <div className="notifications_page">
-            <div className="notifications_page_intro">
-                <h1>Notifications</h1>
-                <p>
-                    Likes, comments, mentions, follows, and replies to requests.
-                </p>
-            </div>
+            <PageHeader
+                title="Notifications"
+                description="Likes, comments, mentions, follows, and replies to requests."
+            />
 
             <div className="notifications_page_list app-transition">
                 {usersLoading ? (

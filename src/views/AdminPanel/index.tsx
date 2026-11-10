@@ -2,7 +2,6 @@
 
 import './AdminPanel.scss';
 
-import TagIcon from '../../assets/svg/tag.svg';
 import PeoplesIcon from '../../assets/svg/peoples.svg';
 import LogsIcon from '../../assets/svg/logs.svg';
 import SupportIcon from '../../assets/svg/support.svg';
@@ -19,8 +18,7 @@ import { Pill } from '../../components/Ui';
 import { useAdminAttention } from '../../hooks/useAdminAttention';
 import TabsPage from '../../components/TabsPage/index';
 
-import CategoriesPage from './Categories';
-import LogsPage from './Logs';
+import LogsPage from './LogsPage';
 import AdminsPage from './Admins';
 import UsersPage from './Users';
 import RequestsPage from './Requests';
@@ -69,12 +67,6 @@ const AdminPanel = () => {
             content: <DashboardPage />,
         },
         {
-            title: 'Categories',
-            key: 'categories',
-            icon: <TagIcon />,
-            content: <CategoriesPage />,
-        },
-        {
             title: 'Users',
             key: 'users',
             icon: <PeoplesIcon />,
@@ -116,7 +108,7 @@ const AdminPanel = () => {
             <TabsPage
                 label="Admin panel"
                 pages={pages}
-                aside={version ? <Pill tone="info">v{version}</Pill> : null}
+                aside={version ? <Pill tone="neutral">v{version}</Pill> : null}
             />
         </div>
     );

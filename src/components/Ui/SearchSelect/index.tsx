@@ -1,6 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 
 import './SearchSelect.scss';
 import { useOverlayPresence } from '../useOverlayEnter';
@@ -9,6 +16,7 @@ import InputField from '../InputField';
 
 import ArrowDownUpIcon from '../../../assets/svg/chevron-down-up.svg';
 import CloseIcon from '../../../assets/svg/cross-icon.svg';
+import TickIcon from '../../../assets/svg/tick.svg';
 
 const optionLabel = (option: any) => option?.label ?? option?.name ?? '';
 
@@ -36,9 +44,11 @@ const SearchSelect = ({
     clearOnSelect = false,
     onSelect,
     disabled = false,
+    multiple = false,
 }: any) => {
     const setValue = onChange ?? onSetValue;
     const external = typeof onInput === 'function';
+    const pinned = multiple === 'pinned';
 
     const [isOpen, setIsOpen] = useState<any>(false);
     const [inputValue, setInputValue] = useState<any>('');
@@ -51,22 +61,74 @@ const SearchSelect = ({
     const { mounted: listMounted, visible: listVisible } =
         useOverlayPresence(isOpen);
 
+    const valueKey = Array.isArray(value) ? value.join('\u0000') : value;
+
+    const selectedValues: any[] = useMemo(() => {
+        if (!multiple) return [];
+        if (Array.isArray(value)) return value;
+        return value ? [value] : [];
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [multiple, valueKey]);
+
+    const [pinnedAtOpen, setPinnedAtOpen] = useState<any[]>([]);
+
+    useLayoutEffect(() => {
+        if (pinned && isOpen) {
+            setPinnedAtOpen(selectedValues);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pinned, isOpen]);
+
+    const joinedLabels = useMemo(
+        () =>
+            multiple
+                ? options
+                      .filter((option: any) =>
+                          selectedValues.includes(option.value),
+                      )
+                      .map(optionLabel)
+                      .join(', ')
+                : '',
+        [multiple, options, selectedValues],
+    );
+
     const selectedOption = useMemo(() => {
+        if (multiple) return undefined;
+
         return options.find((option: any) => option.value === value);
-    }, [options, value]);
+    }, [multiple, options, value]);
 
     const filteredOptions = useMemo(() => {
         const search = isSearching ? inputValue.trim().toLowerCase() : '';
+        const found =
+            external || !search
+                ? options
+                : options.filter((option: any) =>
+                      optionLabel(option).toLowerCase().includes(search),
+                  );
 
-        if (external || !search) return options;
+        if (!pinned) return found;
 
-        return options.filter((option: any) =>
-            optionLabel(option).toLowerCase().includes(search),
-        );
-    }, [options, inputValue, external, isSearching]);
+        return [
+            ...found.filter((option: any) =>
+                pinnedAtOpen.includes(option.value),
+            ),
+            ...found.filter(
+                (option: any) => !pinnedAtOpen.includes(option.value),
+            ),
+        ];
+    }, [options, inputValue, external, isSearching, pinned, pinnedAtOpen]);
 
     const resetValue = useCallback(() => {
         const search = inputValue.trim().toLowerCase();
+
+        if (multiple) {
+            setInputValue(joinedLabels);
+            if (external && search) onInput('');
+            setIsSearching(false);
+            setHighlightedIndex(-1);
+            return;
+        }
 
         if (clearOnSelect) {
             setInputValue('');
@@ -104,6 +166,8 @@ const SearchSelect = ({
         external,
         onInput,
         clearOnSelect,
+        multiple,
+        joinedLabels,
     ]);
 
     const closeSelect = useCallback(() => {
@@ -116,16 +180,21 @@ const SearchSelect = ({
     optionsRef.current = options;
 
     useEffect(() => {
-        if (external || clearOnSelect) return;
-        const option = options.find((o: any) => o.value === value);
-        setInputValue(optionLabel(option));
-    }, [external, clearOnSelect, options, value]);
+        if (!multiple || isSearching) return;
+        setInputValue(pinned && isOpen ? '' : joinedLabels);
+    }, [multiple, pinned, isOpen, isSearching, joinedLabels]);
 
     useEffect(() => {
-        if (!external || clearOnSelect) return;
+        if (multiple || external || clearOnSelect) return;
+        const option = options.find((o: any) => o.value === value);
+        setInputValue(optionLabel(option));
+    }, [multiple, external, clearOnSelect, options, value]);
+
+    useEffect(() => {
+        if (multiple || !external || clearOnSelect) return;
         const option = optionsRef.current.find((o: any) => o.value === value);
         setInputValue(optionLabel(option));
-    }, [external, clearOnSelect, value]);
+    }, [multiple, external, clearOnSelect, value]);
 
     useEffect(() => {
         const handleClickOutside = (e: any) => {
@@ -141,22 +210,13 @@ const SearchSelect = ({
         };
     }, [closeSelect]);
 
-    const filteredOptionsRef = useRef(filteredOptions);
-    filteredOptionsRef.current = filteredOptions;
-
     useEffect(() => {
         if (!isOpen) {
             setHighlightedIndex(-1);
             return;
         }
-        if (external) return;
-        setHighlightedIndex(filteredOptions.length ? 0 : -1);
-    }, [external, filteredOptions, isOpen]);
-
-    useEffect(() => {
-        if (!isOpen || !external) return;
-        setHighlightedIndex(filteredOptionsRef.current.length ? 0 : -1);
-    }, [external, inputValue, isOpen]);
+        setHighlightedIndex(-1);
+    }, [filteredOptions, isOpen]);
 
     useEffect(() => {
         if (highlightedIndex < 0) return;
@@ -184,6 +244,21 @@ const SearchSelect = ({
     };
 
     const handleSelect = (option: any) => {
+        if (multiple) {
+            const next = selectedValues.includes(option.value)
+                ? selectedValues.filter((item: any) => item !== option.value)
+                : [...selectedValues, option.value];
+
+            setValue?.(
+                options
+                    .filter((item: any) => next.includes(item.value))
+                    .map((item: any) => item.value),
+            );
+            setIsSearching(false);
+            onSelect?.(option);
+            return;
+        }
+
         if (clearOnSelect) {
             setInputValue('');
         } else {
@@ -209,7 +284,7 @@ const SearchSelect = ({
                 }
 
                 setHighlightedIndex((prev: any) =>
-                    prev >= filteredOptions.length - 1 ? 0 : prev + 1,
+                    prev >= filteredOptions.length - 1 ? -1 : prev + 1,
                 );
 
                 break;
@@ -225,7 +300,11 @@ const SearchSelect = ({
                 }
 
                 setHighlightedIndex((prev: any) =>
-                    prev <= 0 ? filteredOptions.length - 1 : prev - 1,
+                    prev === 0
+                        ? -1
+                        : prev < 0
+                          ? filteredOptions.length - 1
+                          : prev - 1,
                 );
 
                 break;
@@ -238,6 +317,16 @@ const SearchSelect = ({
                 ) {
                     e.preventDefault();
                     handleSelect(filteredOptions[highlightedIndex]);
+                } else if (
+                    isOpen &&
+                    isSearching &&
+                    filteredOptions.length === 1
+                ) {
+                    e.preventDefault();
+                    handleSelect(filteredOptions[0]);
+                } else if (multiple && isOpen && !isSearching) {
+                    e.preventDefault();
+                    closeSelect();
                 }
 
                 break;
@@ -253,7 +342,6 @@ const SearchSelect = ({
 
     const ShowSelected = !isSearching && selectedOption;
     const Icon = ShowSelected?.iconObject;
-    const showCategoryDot = Boolean(ShowSelected?.className);
 
     return (
         <div
@@ -263,12 +351,7 @@ const SearchSelect = ({
             <div
                 className={`search_select_input ${error ? 'incorrect_field' : ''} app-transition`}
             >
-                {showCategoryDot ? (
-                    <span
-                        className={`category_dot ${ShowSelected.className}`}
-                        aria-hidden="true"
-                    />
-                ) : Icon ? (
+                {Icon ? (
                     <div className={`search_select_icon ${className}`}>
                         <Icon />
                     </div>
@@ -297,7 +380,7 @@ const SearchSelect = ({
                         e.preventDefault();
 
                         if (isOpen) {
-                            setValue?.('');
+                            setValue?.(multiple ? [] : '');
                             setInputValue('');
                             setIsSearching(false);
                         } else {
@@ -333,17 +416,12 @@ const SearchSelect = ({
                                     (optionRefs.current[index] = el)
                                 }
                                 type="button"
-                                className={`search_select_item ${option.className ?? ''} ${highlightedIndex === index ? 'search_select_item_selected' : ''} app-transition`}
+                                className={`search_select_item ${option.className ?? ''} ${highlightedIndex === index ? 'search_select_item_selected' : ''}${multiple && selectedValues.includes(option.value) ? ' search_select_item_active' : ''} app-transition`}
                                 onMouseDown={() => handleSelect(option)}
                             >
                                 {option.render?.() ?? (
                                     <>
-                                        {option.className ? (
-                                            <span
-                                                className={`category_dot ${option.className}`}
-                                                aria-hidden="true"
-                                            />
-                                        ) : option.iconObject ? (
+                                        {option.iconObject ? (
                                             <div
                                                 className={`search_select_icon ${option.className ?? ''}`}
                                             >
@@ -353,6 +431,10 @@ const SearchSelect = ({
                                         <p>{optionLabel(option)}</p>
                                     </>
                                 )}
+                                {multiple &&
+                                selectedValues.includes(option.value) ? (
+                                    <TickIcon className="search_select_item_check" />
+                                ) : null}
                             </button>
                         ))
                     ) : loading ? null : (
