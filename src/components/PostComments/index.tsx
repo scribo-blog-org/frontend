@@ -111,7 +111,7 @@ const CommentForm = ({
             {title}
 
             <div className="comment_form_content">
-                <CurrentUserBadge asLink={false} />
+                <CurrentUserBadge asLink={false} interactive={false} />
 
                 <RichInputField
                     preset="social"

@@ -12,9 +12,12 @@ const UserBadge = ({
     data,
     className,
     asLink = true,
+    interactive = true,
     avatarOnly = false,
 }: any) => {
     if (!data) return <></>;
+
+    const classes = `user_badge app-transition${avatarOnly ? ' user_badge_avatar_only' : ''}${interactive ? '' : ' user_badge_static'} ${className ?? ''}`;
 
     const content = (
         <>
@@ -38,20 +41,11 @@ const UserBadge = ({
     );
 
     if (!asLink) {
-        return (
-            <div
-                className={`user_badge app-transition ${avatarOnly ? 'user_badge_avatar_only' : ''} ${className ?? ''}`}
-            >
-                {content}
-            </div>
-        );
+        return <div className={classes}>{content}</div>;
     }
 
     return (
-        <Link
-            className={`user_badge app-transition ${avatarOnly ? 'user_badge_avatar_only' : ''} ${className ?? ''}`}
-            href={`/users/${data.nick_name}`}
-        >
+        <Link className={classes} href={`/users/${data.nick_name}`}>
             {content}
         </Link>
     );
