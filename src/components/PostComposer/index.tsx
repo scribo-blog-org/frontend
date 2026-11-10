@@ -16,6 +16,8 @@ import UserAvatar from '../UserBadge/UserAvatar';
 import TextEditorField from '../Ui/TextEditorField';
 import PrimaryButton from '../Ui/PrimaryButton';
 import ActionButton from '../Ui/ActionButton';
+import DangerButton from '../Ui/DangerButton';
+import { ModalFooter } from '../Ui';
 import MediaTile from './MediaTile';
 
 import { fetchLinkPreview } from '../../api/linkPreview.api';
@@ -46,8 +48,30 @@ import {
 
 import MediaInsertIcon from '../../assets/svg/media-insert.svg';
 import LinkIcon from '../../assets/svg/link-icon.svg';
+import WarningIcon from '../../assets/svg/warning-icon.svg';
 
 import './PostComposer.scss';
+
+const ConfirmContent = ({
+    hint,
+    keepLabel,
+    confirmLabel,
+    onKeep,
+    onConfirm,
+}: {
+    hint: string;
+    keepLabel: string;
+    confirmLabel: string;
+    onKeep: () => void;
+    onConfirm: () => void;
+}) => (
+    <ModalFooter hint={hint}>
+        <ActionButton onClick={onKeep}>{keepLabel}</ActionButton>
+        <DangerButton onClick={onConfirm} isActive={true}>
+            {confirmLabel}
+        </DangerButton>
+    </ModalFooter>
+);
 
 type PostComposerProps = {
     mode: 'create' | 'edit';
@@ -141,21 +165,25 @@ const PostComposer = ({
     onSubmit,
     onCancel,
 }: PostComposerProps) => {
-    const { profile, showToast } = useContext(AppContext);
+    const {
+        profile,
+        showToast,
+        modalWindow,
+        showModalWindow,
+        requestCloseModal,
+    } = useContext(AppContext);
 
     const [html, setHtml] = useState(initialHtml);
     const [tiles, setTiles] = useState<ComposerTile[]>(() =>
         tilesFromMedia(initialMedia),
     );
     const [dragging, setDragging] = useState(false);
-    const [confirmDiscard, setConfirmDiscard] = useState(false);
     const [linkOpen, setLinkOpen] = useState(false);
     const [linkValue, setLinkValue] = useState('');
     const [linkSelection, setLinkSelection] = useState(false);
     const editorApi = useRef<any>(null);
     const [linkPreview, setLinkPreview] = useState<UrlPreview | null>(null);
     const [progress, setProgress] = useState(0);
-    const [confirmAbort, setConfirmAbort] = useState(false);
 
     const fileInput = useRef<HTMLInputElement>(null);
     const controller = useRef<AbortController | null>(null);
@@ -262,32 +290,76 @@ const PostComposer = ({
             });
         };
     }, []);
+    const abortUpload = useCallback(() => {
+        controller.current?.abort();
+    }, []);
+
     const requestCancel = useCallback(() => {
         if (submitting) {
-            setConfirmAbort(true);
+            showModalWindow({
+                title: 'Cancel the upload?',
+                subtitle: 'The post will not be published',
+                icon: <WarningIcon />,
+                size: 'small',
+                content: (
+                    <ConfirmContent
+                        hint="Uploaded files will be discarded"
+                        keepLabel="Keep uploading"
+                        confirmLabel="Cancel upload"
+                        onKeep={requestCloseModal}
+                        onConfirm={() => {
+                            abortUpload();
+                            requestCloseModal();
+                        }}
+                    />
+                ),
+                showCloseButton: false,
+                closeFunc: () => {},
+            });
             return;
         }
-        if (dirty && !confirmDiscard) {
-            setConfirmDiscard(true);
+        if (dirty) {
+            showModalWindow({
+                title: 'Discard this post?',
+                subtitle: 'Your changes will be lost',
+                icon: <WarningIcon />,
+                size: 'small',
+                content: (
+                    <ConfirmContent
+                        hint="This cannot be undone"
+                        keepLabel="Keep editing"
+                        confirmLabel="Discard"
+                        onKeep={requestCloseModal}
+                        onConfirm={() => {
+                            requestCloseModal();
+                            onCancel();
+                        }}
+                    />
+                ),
+                showCloseButton: false,
+                closeFunc: () => {},
+            });
             return;
         }
         onCancel();
-    }, [submitting, dirty, confirmDiscard, onCancel]);
-
-    const abortUpload = () => {
-        controller.current?.abort();
-        setConfirmAbort(false);
-    };
+    }, [
+        submitting,
+        dirty,
+        onCancel,
+        abortUpload,
+        showModalWindow,
+        requestCloseModal,
+    ]);
 
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && !linkOpen) {
+            if (event.key === 'Escape' && !linkOpen && !modalWindow) {
                 requestCancel();
             }
         };
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
-    }, [requestCancel, linkOpen]);
+    }, [requestCancel, linkOpen, modalWindow]);
 
     useEffect(() => {
         if (!dirty) {
@@ -484,7 +556,6 @@ const PostComposer = ({
         const next = new AbortController();
         controller.current = next;
         setProgress(0);
-        setConfirmAbort(false);
         onSubmit({
             formData: buildPostFormData(html, tiles),
             onProgress: setProgress,
@@ -502,39 +573,7 @@ const PostComposer = ({
             <PageHeader
                 title={title}
                 actions={
-                    confirmAbort && submitting ? (
-                        <>
-                            <span className="composer_confirm">
-                                Cancel the upload?
-                            </span>
-                            <ActionButton
-                                onClick={() => setConfirmAbort(false)}
-                            >
-                                Keep uploading
-                            </ActionButton>
-                            <ActionButton onClick={abortUpload}>
-                                Cancel upload
-                            </ActionButton>
-                        </>
-                    ) : confirmDiscard ? (
-                        <>
-                            <span className="composer_confirm">
-                                Discard this post?
-                            </span>
-                            <ActionButton
-                                onClick={() => setConfirmDiscard(false)}
-                            >
-                                Keep editing
-                            </ActionButton>
-                            <ActionButton onClick={onCancel}>
-                                Discard
-                            </ActionButton>
-                        </>
-                    ) : (
-                        <ActionButton onClick={requestCancel}>
-                            Cancel
-                        </ActionButton>
-                    )
+                    <ActionButton onClick={requestCancel}>Cancel</ActionButton>
                 }
             />
 

@@ -157,14 +157,26 @@ const Posts = ({
             lastResetKey.current !== null &&
             lastResetKey.current !== resetKey
         ) {
-            scrollTo('posts_column', 'start');
+            const column = document.getElementById('posts_column');
+
+            if (column && column.getBoundingClientRect().top < 0) {
+                scrollTo('posts_column', 'start');
+            }
         }
 
         lastResetKey.current = resetKey;
     }, [isControlled, resetKey]);
 
     const handleFilters = (id: string) => {
-        setTab(id === 'subscription' ? 'following' : 'all');
+        const next = id === 'subscription' ? 'following' : 'all';
+
+        if (next === tab) {
+            scrollTo('posts_column', 'start');
+            feed.refresh?.();
+            return;
+        }
+
+        setTab(next);
     };
 
     return (

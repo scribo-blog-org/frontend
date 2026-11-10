@@ -6,11 +6,6 @@
     gap: var(--space-5);
     @include page-column(var(--page-width-medium));
 
-    &_confirm {
-        font-size: var(--text-sm);
-        color: var(--light-text-color);
-    }
-
     &_card {
         position: relative;
         display: flex;

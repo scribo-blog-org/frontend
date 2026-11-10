@@ -2,7 +2,6 @@
 
 import { useMemo } from 'react';
 import { useSearchParams } from '@/navigation';
-import Banner from '../../components/Banner';
 import Posts from '../../components/Posts/index';
 import './HomePage.scss';
 
@@ -26,7 +25,6 @@ const HomePage = ({
 
     return (
         <>
-            <Banner />
             <Posts
                 postsFilters={filtersFromUrl}
                 initialPosts={initialPosts}
