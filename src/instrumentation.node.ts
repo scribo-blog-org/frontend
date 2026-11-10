@@ -12,6 +12,25 @@ type ErrorContext = {
 const REQUEST_LOG_SKIPPED =
     /^\/(_next|__nextjs|uploads|favicon|status)|\.[a-z0-9]+$/i;
 const HOOKED = Symbol.for('scribo.requestLogHooked');
+const SENSITIVE_QUERY =
+    /pass|secret|token|auth|cookie|key|signature|code|email/i;
+
+function queryOf(url: string): Record<string, string> | null {
+    const index = url.indexOf('?');
+    if (index < 0) return null;
+    const out: Record<string, string> = {};
+    let count = 0;
+    for (const [key, value] of new URLSearchParams(url.slice(index + 1))) {
+        if (key === '_rsc') continue;
+        if (count++ >= 20) break;
+        const name = key.slice(0, 60);
+        const safe = SENSITIVE_QUERY.test(key)
+            ? '[redacted]'
+            : value.slice(0, 120);
+        out[name] = name in out ? `${out[name]},${safe}` : safe;
+    }
+    return Object.keys(out).length ? out : null;
+}
 
 function hookRequests() {
     const proto = http.Server.prototype as unknown as Record<
@@ -35,6 +54,7 @@ function hookRequests() {
                 const status = res.statusCode;
                 const totalMs = Math.round(performance.now() - started);
                 const id = req.headers['x-request-id'];
+                const query = queryOf(req.url ?? '');
                 rlog.write(
                     status >= 500 ? 'error' : 'info',
                     `${req.method} ${path}`,
@@ -43,6 +63,7 @@ function hookRequests() {
                         method: req.method,
                         path,
                         total_ms: totalMs,
+                        ...(query ? { query } : {}),
                         request_id: Array.isArray(id) ? id[0] : (id ?? null),
                     },
                 );

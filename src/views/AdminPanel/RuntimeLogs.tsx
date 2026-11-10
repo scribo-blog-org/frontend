@@ -28,7 +28,7 @@ import InfiniteScroll from '../../components/Ui/InfiniteScroll';
 import { useOverlayPresence } from '../../components/Ui/useOverlayEnter';
 
 import LogSearch from './LogSearch';
-import RuntimeLogDetails from './RuntimeLogDetails';
+import RuntimeLogDetails, { queryString } from './RuntimeLogDetails';
 import { useLogsToolbar } from './logsToolbar';
 import { formatDuration } from './logFormat';
 import { LEVELS } from './logTypes';
@@ -122,6 +122,11 @@ const RuntimeRow = ({
                 <span className="rt_time">{clock(entry.ts)}</span>
                 <span className="rt_msg">
                     {entry.msg}
+                    {queryString(entry.data?.query) ? (
+                        <span className="rt_note">
+                            {queryString(entry.data?.query)}
+                        </span>
+                    ) : null}
                     {note ? <span className="rt_note">{note}</span> : null}
                 </span>
                 <span className={`rt_status${statusTone(status)}`}>

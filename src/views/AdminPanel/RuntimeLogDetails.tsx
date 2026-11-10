@@ -23,10 +23,23 @@ const SHOWN_ELSEWHERE = new Set([
     'db_queries',
     'user',
     'request_id',
+    'query',
     'error',
     'error_message',
     'stack',
 ]);
+
+export const queryString = (query: unknown) => {
+    if (!query || typeof query !== 'object') {
+        return '';
+    }
+
+    const text = Object.entries(query as Record<string, string>)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('&');
+
+    return text ? `?${text}` : '';
+};
 
 const formatMoment = (date: any) =>
     new Date(date).toLocaleString('ru-RU', {
@@ -115,6 +128,15 @@ const RuntimeLogDetails = ({
         ? [
               { label: 'Method', value: String(data.method) },
               { label: 'Path', value: String(data.path), mono: true },
+              ...(queryString(data.query)
+                  ? [
+                        {
+                            label: 'Query',
+                            value: queryString(data.query),
+                            mono: true,
+                        },
+                    ]
+                  : []),
               { label: 'Status', value: String(data.status) },
               ...(duration !== null
                   ? [
