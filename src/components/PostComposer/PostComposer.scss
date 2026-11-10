@@ -309,6 +309,19 @@
         padding-top: var(--space-4);
     }
 
+    &_confirm_content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    &_confirm_media {
+        margin: 0;
+        padding-top: var(--space-2);
+        font-size: var(--text-sm);
+        color: var(--fg-muted);
+    }
+
     &_hint {
         flex: 1;
         min-width: 0;

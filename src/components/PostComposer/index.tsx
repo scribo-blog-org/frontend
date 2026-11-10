@@ -1,6 +1,7 @@
 'use client';
 
 import {
+    type ReactNode,
     useCallback,
     useContext,
     useEffect,
@@ -18,7 +19,8 @@ import PrimaryButton from '../Ui/PrimaryButton';
 import ActionButton from '../Ui/ActionButton';
 import CancelButton from '../Ui/CancelButton';
 import DangerButton from '../Ui/DangerButton';
-import { ModalFooter } from '../Ui';
+import { ModalFooter, Panel } from '../Ui';
+import PostPreview from '../PostPreview';
 import MediaTile from './MediaTile';
 import MediaViewer, { type MediaViewerItem } from '../MediaViewer';
 
@@ -54,25 +56,64 @@ import WarningIcon from '../../assets/svg/warning-icon.svg';
 
 import './PostComposer.scss';
 
+const DraftPreview = ({
+    html,
+    author,
+    mediaCount,
+}: {
+    html: string;
+    author: unknown;
+    mediaCount: number;
+}) => {
+    const hasText = html.trim() !== '';
+
+    return (
+        <Panel>
+            {!hasText && !mediaCount ? (
+                <p className="composer_confirm_media">The post is empty</p>
+            ) : null}
+            {hasText ? (
+                <PostPreview
+                    post={{ content_text: html, author }}
+                    media="none"
+                    asLinkAuthor={false}
+                />
+            ) : null}
+            {mediaCount ? (
+                <p className="composer_confirm_media">
+                    {mediaCount === 1
+                        ? '1 media file attached'
+                        : `${mediaCount} media files attached`}
+                </p>
+            ) : null}
+        </Panel>
+    );
+};
+
 const ConfirmContent = ({
     hint,
     keepLabel,
     confirmLabel,
+    preview,
     onKeep,
     onConfirm,
 }: {
     hint: string;
     keepLabel: string;
     confirmLabel: string;
+    preview?: ReactNode;
     onKeep: () => void;
     onConfirm: () => void;
 }) => (
-    <ModalFooter hint={hint}>
-        <ActionButton onClick={onKeep}>{keepLabel}</ActionButton>
-        <DangerButton onClick={onConfirm} isActive={true}>
-            {confirmLabel}
-        </DangerButton>
-    </ModalFooter>
+    <div className="composer_confirm_content">
+        {preview}
+        <ModalFooter hint={hint}>
+            <ActionButton onClick={onKeep}>{keepLabel}</ActionButton>
+            <DangerButton onClick={onConfirm} isActive={true}>
+                {confirmLabel}
+            </DangerButton>
+        </ModalFooter>
+    </div>
 );
 
 type PostComposerProps = {
@@ -310,6 +351,13 @@ const PostComposer = ({
                 size: 'small',
                 content: (
                     <ConfirmContent
+                        preview={
+                            <DraftPreview
+                                html={html}
+                                author={profile}
+                                mediaCount={tilesRef.current.length}
+                            />
+                        }
                         hint="Uploaded files will be discarded"
                         keepLabel="Keep uploading"
                         confirmLabel="Cancel upload"
@@ -333,6 +381,13 @@ const PostComposer = ({
                 size: 'small',
                 content: (
                     <ConfirmContent
+                        preview={
+                            <DraftPreview
+                                html={html}
+                                author={profile}
+                                mediaCount={tilesRef.current.length}
+                            />
+                        }
                         hint="This cannot be undone"
                         keepLabel="Keep editing"
                         confirmLabel="Discard"
@@ -352,6 +407,8 @@ const PostComposer = ({
     }, [
         submitting,
         dirty,
+        html,
+        profile,
         onCancel,
         abortUpload,
         showModalWindow,
