@@ -310,10 +310,13 @@
     }
 
     &_hint {
+        flex: 1;
+        min-width: 0;
         font-size: var(--text-sm);
         color: var(--fg-subtle);
     }
 
+    &_cancel,
     &_publish {
         min-width: 96px;
         border-radius: 999px;

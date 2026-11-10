@@ -623,12 +623,7 @@ const PostComposer = ({
 
     return (
         <div className="composer">
-            <PageHeader
-                title={title}
-                actions={
-                    <ActionButton onClick={requestCancel}>Cancel</ActionButton>
-                }
-            />
+            <PageHeader title={title} />
 
             <div
                 className={`composer_card${dragging ? ' composer_card_dragging' : ''}`}
@@ -726,6 +721,14 @@ const PostComposer = ({
                                                         }
                                                     }}
                                                 />
+                                                <PrimaryButton
+                                                    onClick={addLink}
+                                                    disabled={
+                                                        !classifyLink(linkValue)
+                                                    }
+                                                >
+                                                    Add
+                                                </PrimaryButton>
                                                 <CancelButton
                                                     className="composer_link_cancel"
                                                     onClick={() => {
@@ -735,14 +738,6 @@ const PostComposer = ({
                                                 >
                                                     Cancel
                                                 </CancelButton>
-                                                <PrimaryButton
-                                                    onClick={addLink}
-                                                    disabled={
-                                                        !classifyLink(linkValue)
-                                                    }
-                                                >
-                                                    Add
-                                                </PrimaryButton>
                                             </div>
                                             {linkSelection ? (
                                                 <p className="composer_link_hint">
@@ -875,6 +870,12 @@ const PostComposer = ({
                 </div>
 
                 <div className="composer_footer">
+                    <ActionButton
+                        className="composer_cancel"
+                        onClick={requestCancel}
+                    >
+                        Cancel
+                    </ActionButton>
                     <span className="composer_hint">
                         {!verdict.ok && (hasText || tiles.length)
                             ? verdict.reason
