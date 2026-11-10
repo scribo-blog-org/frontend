@@ -157,12 +157,7 @@
         }
 
         &.search_select_item_active {
-            background-color: var(--section-item-hover-background-color);
             color: var(--text-color);
-
-            p {
-                font-weight: 500;
-            }
         }
 
         p {
