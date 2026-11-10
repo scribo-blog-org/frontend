@@ -284,7 +284,7 @@ const SearchSelect = ({
                 }
 
                 setHighlightedIndex((prev: any) =>
-                    prev >= filteredOptions.length - 1 ? 0 : prev + 1,
+                    prev >= filteredOptions.length - 1 ? -1 : prev + 1,
                 );
 
                 break;
@@ -300,7 +300,11 @@ const SearchSelect = ({
                 }
 
                 setHighlightedIndex((prev: any) =>
-                    prev <= 0 ? filteredOptions.length - 1 : prev - 1,
+                    prev === 0
+                        ? -1
+                        : prev < 0
+                          ? filteredOptions.length - 1
+                          : prev - 1,
                 );
 
                 break;
