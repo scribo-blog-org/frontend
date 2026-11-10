@@ -93,6 +93,7 @@ Open `http://localhost:3000`. `next dev` reads `.env`.
 | --- | --- |
 | `NEXT_PUBLIC_APP_API_URL` | API origin without a trailing slash. Locally `http://localhost:3001` |
 | `NEXT_PUBLIC_SOCKET_URL` | Locally `ws://localhost:3002` |
+| `NEXT_PUBLIC_POST_MEDIA_MAX_MB` | Media limit per post in MB, `100` by default. Keep equal to `POST_MEDIA_MAX_MB` on the backend. Injected at runtime like the other `NEXT_PUBLIC_*` |
 | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` | Web client id, only if Google sign-in is wanted |
 | `NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL` | Host used for SEO and share links, without a scheme. Locally `localhost:3000` |
 

@@ -3,6 +3,7 @@ const PUBLIC_ENV_KEYS = [
     'NEXT_PUBLIC_GOOGLE_CLIENT_ID',
     'NEXT_PUBLIC_APP_VERCEL_PROJECT_PRODUCTION_URL',
     'NEXT_PUBLIC_SOCKET_URL',
+    'NEXT_PUBLIC_POST_MEDIA_MAX_MB',
 ] as const;
 
 export type PublicEnvKey = (typeof PUBLIC_ENV_KEYS)[number];

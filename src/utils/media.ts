@@ -1,4 +1,6 @@
-const configuredMb = Number(process.env.NEXT_PUBLIC_POST_MEDIA_MAX_MB);
+import { publicEnv } from '../config/publicEnv';
+
+const configuredMb = Number(publicEnv('NEXT_PUBLIC_POST_MEDIA_MAX_MB'));
 
 export const MAX_MEDIA_MB =
     Number.isFinite(configuredMb) && configuredMb > 0 ? configuredMb : 100;
