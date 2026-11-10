@@ -253,6 +253,15 @@ const RuntimeLogs = () => {
             const params = query();
             const paramsKey = JSON.stringify(params);
 
+            if (!sources) {
+                setItems([]);
+                setNext(null);
+                setAvailable(true);
+                loadedRef.current = paramsKey;
+                setLoadedKey(paramsKey);
+                return;
+            }
+
             if (silent && loadedRef.current !== paramsKey) {
                 return;
             }
@@ -295,7 +304,7 @@ const RuntimeLogs = () => {
             loadedRef.current = paramsKey;
             setLoadedKey(paramsKey);
         },
-        [query, showToast],
+        [query, showToast, sources],
     );
 
     const loadNext = useCallback(async () => {

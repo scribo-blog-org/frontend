@@ -3,13 +3,20 @@
 import { useState } from 'react';
 
 import ActionButton from '../../components/Ui/ActionButton';
+import Tabs from '../../components/Ui/Tabs';
 
 import ChevronDownIcon from '../../assets/svg/chevron-down.svg';
 import PlayIcon from '../../assets/svg/play.svg';
 import PauseIcon from '../../assets/svg/pause.svg';
 import RefreshIcon from '../../assets/svg/refresh.svg';
+import TickIcon from '../../assets/svg/tick.svg';
 
-import { RUNTIME_SERVICES } from './logsToolbar';
+import { RUNTIME_SERVICES, useLogsToolbar } from './logsToolbar';
+
+const VIEW_ITEMS = [
+    { key: 'events', title: 'Events' },
+    { key: 'runtime', title: 'Runtime' },
+];
 
 export const LogsFilters = ({
     activeCount = 0,
@@ -19,12 +26,19 @@ export const LogsFilters = ({
     children: any;
 }) => {
     const [open, setOpen] = useState<boolean>(false);
+    const { view, setView } = useLogsToolbar();
 
     return (
         <aside
             className={`logs_filters${open ? ' logs_filters_open' : ''}`}
             aria-label="Filters"
         >
+            <Tabs
+                label="Logs"
+                items={VIEW_ITEMS}
+                activeKey={view}
+                onChange={setView}
+            />
             <button
                 type="button"
                 className="logs_filters_toggle"
@@ -113,20 +127,20 @@ export const ServiceChecks = ({
                         type="checkbox"
                         checked={checked}
                         onChange={() => {
-                            const next = checked
-                                ? value.filter((item) => item !== service)
-                                : RUNTIME_SERVICES.filter(
-                                      (item) =>
-                                          item === service ||
-                                          value.includes(item),
-                                  );
-
-                            if (next.length) {
-                                onChange(next);
-                            }
+                            onChange(
+                                checked
+                                    ? value.filter((item) => item !== service)
+                                    : RUNTIME_SERVICES.filter(
+                                          (item) =>
+                                              item === service ||
+                                              value.includes(item),
+                                      ),
+                            );
                         }}
                     />
-                    <span className="logs_check_box" aria-hidden="true" />
+                    <span className="logs_check_box" aria-hidden="true">
+                        <TickIcon />
+                    </span>
                     <span className="logs_check_label">
                         {SERVICE_LABELS[service]}
                     </span>

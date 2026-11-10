@@ -61,6 +61,10 @@ export const useLogsToolbarState = (): LogsToolbar => {
         return LOG_VIEWS.includes(value) ? value : 'events';
     });
     const [services, setServices] = useState<string[]>(() => {
+        if (params.get('services') === 'none') {
+            return [];
+        }
+
         const picked = (params.get('services') ?? '')
             .split(',')
             .filter((item) => RUNTIME_SERVICES.includes(item));
