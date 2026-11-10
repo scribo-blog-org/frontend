@@ -16,6 +16,7 @@ import UserAvatar from '../UserBadge/UserAvatar';
 import TextEditorField from '../Ui/TextEditorField';
 import PrimaryButton from '../Ui/PrimaryButton';
 import ActionButton from '../Ui/ActionButton';
+import CancelButton from '../Ui/CancelButton';
 import DangerButton from '../Ui/DangerButton';
 import { ModalFooter } from '../Ui';
 import MediaTile from './MediaTile';
@@ -725,24 +726,23 @@ const PostComposer = ({
                                                         }
                                                     }}
                                                 />
-                                                <button
-                                                    type="button"
+                                                <CancelButton
+                                                    className="composer_link_cancel"
                                                     onClick={() => {
                                                         closeLink();
                                                         editorApi.current?.focus();
                                                     }}
                                                 >
                                                     Cancel
-                                                </button>
-                                                <button
-                                                    type="button"
+                                                </CancelButton>
+                                                <PrimaryButton
                                                     onClick={addLink}
                                                     disabled={
                                                         !classifyLink(linkValue)
                                                     }
                                                 >
                                                     Add
-                                                </button>
+                                                </PrimaryButton>
                                             </div>
                                             {linkSelection ? (
                                                 <p className="composer_link_hint">
