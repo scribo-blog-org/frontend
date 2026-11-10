@@ -727,6 +727,15 @@ const PostComposer = ({
                                                 />
                                                 <button
                                                     type="button"
+                                                    onClick={() => {
+                                                        closeLink();
+                                                        editorApi.current?.focus();
+                                                    }}
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    type="button"
                                                     onClick={addLink}
                                                     disabled={
                                                         !classifyLink(linkValue)
@@ -825,7 +834,7 @@ const PostComposer = ({
                                     </button>
                                     <button
                                         type="button"
-                                        className="app-transition"
+                                        className={`app-transition${linkOpen ? ' text_editor_tool_active' : ''}`}
                                         aria-label="Add link"
                                         title="Add link"
                                         aria-pressed={linkOpen}
