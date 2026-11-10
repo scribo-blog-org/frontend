@@ -380,7 +380,7 @@ const RuntimeLogs = () => {
                 </FilterField>
                 <FilterField label="Level">
                     <SearchSelect
-                        multiple
+                        multiple="pinned"
                         options={LEVEL_OPTIONS}
                         value={levelValues(levelFilter)}
                         placeholder="All levels"
