@@ -18,7 +18,7 @@ const guestIcon = (useIcon: any) =>
 const CurrentUserBadge = ({
     className,
     asLink = true,
-    interactive = true,
+    interactive = asLink,
     guestAsIcon = false,
     avatarOnly = false,
 }: any) => {

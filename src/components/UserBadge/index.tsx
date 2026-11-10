@@ -12,7 +12,7 @@ const UserBadge = ({
     data,
     className,
     asLink = true,
-    interactive = true,
+    interactive = asLink,
     avatarOnly = false,
 }: any) => {
     if (!data) return <></>;
