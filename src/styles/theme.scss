@@ -189,6 +189,7 @@ body {
 
     --tooltip-background-color: #ffffff;
     --tooltip-text-color: #636363;
+    --tooltip-border-color: #b5b5b5;
 
     --chip-active-button-text-color: var(--inverse-fg);
     --chip-active-button-background-color: var(--inverse-bg);
@@ -225,6 +226,7 @@ body {
 body.dark-theme {
     --tooltip-background-color: #1e1e1e;
     --tooltip-text-color: #b5b5b5;
+    --tooltip-border-color: #252525;
     --accent-blue: #5b9bff;
     --bg: #161616;
     --bg-subtle: #1b1b1b;
