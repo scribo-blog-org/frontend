@@ -56,7 +56,9 @@ export const PRODUCTION_ORIGIN = 'https://scribo.pp.ua';
 export function isIndexableSite() {
     const origin = getSiteOrigin();
 
-    return origin === PRODUCTION_ORIGIN || origin.startsWith('http://localhost');
+    return (
+        origin === PRODUCTION_ORIGIN || origin.startsWith('http://localhost')
+    );
 }
 
 export function absoluteUrl(path: any = '/') {
