@@ -236,6 +236,7 @@ const PostComposer = ({
 
     const fileInput = useRef<HTMLInputElement>(null);
     const controller = useRef<AbortController | null>(null);
+    const [leaving, setLeaving] = useState<Set<string>>(() => new Set());
     const tilesRef = useRef<ComposerTile[]>(tiles);
     tilesRef.current = tiles;
 
@@ -326,7 +327,23 @@ const PostComposer = ({
         if (tile && isBlobUrl(tile.previewUrl)) {
             URL.revokeObjectURL(tile.previewUrl);
         }
-        setTiles((current) => current.filter((item) => item.key !== key));
+        const remove = () =>
+            setTiles((current) => current.filter((item) => item.key !== key));
+
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            remove();
+            return;
+        }
+
+        setLeaving((current) => new Set(current).add(key));
+        window.setTimeout(() => {
+            remove();
+            setLeaving((current) => {
+                const next = new Set(current);
+                next.delete(key);
+                return next;
+            });
+        }, 240);
     };
 
     useEffect(() => {
@@ -861,6 +878,9 @@ const PostComposer = ({
                                                     uploading={submitting}
                                                     progress={progress}
                                                     disabled={submitting}
+                                                    leaving={leaving.has(
+                                                        tile.key,
+                                                    )}
                                                     onRemove={() =>
                                                         removeTile(tile.key)
                                                     }

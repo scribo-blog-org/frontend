@@ -9,6 +9,8 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 
+import { useOverlayPresence } from '../useOverlayEnter';
+
 import './DateTimeField.scss';
 
 import CalendarIcon from '../../../assets/svg/calendar-icon.svg';
@@ -131,6 +133,7 @@ const DateTimeField = ({
     const minDate = parse(min ?? '');
     const maxDate = parse(max ?? '');
     const [open, setOpen] = useState<boolean>(false);
+    const { mounted, visible } = useOverlayPresence(open);
     const [view, setView] = useState<Date>(() => current ?? new Date());
     const [hours, setHours] = useState<string>(
         current ? pad(current.getHours()) : defaultTime.slice(0, 2),
@@ -195,10 +198,10 @@ const DateTimeField = ({
     }, [align]);
 
     useLayoutEffect(() => {
-        if (open) {
+        if (mounted) {
             place();
         }
-    }, [open, place, view, withTime]);
+    }, [mounted, place, view, withTime]);
 
     useEffect(() => {
         if (!open) {
@@ -338,11 +341,11 @@ const DateTimeField = ({
                 <CalendarIcon className="dt_field_icon" />
             </div>
 
-            {open
+            {mounted
                 ? createPortal(
                       <div
                           ref={popRef}
-                          className="dt_pop"
+                          className={`dt_pop${visible ? ' dt_pop_visible' : ''}`}
                           style={{ top: pos.top, left: pos.left }}
                           role="dialog"
                           aria-label={label}

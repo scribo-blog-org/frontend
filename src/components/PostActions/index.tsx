@@ -19,17 +19,11 @@ import LikeIcon from '../../assets/svg/like-outline.svg';
 import FilledLikeIcon from '../../assets/svg/like-filled.svg';
 
 import Tooltip from '../Ui/Tooltip/index';
+import Presence from '../Ui/Presence';
 import SharePostModal from '../SharePostModal';
 import { postDisplayTitle } from '../../utils/postText';
 
-import Sceleton from '../Ui/Sceleton/Sceleton';
-
-const PostActions = ({
-    className,
-    article,
-    setArticle,
-    isLoading = false,
-}: any) => {
+const PostActions = ({ className, article, setArticle }: any) => {
     const {
         profile,
         setProfile,
@@ -40,6 +34,8 @@ const PostActions = ({
     const [isSaved, setIsSaved] = useState<any>(
         hasId(profile?.saved_posts, article?._id),
     );
+
+    const [popped, setPopped] = useState({ like: false, save: false });
 
     const likeBusy = useRef(false);
     const likeWanted = useRef<any>(null);
@@ -79,6 +75,8 @@ const PostActions = ({
         typeof article.comments_count === 'number'
             ? article.comments_count
             : getCommentsCount(article.comments);
+    const isLiked = hasId(article.likes, profile?._id);
+    const likesCount = article.likes?.length ?? 0;
     const viewsCount = Number(article.views_count || article.views || 0);
     const firstCommentId = Array.isArray(article.comments)
         ? article.comments.find((comment: any) => comment?._id)?._id
@@ -163,6 +161,7 @@ const PostActions = ({
         const nextLiked = !currentlyWantedLiked;
 
         likeWanted.current = nextLiked;
+        setPopped((prev) => ({ ...prev, like: true }));
 
         patchArticle((current: any) => ({
             ...current,
@@ -275,6 +274,7 @@ const PostActions = ({
         const nextSaved = !currentlyWantedSaved;
 
         savedWanted.current = nextSaved;
+        setPopped((prev) => ({ ...prev, save: true }));
         setIsSaved(nextSaved);
 
         flushSave();
@@ -282,79 +282,87 @@ const PostActions = ({
 
     return (
         <div className={`post_actions ${className ?? ''}`}>
-            <Sceleton
-                isLoading={isLoading}
-                rounded={true}
-                className="post_actions_left_side"
-            >
-                <div className="post_actions_left_side">
-                    <Tooltip
-                        text={
-                            hasId(article.likes, profile?._id)
-                                ? 'Unlike'
-                                : 'Like'
-                        }
-                        clickable={true}
+            <div className="post_actions_left_side">
+                <Tooltip text={isLiked ? 'Unlike' : 'Like'} clickable={true}>
+                    <button
+                        type="button"
+                        className="post_actions_button app-transition"
+                        onClick={doLike}
                     >
-                        <button
-                            type="button"
-                            className="post_actions_button app-transition"
-                            onClick={doLike}
+                        <span
+                            key={isLiked ? 'on' : 'off'}
+                            className={
+                                popped.like ? 'post_actions_pop' : undefined
+                            }
                         >
-                            {hasId(article.likes, profile?._id) ? (
-                                <FilledLikeIcon />
-                            ) : (
-                                <LikeIcon />
-                            )}
-                            <p>
-                                {article.likes?.length > 0
-                                    ? article.likes.length
-                                    : ''}
-                            </p>
-                        </button>
-                    </Tooltip>
-                    <Tooltip
-                        text={'Go to comments'}
-                        className="post_actions_comment"
-                        clickable={true}
-                    >
-                        <Link
-                            className="post_actions_button post_actions_comment app-transition"
-                            href={`/posts/${article._id}${firstCommentId ? `?comment=${firstCommentId}` : ''}`}
+                            {isLiked ? <FilledLikeIcon /> : <LikeIcon />}
+                        </span>
+                        <p
+                            key={likesCount}
+                            className={
+                                popped.like
+                                    ? 'post_actions_count_pop'
+                                    : undefined
+                            }
                         >
-                            <CommentIcon />
-                            {commentsCount > 0 ? <p>{commentsCount}</p> : <></>}
-                        </Link>
-                    </Tooltip>
-                    <Tooltip
-                        text={isSaved ? 'Remove from saved' : 'Save'}
-                        clickable={true}
+                            {likesCount > 0 ? likesCount : ''}
+                        </p>
+                    </button>
+                </Tooltip>
+                <Tooltip
+                    text={'Go to comments'}
+                    className="post_actions_comment"
+                    clickable={true}
+                >
+                    <Link
+                        className="post_actions_button post_actions_comment app-transition"
+                        href={`/posts/${article._id}${firstCommentId ? `?comment=${firstCommentId}` : ''}`}
                     >
-                        <button
-                            type="button"
-                            className="post_actions_button app-transition"
-                            onClick={doSave}
+                        <CommentIcon />
+                        <Presence
+                            as="p"
+                            value={commentsCount}
+                            animateEnter={false}
+                        >
+                            {(count) => count}
+                        </Presence>
+                    </Link>
+                </Tooltip>
+                <Tooltip
+                    text={isSaved ? 'Remove from saved' : 'Save'}
+                    clickable={true}
+                >
+                    <button
+                        type="button"
+                        className="post_actions_button app-transition"
+                        onClick={doSave}
+                    >
+                        <span
+                            key={isSaved ? 'on' : 'off'}
+                            className={
+                                popped.save ? 'post_actions_pop' : undefined
+                            }
                         >
                             {isSaved ? <BookMarkFilled /> : <BookMarkBorder />}
-                        </button>
-                    </Tooltip>
-                    <Tooltip text="Views">
-                        <span className="post_actions_button post_actions_views">
-                            <EyeIcon />
-                            <p>{viewsCount}</p>
                         </span>
-                    </Tooltip>
-                    <Tooltip text="Share" clickable={true}>
-                        <button
-                            type="button"
-                            className="post_actions_button app-transition"
-                            onClick={openShareModal}
-                        >
-                            <ShareIcon />
-                        </button>
-                    </Tooltip>
-                </div>
-            </Sceleton>
+                    </button>
+                </Tooltip>
+                <Tooltip text="Views">
+                    <span className="post_actions_button post_actions_views">
+                        <EyeIcon />
+                        <p>{viewsCount}</p>
+                    </span>
+                </Tooltip>
+                <Tooltip text="Share" clickable={true}>
+                    <button
+                        type="button"
+                        className="post_actions_button app-transition"
+                        onClick={openShareModal}
+                    >
+                        <ShareIcon />
+                    </button>
+                </Tooltip>
+            </div>
         </div>
     );
 };

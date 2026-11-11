@@ -8,12 +8,20 @@ type Props = {
     onChange: (value: string) => void;
     placeholder: string;
     length?: number;
+    inputMode?: 'text' | 'numeric';
 };
 
-const LogSearch = ({ value, onChange, placeholder, length = 100 }: Props) => (
+const LogSearch = ({
+    value,
+    onChange,
+    placeholder,
+    length = 100,
+    inputMode,
+}: Props) => (
     <div className="logs_search">
         <InputField
             type="text"
+            inputMode={inputMode}
             value={value}
             placeholder={placeholder}
             onChange={(event: any) => onChange(event.target.value)}

@@ -22,6 +22,12 @@ export type LogsToolbar = {
     setDateFrom: (value: string) => void;
     dateTo: string;
     setDateTo: (value: string) => void;
+    statusFilter: string;
+    setStatusFilter: (value: string) => void;
+    minMs: string;
+    setMinMs: (value: string) => void;
+    maxMs: string;
+    setMaxMs: (value: string) => void;
     live: boolean;
     setLive: (value: boolean | ((prev: boolean) => boolean)) => void;
     typeFilter: string;
@@ -64,6 +70,11 @@ const MOMENT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
 
 const momentParam = (value: string | null) =>
     value && MOMENT.test(value) ? value : '';
+
+// numeric filters are kept as digit strings so the inputs stay editable
+export const digitsOnly = (value: string) => value.replace(/\D/g, '');
+
+const numberParam = (value: string | null) => digitsOnly(value ?? '');
 
 const entityParam = (params: URLSearchParams): LogEntity => {
     const raw = params.get('filter');
@@ -109,6 +120,15 @@ export const useLogsToolbarState = (): LogsToolbar => {
     const [dateTo, setDateTo] = useState<string>(() =>
         momentParam(params.get('to')),
     );
+    const [statusFilter, setStatusFilter] = useState<string>(() =>
+        numberParam(params.get('status')),
+    );
+    const [minMs, setMinMs] = useState<string>(() =>
+        numberParam(params.get('min_ms')),
+    );
+    const [maxMs, setMaxMs] = useState<string>(() =>
+        numberParam(params.get('max_ms')),
+    );
     const [live, setLive] = useState<boolean>(() => params.get('live') === '1');
     const [typeFilter, setTypeFilter] = useState<string>(
         () => params.get('type') ?? 'all',
@@ -140,6 +160,9 @@ export const useLogsToolbarState = (): LogsToolbar => {
         write('level', levelFilter, 'all');
         write('from', dateFrom);
         write('to', dateTo);
+        write('status', statusFilter);
+        write('min_ms', minMs);
+        write('max_ms', maxMs);
         write('live', live ? '1' : '');
         write('type', typeFilter, 'all');
         write(
@@ -162,6 +185,9 @@ export const useLogsToolbarState = (): LogsToolbar => {
         levelFilter,
         dateFrom,
         dateTo,
+        statusFilter,
+        minMs,
+        maxMs,
         live,
         typeFilter,
         entity,
@@ -180,6 +206,12 @@ export const useLogsToolbarState = (): LogsToolbar => {
         setDateFrom,
         dateTo,
         setDateTo,
+        statusFilter,
+        setStatusFilter,
+        minMs,
+        setMinMs,
+        maxMs,
+        setMaxMs,
         live,
         setLive,
         typeFilter,

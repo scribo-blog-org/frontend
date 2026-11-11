@@ -36,7 +36,8 @@ class SocketService {
         await socketClient.setAuth(token);
         this.tokenUnsubscribe = subscribeAccessToken((nextToken: any) => {
             if (nextToken) {
-                void socketClient.setAuth(nextToken);
+                // a failed attempt is retried by the client's own reconnect
+                socketClient.setAuth(nextToken).catch(() => undefined);
             }
         });
 

@@ -1,4 +1,5 @@
 'use client';
+import FadeImage from '../Ui/FadeImage';
 
 const LinkPreviewCard = ({ preview, className = '', onMediaLoad }: any) => {
     if (!preview?.url) {
@@ -26,7 +27,7 @@ const LinkPreviewCard = ({ preview, className = '', onMediaLoad }: any) => {
         >
             {preview.image ? (
                 <div className="link_preview_card_media">
-                    <img
+                    <FadeImage
                         src={preview.image}
                         alt=""
                         loading="lazy"

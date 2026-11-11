@@ -10,7 +10,16 @@
     -webkit-backdrop-filter: blur(22px) saturate(120%);
     backdrop-filter: blur(22px) saturate(120%);
     cursor: zoom-out;
-    animation: media_viewer_in 180ms ease;
+    animation: media_viewer_in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+
+    &_closing {
+        pointer-events: none;
+        animation: media_viewer_out 220ms ease forwards;
+
+        .media_viewer_media {
+            animation: media_viewer_media_out 220ms ease forwards;
+        }
+    }
 
     &_stage {
         display: flex;
@@ -29,6 +38,7 @@
         object-fit: contain;
         background: transparent;
         box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+        animation: media_viewer_media_in 300ms cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     &_button {
@@ -44,7 +54,13 @@
         background: rgba(20, 20, 20, 0.55);
         color: #fff;
         cursor: pointer;
-        transition: background 160ms ease;
+        transition:
+            background 160ms ease,
+            transform 100ms ease;
+
+        &:active {
+            transform: scale(0.94);
+        }
 
         &:hover {
             background: rgba(60, 60, 60, 0.7);
@@ -58,7 +74,7 @@
 
     &_nav {
         top: 50%;
-        transform: translateY(-50%);
+        margin-top: -20px;
 
         &_prev {
             left: var(--space-4);
@@ -88,8 +104,30 @@
     }
 }
 
+@keyframes media_viewer_out {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes media_viewer_media_in {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+}
+
+@keyframes media_viewer_media_out {
+    to {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .media_viewer {
+    .media_viewer,
+    .media_viewer_media,
+    .media_viewer_closing .media_viewer_media {
         animation: none;
     }
 }

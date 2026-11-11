@@ -46,6 +46,7 @@ const MediaTile = ({
     uploading = false,
     progress = 0,
     disabled = false,
+    leaving = false,
     onRemove,
     onOpen,
 }: {
@@ -53,6 +54,7 @@ const MediaTile = ({
     uploading?: boolean;
     progress?: number;
     disabled?: boolean;
+    leaving?: boolean;
     onRemove: () => void;
     onOpen?: () => void;
 }) => {
@@ -60,7 +62,7 @@ const MediaTile = ({
 
     return (
         <div
-            className={`composer_tile composer_tile_${tile.status} composer_tile_${tile.kind}${busy ? ' composer_tile_busy' : ''}${onOpen ? ' composer_tile_openable' : ''}`}
+            className={`composer_tile composer_tile_${tile.status} composer_tile_${tile.kind}${busy ? ' composer_tile_busy' : ''}${onOpen ? ' composer_tile_openable' : ''}${leaving ? ' composer_tile_leaving' : ''}`}
             role={onOpen ? 'button' : undefined}
             tabIndex={onOpen ? 0 : undefined}
             aria-label={onOpen ? 'Open media' : undefined}

@@ -1,0 +1,21 @@
+.page_transition {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    animation: page_transition_in 240ms ease backwards;
+}
+
+@keyframes page_transition_in {
+    from {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page_transition {
+        animation: none;
+    }
+}

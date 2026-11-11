@@ -6,6 +6,7 @@ import {
     SITE_KEYWORDS,
     DEFAULT_OG_IMAGE,
     absoluteUrl,
+    isIndexableSite,
     pageTitle,
 } from '@/seo/site';
 import { mediaUrl } from '@/utils/image';
@@ -30,13 +31,15 @@ export function buildMetadata({
     description = SITE_DESCRIPTION,
     path = '/',
     image,
-    noindex = false,
-    follow = !noindex,
+    noindex: noindexInput = false,
+    follow: followInput,
     type = 'website',
     publishedTime,
     modifiedTime,
     authors,
 }: MetadataInput = {}): Metadata {
+    const noindex = noindexInput || !isIndexableSite();
+    const follow = followInput ?? !noindexInput;
     const canonical = absoluteUrl(path);
     const fullTitle = absoluteTitle || pageTitle(title);
     const ogImage = image ? mediaUrl(image) : absoluteUrl(DEFAULT_OG_IMAGE);

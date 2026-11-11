@@ -42,10 +42,11 @@ import {
     useLogsToolbar,
 } from './logsToolbar';
 import { LOG_TYPES } from './logTypes';
+import { LOG_CHUNK, LOG_WINDOW_PAGES } from './logWindow';
 
 import './Logs.scss';
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = LOG_CHUNK;
 const ENTITY_FILTERS = [
     'user',
     'post',
@@ -192,6 +193,7 @@ const LogsPage = () => {
             filter.type,
             filter.id,
         ]),
+        windowPages: LOG_WINDOW_PAGES,
     });
     const logs = feed.items;
     const [reloading, setReloading] = useState<any>(false);
@@ -458,6 +460,9 @@ const LogsPage = () => {
                         hasNext={feed.hasNext}
                         loadingNext={feed.loadingNext}
                         onLoadNext={feed.loadNext}
+                        hasPrev={feed.hasPrev}
+                        loadingPrev={feed.loadingPrev}
+                        onLoadPrev={feed.loadPrev}
                     >
                         {logs.map((log: any, index: any) => (
                             <Fragment key={log._id}>
