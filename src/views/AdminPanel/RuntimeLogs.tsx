@@ -36,17 +36,30 @@ import {
     RUNTIME_SERVICES,
     levelFromValues,
     levelValues,
+    digitsOnly,
     useLogsToolbar,
 } from './logsToolbar';
 import { formatDuration } from './logFormat';
 import { LEVELS } from './logTypes';
+import { LOG_CHUNK, LOG_WINDOW } from './logWindow';
 
 import './Logs.scss';
 import './RuntimeLogs.scss';
 
-const PAGE_SIZE = 100;
 const LIVE_MS = 3000;
 const SEARCH_DELAY_MS = 250;
+
+const useDebounced = (value: string, delay = SEARCH_DELAY_MS) => {
+    const [debounced, setDebounced] = useState(value);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebounced(value), delay);
+
+        return () => clearTimeout(timer);
+    }, [value, delay]);
+
+    return debounced;
+};
 
 const SERVICE_LABELS: Record<string, string> = {
     backend: 'Backend',
@@ -75,7 +88,22 @@ const statusTone = (status: number | null) =>
           ? ' rt_status_error'
           : status >= 400
             ? ' rt_status_warn'
-            : '';
+            : status >= 200 && status < 300
+              ? ' rt_status_ok'
+              : '';
+
+// 1000 ms is the backend's slow-request threshold (SLOW_REQUEST_MS)
+const WARN_MS = 300;
+const SLOW_MS = 1000;
+
+const tookTone = (ms: number) =>
+    !Number.isFinite(ms)
+        ? ''
+        : ms >= SLOW_MS
+          ? ' rt_took_slow'
+          : ms >= WARN_MS
+            ? ' rt_took_warn'
+            : ' rt_took_fast';
 
 const withKeys = (list: any[]) => {
     const seen = new Map<string, number>();
@@ -154,7 +182,7 @@ const RuntimeRow = ({
                 <span className={`rt_status${statusTone(status)}`}>
                     {status ?? ''}
                 </span>
-                <span className="rt_took">
+                <span className={`rt_took${tookTone(ms)}`}>
                     {Number.isFinite(ms) ? formatDuration(ms) : ''}
                 </span>
                 <ChevronDownIcon className="log_row_chevron" />
@@ -191,19 +219,38 @@ const RuntimeLogs = () => {
         setDateFrom,
         dateTo,
         setDateTo,
+        statusFilter,
+        setStatusFilter,
+        minMs,
+        setMinMs,
+        maxMs,
+        setMaxMs,
         live,
         setLive,
         services,
         setServices,
     } = useLogsToolbar();
     const [items, setItems] = useState<any[]>([]);
+    // cursors of the loaded window: older entries (`before`) and newer
+    // entries (`after`, null while the window starts at the newest entry)
     const [next, setNext] = useState<string | null>(null);
+    const [prev, setPrev] = useState<string | null>(null);
     const [available, setAvailable] = useState<boolean>(true);
     const [loadedKey, setLoadedKey] = useState<string>('');
     const loadedRef = useRef<string>('');
+    const itemsRef = useRef<any[]>(items);
+    const prevRef = useRef<string | null>(prev);
     const [loadingNext, setLoadingNext] = useState<boolean>(false);
+    const [loadingPrev, setLoadingPrev] = useState<boolean>(false);
+    const busyRef = useRef<boolean>(false);
     const [search, setSearch] = useState<string>(searchText.trim());
     const [expanded, setExpanded] = useState<any>(() => new Set());
+    const status = useDebounced(statusFilter);
+    const from = useDebounced(minMs);
+    const upTo = useDebounced(maxMs);
+
+    itemsRef.current = items;
+    prevRef.current = prev;
 
     useEffect(() => {
         const timer = setTimeout(
@@ -216,9 +263,14 @@ const RuntimeLogs = () => {
 
     const sources = services.join(',');
 
+    // `limit` is the size of one fetch: the whole window for a fresh load,
+    // a single chunk when scrolling
     const query = useCallback(
-        (before?: string | null) => {
-            const params: any = { sources, limit: PAGE_SIZE };
+        (
+            cursor: { before?: string | null; after?: string | null } = {},
+            limit = LOG_WINDOW,
+        ) => {
+            const params: any = { sources, limit };
 
             if (levelFilter !== 'all') {
                 params.level = levelFilter;
@@ -236,13 +288,29 @@ const RuntimeLogs = () => {
                 params.to = new Date(dateTo).toISOString();
             }
 
-            if (before) {
-                params.before = before;
+            if (status) {
+                params.status = status;
+            }
+
+            if (from) {
+                params.min_ms = from;
+            }
+
+            if (upTo) {
+                params.max_ms = upTo;
+            }
+
+            if (cursor.before) {
+                params.before = cursor.before;
+            }
+
+            if (cursor.after) {
+                params.after = cursor.after;
             }
 
             return params;
         },
-        [sources, levelFilter, search, dateFrom, dateTo],
+        [sources, levelFilter, search, dateFrom, dateTo, status, from, upTo],
     );
 
     const load = useCallback(
@@ -281,22 +349,42 @@ const RuntimeLogs = () => {
             const fetched: any[] = result.data?.items || [];
 
             if (silent) {
-                setItems((prev: any[]) => {
-                    const known = new Set(
-                        withKeys(prev).map((item) => item.key),
-                    );
-                    const fresh = withKeys(fetched)
-                        .filter((item) => !known.has(item.key))
-                        .map((item) => item.entry);
+                // new entries only belong on top while the window starts at
+                // the newest entry; otherwise they come in when scrolling up
+                if (prevRef.current !== null) {
+                    return;
+                }
 
-                    return fresh.length ? [...fresh, ...prev] : prev;
-                });
+                const current = itemsRef.current;
+                const known = new Set(
+                    withKeys(current).map((item) => item.key),
+                );
+                const fresh = withKeys(fetched)
+                    .filter((item) => !known.has(item.key))
+                    .map((item) => item.entry);
+
+                if (!fresh.length) {
+                    return;
+                }
+
+                const merged = [...fresh, ...current];
+
+                if (merged.length > LOG_WINDOW) {
+                    const kept = merged.slice(0, LOG_WINDOW);
+
+                    // what fell off the bottom is loaded again when scrolling
+                    setItems(kept);
+                    setNext(kept[kept.length - 1].ts);
+                } else {
+                    setItems(merged);
+                }
 
                 return;
             }
 
             setItems(fetched);
             setNext(result.data?.next ?? null);
+            setPrev(null);
             setAvailable(result.data?.available !== false);
             loadedRef.current = paramsKey;
             setLoadedKey(paramsKey);
@@ -304,22 +392,69 @@ const RuntimeLogs = () => {
         [query, showToast, sources],
     );
 
+    // older entries: append, and drop the top of the window when it is full
     const loadNext = useCallback(async () => {
-        if (!next || loadingNext) {
+        if (!next || busyRef.current) {
             return;
         }
 
+        const key = loadedRef.current;
+
+        busyRef.current = true;
         setLoadingNext(true);
 
-        const result = await getRuntimeLogs(query(next));
+        const result = await getRuntimeLogs(query({ before: next }, LOG_CHUNK));
 
-        if (result?.status) {
-            setItems((prev: any[]) => [...prev, ...(result.data?.items || [])]);
-            setNext(result.data?.next ?? null);
+        busyRef.current = false;
+        setLoadingNext(false);
+
+        if (!result?.status || loadedRef.current !== key) {
+            return;
         }
 
-        setLoadingNext(false);
-    }, [next, loadingNext, query]);
+        const merged = [...itemsRef.current, ...(result.data?.items || [])];
+        const dropped = Math.max(0, merged.length - LOG_WINDOW);
+        const kept = merged.slice(dropped);
+
+        setItems(kept);
+        setNext(result.data?.next ?? null);
+
+        if (dropped) {
+            // entries above the window are fetched with `after` on the way up
+            setPrev(kept[0].ts);
+        }
+    }, [next, query]);
+
+    // newer entries: prepend, and drop the bottom of the window when it is full
+    const loadPrev = useCallback(async () => {
+        if (!prev || busyRef.current) {
+            return;
+        }
+
+        const key = loadedRef.current;
+
+        busyRef.current = true;
+        setLoadingPrev(true);
+
+        const result = await getRuntimeLogs(query({ after: prev }, LOG_CHUNK));
+
+        busyRef.current = false;
+        setLoadingPrev(false);
+
+        if (!result?.status || loadedRef.current !== key) {
+            return;
+        }
+
+        const merged = [...(result.data?.items || []), ...itemsRef.current];
+        const kept = merged.slice(0, LOG_WINDOW);
+
+        setItems(kept);
+        setPrev(result.data?.prev ?? null);
+
+        if (merged.length > LOG_WINDOW) {
+            setNext(kept[kept.length - 1].ts);
+        }
+    }, [prev, query]);
 
     useEffect(() => {
         load();
@@ -359,6 +494,8 @@ const RuntimeLogs = () => {
         Number(levelFilter !== 'all') +
         Number(Boolean(dateFrom)) +
         Number(Boolean(dateTo)) +
+        Number(Boolean(statusFilter)) +
+        Number(Boolean(minMs || maxMs)) +
         Number(services.length !== RUNTIME_SERVICES.length);
 
     return (
@@ -406,6 +543,31 @@ const RuntimeLogs = () => {
                         onChange={setDateTo}
                     />
                 </FilterField>
+                <FilterField label="Error">
+                    <LogSearch
+                        value={statusFilter}
+                        onChange={(value) => setStatusFilter(digitsOnly(value))}
+                        placeholder="Status code, e.g. 500"
+                        length={3}
+                        inputMode="numeric"
+                    />
+                </FilterField>
+                <FilterField label="Timing">
+                    <LogSearch
+                        value={minMs}
+                        onChange={(value) => setMinMs(digitsOnly(value))}
+                        placeholder="From, ms"
+                        length={7}
+                        inputMode="numeric"
+                    />
+                    <LogSearch
+                        value={maxMs}
+                        onChange={(value) => setMaxMs(digitsOnly(value))}
+                        placeholder="To, ms"
+                        length={7}
+                        inputMode="numeric"
+                    />
+                </FilterField>
             </LogsFilters>
 
             <div className="logs_list">
@@ -425,6 +587,9 @@ const RuntimeLogs = () => {
                         hasNext={Boolean(next)}
                         loadingNext={loadingNext}
                         onLoadNext={loadNext}
+                        hasPrev={Boolean(prev)}
+                        loadingPrev={loadingPrev}
+                        onLoadPrev={loadPrev}
                     >
                         {keyed.map(({ entry, key }, index) => (
                             <Fragment key={key}>

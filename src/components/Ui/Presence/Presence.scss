@@ -1,0 +1,29 @@
+.presence_enter {
+    animation: presence_in 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.presence_leaving {
+    pointer-events: none;
+    animation: presence_out 220ms ease forwards;
+}
+
+@keyframes presence_in {
+    from {
+        opacity: 0;
+        transform: scale(0.4);
+    }
+}
+
+@keyframes presence_out {
+    to {
+        opacity: 0;
+        transform: scale(0.4);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .presence_enter,
+    .presence_leaving {
+        animation: none;
+    }
+}

@@ -39,6 +39,12 @@
         &:focus {
             border-color: var(--input-outline-active-color);
         }
+
+        // The global press effect (scale 0.97 on buttons) makes the whole
+        // full-width field jump; keep it for the list items only.
+        &:not(:disabled):active {
+            scale: none;
+        }
     }
 
     &_disabled &_select {

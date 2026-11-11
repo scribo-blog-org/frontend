@@ -49,6 +49,18 @@ export function getSiteOrigin() {
     return `${protocol}://${host.replace(/\/$/, '')}`;
 }
 
+export const PRODUCTION_ORIGIN = 'https://scribo.pp.ua';
+
+// Only the production host may be indexed. Staging serves the same content and
+// would otherwise compete with production as the canonical version.
+export function isIndexableSite() {
+    const origin = getSiteOrigin();
+
+    return (
+        origin === PRODUCTION_ORIGIN || origin.startsWith('http://localhost')
+    );
+}
+
 export function absoluteUrl(path: any = '/') {
     const normalized = path.startsWith('/') ? path : `/${path}`;
 

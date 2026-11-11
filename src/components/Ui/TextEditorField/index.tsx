@@ -1,5 +1,6 @@
 'use client';
 
+import { createPortal } from 'react-dom';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -8,9 +9,13 @@ import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import {
+    $createLineBreakNode,
     $createParagraphNode,
+    $createTextNode,
+    $getNodeByKey,
     $getRoot,
     $getSelection,
+    $isParagraphNode,
     $isRangeSelection,
     $isTextNode,
     $setSelection,
@@ -57,6 +62,7 @@ import BoldText from '../../../assets/svg/bold-text.svg';
 import ItalicText from '../../../assets/svg/italic-text.svg';
 import MarkList from '../../../assets/svg/mark-list-icon.svg';
 import NumList from '../../../assets/svg/num-list-icon.svg';
+import CopyIcon from '../../../assets/svg/copy.svg';
 import CodeBlockIcon from '../../../assets/svg/code-block.svg';
 
 import { useRef, useState, useEffect } from 'react';
@@ -222,12 +228,144 @@ function EditorApiPlugin({
 
     return null;
 }
+function CodeLanguagePlugin() {
+    const [editor] = useLexicalComposerContext();
+    const [items, setItems] = useState<
+        {
+            key: string;
+            language: string;
+            top: number;
+            left: number;
+            right: number;
+        }[]
+    >([]);
+
+    useEffect(() => {
+        let languages = new Map<string, string>();
+
+        const measure = () => {
+            const next: {
+                key: string;
+                language: string;
+                top: number;
+                left: number;
+                right: number;
+            }[] = [];
+
+            languages.forEach((language, key) => {
+                const element = editor.getElementByKey(key);
+                if (!element) {
+                    return;
+                }
+                const rect = element.getBoundingClientRect();
+                next.push({
+                    key,
+                    language,
+                    top: Math.round(rect.top),
+                    left: Math.round(rect.left),
+                    right: Math.round(rect.right),
+                });
+            });
+
+            setItems((prev) =>
+                JSON.stringify(prev) === JSON.stringify(next) ? prev : next,
+            );
+        };
+
+        const off = editor.registerUpdateListener(({ editorState }: any) => {
+            editorState.read(() => {
+                const next = new Map<string, string>();
+                $getRoot()
+                    .getChildren()
+                    .forEach((node: any) => {
+                        if ($isCodeNode(node)) {
+                            next.set(node.getKey(), node.getLanguage() || '');
+                        }
+                    });
+                languages = next;
+            });
+            measure();
+        });
+
+        window.addEventListener('scroll', measure, true);
+        window.addEventListener('resize', measure);
+
+        return () => {
+            off();
+            window.removeEventListener('scroll', measure, true);
+            window.removeEventListener('resize', measure);
+        };
+    }, [editor]);
+
+    const [copied, setCopied] = useState<string | null>(null);
+
+    const copyCode = (key: string) => {
+        const text = editor.getEditorState().read(() => {
+            const node = $getNodeByKey(key);
+            return $isCodeNode(node) ? node.getTextContent() : '';
+        });
+
+        navigator.clipboard?.writeText(text).then(() => {
+            setCopied(key);
+            window.setTimeout(() => setCopied(null), 1500);
+        });
+    };
+
+    const changeLanguage = (key: string, language: string) => {
+        editor.update(() => {
+            const node = $getNodeByKey(key);
+            if ($isCodeNode(node)) {
+                node.setLanguage(language);
+            }
+        });
+    };
+
+    if (typeof document === 'undefined') {
+        return null;
+    }
+
+    return createPortal(
+        <>
+            {items.map((item) => (
+                <div key={item.key}>
+                    <div
+                        className="text_editor_code_language"
+                        style={{ top: item.top + 8, left: item.left + 8 }}
+                    >
+                        <DropDown
+                            className="text_editor_language"
+                            options={CODE_LANGUAGES.map(([value, label]) => ({
+                                value,
+                                label,
+                            }))}
+                            value={item.language}
+                            onChange={(language: string) =>
+                                changeLanguage(item.key, language)
+                            }
+                        />
+                    </div>
+                    <button
+                        type="button"
+                        className="text_editor_code_copy app-transition"
+                        style={{ top: item.top + 8, left: item.right - 8 }}
+                        onClick={() => copyCode(item.key)}
+                    >
+                        <CopyIcon />
+                        {copied === item.key ? 'Copied' : 'Copy'}
+                    </button>
+                </div>
+            ))}
+        </>,
+        document.body,
+    );
+}
 const editorConfig = {
     namespace: 'TextEditor',
     theme: {
         text: {
             bold: 'text_editor_bold',
             italic: 'text_editor_italic',
+            code: 'text_editor_inline_code',
         },
         link: 'text_editor_link',
         hashtag: 'hashtag',
@@ -315,25 +453,51 @@ const EditorToolbar = ({
             const top = selection.anchor.getNode().getTopLevelElement();
             if ($isCodeNode(top)) {
                 $setBlocksType(selection, () => $createParagraphNode());
-            } else {
-                $setBlocksType(selection, () => $createCodeNode());
-            }
-        });
-        editor.focus();
-    };
-
-    const changeLanguage = (language: string) => {
-        editor.update(() => {
-            const selection = $getSelection();
-            if (!$isRangeSelection(selection)) {
                 return;
             }
-            const top = selection.anchor.getNode().getTopLevelElement();
-            if ($isCodeNode(top)) {
-                top.setLanguage(language);
+
+            const sameBlock =
+                $isParagraphNode(top) &&
+                top.is(selection.focus.getNode().getTopLevelElement());
+
+            if (!sameBlock) {
+                $setBlocksType(selection, () => $createCodeNode());
+                return;
             }
+
+            const text = selection.isCollapsed()
+                ? ''
+                : selection.getTextContent();
+
+            if (text) {
+                selection.removeText();
+            }
+            selection.insertParagraph();
+
+            const after = selection.anchor.getNode().getTopLevelElement();
+            if (!after) {
+                return;
+            }
+
+            const code = $createCodeNode();
+            text.split('\n').forEach((line, index) => {
+                if (index > 0) {
+                    code.append($createLineBreakNode());
+                }
+                if (line) {
+                    code.append($createTextNode(line));
+                }
+            });
+            after.insertBefore(code);
+
+            const before = code.getPreviousSibling();
+            if ($isParagraphNode(before) && before.getTextContentSize() === 0) {
+                before.remove();
+            }
+
+            code.selectEnd();
         });
-        setCodeLanguage(language);
+        editor.focus();
     };
 
     const formatTools = (
@@ -425,17 +589,6 @@ const EditorToolbar = ({
                     </>
                 )}
 
-                {codeLanguage !== null ? (
-                    <DropDown
-                        className="text_editor_language"
-                        options={CODE_LANGUAGES.map(([value, label]) => ({
-                            value,
-                            label,
-                        }))}
-                        value={codeLanguage}
-                        onChange={changeLanguage}
-                    />
-                ) : null}
                 {trailing}
             </div>
         </div>
@@ -536,6 +689,7 @@ export default function TextEditor({
                     />
                     <AutoLinkPlugin matchers={AUTO_LINK_MATCHERS} />
                     <AutoLinkInCodePlugin />
+                    <CodeLanguagePlugin />
                     <HashtagPlugin />
                     <MentionPlugin />
                     <HashtagSuggestPlugin enabled={switcherActiveIndex === 0} />

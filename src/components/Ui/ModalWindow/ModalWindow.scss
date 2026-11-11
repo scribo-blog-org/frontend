@@ -43,8 +43,16 @@
         background-color: var(--modal-window-body-background-color);
         border: 1px solid var(--line-color);
         box-shadow: var(--modal-window-shadow);
+        opacity: 0;
+        transform: translateY(18px) scale(0.95);
+        transform-origin: center 60%;
+        will-change: transform, opacity;
+        transition:
+            transform 260ms cubic-bezier(0.4, 0, 1, 1),
+            opacity 200ms ease;
 
         @include screen() {
+            transform: translateY(40px) scale(0.98);
             max-width: 90%;
             max-height: 90%;
         }
@@ -156,6 +164,10 @@
             flex-grow: 1;
             min-height: 0;
             overflow-y: auto;
+            // Toggling overflow while resizing must not change the inner
+            // width, otherwise text rewraps, the height changes again and the
+            // resize never settles (the modal flickers on long content).
+            scrollbar-gutter: stable;
             transition: height 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
             &_resizing {
@@ -202,5 +214,21 @@
         pointer-events: all;
         opacity: 1;
         visibility: visible;
+
+        .modal_window_body {
+            opacity: 1;
+            transform: none;
+            transition:
+                transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 280ms ease;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .modal_window_body,
+        &.visible .modal_window_body {
+            transform: none;
+            transition: opacity 150ms ease;
+        }
     }
 }

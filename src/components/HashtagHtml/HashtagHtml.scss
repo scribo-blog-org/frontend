@@ -78,6 +78,15 @@
         color: var(--text-color);
     }
 
+    :not(pre) > code {
+        padding: 1px 5px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--bg-subtle);
+        font-family: var(--font-mono);
+        font-size: 0.9em;
+    }
+
     pre code {
         font: inherit;
         white-space: inherit;

@@ -22,6 +22,7 @@ import {
 import type { PostMediaItem } from '../../utils/postMedia';
 
 import './PostMedia.scss';
+import FadeImage from '../Ui/FadeImage';
 
 type PostMediaProps = {
     media: PostMediaItem[];
@@ -89,7 +90,9 @@ const EmbedPlayer = ({ item }: { item: PostMediaItem }) => {
             aria-label={`Play ${embed.title || 'video'}`}
             onClick={() => setPlaying(true)}
         >
-            {thumbnail ? <img src={thumbnail} alt="" loading="lazy" /> : null}
+            {thumbnail ? (
+                <FadeImage src={thumbnail} alt="" loading="lazy" />
+            ) : null}
             <span className="post_media_play">
                 <PlayIcon />
             </span>
@@ -183,7 +186,7 @@ const Slide = ({
                 aria-label="Open image"
                 onClick={onZoom}
             >
-                <img
+                <FadeImage
                     src={src}
                     alt=""
                     loading={eager ? 'eager' : 'lazy'}

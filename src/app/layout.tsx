@@ -19,6 +19,7 @@ import {
     SITE_NAME,
     absoluteUrl,
     getSiteOrigin,
+    isIndexableSite,
 } from '@/seo/site';
 
 import '@/styles/common.scss';
@@ -44,17 +45,19 @@ export async function generateMetadata(): Promise<Metadata> {
             apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
         },
         manifest: '/manifest.json',
-        robots: {
-            index: true,
-            follow: true,
-            googleBot: {
-                index: true,
-                follow: true,
-                'max-snippet': -1,
-                'max-image-preview': 'large',
-                'max-video-preview': -1,
-            },
-        },
+        robots: isIndexableSite()
+            ? {
+                  index: true,
+                  follow: true,
+                  googleBot: {
+                      index: true,
+                      follow: true,
+                      'max-snippet': -1,
+                      'max-image-preview': 'large',
+                      'max-video-preview': -1,
+                  },
+              }
+            : { index: false, follow: false },
         openGraph: {
             type: 'website',
             siteName: SITE_NAME,

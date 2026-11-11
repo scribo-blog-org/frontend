@@ -85,6 +85,12 @@
         background: var(--section-item-hover-background-color);
     }
 
+    // The global press effect (scale 0.97 on [role='button']) is meant for
+    // small controls; on a full-width row it shifts every column inward.
+    &[role='button']:not([aria-disabled='true']):active {
+        scale: none;
+    }
+
     &:focus-visible {
         outline: 2px solid var(--input-outline-active-color);
         outline-offset: -2px;
@@ -152,6 +158,19 @@
 
         @include screen() {
             overflow: visible;
+        }
+    }
+
+    // Entities are wrapped in <Popup>; its wrappers must be allowed to
+    // shrink, otherwise a long chip is clipped by the column instead of
+    // ending in an ellipsis inside its own rounded, padded shape.
+    &_actor,
+    &_object,
+    &_details {
+        .popup,
+        .popup_trigger {
+            min-width: 0;
+            max-width: 100%;
         }
     }
 

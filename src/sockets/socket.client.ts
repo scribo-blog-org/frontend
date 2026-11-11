@@ -149,13 +149,15 @@ class SocketClient {
         if (!this.token) {
             return;
         }
-        await this.setAuth(this.token);
 
+        // Register before connecting: when the connection fails or drops,
+        // _recover() subscribes every registered room again, so a closed
+        // socket here is not an error for the caller.
         let entry = this.rooms.get(roomName);
+        const created = !entry;
         if (!entry) {
             entry = { status: 'PENDING', events: new Map() };
             this.rooms.set(roomName, entry);
-            this._send({ type: 'subscribe', room: roomName });
         }
 
         let handlers = entry.events.get(eventName);
@@ -164,6 +166,17 @@ class SocketClient {
             entry.events.set(eventName, handlers);
         }
         handlers.add(callback);
+
+        try {
+            await this.setAuth(this.token);
+        } catch {
+            this._scheduleReconnect();
+            return;
+        }
+
+        if (created && this.rooms.get(roomName) === entry) {
+            this._send({ type: 'subscribe', room: roomName });
+        }
     }
 
     async removeChannel(roomName: any) {

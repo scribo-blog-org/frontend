@@ -22,6 +22,8 @@ import PostsFilters from '../../components/PostsFilters';
 import NoPosts from '../NoPosts';
 import PostCard from '../PostCard';
 import InfiniteScroll from '../Ui/InfiniteScroll';
+import Loading from '../Ui/Loading';
+import { PostListSkeleton, SkeletonGate } from '../Ui/Skeleton';
 import { usePagedList } from '../../hooks/usePagedList';
 import { scrollTo } from '../../utils/navigation';
 
@@ -186,13 +188,9 @@ const Posts = ({
             )}
 
             {loading && feed.items.length === 0 ? (
-                [0, 1, 2, 3, 4].map((index: any) => (
-                    <PostCard
-                        key={index}
-                        post={{ title: 'Loading...' }}
-                        isLoading={true}
-                    />
-                ))
+                <SkeletonGate>
+                    <PostListSkeleton count={4} />
+                </SkeletonGate>
             ) : feed.items.length === 0 ? (
                 (empty ?? <NoPosts />)
             ) : (
@@ -200,16 +198,10 @@ const Posts = ({
                     hasNext={feed.hasNext}
                     loadingNext={feed.loadingNext}
                     onLoadNext={feed.loadNext}
-                    loader={
-                        <PostCard
-                            isLoading={true}
-                            post={{ title: 'Loading...' }}
-                        />
-                    }
+                    loader={<Loading size={32} />}
                 >
                     {feed.items.map((post: any) => (
                         <PostCard
-                            isLoading={false}
                             key={post._id}
                             post={post}
                             setPosts={feed.setItems}

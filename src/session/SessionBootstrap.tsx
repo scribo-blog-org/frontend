@@ -21,15 +21,6 @@ import './AppStatusScreen.scss';
 const SKIP_TRACKING = /^\/admin-panel/;
 const SOCKET_WAIT_MS = 8000;
 
-function waitWithTimeout(promise: any, ms: any) {
-    return Promise.race([
-        promise.catch(() => undefined),
-        new Promise((resolve: any) => {
-            setTimeout(resolve, ms);
-        }),
-    ]);
-}
-
 const SessionBootstrap = ({ children, hasSession = false }: any) => {
     const location = useLocation();
     const { profile, setProfile, setProfileLoading } = useContext(AppContext);
@@ -40,6 +31,8 @@ const SessionBootstrap = ({ children, hasSession = false }: any) => {
     const requestIdRef = useRef(0);
     const bootstrappedRef = useRef(false);
     const backendDownRef = useRef(false);
+    // socket connections run one after another and never hold up the app
+    const socketChainRef = useRef<Promise<unknown>>(Promise.resolve());
 
     profileRef.current = profile;
     backendDownRef.current = backendDown;
@@ -70,10 +63,24 @@ const SessionBootstrap = ({ children, hasSession = false }: any) => {
                 if (result.status) {
                     setProfile(result.data);
                     profileRef.current = result.data;
-                    await waitWithTimeout(
-                        socketService.init(result.data, getAccessToken()),
-                        SOCKET_WAIT_MS,
-                    );
+
+                    // The app does not need the socket to render, so connect
+                    // in the background instead of keeping the boot screen
+                    // until the room is subscribed.
+                    const user = result.data;
+                    const token = getAccessToken();
+
+                    socketChainRef.current = socketChainRef.current
+                        .then(() =>
+                            // never let a stuck connection block the next one
+                            Promise.race([
+                                socketService.init(user, token),
+                                new Promise((resolve) =>
+                                    setTimeout(resolve, SOCKET_WAIT_MS),
+                                ),
+                            ]),
+                        )
+                        .catch(() => undefined);
                 } else if (result.unauthorized) {
                     setProfile(null);
                     profileRef.current = null;
@@ -88,7 +95,12 @@ const SessionBootstrap = ({ children, hasSession = false }: any) => {
     );
 
     const startSession = useCallback(async () => {
-        const reachable = await probeBackend();
+        // independent of each other: run them together, the token refresh
+        // also reports an unreachable backend by itself
+        const [reachable] = await Promise.all([
+            probeBackend(),
+            refreshAccessToken(),
+        ]);
 
         if (!reachable) {
             bootstrappedRef.current = true;
@@ -98,7 +110,6 @@ const SessionBootstrap = ({ children, hasSession = false }: any) => {
         }
 
         setBackendDown(false);
-        await refreshAccessToken();
         await loadSession({ blocking: true });
         bootstrappedRef.current = true;
         return true;

@@ -29,7 +29,6 @@ import { startConversationWithUser } from '../Messages/index';
 
 import PeoplesIcon from '../../assets/svg/peoples.svg';
 import { Panel, Banner } from '../../components/Ui';
-import Sceleton from '../../components/Ui/Sceleton/Sceleton';
 
 import Posts from '../../components/Posts/index';
 import NoPosts from '../../components/NoPosts';
@@ -44,6 +43,7 @@ import Tooltip from '../../components/Ui/Tooltip/index';
 import RoleBadge from '../../components/RoleBadge/index';
 import PageSeo from '../../components/Seo/index';
 import UserActivityStatus from '../../components/UserActivityStatus/index';
+import FadeImage from '../../components/Ui/FadeImage';
 
 const Profile = ({
     initialUser = null,
@@ -298,235 +298,168 @@ const Profile = ({
                     type="website"
                 />
             ) : null}
-            <div className="profile_info app-transition">
+            <div
+                className={`profile_info app-transition${isProfileLoading ? ' profile_info_loading' : ''}`}
+            >
                 <div className="profile_info_main">
-                    <Sceleton
-                        isLoading={isProfileLoading}
-                        circle={true}
-                        className="profile_info_avatar"
-                    >
-                        <div className="profile_info_avatar">
-                            <img
-                                src={imageSrc(
-                                    user?.avatar,
-                                    DefaultProfileAvatar,
-                                )}
-                                alt="img"
-                            />
-                        </div>
-                    </Sceleton>
+                    <div className="profile_info_avatar">
+                        <FadeImage
+                            src={imageSrc(user?.avatar, DefaultProfileAvatar)}
+                            alt="img"
+                        />
+                    </div>
 
                     <div className="profile_info_bio">
-                        <Sceleton
-                            isLoading={isProfileLoading}
-                            rounded={true}
-                            className="profile_info_nick"
-                        >
-                            <div className="profile_info_nick">
-                                <h1 className="profile_info_nick_name">
-                                    {user?.nick_name}
-                                </h1>
-                                {user?.is_verified && (
-                                    <Tooltip text="Verified account">
-                                        <Verified className="profile_info_nick_verified verified-icon" />
-                                    </Tooltip>
-                                )}
-                                {isProfileLoading || user ? (
-                                    <Sceleton
-                                        isLoading={isProfileLoading}
-                                        rounded={true}
-                                        section={false}
-                                        className="profile_info_activity"
-                                    >
-                                        <UserActivityStatus
-                                            user={user}
-                                            viewerId={profile?._id}
-                                        />
-                                    </Sceleton>
-                                ) : null}
-                            </div>
-                        </Sceleton>
+                        <div className="profile_info_nick">
+                            <h1 className="profile_info_nick_name">
+                                {user?.nick_name}
+                            </h1>
+                            {user?.is_verified && (
+                                <Tooltip text="Verified account">
+                                    <Verified className="profile_info_nick_verified verified-icon" />
+                                </Tooltip>
+                            )}
+                            {isProfileLoading || user ? (
+                                <UserActivityStatus
+                                    user={user}
+                                    viewerId={profile?._id}
+                                />
+                            ) : null}
+                        </div>
+
                         {user && !isProfileLoading && <RoleBadge user={user} />}
                         {user && user.email && (
-                            <Sceleton
-                                isLoading={isProfileLoading}
-                                rounded={true}
-                                className="profile_info_email"
-                            >
-                                <p className="profile_info_email">
-                                    {user?.email}
-                                </p>
-                            </Sceleton>
+                            <p className="profile_info_email">{user?.email}</p>
                         )}
                         {isProfileLoading || user?.description ? (
-                            <Sceleton
-                                isLoading={isProfileLoading}
-                                rounded={true}
-                                className="profile_info_description"
-                            >
-                                <p className="profile_info_description">
-                                    {user?.description}
-                                </p>
-                            </Sceleton>
+                            <p className="profile_info_description">
+                                {user?.description}
+                            </p>
                         ) : null}
-                        <Sceleton
-                            isLoading={isProfileLoading}
-                            rounded={true}
-                            className="profile_info_date"
-                        >
-                            <div className="profile_info_date">
-                                <Calendar />
-                                <Tooltip
-                                    text={format_date_time(user?.created_date)}
-                                >
-                                    <p>
-                                        Signed up:{' '}
-                                        {format_back(user?.created_date)}
-                                    </p>
-                                </Tooltip>
-                            </div>
-                        </Sceleton>
+
+                        <div className="profile_info_date">
+                            <Calendar />
+                            <Tooltip
+                                text={format_date_time(user?.created_date)}
+                            >
+                                <p>
+                                    Signed up: {format_back(user?.created_date)}
+                                </p>
+                            </Tooltip>
+                        </div>
+
                         <div className="profile_info_stats">
-                            <Sceleton
-                                isLoading={isProfileLoading}
-                                section={false}
-                                className="profile_info_stat"
+                            <button
+                                type="button"
+                                className="profile_info_stat app-transition"
+                                onClick={() =>
+                                    scrollTo('posts_column', 'start')
+                                }
                             >
-                                <button
-                                    type="button"
-                                    className="profile_info_stat app-transition"
-                                    onClick={() =>
-                                        scrollTo('posts_column', 'start')
-                                    }
-                                >
-                                    <span className="profile_info_stat_value">
-                                        {postsFeed.total}
-                                    </span>
-                                    <span className="profile_info_stat_label">
-                                        posts
-                                    </span>
-                                </button>
-                            </Sceleton>
-                            <Sceleton
-                                isLoading={isProfileLoading}
-                                section={false}
-                                className="profile_info_stat"
+                                <span className="profile_info_stat_value">
+                                    {postsFeed.total}
+                                </span>
+                                <span className="profile_info_stat_label">
+                                    posts
+                                </span>
+                            </button>
+
+                            <button
+                                type="button"
+                                className="profile_info_stat app-transition"
+                                disabled={isOpeningFollows}
+                                onClick={open_followers}
                             >
-                                <button
-                                    type="button"
-                                    className="profile_info_stat app-transition"
-                                    disabled={isOpeningFollows}
-                                    onClick={open_followers}
-                                >
-                                    <span className="profile_info_stat_value">
-                                        {user?.followers?.length ?? '0'}
-                                    </span>
-                                    <span className="profile_info_stat_label">
-                                        followers
-                                    </span>
-                                </button>
-                            </Sceleton>
-                            <Sceleton
-                                isLoading={isProfileLoading}
-                                section={false}
-                                className="profile_info_stat"
+                                <span className="profile_info_stat_value">
+                                    {user?.followers?.length ?? '0'}
+                                </span>
+                                <span className="profile_info_stat_label">
+                                    followers
+                                </span>
+                            </button>
+
+                            <button
+                                type="button"
+                                className="profile_info_stat app-transition"
+                                disabled={isOpeningFollows}
+                                onClick={open_follows}
                             >
-                                <button
-                                    type="button"
-                                    className="profile_info_stat app-transition"
-                                    disabled={isOpeningFollows}
-                                    onClick={open_follows}
-                                >
-                                    <span className="profile_info_stat_value">
-                                        {user?.follows?.length ?? '0'}
-                                    </span>
-                                    <span className="profile_info_stat_label">
-                                        following
-                                    </span>
-                                </button>
-                            </Sceleton>
+                                <span className="profile_info_stat_value">
+                                    {user?.follows?.length ?? '0'}
+                                </span>
+                                <span className="profile_info_stat_label">
+                                    following
+                                </span>
+                            </button>
                         </div>
                     </div>
 
-                    <Sceleton
-                        isLoading={isProfileLoading}
-                        className="profile_info_action"
-                    >
-                        {profile && profile._id === user?._id ? (
-                            <ActionButton
+                    {profile && profile._id === user?._id ? (
+                        <ActionButton
+                            className="profile_info_action"
+                            onClick={open_settings}
+                        >
+                            <SettingsIcon className="profile_info_action_icon" />
+                            Settings
+                        </ActionButton>
+                    ) : (
+                        <div className="profile_info_actions">
+                            <FollowButton
+                                setNewData={setFollowThisUser}
+                                authorId={user?._id}
+                                onOptimisticChange={(isFollowing: boolean) =>
+                                    setUser((prev: any) =>
+                                        prev && profile?._id
+                                            ? {
+                                                  ...prev,
+                                                  followers: setIdPresent(
+                                                      prev.followers,
+                                                      profile._id,
+                                                      isFollowing,
+                                                  ),
+                                              }
+                                            : prev,
+                                    )
+                                }
                                 className="profile_info_action"
-                                onClick={open_settings}
-                            >
-                                <SettingsIcon className="profile_info_action_icon" />
-                                Settings
-                            </ActionButton>
-                        ) : (
-                            <div className="profile_info_actions">
-                                <FollowButton
-                                    setNewData={setFollowThisUser}
-                                    authorId={user?._id}
-                                    onOptimisticChange={(
-                                        isFollowing: boolean,
-                                    ) =>
-                                        setUser((prev: any) =>
-                                            prev && profile?._id
-                                                ? {
-                                                      ...prev,
-                                                      followers: setIdPresent(
-                                                          prev.followers,
-                                                          profile._id,
-                                                          isFollowing,
-                                                      ),
-                                                  }
-                                                : prev,
-                                        )
-                                    }
+                            />
+                            {profile ? (
+                                <ActionButton
                                     className="profile_info_action"
-                                />
-                                {profile ? (
-                                    <ActionButton
-                                        className="profile_info_action"
-                                        isLoading={isStartingChat}
-                                        onClick={startChat}
-                                    >
-                                        <MessageIcon className="profile_info_action_icon" />
-                                        Start a conversation
-                                    </ActionButton>
-                                ) : null}
-                            </div>
-                        )}
-                    </Sceleton>
+                                    isLoading={isStartingChat}
+                                    onClick={startChat}
+                                >
+                                    <MessageIcon className="profile_info_action_icon" />
+                                    Start a conversation
+                                </ActionButton>
+                            ) : null}
+                        </div>
+                    )}
                 </div>
             </div>
 
             <div className="profile_feed">
-                <Sceleton
-                    isLoading={isProfileLoading}
-                    rounded={true}
-                    section={false}
+                <Tabs
                     className="profile_tabs"
-                >
-                    <Tabs
-                        className="profile_tabs"
-                        label="Profile"
-                        items={[
-                            {
-                                key: 'posts',
-                                title: 'Posts',
-                                icon: <PostIcon />,
-                            },
-                            {
-                                key: 'saved',
-                                title: 'Saved',
-                                icon: <BookmarkOutline />,
-                            },
-                        ]}
-                        activeKey={activeTab === 1 ? 'saved' : 'posts'}
-                        onChange={(key: string) =>
-                            setActiveTab(key === 'saved' ? 1 : 0)
-                        }
-                    />
-                </Sceleton>
+                    label="Profile"
+                    items={[
+                        {
+                            key: 'posts',
+                            title: 'Posts',
+                            icon: <PostIcon />,
+                        },
+                        {
+                            key: 'saved',
+                            title: 'Saved',
+                            icon: <BookmarkOutline />,
+                        },
+                    ]}
+                    activeKey={activeTab === 1 ? 'saved' : 'posts'}
+                    onChange={(key: string) =>
+                        setActiveTab(key === 'saved' ? 1 : 0)
+                    }
+                />
+
                 <div className="profile_posts">
                     <Posts
                         feed={postsFeed}

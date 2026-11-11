@@ -11,6 +11,8 @@ export type MediaViewerItem = {
     poster?: string;
 };
 
+const CLOSE_MS = 220;
+
 type MediaViewerProps = {
     items: MediaViewerItem[];
     index?: number;
@@ -50,6 +52,8 @@ const ChevronIcon = ({ direction }: { direction: 'left' | 'right' }) => (
 
 const MediaViewer = ({ items, index = 0, onClose }: MediaViewerProps) => {
     const [current, setCurrent] = useState(index);
+    const [closing, setClosing] = useState(false);
+    const closeTimer = useRef<number>(0);
     const touchStart = useRef<number | null>(null);
     const count = items.length;
 
@@ -60,10 +64,27 @@ const MediaViewer = ({ items, index = 0, onClose }: MediaViewerProps) => {
         [count],
     );
 
+    const requestClose = useCallback(() => {
+        if (closeTimer.current) {
+            return;
+        }
+        const reduced = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+        if (reduced) {
+            onClose();
+            return;
+        }
+        setClosing(true);
+        closeTimer.current = window.setTimeout(onClose, CLOSE_MS);
+    }, [onClose]);
+
+    useEffect(() => () => window.clearTimeout(closeTimer.current), []);
+
     useEffect(() => {
         const onKey = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
-                onClose();
+                requestClose();
             } else if (event.key === 'ArrowRight' && count > 1) {
                 go(1);
             } else if (event.key === 'ArrowLeft' && count > 1) {
@@ -79,7 +100,7 @@ const MediaViewer = ({ items, index = 0, onClose }: MediaViewerProps) => {
             document.removeEventListener('keydown', onKey);
             document.body.style.overflow = previous;
         };
-    }, [onClose, go, count]);
+    }, [requestClose, go, count]);
 
     if (typeof document === 'undefined' || !count) {
         return null;
@@ -89,7 +110,7 @@ const MediaViewer = ({ items, index = 0, onClose }: MediaViewerProps) => {
 
     return createPortal(
         <div
-            className="media_viewer"
+            className={`media_viewer${closing ? ' media_viewer_closing' : ''}`}
             role="dialog"
             aria-modal="true"
             aria-label={
@@ -97,7 +118,7 @@ const MediaViewer = ({ items, index = 0, onClose }: MediaViewerProps) => {
             }
             onClick={(event) => {
                 event.stopPropagation();
-                onClose();
+                requestClose();
             }}
             onTouchStart={(event) => {
                 touchStart.current = event.touches[0].clientX;
@@ -120,7 +141,7 @@ const MediaViewer = ({ items, index = 0, onClose }: MediaViewerProps) => {
                 aria-label="Close"
                 onClick={(event) => {
                     event.stopPropagation();
-                    onClose();
+                    requestClose();
                 }}
             >
                 <CloseIcon />
