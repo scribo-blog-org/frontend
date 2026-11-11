@@ -107,6 +107,12 @@
         border-radius: 12px;
         background: var(--bg-subtle);
         scroll-snap-align: start;
+        animation: composer_tile_in 300ms cubic-bezier(0.16, 1, 0.3, 1);
+
+        &_leaving {
+            pointer-events: none;
+            animation: composer_tile_out 240ms ease forwards;
+        }
 
         &_openable {
             cursor: zoom-in;
@@ -344,6 +350,23 @@
     }
 }
 
+@keyframes composer_tile_in {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+}
+
+@keyframes composer_tile_out {
+    to {
+        opacity: 0;
+        transform: scale(0.9);
+        flex-basis: 0;
+        margin-right: calc(-1 * var(--space-2));
+        border-width: 0;
+    }
+}
+
 @keyframes composer_spin_hint {
     50% {
         opacity: 0.7;
@@ -351,6 +374,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .composer_tile,
+    .composer_tile_leaving,
     .composer_ring {
         animation: none;
     }

@@ -11,11 +11,34 @@
     }
 
     &_body {
+        position: relative;
         display: flex;
         flex-direction: column;
         gap: var(--space-1);
         flex: 1;
         min-height: 0;
+    }
+
+    &_indicator {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: var(--nav-w);
+        height: var(--nav-h);
+        border-radius: var(--radius-sm);
+        background: var(--bg-active);
+        transform: translate(var(--nav-x), var(--nav-y));
+        transition:
+            transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+            width 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+            height 300ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    &_has_indicator &_item_active,
+    &_has_indicator &_item_active:hover {
+        background: transparent;
     }
 
     &_footer {
@@ -31,6 +54,7 @@
 
     &_item {
         position: relative;
+        z-index: 1;
         display: flex;
         align-items: center;
         gap: var(--space-3);
@@ -88,6 +112,10 @@
         flex-shrink: 0;
         width: 20px;
         height: 20px;
+    }
+
+    &_item:active {
+        scale: 0.98;
     }
 
     &_badge {
@@ -180,6 +208,22 @@
 
             .side_nav_item_active {
                 background: transparent;
+            }
+
+            .side_nav_has_indicator .side_nav_item_active {
+                box-shadow: none;
+            }
+
+            .side_nav_indicator {
+                top: auto;
+                bottom: 0;
+                height: 2px;
+                border-radius: 0;
+                background: var(--text-color);
+                transform: translateX(var(--nav-x));
+            }
+
+            .side_nav_body:not(.side_nav_has_indicator) .side_nav_item_active {
                 box-shadow: inset 0 -2px 0 var(--text-color);
             }
 
@@ -187,5 +231,11 @@
                 display: none;
             }
         }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .side_nav_indicator {
+        transition: none;
     }
 }

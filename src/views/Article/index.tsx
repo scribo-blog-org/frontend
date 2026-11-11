@@ -8,7 +8,7 @@ import {
     useLocation,
 } from '@/navigation';
 import PostComment from '../../components/PostComments/index';
-import Loading from '../../components/Ui/Loading';
+import { ArticleSkeleton, SkeletonGate } from '../../components/Ui/Skeleton';
 import PostActions from '../../components/PostActions';
 import './Article.scss';
 import HashtagHtml from '../../components/HashtagHtml';
@@ -160,7 +160,9 @@ const Article = ({
             )}
         </div>
     ) : (
-        <Loading size={48} />
+        <SkeletonGate>
+            <ArticleSkeleton />
+        </SkeletonGate>
     );
 };
 

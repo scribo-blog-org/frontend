@@ -1,4 +1,5 @@
 @use '../../../styles/helpers' as *;
+@use '../../../styles/overlaySurface.scss' as *;
 
 .dt_field {
     position: relative;
@@ -17,6 +18,11 @@
         cursor: pointer;
         user-select: none;
         @include use-transition();
+
+        // no global press scale on a full-width field
+        &[role='button']:not([aria-disabled='true']):active {
+            scale: none;
+        }
 
         &:focus-visible {
             outline: 0;
@@ -88,7 +94,7 @@
     border: 1px solid var(--line-color);
     border-radius: var(--radius);
     box-shadow: 0 12px 32px rgb(0 0 0 / 0.28);
-    animation: dt_pop_in 140ms ease;
+    @include overlay-surface-enter('dt_pop_visible', top center, -6px);
 
     &_head {
         display: flex;
@@ -248,18 +254,5 @@
                 opacity: 0.8;
             }
         }
-    }
-}
-
-@keyframes dt_pop_in {
-    from {
-        opacity: 0;
-        transform: translateY(-4px);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .dt_pop {
-        animation: none;
     }
 }

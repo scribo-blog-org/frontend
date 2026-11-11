@@ -9,6 +9,7 @@ import { mediaUrl } from '../../utils/image';
 import { format_back } from '../../utils/format';
 
 import './PostPreview.scss';
+import FadeImage from '../Ui/FadeImage';
 
 type PostPreviewProps = {
     post: any;
@@ -38,7 +39,7 @@ const PostPreview = ({
         <>
             {picture && media === 'top' ? (
                 <span className="post_preview_media">
-                    <img
+                    <FadeImage
                         src={picture}
                         alt=""
                         loading="lazy"
@@ -52,7 +53,7 @@ const PostPreview = ({
                 </span>
                 {picture && media === 'side' ? (
                     <span className="post_preview_thumb">
-                        <img
+                        <FadeImage
                             src={picture}
                             alt=""
                             loading="lazy"

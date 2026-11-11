@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 
 import Article from '@/views/Article';
 import { buildMetadata } from '@/lib/metadata';
-import { loadPublicPost } from '@/lib/server-api';
+import { isClientNavigation, loadPublicPost } from '@/lib/server-api';
 import { plainTextExcerpt } from '@/seo/excerpt';
 import { postDisplayTitle } from '@/utils/postText';
 import { firstMediaThumbnail } from '@/utils/postMedia';
@@ -14,6 +14,10 @@ type ArticleRouteProps = {
 };
 
 export async function generateMetadata({ params }: ArticleRouteProps) {
+    if (await isClientNavigation()) {
+        return {};
+    }
+
     const { id } = await params;
     const result = await loadPublicPost(id);
     const article = result.status ? result.data : null;
@@ -46,6 +50,10 @@ export async function generateMetadata({ params }: ArticleRouteProps) {
 }
 
 export default async function ArticlePage({ params }: ArticleRouteProps) {
+    if (await isClientNavigation()) {
+        return <Article initialArticle={null} />;
+    }
+
     const { id } = await params;
     const result = await loadPublicPost(id);
 

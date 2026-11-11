@@ -16,7 +16,6 @@ export { default as Pagination } from './Pagination';
 export { default as Popup } from './Popup';
 export { default as PrimaryButton } from './PrimaryButton';
 export { default as SearchSelect } from './SearchSelect';
-export { default as Skeleton } from './Sceleton/Sceleton';
 export { default as SwitchBar } from './SwitchBar';
 export { default as Tabs } from './Tabs';
 export { default as TextEditorField } from './TextEditorField';

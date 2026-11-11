@@ -1,6 +1,9 @@
 'use client';
 
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Link } from '@/navigation';
+
+import Presence from '../Ui/Presence';
 
 import './SideNav.scss';
 
@@ -26,14 +29,21 @@ export const SideNavList = ({ items }: { items: SideNavItem[] }) => (
                 (item.active ? ' side_nav_item_active' : '');
             const content = (
                 <>
-                    {item.badge && item.badge > 0 ? (
-                        <span className="side_nav_badge">
-                            {item.badge > 99 ? '99+' : item.badge}
-                        </span>
-                    ) : null}
-                    {item.dot ? (
-                        <span className="side_nav_dot" aria-hidden="true" />
-                    ) : null}
+                    <Presence
+                        value={item.badge && item.badge > 0 ? item.badge : 0}
+                        className="side_nav_badge"
+                    >
+                        {(count) =>
+                            typeof count === 'number' && count > 99
+                                ? '99+'
+                                : count
+                        }
+                    </Presence>
+                    <Presence
+                        value={Boolean(item.dot)}
+                        className="side_nav_dot"
+                        aria-hidden="true"
+                    />
                     {Icon ? <Icon className="side_nav_icon" /> : null}
                     {item.avatar ?? null}
                     <span className="side_nav_copy">
@@ -88,6 +98,68 @@ const SideNav = ({
     children,
 }: SideNavProps) => {
     const Root: any = variant === 'app' ? 'aside' : 'div';
+    const bodyRef = useRef<HTMLElement>(null);
+    const [indicator, setIndicator] = useState<{
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+    } | null>(null);
+
+    useLayoutEffect(() => {
+        const body = bodyRef.current;
+        const measure = () => {
+            const active = body?.querySelector<HTMLElement>(
+                '.side_nav_item_active',
+            );
+            if (!active) {
+                setIndicator(null);
+                return;
+            }
+            const next = {
+                x: active.offsetLeft,
+                y: active.offsetTop,
+                w: active.offsetWidth,
+                h: active.offsetHeight,
+            };
+            setIndicator((prev) =>
+                prev &&
+                prev.x === next.x &&
+                prev.y === next.y &&
+                prev.w === next.w &&
+                prev.h === next.h
+                    ? prev
+                    : next,
+            );
+        };
+
+        measure();
+        window.addEventListener('resize', measure);
+
+        const observer =
+            typeof ResizeObserver === 'undefined'
+                ? null
+                : new ResizeObserver(measure);
+        if (body && observer) {
+            observer.observe(body);
+            body.querySelectorAll('.side_nav_item').forEach((item) =>
+                observer.observe(item),
+            );
+        }
+
+        let cancelled = false;
+        document.fonts?.ready.then(() => {
+            if (!cancelled) {
+                measure();
+            }
+        });
+
+        return () => {
+            cancelled = true;
+            observer?.disconnect();
+            window.removeEventListener('resize', measure);
+        };
+    });
 
     return (
         <Root
@@ -95,7 +167,25 @@ const SideNav = ({
             aria-label={label}
         >
             {header ? <div className="side_nav_header">{header}</div> : null}
-            <nav className="side_nav_body" aria-label={label}>
+            <nav
+                ref={bodyRef}
+                className={`side_nav_body${indicator ? ' side_nav_has_indicator' : ''}`}
+                aria-label={label}
+            >
+                {indicator ? (
+                    <span
+                        className="side_nav_indicator"
+                        aria-hidden="true"
+                        style={
+                            {
+                                '--nav-x': `${indicator.x}px`,
+                                '--nav-y': `${indicator.y}px`,
+                                '--nav-w': `${indicator.w}px`,
+                                '--nav-h': `${indicator.h}px`,
+                            } as React.CSSProperties
+                        }
+                    />
+                ) : null}
                 {children}
             </nav>
             {footer ? <div className="side_nav_footer">{footer}</div> : null}

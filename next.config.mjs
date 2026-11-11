@@ -55,7 +55,10 @@ const nextConfig = {
     },
     experimental: {
         staleTimes: {
-            dynamic: 0,
+            // Client navigations carry no server data (pages return empty
+            // initial props and the views fetch themselves), so caching the
+            // payload is safe and removes a server round trip per navigation.
+            dynamic: 30,
         },
         serverComponentsHmrCache: false,
     },

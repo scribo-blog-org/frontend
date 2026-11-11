@@ -552,6 +552,15 @@
         }
     }
 
+    // While the context menu is open its lifted copy is drawn on top of the
+    // scrim, so the original bubble must not show behind it. Hidden only
+    // after the copy has faded in (no hole while it appears); shown again
+    // immediately when the menu closes.
+    &_menu_source .messages_bubble {
+        opacity: 0;
+        transition: opacity 0s linear 0.3s;
+    }
+
     &_leaving {
         overflow: hidden;
         pointer-events: none;

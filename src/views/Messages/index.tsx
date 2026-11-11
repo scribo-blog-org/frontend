@@ -1734,6 +1734,31 @@ const MessagesPage = () => {
         return () => cancelAnimationFrame(frame);
     }, [messages, isChatLoading, conversationId, scrollMessagesToBottom]);
 
+    useEffect(() => {
+        if (
+            !conversationId ||
+            isChatLoading ||
+            !window.matchMedia('(hover: hover) and (pointer: fine)').matches
+        ) {
+            return;
+        }
+
+        const frame = requestAnimationFrame(() => {
+            const active = document.activeElement as HTMLElement | null;
+
+            if (
+                active?.matches('input, textarea, [contenteditable="true"]') &&
+                active !== composerInputRef.current
+            ) {
+                return;
+            }
+
+            composerInputRef.current?.focus({ preventScroll: true });
+        });
+
+        return () => cancelAnimationFrame(frame);
+    }, [conversationId, isChatLoading]);
+
     const handleStartReply = (message: any) => {
         setEditingMessage(null);
         setReplyTo(message);
@@ -3549,6 +3574,16 @@ const MessagesPage = () => {
                                                                                     message._id,
                                                                                 )
                                                                                 ? ' messages_item_menu_target'
+                                                                                : ''
+                                                                        }${
+                                                                            messageMenu?.anchor &&
+                                                                            String(
+                                                                                messageMenu.messageId,
+                                                                            ) ===
+                                                                                String(
+                                                                                    message._id,
+                                                                                )
+                                                                                ? ' messages_item_menu_source'
                                                                                 : ''
                                                                         }`}
                                                                         style={

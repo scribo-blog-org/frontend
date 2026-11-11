@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 
 import Profile from '@/views/Profile';
 import { buildMetadata } from '@/lib/metadata';
-import { loadPublicProfile } from '@/lib/server-api';
+import { isClientNavigation, loadPublicProfile } from '@/lib/server-api';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +15,10 @@ function asString(value: unknown) {
 }
 
 export async function generateMetadata({ params }: ProfileRouteProps) {
+    if (await isClientNavigation()) {
+        return {};
+    }
+
     const { id } = await params;
     const result = await loadPublicProfile(id);
     const user = result.status ? result.data?.[0] : null;
@@ -39,6 +43,10 @@ export async function generateMetadata({ params }: ProfileRouteProps) {
 }
 
 export default async function ProfilePage({ params }: ProfileRouteProps) {
+    if (await isClientNavigation()) {
+        return <Profile initialUser={null} />;
+    }
+
     const { id } = await params;
     const result = await loadPublicProfile(id);
     const user = result.status ? result.data?.[0] : null;

@@ -49,6 +49,11 @@
         border: 0;
         cursor: pointer;
 
+        // no global press scale on a full-width row
+        &:not(:disabled):active {
+            scale: none;
+        }
+
         @include hover {
             background: var(--section-item-hover-background-color);
         }

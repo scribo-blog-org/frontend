@@ -52,6 +52,13 @@ async function traceHeaders(): Promise<Record<string, string>> {
     }
 }
 
+// Client-side navigations request an RSC payload (`rsc` header); a full page
+// load (users, crawlers) does not. Server data is only needed for the latter:
+// on client navigations the views fetch the data themselves.
+export async function isClientNavigation() {
+    return (await headers()).get('rsc') === '1';
+}
+
 export async function serverGet<T>(path: string): Promise<ApiResult<T | null>> {
     if (!apiUrl()) {
         return {

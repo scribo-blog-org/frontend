@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import HomePage from '@/views/HomePage';
 import { POSTS_PAGE_LIMIT } from '@/api/posts.api';
 import { buildMetadata } from '@/lib/metadata';
-import { fetchPosts } from '@/lib/server-api';
+import { fetchPosts, isClientNavigation } from '@/lib/server-api';
 import { HOME_TITLE, SITE_DESCRIPTION } from '@/seo/site';
 
 export const dynamic = 'force-dynamic';
@@ -34,7 +34,10 @@ export default async function HomeRoute({ searchParams }: HomeRouteProps) {
     const filter = Array.isArray(params.filter)
         ? params.filter[0]
         : params.filter;
-    const initial = filter?.trim() ? null : await loadFeed();
+    const initial =
+        filter?.trim() || (await isClientNavigation())
+            ? null
+            : await loadFeed();
 
     return (
         <HomePage

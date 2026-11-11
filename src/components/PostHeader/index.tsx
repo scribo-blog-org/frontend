@@ -24,8 +24,6 @@ import ActionButton from '../Ui/ActionButton';
 import DangerButton from '../Ui/DangerButton';
 import Tooltip from '../Ui/Tooltip/index';
 
-import Sceleton from '../Ui/Sceleton/Sceleton';
-
 const DeletePostContent = ({
     post,
     requestCloseModal,
@@ -77,90 +75,75 @@ const DeletePostContent = ({
     );
 };
 
-const PostHeader = memo(
-    ({ post, onDeletePost, className, isLoading = false }: any) => {
-        const { profile, showModalWindow, requestCloseModal, showToast } =
-            useContext(AppContext);
-        const navigate = useNavigate();
+const PostHeader = memo(({ post, onDeletePost, className }: any) => {
+    const { profile, showModalWindow, requestCloseModal, showToast } =
+        useContext(AppContext);
+    const navigate = useNavigate();
 
-        const handleDeletePost = async () => {
-            showModalWindow({
-                title: 'Delete this post?',
-                subtitle: 'This action cannot be undone',
+    const handleDeletePost = async () => {
+        showModalWindow({
+            title: 'Delete this post?',
+            subtitle: 'This action cannot be undone',
+            icon: <DeleteIcon />,
+            size: 'small',
+            content: (
+                <DeletePostContent
+                    post={post}
+                    requestCloseModal={requestCloseModal}
+                    onDeletePost={onDeletePost}
+                    showToast={showToast}
+                />
+            ),
+            showCloseButton: false,
+            closeFunc: () => {},
+        });
+    };
+
+    const popupBody = [
+        [
+            {
+                title: 'Edit',
+                icon: <EditIcon />,
+                onClick: () => navigate(`/posts/${post._id}/edit`),
+            },
+        ],
+        [
+            {
+                title: 'Delete',
                 icon: <DeleteIcon />,
-                size: 'small',
-                content: (
-                    <DeletePostContent
-                        post={post}
-                        requestCloseModal={requestCloseModal}
-                        onDeletePost={onDeletePost}
-                        showToast={showToast}
-                    />
-                ),
-                showCloseButton: false,
-                closeFunc: () => {},
-            });
-        };
+                type: 'danger',
+                onClick: () => handleDeletePost(),
+            },
+        ],
+    ];
 
-        const popupBody = [
-            [
-                {
-                    title: 'Edit',
-                    icon: <EditIcon />,
-                    onClick: () => navigate(`/posts/${post._id}/edit`),
-                },
-            ],
-            [
-                {
-                    title: 'Delete',
-                    icon: <DeleteIcon />,
-                    type: 'danger',
-                    onClick: () => handleDeletePost(),
-                },
-            ],
-        ];
-
-        return (
-            <div className={`post_header ${className ?? ''}`}>
-                <div className="post_header_left">
-                    <Sceleton
-                        isLoading={isLoading}
-                        rounded={true}
-                        className="user_badge"
-                    >
-                        <UserBadge data={post.author} />
-                    </Sceleton>
-                    <Sceleton
-                        isLoading={isLoading}
-                        rounded={true}
-                        className="post_header_left_date"
-                    >
-                        <Tooltip
-                            text={format_date_time(post.created_date)}
-                            position="bottom"
-                        >
-                            <p className="post_header_left_date">
-                                {format_back(post.created_date)}
-                            </p>
-                        </Tooltip>
-                    </Sceleton>
-                </div>
-                {!isLoading &&
-                ((profile?.permissions.includes('delete_any_post') &&
-                    profile?.permissions.includes('edit_any_post')) ||
-                    profile?._id === post?.author?._id) ? (
-                    <Popup body={popupBody}>
-                        <div className="post_header_right app-transition">
-                            <ThreeDotsIcon className="article_topic_three_dots" />
-                        </div>
-                    </Popup>
-                ) : (
-                    <></>
-                )}
+    return (
+        <div className={`post_header ${className ?? ''}`}>
+            <div className="post_header_left">
+                <UserBadge data={post.author} />
+                <Tooltip
+                    text={format_date_time(post.created_date)}
+                    position="bottom"
+                >
+                    <p className="post_header_left_date">
+                        {format_back(post.created_date)}
+                    </p>
+                </Tooltip>
             </div>
-        );
-    },
-);
+            {(profile?.permissions.includes('delete_any_post') &&
+                profile?.permissions.includes('edit_any_post')) ||
+            profile?._id === post?.author?._id ? (
+                <Popup body={popupBody}>
+                    <div className="post_header_right app-transition">
+                        <ThreeDotsIcon className="article_topic_three_dots" />
+                    </div>
+                </Popup>
+            ) : (
+                <></>
+            )}
+        </div>
+    );
+});
 
 PostHeader.displayName = 'PostHeader';
 

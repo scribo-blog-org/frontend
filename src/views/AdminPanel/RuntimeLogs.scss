@@ -135,11 +135,18 @@
     white-space: nowrap;
 }
 
-.rt_status_warn {
+.rt_status_ok,
+.rt_took_fast {
+    color: var(--log-create-color);
+}
+
+.rt_status_warn,
+.rt_took_warn {
     color: var(--log-update-color);
 }
 
-.rt_status_error {
+.rt_status_error,
+.rt_took_slow {
     color: var(--log-error-color);
 }
 
